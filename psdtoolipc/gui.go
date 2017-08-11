@@ -71,10 +71,10 @@ func (g *gui) update() {
 	width, height := g.Window.GetSize()
 
 	if nk.NkBegin(ctx, "TopPane", nk.NkRect(0, 0, float32(width), topPaneHeight), 0) != 0 {
-		nk.NkLayoutRowDynamic(ctx, 0, 1)
-		if g.CanNotify {
+		if g.img != nil {
+			nk.NkLayoutRowDynamic(ctx, 0, 1)
 			if nk.NkButtonLabel(ctx, "送る") != 0 {
-				if err := g.IPC.SendNotify(); err != nil {
+				if err := g.IPC.SendEditingImageState(g.img.Serialize()); err != nil {
 					ods.ODS("error: %v", err)
 				}
 			}

@@ -81,8 +81,6 @@ type gui struct {
 	img           *img.Image
 	renderedImage *image.NRGBA
 
-	CanNotify bool
-
 	minZoom  float32
 	maxZoom  float32
 	stepZoom float32
@@ -143,19 +141,11 @@ func main() {
 		},
 	}
 	g.IPC.Init()
-	g.IPC.ShowGUI = func(canNotify bool) (uintptr, error) {
+	g.IPC.ShowGUI = func() (uintptr, error) {
 		do(func() {
-			g.CanNotify = canNotify
 			g.Window.Show()
 		})
 		return uintptr(unsafe.Pointer(g.Window.GetWin32Window())), nil
-	}
-	g.IPC.EditingImageState = func() (*img.ImageState, error) {
-		var s *img.ImageState
-		do(func() {
-			s = g.img.Serialize()
-		})
-		return s, nil
 	}
 
 	exitCh := make(chan struct{})
@@ -202,6 +192,6 @@ func main() {
 		log.Fatalln("could not decode bg.png:", err)
 	}
 	g.MainView.Init(bg)
-	g.Window.Show()
+	// g.Window.Show()
 	g.MainLoop(exitCh)
 }

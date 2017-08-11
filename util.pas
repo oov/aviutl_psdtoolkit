@@ -29,6 +29,7 @@ type
   TStateMap = specialize THashmap<WideString, TImageState, TWideStringHash>;
 
 procedure ODS(const Fmt: string; const Args: array of const);
+function GetDLLName(): WideString;
 function fnv1a32(ws: WideString): cardinal;
 function StringifyForLua(s: UTF8String): UTF8String;
 
@@ -38,13 +39,6 @@ procedure WriteSingle(const S: TStream; const V: single);
 procedure WriteString(const S: TStream; const V: UTF8String);
 procedure WriteIdAndFileName(const S: TStream; const ID: integer;
   const FileName: UTF8String);
-
-procedure ReadResult(const S: TStream);
-function ReadUInt64(const S: TStream): QWord;
-function ReadInt32(const S: TStream): integer;
-function ReadSingle(const S: TStream): single;
-function ReadString(const S: TStream): UTF8String;
-function ReadBinary(const S: TStream; const P: Pointer; const Len: integer): integer;
 
 implementation
 
@@ -59,6 +53,13 @@ begin
   if not debugging then
     Exit;
   OutputDebugStringW(PWideChar(WideString(Format('psdtool-ipc cli: ' + Fmt, Args))));
+end;
+
+function GetDLLName(): WideString;
+begin
+  SetLength(Result, MAX_PATH);
+  GetModuleFileNameW(hInstance, @Result[1], MAX_PATH);
+  Result := PWideChar(Result);
 end;
 
 function fnv1a32(ws: WideString): cardinal;
@@ -138,66 +139,6 @@ begin
   WriteInt32(S, ID);
   WriteString(S, FileName);
   ods('  ID: %d / Filename: %s', [ID, FileName]);
-end;
-
-procedure ReadResult(const S: TStream);
-var
-  l: integer;
-  msg: UTF8String;
-begin
-  l := ReadInt32(S);
-  if l = 0 then
-  begin
-    ods('  -> SUCCESS', []);
-    Exit;
-  end;
-  SetLength(msg, l);
-  S.ReadBuffer(msg[1], l);
-  ods('  -> ERROR: %s', [msg]);
-  raise Exception.Create(msg);
-end;
-
-function ReadUInt64(const S: TStream): QWord;
-begin
-  Result := S.ReadQWord();
-end;
-
-function ReadInt32(const S: TStream): integer;
-begin
-  Result := S.ReadDWord();
-end;
-
-function ReadSingle(const S: TStream): single;
-var
-  d: DWORD;
-begin
-  d := S.ReadDWord();
-  Result := PSingle(@d)^;
-end;
-
-function ReadString(const S: TStream): UTF8String;
-var
-  l: integer;
-begin
-  l := ReadInt32(S);
-  if l = 0 then
-  begin
-    Result := '';
-    Exit;
-  end;
-  SetLength(Result, l);
-  S.ReadBuffer(Result[1], l);
-end;
-
-function ReadBinary(const S: TStream; const P: Pointer; const Len: integer): integer;
-var
-  l: integer;
-begin
-  l := ReadInt32(S);
-  if l > Len then
-    raise Exception.Create('could not read binary: given buffer too short');
-  S.ReadBuffer(P^, l);
-  Result := l;
 end;
 
 { TWideStringHash }

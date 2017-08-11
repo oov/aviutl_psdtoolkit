@@ -6,7 +6,7 @@ unit main;
 interface
 
 uses
-  SysUtils, Classes, Process, callback, util;
+  SysUtils, Classes, Process, remote, util;
 
 type
 
@@ -16,10 +16,13 @@ type
   private
     FStateMap: TStateMap;
     FRemoteProcess: TProcess;
-    FWaitEventThread: TWaitEventThread;
+    FReceiver: TReceiver;
     FCS: TRTLCriticalSection;
+    FEditingImageState: WideString;
+    procedure SendEditingImageStateToExEdit;
     procedure PrepareIPC();
-    procedure Notify(Sender: TObject);
+    procedure OnRequest(Sender: TObject; const Command: UTF8String);
+    procedure OnShiftCtrlAltA(Sender: TObject);
     procedure EnterCS(CommandName: string);
     procedure LeaveCS(CommandName: string);
   public
@@ -29,10 +32,10 @@ type
       Width: integer; Height: integer);
     function GetLayerNames(id: integer; filename: UTF8String): UTF8String;
     procedure SetProperties(id: integer; filename: UTF8String;
-      Layers: PUTF8String; Scale: PSingle; OffsetX: System.PInteger; OffsetY: System.PInteger;
-      out Modified: boolean; out Width: integer; out Height: integer);
+      Layers: PUTF8String; Scale: PSingle; OffsetX: System.PInteger;
+      OffsetY: System.PInteger; out Modified: boolean; out Width: integer;
+      out Height: integer);
     procedure ShowGUI();
-    procedure GetEditingImageState(out FilePath: UTF8String; out FileHash: DWORD; out Scale: single; out OffsetX: integer; out OffsetY: integer; out State: UTF8String);
   end;
 
 var
@@ -41,117 +44,7 @@ var
 implementation
 
 uses
-  Windows, find;
-
-var
-  hKeyboardHook: THandle;
-  ShiftOn, CtrlOn, AltOn: boolean;
-
-function IsConfigButton(h: THandle; wID: integer): boolean;
-const
-  TARGET_BUTTON_CLASS = 'Button';
-  TARGET_BUTTON_ID = 8001;
-  ROOT_CLASS = 'ExtendedFilterClass';
-var
-  s: WideString;
-  i: integer;
-  hAncestor: THandle;
-begin
-  Result := False;
-  if h = 0 then
-    Exit;
-  if wID <> TARGET_BUTTON_ID then
-    Exit;
-  SetLength(s, 256);
-  i := GetClassNameW(h, @s[1], Length(s));
-  if i = 0 then
-    Exit;
-  SetLength(s, i);
-  if s <> TARGET_BUTTON_CLASS then
-    Exit;
-  if GetWindowLong(h, GWL_STYLE) <> (WS_CHILDWINDOW or WS_VISIBLE or
-    BS_CENTER or BS_VCENTER) then
-    Exit;
-  if GetWindowLong(h, GWL_EXSTYLE) <> 0 then
-    Exit;
-
-  hAncestor := GetAncestor(h, GA_ROOT);
-  SetLength(s, 256);
-  i := GetClassNameW(hAncestor, @s[1], Length(s));
-  if i = 0 then
-    Exit;
-  SetLength(s, i);
-  if s <> ROOT_CLASS then
-    Exit;
-
-  SetLength(s, 256);
-  i := GetWindowTextW(hAncestor, @s[1], Length(s));
-  if i = 0 then
-    Exit;
-  SetLength(s, i);
-  ods('TopWindow: %s', [s]);
-
-end;
-
-function KeyboardHookProc(code: longint; wp: WPARAM; lp: LPARAM): LRESULT; stdcall;
-var
-  processed: boolean;
-begin
-  if code < 0 then
-    Exit;
-
-  processed := False;
-  try
-    if code <> HC_ACTION then
-      Exit;
-    case wp of
-      VK_A:
-        if ((lp and $80000000) <> 0) and ShiftOn and CtrlOn and AltOn then begin
-          psdtool.ShowGUI();
-          ShiftOn := false;
-          CtrlOn := false;
-          AltOn := false;
-        end;
-      VK_SHIFT:
-        ShiftOn := (lp and $80000000) = 0;
-      VK_CONTROL:
-        CtrlOn := (lp and $80000000) = 0;
-      VK_MENU:
-        AltOn := (lp and $80000000) = 0;
-    end;
-  finally
-    if not processed then
-      Result := CallNextHookEx(hKeyboardHook, code, wp, lp);
-  end;
-end;
-
-procedure InstallHook();
-begin
-  if IsExEditWindowExists() then
-  begin
-    hKeyboardHook := SetWindowsHookEx(WH_KEYBOARD, @KeyboardHookProc,
-      0, GetCurrentThreadId());
-    if hKeyboardHook <> 0 then
-      ods('install keyboard hook success', [])
-    else
-      ods('install keyboard hook failed', []);
-  end
-  else
-  begin
-    hKeyboardHook := 0;
-  end;
-end;
-
-procedure UninstallHook();
-begin
-  if hKeyboardHook <> 0 then
-  begin
-    if UnhookWindowsHookEx(hKeyboardHook) then
-      ods('uninstall keyboard hook success', [])
-    else
-      ods('uninstall keyboard hook failed', []);
-  end;
-end;
+  Windows, find, hook;
 
 { TPSDToolIPC }
 
@@ -160,31 +53,44 @@ var
   ws: WideString;
 begin
   inherited Create;
+  if Hooker <> nil then
+    Hooker.OnPressShiftCtrlAltA:=@OnShiftCtrlAltA;
   InitCriticalSection(FCS);
   FRemoteProcess := TProcess.Create(nil);
-  SetLength(ws, MAX_PATH);
-  GetModuleFileNameW(hInstance, @ws[1], MAX_PATH);
-  ws := PWideChar(ws);
+  ws := GetDLLName();
   ws[Length(ws) - 2] := 'e';
   ws[Length(ws) - 1] := 'x';
   ws[Length(ws) - 0] := 'e';
-
   FRemoteProcess.Executable := ws;
   FRemoteProcess.Options := [poUsePipes, poNoConsole];
+  FReceiver := nil;
   FStateMap := TStateMap.Create();
-
-  FWaitEventThread := TWaitEventThread.Create();
-  FWaitEventThread.OnNotify := @Notify;
 end;
 
 destructor TPSDToolIPC.Destroy;
 begin
-  FWaitEventThread.Terminate();
-  SetEvent(FWaitEventThread.NotifyEvent);
+  if FReceiver <> nil then
+    FReceiver.Terminate;
 
-  FStateMap.Free;
-  FRemoteProcess.Free;
+  if FRemoteProcess.Running then
+  begin
+    FRemoteProcess.CloseInput;
+    FRemoteProcess.CloseOutput;
+  end;
+  FreeAndNil(FRemoteProcess);
+
+  if FReceiver <> nil then
+  begin
+    while not FReceiver.Finished do
+      ThreadSwitch();
+    FreeAndNil(FReceiver);
+  end;
+
+  FreeAndNil(FStateMap);
   DoneCriticalSection(FCS);
+
+  if Hooker <> nil then
+    Hooker.OnPressShiftCtrlAltA:=nil;
   inherited Destroy;
 end;
 
@@ -200,13 +106,16 @@ begin
     WriteIdAndFileName(FRemoteProcess.Input, id, filename);
     WriteInt32(FRemoteProcess.Input, Width);
     WriteInt32(FRemoteProcess.Input, Height);
-    ods('  Width: %d / Height: %d', [Width, Height]);
-
-    ReadResult(FRemoteProcess.Output);
-    l := ReadBinary(FRemoteProcess.Output, p, Width * 4 * Height);
-    ods('  -> Binary(Len: %d)', [l]);
+    ODS('  Width: %d / Height: %d', [Width, Height]);
   finally
     LeaveCS('DRAW');
+  end;
+  FReceiver.WaitResult();
+  try
+    l := FReceiver.ReadBinary(p, Width * 4 * Height);
+    ODS('  -> Binary(Len: %d)', [l]);
+  finally
+    FReceiver.Done();
   end;
 end;
 
@@ -217,18 +126,22 @@ begin
     PrepareIPC();
     FRemoteProcess.Input.WriteBuffer('LNAM', 4);
     WriteIdAndFileName(FRemoteProcess.Input, id, filename);
-
-    ReadResult(FRemoteProcess.Output);
-    Result := ReadString(FRemoteProcess.Output);
-    ods('  -> String(Len: %d)', [Length(Result)]);
   finally
     LeaveCS('LNAM');
+  end;
+  FReceiver.WaitResult();
+  try
+    Result := FReceiver.ReadString();
+    ODS('  -> String(Len: %d)', [Length(Result)]);
+  finally
+    FReceiver.Done();
   end;
 end;
 
 procedure TPSDToolIPC.SetProperties(id: integer; filename: UTF8String;
-  Layers: PUTF8String; Scale: PSingle; OffsetX: System.PInteger; OffsetY: System.PInteger;
-  out Modified: boolean; out Width: integer; out Height: integer);
+  Layers: PUTF8String; Scale: PSingle; OffsetX: System.PInteger;
+  OffsetY: System.PInteger; out Modified: boolean; out Width: integer;
+  out Height: integer);
 const
   PROPID_END = 0;
   PROPID_LAYERS = 1;
@@ -266,14 +179,17 @@ begin
       ODS('  OffsetY: %d', [OffsetY^]);
     end;
     WriteInt32(FRemoteProcess.Input, PROPID_END);
-
-    ReadResult(FRemoteProcess.Output);
-    Modified := ReadInt32(FRemoteProcess.Output) <> 0;
-    Width := ReadInt32(FRemoteProcess.Output);
-    Height := ReadInt32(FRemoteProcess.Output);
-    ods('  -> Modified:%d / Width:%d / Height:%d', [Ord(Modified), Width, Height]);
   finally
     LeaveCS('PROP');
+  end;
+  FReceiver.WaitResult();
+  try
+    Modified := FReceiver.ReadInt32() <> 0;
+    Width := FReceiver.ReadInt32();
+    Height := FReceiver.ReadInt32();
+    ODS('  -> Modified:%d / Width:%d / Height:%d', [Ord(Modified), Width, Height]);
+  finally
+    FReceiver.Done();
   end;
 end;
 
@@ -285,76 +201,34 @@ begin
   try
     PrepareIPC();
     FRemoteProcess.Input.WriteBuffer('SGUI', 4);
-
-    if not DuplicateHandle(GetCurrentProcess(), FWaitEventThread.NotifyEvent,
-      FRemoteProcess.Handle, @h, SYNCHRONIZE or EVENT_MODIFY_STATE, False, 0) then
-      raise Exception.Create('DuplicateHandle Failed');
-    WriteUInt64(FRemoteProcess.Input, QWord(h));
-    ODS('Event Handle: %d', [h]);
-
-    ReadResult(FRemoteProcess.Output);
-    h := THandle(ReadUInt64(FRemoteProcess.Output));
-    SetForegroundWindow(h);
-    ods('  -> Window Handle(%d)', [h]);
   finally
     LeaveCS('SGUI');
   end;
-end;
-
-procedure TPSDToolIPC.GetEditingImageState(out FilePath: UTF8String; out FileHash: DWORD; out
-  Scale: single; out OffsetX: integer;
-  out OffsetY: integer; out State: UTF8String);
-begin
-  EnterCS('EDIS');
+  FReceiver.WaitResult();
   try
-    PrepareIPC();
-    FRemoteProcess.Input.WriteBuffer('EDIS', 4);
-
-    ReadResult(FRemoteProcess.Output);
-    FilePath := ReadString(FRemoteProcess.Output);
-    FileHash := DWORD(ReadInt32(FRemoteProcess.Output));
-    Scale := ReadSingle(FRemoteProcess.Output);
-    OffsetX := ReadInt32(FRemoteProcess.Output);
-    OffsetY := ReadInt32(FRemoteProcess.Output);
-    State := ReadString(FRemoteProcess.Output);
-    ods('  -> FilePath: %s / FileHash: %08x / Scale: %f / OffsetX: %d / OffsetY: %d / State: %s',
-      [FilePath, FileHash, Scale, OffsetX, OffsetY, State]);
+    h := THandle(FReceiver.ReadUInt64());
+    ODS('  -> Window Handle(%d)', [h]);
   finally
-    LeaveCS('EDIS');
+    FReceiver.Done();
   end;
+  if h <> 0 then
+    SetForegroundWindow(h);
 end;
 
-procedure TPSDToolIPC.PrepareIPC;
+procedure TPSDToolIPC.SendEditingImageStateToExEdit;
 var
-  s: UTF8String;
-begin
-  if FRemoteProcess.Running then
-    Exit;
-  SetLength(s, 4);
-  FRemoteProcess.Execute;
-  FRemoteProcess.CloseStderr;
-  FRemoteProcess.Input.WriteBuffer('HELO', 4);
-  FRemoteProcess.Output.ReadBuffer(s[1], 4);
-  if s <> 'HELO' then
-  begin
-    FRemoteProcess.Terminate(1);
-  end;
-end;
-
-procedure TPSDToolIPC.Notify(Sender: TObject);
-var
+  ws: WideString;
   w: TExEditWindow;
   pw: TExEditParameterDialog;
   n: DWORD;
-  FileHash: DWORD;
-  Scale: single;
-  OffsetX, OffsetY: integer;
-  FilePath, State: UTF8String;
-  ws: WideString;
 begin
-  GetEditingImageState(FilePath,FileHash, Scale, OffsetX, OffsetY, State);
-  ws := WideString(UTF8String(Format('f="%s";l="%s";',
-    [StringifyForLua(FilePath), State])));
+  EnterCriticalSection(FCS);
+  try
+    ws := FEditingImageState;
+  finally
+    LeaveCriticalSection(FCS);
+  end;
+
   if FindExEditParameterDialog(pw) then
   begin
     SendMessageW(pw.Edit, WM_SETTEXT, 0, LPARAM(PWideChar(ws)));
@@ -375,26 +249,85 @@ begin
       end;
     end;
   end;
+
+end;
+
+procedure TPSDToolIPC.PrepareIPC;
+var
+  s: UTF8String;
+begin
+  if FRemoteProcess.Running then
+    Exit;
+  SetLength(s, 4);
+  FRemoteProcess.Execute;
+  FRemoteProcess.CloseStderr;
+  FRemoteProcess.Input.WriteBuffer('HELO', 4);
+  FRemoteProcess.Output.ReadBuffer(s[1], 4);
+  if s <> 'HELO' then
+  begin
+    FRemoteProcess.Terminate(1);
+    raise Exception.Create('unexpected reply: ' + s);
+  end;
+
+  if FReceiver <> nil then
+    FreeAndNil(FReceiver);
+  FReceiver := TReceiver.Create(FRemoteProcess.Output);
+  FReceiver.OnRequest := @OnRequest;
+end;
+
+procedure TPSDToolIPC.OnRequest(Sender: TObject; const Command: UTF8String);
+var
+  FileHash: DWORD;
+  Scale: single;
+  OffsetX, OffsetY: integer;
+  FilePath, State: UTF8String;
+begin
+  case Command of
+    'EDIS':
+    begin
+      FilePath := FReceiver.ReadString();
+      FileHash := DWORD(FReceiver.ReadInt32());
+      Scale := FReceiver.ReadSingle();
+      OffsetX := FReceiver.ReadInt32();
+      OffsetY := FReceiver.ReadInt32();
+      State := FReceiver.ReadString();
+      ODS('  -> FilePath: %s / FileHash: %08x / Scale: %f / OffsetX: %d / OffsetY: %d / State: %s',
+        [FilePath, FileHash, Scale, OffsetX, OffsetY, State]);
+      EnterCS('EDIS');
+      try
+        FRemoteProcess.Input.WriteDWord($80000000);
+        FEditingImageState :=
+          WideString(UTF8String(Format('f="%s";l="%s";',
+          [StringifyForLua(FilePath), State])));
+      finally
+        LeaveCS('EDIS');
+      end;
+      TThread.ExecuteInThread(@SendEditingImageStateToExEdit).FreeOnTerminate := True;
+    end;
+  end;
+end;
+
+procedure TPSDToolIPC.OnShiftCtrlAltA(Sender: TObject);
+begin
+  ShowGUI();
 end;
 
 procedure TPSDToolIPC.EnterCS(CommandName: string);
 begin
   EnterCriticalSection(FCS);
-  ods('%s BEGIN', [CommandName]);
+  ODS('%s BEGIN', [CommandName]);
 end;
 
 procedure TPSDToolIPC.LeaveCS(CommandName: string);
 begin
-  ods('%s END', [CommandName]);
+  ODS('%s END', [CommandName]);
   LeaveCriticalSection(FCS);
 end;
 
 initialization
   Randomize();
   psdtool := TPSDToolIPC.Create();
-  InstallHook();
 
 finalization
-  UninstallHook();
   psdtool.Free();
 end.

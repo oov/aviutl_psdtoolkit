@@ -111,6 +111,21 @@ func writeString(s string) error {
 	return nil
 }
 
+func writeReply(err error) error {
+	if err == nil {
+		return writeInt32(0x80000000)
+	}
+	s := err.Error()
+	if err := writeInt32(len(s) | 0x80000000); err != nil {
+		return err
+	}
+	if _, err := os.Stdout.WriteString(s); err != nil {
+		return err
+	}
+	ods.ODS("  -> Error: %v", err)
+	return nil
+}
+
 func writeBinary(b []byte) error {
 	if err := writeInt32(len(b)); err != nil {
 		return err

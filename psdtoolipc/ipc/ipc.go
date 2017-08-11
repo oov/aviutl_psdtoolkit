@@ -2,6 +2,7 @@ package ipc
 
 import (
 	"context"
+	"encoding/binary"
 	"fmt"
 	"hash/fnv"
 	"image"
@@ -15,7 +16,6 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
-	"golang.org/x/sys/windows"
 
 	"github.com/oov/aviutl_psdtoolipc/psdtoolipc/img"
 	"github.com/oov/aviutl_psdtoolipc/psdtoolipc/ods"
@@ -36,17 +36,16 @@ type sourceImage struct {
 }
 
 type IPC struct {
-	ShowGUI           func(canNotify bool) (uintptr, error)
-	EditingImageState func() (*img.ImageState, error)
+	ShowGUI func() (uintptr, error)
 
 	sourceImages map[string]*sourceImage
 
 	hotImages  map[StateKey]*img.Image
 	usingInGUI StateKey
 
-	queue chan func()
-
-	notifyEventHandle windows.Handle
+	queue     chan func()
+	reply     chan error
+	replyDone chan struct{}
 
 	// these are accessed from another goroutine
 	hotImageList []string
@@ -88,14 +87,15 @@ func (ipc *IPC) ImageList() ([]string, StateKeys) {
 }
 
 func (ipc *IPC) Image(id int, filePath string) (*img.Image, error) {
-	var r *img.Image
+	var r img.Image
 	var err error
 	ipc.do(func() {
-		r, err = ipc.load(id, filePath)
+		var ro *img.Image
+		ro, err = ipc.load(id, filePath)
 		if err == nil {
-			r2 := *r
-			r2.PSD = r.PSD.Clone()
-			r2.Layers = img.NewLayerManager(r2.PSD)
+			r = *ro
+			r.PSD = ro.PSD.Clone()
+			r.Layers = img.NewLayerManager(r.PSD)
 			r.Scale = 1
 			ipc.usingInGUI = StateKey{id, filePath}
 		}
@@ -103,7 +103,7 @@ func (ipc *IPC) Image(id int, filePath string) (*img.Image, error) {
 	if err != nil {
 		return nil, err
 	}
-	return r, nil
+	return &r, nil
 }
 
 func (ipc *IPC) updateImageList() {
@@ -273,30 +273,46 @@ func (ipc *IPC) setProps(id int, filePath string, layers *string, scale *float32
 	return modified, r.Dx(), r.Dy(), nil
 }
 
-func (ipc *IPC) showGUI(notifyEventHandle windows.Handle) (uintptr, error) {
-	if ipc.notifyEventHandle != windows.InvalidHandle {
-		windows.CloseHandle(ipc.notifyEventHandle)
-		ipc.notifyEventHandle = windows.InvalidHandle
-	}
-	ipc.notifyEventHandle = notifyEventHandle
-
-	h, err := ipc.ShowGUI(notifyEventHandle != 0)
+func (ipc *IPC) showGUI() (uintptr, error) {
+	h, err := ipc.ShowGUI()
 	if err != nil {
 		return 0, errors.Wrap(err, "ipc: cannot show the gui")
 	}
 	return h, nil
 }
 
-func (ipc *IPC) SendNotify() error {
-	if ipc.notifyEventHandle != windows.InvalidHandle {
-		ods.ODS("send event notify: %d", ipc.notifyEventHandle)
-		return windows.SetEvent(ipc.notifyEventHandle)
+func (ipc *IPC) SendEditingImageState(s *img.ImageState) error {
+	var err error
+	ipc.do(func() {
+		fmt.Print("EDIS")
+		ods.ODS("  FilePath: %s / FileHash: %08x / Scale: %f / OffsetX: %d / OffsetY: %d / State: %s", s.FilePath, s.FileHash, s.Scale, s.OffsetX, s.OffsetY, s.Layer)
+		if err = writeString(s.FilePath); err != nil {
+			return
+		}
+		if err = writeInt32(int(int32(s.FileHash))); err != nil {
+			return
+		}
+		if err = writeFloat32(s.Scale); err != nil {
+			return
+		}
+		if err = writeInt32(s.OffsetX); err != nil {
+			return
+		}
+		if err = writeInt32(s.OffsetY); err != nil {
+			return
+		}
+		if err = writeString(s.Layer); err != nil {
+			return
+		}
+	})
+	if err != nil {
+		return err
 	}
-	return nil
-}
-
-func (ipc *IPC) editingImageState() (*img.ImageState, error) {
-	return ipc.EditingImageState()
+	ods.ODS("wait EDIS reply...")
+	err = <-ipc.reply
+	ods.ODS("wait EDIS reply ok")
+	ipc.replyDone <- struct{}{}
+	return err
 }
 
 func (ipc *IPC) dispatch(cmd string) error {
@@ -323,7 +339,7 @@ func (ipc *IPC) dispatch(cmd string) error {
 		if err != nil {
 			return err
 		}
-		if err = writeInt32(0); err != nil {
+		if err = writeInt32(0x80000000); err != nil {
 			return err
 		}
 		return writeBinary(b)
@@ -337,7 +353,7 @@ func (ipc *IPC) dispatch(cmd string) error {
 		if err != nil {
 			return err
 		}
-		if err = writeInt32(0); err != nil {
+		if err = writeInt32(0x80000000); err != nil {
 			return err
 		}
 		return writeString(s)
@@ -401,7 +417,7 @@ func (ipc *IPC) dispatch(cmd string) error {
 			return err
 		}
 		ods.ODS("  Modified: %v / Width: %d / Height: %d", modified, width, height)
-		if err = writeInt32(0); err != nil {
+		if err = writeInt32(0x80000000); err != nil {
 			return err
 		}
 		if err = writeBool(modified); err != nil {
@@ -413,45 +429,14 @@ func (ipc *IPC) dispatch(cmd string) error {
 		return writeInt32(height)
 
 	case "SGUI":
-		handle, err := readUInt64()
+		h, err := ipc.showGUI()
 		if err != nil {
 			return err
 		}
-		ods.ODS("  Event Handle: %d", handle)
-		h, err := ipc.showGUI(windows.Handle(handle))
-		if err != nil {
-			return err
-		}
-		if err = writeInt32(0); err != nil {
+		if err = writeInt32(0x80000000); err != nil {
 			return err
 		}
 		return writeUint64(uint64(h))
-
-	case "EDIS":
-		s, err := ipc.editingImageState()
-		if err != nil {
-			return err
-		}
-		if err = writeInt32(0); err != nil {
-			return err
-		}
-		ods.ODS("  FilePath: %s / FileHash: %08x / Scale: %f / OffsetX: %d / OffsetY: %d / State: %s", s.FilePath, s.FileHash, s.Scale, s.OffsetX, s.OffsetY, s.Layer)
-		if err = writeString(s.FilePath); err != nil {
-			return err
-		}
-		if err = writeInt32(int(int32(s.FileHash))); err != nil {
-			return err
-		}
-		if err = writeFloat32(s.Scale); err != nil {
-			return err
-		}
-		if err = writeInt32(s.OffsetX); err != nil {
-			return err
-		}
-		if err = writeInt32(s.OffsetY); err != nil {
-			return err
-		}
-		return writeString(s.Layer)
 	}
 	return errors.New("unknown command")
 }
@@ -484,17 +469,46 @@ func (ipc *IPC) gc() {
 }
 
 func (ipc *IPC) Init() {
-	ipc.notifyEventHandle = windows.InvalidHandle
 	ipc.sourceImages = map[string]*sourceImage{}
 	ipc.hotImages = map[StateKey]*img.Image{}
 	ipc.queue = make(chan func())
+	ipc.reply = make(chan error)
+	ipc.replyDone = make(chan struct{})
 }
 
-func readCommand(r chan string) {
+func (ipc *IPC) readCommand(r chan string) {
 	cmd := make([]byte, 4)
-	if read, err := io.ReadFull(os.Stdin, cmd); err != nil || read != 4 {
-		r <- fmt.Sprintf("error: %v", err)
+	for {
+		ods.ODS("wait next command...")
+		if read, err := io.ReadFull(os.Stdin, cmd); err != nil || read != 4 {
+			r <- fmt.Sprintf("error: %v", err)
+			return
+		}
+		l := binary.LittleEndian.Uint32(cmd)
+		if l&0x80000000 == 0 {
+			break
+		}
+		l &= 0x7fffffff
+		if l == 0 {
+			ods.ODS("readCommand: reply no error")
+			ipc.reply <- nil
+		} else {
+			buf := make([]byte, l)
+			read, err := io.ReadFull(os.Stdin, buf)
+			if err != nil {
+				r <- fmt.Sprintf("error: %v", err)
+				return
+			}
+			if read != int(l) {
+				r <- fmt.Sprintf("error: %v", errors.New("unexcepted read size"))
+				return
+			}
+			ods.ODS("readCommand: reply %s", string(buf))
+			ipc.reply <- errors.New(string(buf))
+		}
+		<-ipc.replyDone
 	}
+	ods.ODS("readCommand: cmd %s", string(cmd))
 	r <- string(cmd)
 }
 
@@ -504,16 +518,12 @@ func (ipc *IPC) Main(exitCh chan<- struct{}) {
 		if err := recover(); err != nil {
 			ods.Recover(err)
 		}
-		if ipc.notifyEventHandle != windows.InvalidHandle {
-			windows.CloseHandle(ipc.notifyEventHandle)
-			ipc.notifyEventHandle = windows.InvalidHandle
-		}
 		gcTicker.Stop()
 		close(exitCh)
 	}()
 
 	cmdCh := make(chan string)
-	go readCommand(cmdCh)
+	go ipc.readCommand(cmdCh)
 	for {
 		select {
 		case <-gcTicker.C:
@@ -528,12 +538,12 @@ func (ipc *IPC) Main(exitCh chan<- struct{}) {
 			ods.ODS("%s", cmd)
 			if err := ipc.dispatch(cmd); err != nil {
 				ods.ODS("error: %v", err)
-				if err = writeString(err.Error()); err != nil {
+				if err = writeReply(err); err != nil {
 					return
 				}
 			}
 			ods.ODS("%s END", cmd)
-			go readCommand(cmdCh)
+			go ipc.readCommand(cmdCh)
 		}
 	}
 }

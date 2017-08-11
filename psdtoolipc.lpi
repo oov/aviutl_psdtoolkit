@@ -39,7 +39,7 @@
         </UserOverrides>
       </environment>
     </RunParams>
-    <Units Count="5">
+    <Units Count="8">
       <Unit0>
         <Filename Value="psdtoolipc.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -53,13 +53,25 @@
         <IsPartOfProject Value="True"/>
       </Unit2>
       <Unit3>
-        <Filename Value="callback.pas"/>
+        <Filename Value="find.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit3>
       <Unit4>
-        <Filename Value="find.pas"/>
+        <Filename Value="remote.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit4>
+      <Unit5>
+        <Filename Value="lua.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit5>
+      <Unit6>
+        <Filename Value="luafuncs.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit6>
+      <Unit7>
+        <Filename Value="hook.pas"/>
+        <IsPartOfProject Value="True"/>
+      </Unit7>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
