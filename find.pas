@@ -12,8 +12,6 @@ type
   TExEditWindow = record
     Window: THandle;
     Config: THandle;
-    Static_: THandle;
-    StaticText: WideString;
   end;
 
   TExEditParameterDialog = record
@@ -29,6 +27,9 @@ function FindExEditWindow(out w: TExEditWindow): boolean;
 function FindExEditParameterDialog(out pw: TExEditParameterDialog): boolean;
 
 implementation
+
+uses
+  util;
 
 function FindControl(Parent, Prev: THandle; ControlClass: WideString;
   Rect: PRect): THandle;
@@ -65,7 +66,7 @@ begin
   idx := SendMessageW(h, CB_GETCURSEL, 0, 0);
   len := SendMessageW(h, CB_GETLBTEXTLEN, idx, 0);
   SetLength(Result, len);
-  SendMessageW(h, CB_GETLBTEXT, idx, LPARAM(@Result[1]));
+  SendMessageW(h, CB_GETLBTEXT, idx, {%H-}LPARAM(@Result[1]));
 end;
 
 function GetControlText(h: THandle): WideString;
@@ -74,7 +75,7 @@ var
 begin
   len := SendMessageW(h, WM_GETTEXTLENGTH, 0, 0);
   SetLength(Result, len);
-  SendMessageW(h, WM_GETTEXT, len, LPARAM(@Result[1]));
+  SendMessageW(h, WM_GETTEXT, len, {%H-}LPARAM(@Result[1]));
 end;
 
 function FindPSDToolIPCSelectedComboBox(Parent: THandle): THandle;
@@ -121,6 +122,8 @@ begin
       Exit;
     if not IsWindowVisible(h) then
       continue;
+    if (ControlClass = 'Button') and ((GetWindowLong(h, GWL_STYLE) and BS_CHECKBOX) = BS_CHECKBOX) then
+      continue;
     Result := h;
   end;
 end;
@@ -145,7 +148,7 @@ end;
 
 function FindExEditWindow(out w: TExEditWindow): boolean;
 var
-  h, Window, ComboBox, Config, Static: THandle;
+  h, Window, ComboBox, Config: THandle;
   pid, mypid: DWORD;
 begin
   Result := False;
@@ -170,13 +173,8 @@ begin
   Config := FindSiblingControl(Window, ComboBox, 'Button');
   if Config = 0 then
     Exit;
-  Static := FindSiblingControl(Window, ComboBox, 'Static');
-  if Static = 0 then
-    Exit;
   w.Window := Window;
   w.Config := Config;
-  w.Static_ := Static;
-  w.StaticText := GetControlText(Static);
   Result := True;
 end;
 

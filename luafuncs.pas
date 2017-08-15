@@ -25,11 +25,11 @@ type
 const
   Functions: array[0..5] of TEntry = (
     (Name: 'draw'; Func: @LuaDraw),
-    (Name: 'get_layer_names'; Func: @LuaGetLayerNames),
-    (Name: 'set_properties'; Func: @LuaSetProperties),
-    (Name: 'show_gui'; Func: @LuaShowGUI),
-    (Name: 'put_cache'; Func: @LuaPutCache),
-    (Name: 'get_cache'; Func: @LuaGetCache));
+    (Name: 'getlayernames'; Func: @LuaGetLayerNames),
+    (Name: 'setprops'; Func: @LuaSetProperties),
+    (Name: 'showgui'; Func: @LuaShowGUI),
+    (Name: 'putcache'; Func: @LuaPutCache),
+    (Name: 'getcache'; Func: @LuaGetCache));
 
 implementation
 

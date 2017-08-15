@@ -1,7 +1,8 @@
 @Render
---track0:Scale,0.01,100,100,0.01
---track1:Offset X,-5000,5000,0,1
---track2:Offset Y,-5000,5000,0,1
+--track0:縮小率,0.01,100,100,0.01
+--track1:オフセットX,-5000,5000,0,1
+--track2:オフセットY,-5000,5000,0,1
+--check0:描画先送り,0
 --param:
 require("PSDToolIPC")
 psdtoolipc = {
@@ -14,44 +15,44 @@ psdtoolipc = {
   offsety = obj.track2,
   render = function(self)
     if self.file == "" then
-      self:show_usage()
+      self:usage()
       return
     end
-    local ok, modified, width, height = PSDToolIPC.set_properties(self.id, self.file, self)
+    local ok, modified, width, height = PSDToolIPC.setprops(self.id, self.file, self)
     if not ok then
-      self:show_message("<s,,B>[PSDToolIPC] 画像の読み込みに失敗しました\n\n"..modified)
+      self:msg("<s,,B>[PSDToolIPC] 画像の読み込みに失敗しました\n\n"..modified)
       return
     end
     if not modified then
-      local data, w, h = self:get_pixel_data(width, height)
-      if PSDToolIPC.get_cache("cache:"..self.id.." "..self.file, data, w * 4 * h) then
+      local data, w, h = self:getpixeldata(width, height)
+      if PSDToolIPC.getcache("cache:"..self.id.." "..self.file, data, w * 4 * h) then
         obj.putpixeldata(data)
         obj.copybuffer("cache:"..self.id.." "..self.file, "obj")
         return
       end
     end
-    local data, w, h = self:get_pixel_data(width, height)
+    local data, w, h = self:getpixeldata(width, height)
     local ok, msg = PSDToolIPC.draw(self.id, self.file, data, w, h)
     if not ok then
-      self:show_message("<s,,B>[PSDToolIPC] 描画中にエラーが発生しました\n\n"..msg)
+      self:msg("<s,,B>[PSDToolIPC] 描画中にエラーが発生しました\n\n"..msg)
       return
     end
-    PSDToolIPC.put_cache("cache:"..self.id.." "..self.file, data, w * 4 * h, false)
+    PSDToolIPC.putcache("cache:"..self.id.." "..self.file, data, w * 4 * h, false)
     obj.putpixeldata(data)
   end,
-  get_pixel_data = function(self, width, height)
-    local max_w, max_h = obj.getinfo("image_max")
-    if width > max_w then
-      width = max_w
+  getpixeldata = function(self, width, height)
+    local maxw, maxh = obj.getinfo("image_max")
+    if width > maxw then
+      width = maxw
     end
-    if height > max_h then
-      height = max_h
+    if height > maxh then
+      height = maxh
     end
     obj.setoption("drawtarget","tempbuffer", width, height)
     obj.copybuffer("obj", "tmp")
     return obj.getpixeldata()
   end,
-  is_anchor = function(self, limit)
+  islast = function(self, limit)
     for i = 1, limit do
       if obj.getoption("script_name", i) == "SimpleView@PSDToolIPC" then
         return false
@@ -59,7 +60,7 @@ psdtoolipc = {
     end
     return true
   end,
-  show_message = function(self, msg)
+  msg = function(self, msg)
     obj.load("framebuffer")
     obj.effect("色調補正","明るさ",25)
     obj.draw()
@@ -67,9 +68,9 @@ psdtoolipc = {
     obj.load("text", msg)
     obj.draw()
   end,
-  show_usage = function(self)
+  usage = function(self)
     if self.offsetx == 1 then
-      self:show_message([[<s,,B>
+      self:msg([[<s,,B>
 ≪ インストール方法 ≫
 
 AviUtl の script フォルダに
@@ -80,7 +81,7 @@ PSDToolIPC.dll / PSDToolIPC.exe / @PSDToolIPC.anm をコピー
 ［ページ 1/3］※Offset X を操作するとページ送りできます
 ]])
     elseif self.offsetx == 2 then
-      self:show_message([[<s,,B>
+      self:msg([[<s,,B>
 ≪ 使い方 ≫
 
 1. 拡張編集のタイムラインにテキストを追加する
@@ -108,7 +109,7 @@ PSDToolIPC.dll / PSDToolIPC.exe / @PSDToolIPC.anm をコピー
 ［ページ 2/3］※Offset X を操作するとページ送りできます
 ]])
     elseif self.offsetx == 3 then
-      self:show_message([[<s,,B>
+      self:msg([[<s,,B>
 ≪ 使い方のコツ ≫
 
 ・最近ドラッグ＆ドロップで読み込んだ PSD ファイルや
@@ -125,7 +126,7 @@ PSDToolIPC.dll / PSDToolIPC.exe / @PSDToolIPC.anm をコピー
 ［ページ 3/3］※Offset X を操作するとページ送りできます
 ]])
     else
-      self:show_message([[<s,,B>
+      self:msg([[<s,,B>
 [PSDToolIPC] 画像が読み込まれていません。
 
 ※Offset X を 1 にすると説明を読めます。
@@ -135,7 +136,7 @@ PSDToolIPC.dll / PSDToolIPC.exe / @PSDToolIPC.anm をコピー
 }
 f=nil;
 l=nil;
-if psdtoolipc:is_anchor(5) then
+if (obj.check0 == false) and psdtoolipc:islast(5) then
   psdtoolipc:render()
   psdtoolipc = nil
 end
@@ -145,12 +146,51 @@ end
 --track1:,0,999,0,1
 --track2:,0,999,0,1
 --track3:,0,999,0,1
+--check0:描画先送り,0
 if psdtoolipc ~= nil then
   table.insert(psdtoolipc.faview, obj.track0)
   table.insert(psdtoolipc.faview, obj.track1)
   table.insert(psdtoolipc.faview, obj.track2)
   table.insert(psdtoolipc.faview, obj.track3)
-  if psdtoolipc:is_anchor(5) then
+  if (obj.check0 == false) and psdtoolipc:islast(5) then
+    psdtoolipc:render()
+    psdtoolipc = nil
+  end
+end
+
+@目パチ
+--track0:間隔(秒),0,100,4,0.1
+--track1:速さ(秒),0.01,10,0.05,0.01
+--check0:描画先送り,0
+--dialog:ほぼ開き,eye0="";半目,eye1="";ほぼ閉じ,eye2="";閉じ,eye3="";
+if psdtoolipc ~= nil then
+  local eye = {}
+  if eye3 ~= nil and eye3 ~= "" then
+    table.insert(eye, eye3)
+  end
+  if eye2 ~= nil and eye2 ~= "" then
+    table.insert(eye, eye2)
+  end
+  if eye1 ~= nil and eye1 ~= "" then
+    table.insert(eye, eye1)
+  end
+  if eye0 ~= nil and eye0 ~= "" then
+    table.insert(eye, eye0)
+  end
+  local interval = obj.track0
+  local speed = obj.track1
+  local basetime = obj.time + obj.rand(0,1000,1122,0)/100 + interval - speed*#eye
+  local blink = basetime % interval
+  local blink2 = (basetime + interval*obj.rand(0,5,1234,0) - speed*#eye*2) % (interval * 5)
+  for i, v in ipairs(eye) do
+    local l = speed*i
+    local r = l + speed
+    if (l <= blink and blink < r)or(l <= blink2 and blink2 < r) then
+      psdtoolipc.layer = psdtoolipc.layer .. " " .. v
+      break;
+    end
+  end
+  if (obj.check0 == false) and psdtoolipc:islast(5) then
     psdtoolipc:render()
     psdtoolipc = nil
   end

@@ -234,7 +234,7 @@ begin
 
   if FindExEditParameterDialog(pw) then
   begin
-    SendMessageW(pw.Edit, WM_SETTEXT, 0, LPARAM(PWideChar(ws)));
+    SendMessageW(pw.Edit, WM_SETTEXT, 0, {%H-}LPARAM(PWideChar(ws)));
     Exit;
   end;
   if FindExEditWindow(w) then
@@ -246,13 +246,12 @@ begin
       Sleep(0);
       if FindExEditParameterDialog(pw) then
       begin
-        SendMessageW(pw.Edit, WM_SETTEXT, 0, LPARAM(PWideChar(ws)));
+        SendMessageW(pw.Edit, WM_SETTEXT, 0, {%H-}LPARAM(PWideChar(ws)));
         PostMessage(pw.OK, BM_CLICK, 0, 0);
         Exit;
       end;
     end;
   end;
-
 end;
 
 procedure TPSDToolIPC.PrepareIPC;
