@@ -204,14 +204,16 @@ func (ipc *IPC) draw(id int, filePath string, width, height int) ([]byte, error)
 	if err != nil {
 		return nil, errors.Wrap(err, "ipc: could not load")
 	}
+	s := time.Now().UnixNano()
 	rgba, err := himg.Render(context.Background())
 	if err != nil {
-		return nil, errors.Wrap(err, "ipc: could not load")
+		return nil, errors.Wrap(err, "ipc: could not render")
 	}
 	ret := image.NewRGBA(image.Rect(0, 0, width, height))
 	blend.Copy.Draw(ret, ret.Rect, rgba, image.Pt(-himg.OffsetX, -himg.OffsetY))
 	rgbaToNBGRA(ret.Pix)
 	debug.FreeOSMemory()
+	ods.ODS("render: %dms", (time.Now().UnixNano()-s)/1e6)
 	return ret.Pix, nil
 }
 

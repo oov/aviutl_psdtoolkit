@@ -17,6 +17,7 @@ type Image struct {
 	LastAccess time.Time
 
 	PSD    *layertree.Root
+	image  *image.RGBA
 	Layers *LayerManager
 
 	InitialVisibility *string
@@ -42,11 +43,18 @@ func (img *Image) ScaledCanvasRect() image.Rectangle {
 }
 
 func (img *Image) Render(ctx context.Context) (*image.RGBA, error) {
-	rgba, err := img.PSD.Renderer.Render(ctx)
+	var err error
+	if img.image == nil {
+		img.image = image.NewRGBA(img.PSD.CanvasRect)
+		err = img.PSD.Renderer.Render(ctx, img.image)
+	} else {
+		err = img.PSD.Renderer.RenderDiff(ctx, img.image)
+	}
 	if err != nil {
 		return nil, errors.Wrap(err, "img: render failed")
 	}
 	img.Modified = false
+	rgba := img.image
 	if img.Scale < 1 {
 		tmp := image.NewRGBA(img.ScaledCanvasRect())
 		if err = downscale.RGBAGamma(ctx, tmp, rgba, 2.2); err != nil {

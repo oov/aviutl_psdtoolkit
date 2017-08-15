@@ -81,7 +81,7 @@ type gui struct {
 	viewResizeQueued    viewResizeMode
 
 	img           *img.Image
-	renderedImage *image.NRGBA
+	renderedImage *image.RGBA
 
 	minZoom  float32
 	maxZoom  float32

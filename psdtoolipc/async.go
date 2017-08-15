@@ -36,33 +36,27 @@ func updateRenderedImage(g *gui, img *img.Image) {
 	if g.cancelRender != nil {
 		g.cancelRender()
 	}
-	cimg := *img
-	cimg.PSD = img.PSD.Clone()
-	cimg.PSD.Renderer = img.PSD.Renderer
+
 	ctx, cancel := context.WithCancel(context.Background())
 	g.cancelRender = cancel
 	go func() {
 		s := time.Now().UnixNano()
-		rgba, err := cimg.Render(ctx)
+		rgba, err := img.Render(ctx)
 		if err != nil {
-			ods.ODS("rendering: aborted")
+			ods.ODS("rendering: aborted: %v", err)
 			return
 		}
-		nrgba := rgbaToNRGBA(rgba)
 		ods.ODS("rendering: %dms", (time.Now().UnixNano()-s)/1e6)
 		do(func() {
-			g.renderedImage = nrgba
-			if g.cancelRender != nil {
-				g.cancelRender()
-				g.cancelRender = nil
-			}
-			updateViewImage(g, nrgba, true)
-			updateViewImage(g, nrgba, false)
+			g.renderedImage = rgba
+			cancel()
+			updateViewImage(g, rgba, true)
+			updateViewImage(g, rgba, false)
 		})
 	}()
 }
 
-func updateViewImage(g *gui, img *image.NRGBA, fast bool) {
+func updateViewImage(g *gui, img *image.RGBA, fast bool) {
 	if g.viewResizeRunning == vrmBeautiful && fast {
 		g.cancelViewResize()
 		g.cancelViewResize = nil
@@ -116,7 +110,7 @@ func updateViewImage(g *gui, img *image.NRGBA, fast bool) {
 	}()
 }
 
-func resizeImage(ctx context.Context, img *image.NRGBA, scale float64, fast bool) <-chan *image.NRGBA {
+func resizeImage(ctx context.Context, img *image.RGBA, scale float64, fast bool) <-chan *image.NRGBA {
 	notify := make(chan *image.NRGBA)
 	go func() {
 		s := time.Now().UnixNano()
@@ -132,20 +126,21 @@ func resizeImage(ctx context.Context, img *image.NRGBA, scale float64, fast bool
 		if r.Dy() == 0 {
 			r.Max.Y++
 		}
-		out := image.NewNRGBA(r)
+		rgba := image.NewRGBA(r)
 		var err error
 		if fast {
-			err = downscale.NRGBAFast(ctx, out, img)
+			err = downscale.RGBAFast(ctx, rgba, img)
 		} else {
-			err = downscale.NRGBAGamma(ctx, out, img, 2.2)
+			err = downscale.RGBAGamma(ctx, rgba, img, 2.2)
 		}
 		if err != nil {
 			ods.ODS("resize: aborted")
 			notify <- nil
 			return
 		}
+		nrgba := rgbaToNRGBA(rgba)
 		ods.ODS("resize: %dms", (time.Now().UnixNano()-s)/1e6)
-		notify <- out
+		notify <- nrgba
 	}()
 	return notify
 }
