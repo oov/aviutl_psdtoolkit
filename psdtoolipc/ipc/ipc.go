@@ -210,7 +210,7 @@ func (ipc *IPC) draw(id int, filePath string, width, height int) ([]byte, error)
 		return nil, errors.Wrap(err, "ipc: could not render")
 	}
 	ret := image.NewRGBA(image.Rect(0, 0, width, height))
-	blend.Copy.Draw(ret, ret.Rect, rgba, image.Pt(-himg.OffsetX, -himg.OffsetY))
+	blend.Copy.Draw(ret, ret.Rect, rgba, image.Pt(int(float32(-himg.OffsetX)*himg.Scale), int(float32(-himg.OffsetY)*himg.Scale)))
 	rgbaToNBGRA(ret.Pix)
 	debug.FreeOSMemory()
 	ods.ODS("render: %dms", (time.Now().UnixNano()-s)/1e6)
