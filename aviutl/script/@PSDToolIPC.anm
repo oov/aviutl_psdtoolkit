@@ -39,7 +39,11 @@ psdtoolipc = {
     obj.setoption("drawtarget","tempbuffer", width, height)
     obj.copybuffer("obj", "tmp")
     local data, w, h = obj.getpixeldata()
-    PSDToolIPC.draw(self.id, self.file, data, w, h)
+    local ok, msg = PSDToolIPC.draw(self.id, self.file, data, w, h)
+    if not ok then
+      self:show_message("<s,,B>[PSDToolIPC] ï`âÊíÜÇ…ÉGÉâÅ[Ç™î≠ê∂ÇµÇ‹ÇµÇΩ\n\n"..msg)
+      return
+    end
     obj.putpixeldata(data)
     obj.copybuffer("cache:"..self.id.." "..self.file, "obj")
   end,
