@@ -95,6 +95,9 @@ func updateViewImage(g *gui, img *image.NRGBA, fast bool) {
 			return
 		}
 		resizedImage := <-notify
+		if resizedImage == nil {
+			return
+		}
 		do(func() {
 			g.MainView.ResizedImage = resizedImage
 			if g.cancelViewResize != nil {
@@ -138,6 +141,7 @@ func resizeImage(ctx context.Context, img *image.NRGBA, scale float64, fast bool
 		}
 		if err != nil {
 			ods.ODS("resize: aborted")
+			notify <- nil
 			return
 		}
 		ods.ODS("resize: %dms", (time.Now().UnixNano()-s)/1e6)

@@ -15,6 +15,8 @@ import (
 	"time"
 	"unsafe"
 
+	// _ "net/http/pprof"
+
 	"github.com/go-gl/gl/v3.2-core/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/golang-ui/nuklear/nk"
@@ -124,6 +126,8 @@ func freeMemory(d time.Duration, exitCh <-chan struct{}) {
 }
 
 func main() {
+	// go http.ListenAndServe(":6060", nil)
+
 	defer func() {
 		if err := recover(); err != nil {
 			ods.Recover(err)
