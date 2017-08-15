@@ -52,7 +52,7 @@ func NewLayerManager(root *layertree.Root) *LayerManager {
 	dup := map[string]int{}
 	var g []int
 	for i := range root.Children {
-		enumChildren(m, &root.Children[i], nil, dup)
+		enumChildren(m, &root.Children[i], root.Children, nil, dup)
 		if isGroup(root.Children[i].Name) {
 			g = append(g, root.Children[i].SeqID)
 		}
@@ -70,6 +70,39 @@ func (m *LayerManager) SetFlip(f Flip) {
 func (m *LayerManager) Flip() Flip {
 	return m.flip
 }
+
+func (m *LayerManager) FlipX() bool {
+	return m.flip == FlipX || m.flip == FlipXY
+}
+
+func (m *LayerManager) FlipY() bool {
+	return m.flip == FlipY || m.flip == FlipXY
+}
+
+func (m *LayerManager) SetFlipX(v bool) bool {
+	if (m.flip&FlipX != 0) == v {
+		return false
+	}
+	if v {
+		m.flip |= FlipX
+	} else {
+		m.flip &= ^FlipX
+	}
+	return true
+}
+
+func (m *LayerManager) SetFlipY(v bool) bool {
+	if (m.flip&FlipY != 0) == v {
+		return false
+	}
+	if v {
+		m.flip |= FlipY
+	} else {
+		m.flip &= ^FlipY
+	}
+	return true
+}
+
 func (m *LayerManager) setVisible(seqID int, visible bool) bool {
 	l := m.Mapped[seqID]
 	if _, ok := m.ForceVisible[seqID]; ok {
@@ -248,11 +281,7 @@ func isGroup(s string) bool {
 	return len(s) > 2 && s[0] == '*' && s[1] != '*'
 }
 
-func registerFlips(m *LayerManager, l *layertree.Layer) {
-	if l.Parent == nil {
-		return
-	}
-
+func registerFlips(m *LayerManager, l *layertree.Layer, sib []layertree.Layer) {
 	tokens := strings.Split(l.Name, ":")
 	var orgName string
 	for i := len(tokens) - 1; i >= 0; i-- {
@@ -265,21 +294,20 @@ func registerFlips(m *LayerManager, l *layertree.Layer) {
 			}
 			break
 		}
-		orgName = strings.Join(tokens[:i], ":")
+		orgName = strings.Join(tokens[:i+1], ":")
 		break
 	}
 
 	var org *layertree.Layer
-	for i, l2 := range l.Parent.Children {
+	for i, l2 := range sib {
 		if l2.Name == orgName {
-			org = &l.Parent.Children[i]
+			org = &sib[i]
 			break
 		}
 	}
 	if org == nil {
 		return
 	}
-
 	f := &[2]int{org.SeqID, l.SeqID}
 	for i := len(tokens) - 1; i >= 0; i-- {
 		switch tokens[i] {
@@ -298,7 +326,7 @@ func registerFlips(m *LayerManager, l *layertree.Layer) {
 	}
 }
 
-func enumChildren(m *LayerManager, l *layertree.Layer, dir []byte, dup map[string]int) {
+func enumChildren(m *LayerManager, l *layertree.Layer, sib []layertree.Layer, dir []byte, dup map[string]int) {
 	dir = append(dir, '/')
 	dir = append(dir, encodeName(l.Name)...)
 	n, ok := dup[l.Name]
@@ -316,12 +344,12 @@ func enumChildren(m *LayerManager, l *layertree.Layer, dir []byte, dup map[strin
 	if isForceVisible(l.Name) {
 		m.ForceVisible[l.SeqID] = struct{}{}
 	}
-	registerFlips(m, l)
+	registerFlips(m, l, sib)
 
 	dup = map[string]int{}
 	var g []int
 	for i := range l.Children {
-		enumChildren(m, &l.Children[i], dir, dup)
+		enumChildren(m, &l.Children[i], l.Children, dir, dup)
 		if isGroup(l.Children[i].Name) {
 			g = append(g, l.Children[i].SeqID)
 		}
@@ -333,6 +361,7 @@ func enumChildren(m *LayerManager, l *layertree.Layer, dir []byte, dup map[strin
 
 func (m *LayerManager) DeserializeVisibility(s string) (bool, error) {
 	n := make([]bool, len(m.Flat))
+	var newFlip Flip
 	for _, line := range strings.Split(s, " ") {
 		buf, err := base64.RawURLEncoding.DecodeString(line[2:])
 		if err != nil {
@@ -341,7 +370,7 @@ func (m *LayerManager) DeserializeVisibility(s string) (bool, error) {
 		if len(m.Flat) != int(binary.LittleEndian.Uint16(buf)) {
 			return false, errors.New("img: number of layers mismatch")
 		}
-		m.flip = Flip(buf[2])
+		newFlip = Flip(buf[2])
 		i := 0
 		switch line[:2] {
 		case "V.":
@@ -396,7 +425,7 @@ func (m *LayerManager) DeserializeVisibility(s string) (bool, error) {
 	}
 
 	r := m.Renderer
-	modified := false
+	modified := newFlip != m.flip
 	for i, b := range n {
 		l := m.Mapped[m.Flat[i]]
 		if l.Visible != b {
@@ -406,6 +435,7 @@ func (m *LayerManager) DeserializeVisibility(s string) (bool, error) {
 		}
 	}
 	if modified {
+		m.flip = newFlip
 		m.Normalize()
 	}
 	return modified, nil

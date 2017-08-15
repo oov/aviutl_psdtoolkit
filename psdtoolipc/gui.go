@@ -65,14 +65,29 @@ func (g *gui) MainLoop(exitCh <-chan struct{}) {
 	}
 }
 
+func b2i(b bool) int32 {
+	if b {
+		return 1
+	}
+	return 0
+}
+
 func (g *gui) update() {
 	ctx := g.Context
 	nk.NkPlatformNewFrame()
 	width, height := g.Window.GetSize()
 
+	modified := false
 	if nk.NkBegin(ctx, "TopPane", nk.NkRect(0, 0, float32(width), topPaneHeight), 0) != 0 {
 		if g.img != nil {
-			nk.NkLayoutRowDynamic(ctx, 0, 1)
+			nk.NkLayoutRowDynamic(ctx, 0, 3)
+			fx, fy := g.img.Layers.FlipX(), g.img.Layers.FlipY()
+			if (nk.NkSelectLabel(ctx, "左右反転", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(fx)) != 0) != fx {
+				modified = g.img.Layers.SetFlipX(!fx) || modified
+			}
+			if (nk.NkSelectLabel(ctx, "上下反転", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(fy)) != 0) != fy {
+				modified = g.img.Layers.SetFlipY(!fy) || modified
+			}
 			if nk.NkButtonLabel(ctx, "送る") != 0 {
 				if err := g.IPC.SendEditingImageState(g.img.Serialize()); err != nil {
 					ods.ODS("error: %v", err)
@@ -84,7 +99,7 @@ func (g *gui) update() {
 
 	imageList, keys := g.IPC.ImageList()
 	g.LayerView.ImageList = imageList
-	rootChanged, modified := g.LayerView.Render(ctx, nk.NkRect(0, topPaneHeight, layerPaneWidth, float32(height-topPaneHeight)), g.img)
+	rootChanged, modifiedLayer := g.LayerView.Render(ctx, nk.NkRect(0, topPaneHeight, layerPaneWidth, float32(height-topPaneHeight)), g.img)
 	if rootChanged {
 		if g.LayerView.ImageListSelectedIndex != -1 {
 			key := keys[g.LayerView.ImageListSelectedIndex]
@@ -99,7 +114,9 @@ func (g *gui) update() {
 			g.renderedImage = nil
 			g.MainView.Clear()
 		}
-	} else if modified {
+	} else if modified || modifiedLayer {
+		g.img.Modified = true
+		g.img.Layers.Normalize()
 		updateRenderedImage(g, g.img)
 	}
 
