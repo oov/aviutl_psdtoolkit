@@ -6,7 +6,7 @@ unit util;
 interface
 
 uses
-  Classes, SysUtils, GHashMap;
+  Classes, SysUtils;
 
 type
   ShiftJISString = type ansistring(932);
@@ -17,20 +17,9 @@ type
     State: WideString;
   end;
 
-  { TWideStringHash }
-
-  TWideStringHash = class
-    class function hash(k: WideString; n: SizeUInt): SizeUInt;
-    class function equal(a: WideString; b: WideString): boolean;
-  end;
-
-  { TStateMap }
-
-  TStateMap = specialize THashmap<WideString, TImageState, TWideStringHash>;
 
 procedure ODS(const Fmt: string; const Args: array of const);
 function GetDLLName(): WideString;
-function fnv1a32(ws: WideString): cardinal;
 function StringifyForLua(s: UTF8String): UTF8String;
 
 procedure WriteUInt64(const S: TStream; const V: QWord);
@@ -60,20 +49,6 @@ begin
   SetLength(Result, MAX_PATH);
   GetModuleFileNameW(hInstance, @Result[1], MAX_PATH);
   Result := PWideChar(Result);
-end;
-
-function fnv1a32(ws: WideString): cardinal;
-const
-  fnv1a32base = $811c9dc5;
-  fnv1a32prime = $01000193;
-var
-  i: integer;
-begin
-  Result := fnv1a32base;
-  for i := 1 to Length(ws) do
-  begin
-    Result := (Result xor cardinal(ws[i])) * fnv1a32prime;
-  end;
 end;
 
 function StringifyForLua(s: UTF8String): UTF8String;
@@ -139,18 +114,6 @@ begin
   WriteInt32(S, ID);
   WriteString(S, FileName);
   ods('  ID: %d / Filename: %s', [ID, FileName]);
-end;
-
-{ TWideStringHash }
-
-class function TWideStringHash.hash(k: WideString; n: SizeUInt): SizeUInt;
-begin
-  Result := SizeUInt(fnv1a32(k)) mod n;
-end;
-
-class function TWideStringHash.equal(a: WideString; b: WideString): boolean;
-begin
-  Result := a = b;
 end;
 
 initialization

@@ -23,12 +23,23 @@ psdtoolipc = {
       return
     end
     if not modified then
-      if obj.copybuffer("obj", "cache:"..self.id.." "..self.file) then
+      local data, w, h = self:get_pixel_data(width, height)
+      if PSDToolIPC.get_cache("cache:"..self.id.." "..self.file, data, w * 4 * h) then
+        obj.putpixeldata(data)
+        obj.copybuffer("cache:"..self.id.." "..self.file, "obj")
         return
       end
-      debug_print("psdtool-ipc lua: the properties were not modified but cache is broken")
     end
-    
+    local data, w, h = self:get_pixel_data(width, height)
+    local ok, msg = PSDToolIPC.draw(self.id, self.file, data, w, h)
+    if not ok then
+      self:show_message("<s,,B>[PSDToolIPC] 描画中にエラーが発生しました\n\n"..msg)
+      return
+    end
+    PSDToolIPC.put_cache("cache:"..self.id.." "..self.file, data, w * 4 * h, false)
+    obj.putpixeldata(data)
+  end,
+  get_pixel_data = function(self, width, height)
     local max_w, max_h = obj.getinfo("image_max")
     if width > max_w then
       width = max_w
@@ -38,14 +49,7 @@ psdtoolipc = {
     end
     obj.setoption("drawtarget","tempbuffer", width, height)
     obj.copybuffer("obj", "tmp")
-    local data, w, h = obj.getpixeldata()
-    local ok, msg = PSDToolIPC.draw(self.id, self.file, data, w, h)
-    if not ok then
-      self:show_message("<s,,B>[PSDToolIPC] 描画中にエラーが発生しました\n\n"..msg)
-      return
-    end
-    obj.putpixeldata(data)
-    obj.copybuffer("cache:"..self.id.." "..self.file, "obj")
+    return obj.getpixeldata()
   end,
   is_anchor = function(self, limit)
     for i = 1, limit do

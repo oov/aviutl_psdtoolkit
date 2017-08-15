@@ -51,7 +51,8 @@ begin
     while not Terminated do
     begin
       FStream.ReadBuffer(FBuf[1], 4);
-      if Terminated then Exit;
+      if Terminated then
+        Exit;
       if PDWORD(@FBuf[1])^ and $80000000 = 0 then
       begin
         FOnRequest(Self, FBuf);
@@ -62,8 +63,10 @@ begin
       RTLEventResetEvent(FDone);
     end;
   except
-    on E: Exception do begin
-      if Terminated and (E.ClassType=EReadError) then Exit;
+    on E: Exception do
+    begin
+      if Terminated and (E.ClassType = EReadError) then
+        Exit;
       ODS('Exception in TReceiver: %s', [E.Message]);
       Terminate();
       RTLEventSetEvent(FReply);
@@ -93,7 +96,8 @@ var
 begin
   RTLEventWaitFor(FReply);
   RTLEventResetEvent(FReply);
-  if Terminated then raise Exception.Create('could not read result');
+  if Terminated then
+    raise Exception.Create('could not read result');
   try
     l := PDWORD(@FBuf[1])^ and $7fffffff;
     if l = 0 then

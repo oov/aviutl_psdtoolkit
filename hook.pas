@@ -22,13 +22,13 @@ type
       read FOnPressShiftCtrlAltA write FOnPressShiftCtrlAltA;
   end;
 
-var
-  Hooker: THooker;
-
 implementation
 
 uses
-  Windows, find, util;
+  Windows;
+
+var
+  GHooker: THooker;
 
 function KeyboardHookProc(code: longint; wp: WPARAM; lp: LPARAM): LRESULT; stdcall;
 var
@@ -46,11 +46,11 @@ begin
     if ((lp and $80000000) <> 0) and ((GetAsyncKeyState(VK_SHIFT) and $8000) <> 0) and
       ((GetAsyncKeyState(VK_CONTROL) and $8000) <> 0) and
       ((GetAsyncKeyState(VK_MENU) and $8000) <> 0) and
-      (Hooker.OnPressShiftCtrlAltA <> nil) then
-      Hooker.OnPressShiftCtrlAltA(Hooker);
+      (GHooker.OnPressShiftCtrlAltA <> nil) then
+      GHooker.OnPressShiftCtrlAltA(GHooker);
   finally
     if not processed then
-      Result := CallNextHookEx(Hooker.FHook, code, wp, lp);
+      Result := CallNextHookEx(GHooker.FHook, code, wp, lp);
   end;
 end;
 
@@ -65,33 +65,14 @@ constructor THooker.Create;
 begin
   inherited Create();
   FHook := SetWindowsHookEx(WH_KEYBOARD, @KeyboardHookProc, 0, GetCurrentThreadId());
-  if Hooked then
-    ODS('install keyboard hook success', [])
-  else
-    ODS('install keyboard hook failed', []);
+  GHooker := Self;
 end;
 
 destructor THooker.Destroy;
 begin
   if Hooked then
-  begin
-    if UnhookWindowsHookEx(FHook) then
-      ODS('uninstall keyboard hook success', [])
-    else
-      ODS('uninstall keyboard hook failed', []);
-  end;
-
+    UnhookWindowsHookEx(FHook);
   inherited Destroy;
 end;
-
-initialization
-  if IsExEditWindowExists() then
-    Hooker := THooker.Create()
-  else
-    Hooker := nil;
-
-finalization
-  if Hooker <> nil then
-    Hooker.Free();
 
 end.

@@ -10,7 +10,8 @@ uses
   lua,
   util,
   luafuncs,
-  hook;
+  hook,
+  cache;
 
   function luaopen_PSDToolIPC(L: Plua_State): integer; cdecl;
   var

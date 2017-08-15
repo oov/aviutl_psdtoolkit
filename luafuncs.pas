@@ -1,6 +1,7 @@
 unit luafuncs;
 
 {$mode objfpc}{$H+}
+{$CODEPAGE UTF-8}
 
 interface
 
@@ -12,6 +13,9 @@ function LuaGetLayerNames(L: Plua_State): integer; cdecl;
 function LuaSetProperties(L: Plua_State): integer; cdecl;
 function LuaShowGUI(L: Plua_State): integer; cdecl;
 
+function LuaPutCache(L: Plua_State): integer; cdecl;
+function LuaGetCache(L: Plua_State): integer; cdecl;
+
 type
   TEntry = record
     Name: PChar;
@@ -19,16 +23,22 @@ type
   end;
 
 const
-  Functions: array[0..3] of TEntry = (
+  Functions: array[0..5] of TEntry = (
     (Name: 'draw'; Func: @LuaDraw),
     (Name: 'get_layer_names'; Func: @LuaGetLayerNames),
     (Name: 'set_properties'; Func: @LuaSetProperties),
-    (Name: 'show_gui'; Func: @LuaShowGUI));
+    (Name: 'show_gui'; Func: @LuaShowGUI),
+    (Name: 'put_cache'; Func: @LuaPutCache),
+    (Name: 'get_cache'; Func: @LuaGetCache));
 
 implementation
 
 uses
-  main, util;
+  main, cache, util;
+
+var
+  psdtool: TPSDToolIPC;
+  CacheMgr: TCacheManager;
 
 function LuaDraw(L: Plua_State): integer; cdecl;
 var
@@ -182,5 +192,69 @@ begin
   lua_pushboolean(L, True);
   Result := 1;
 end;
+
+function LuaPutCache(L: Plua_State): integer; cdecl;
+var
+  id: ShiftJISString;
+  p: Pointer;
+  len: integer;
+  f: boolean;
+begin
+  try
+    id := lua_tostring(L, 1);
+    p := lua_topointer(L, 2);
+    len := lua_tointeger(L, 3);
+    f := lua_toboolean(L, 4);
+    if f then
+      CacheMgr.PutToFile(id, p, len)
+    else
+      CacheMgr.PutToMemory(id, p, len);
+  except
+    on e: Exception do
+    begin
+      lua_pushboolean(L, False);
+      lua_pushstring(L, PChar(e.Message));
+      Result := 2;
+      Exit;
+    end;
+  end;
+  lua_pushboolean(L, True);
+  Result := 1;
+end;
+
+function LuaGetCache(L: Plua_State): integer; cdecl;
+var
+  id: ShiftJISString;
+  p: Pointer;
+  len: integer;
+  r: boolean;
+begin
+  try
+    id := lua_tostring(L, 1);
+    p := lua_topointer(L, 2);
+    len := lua_tointeger(L, 3);
+    r := CacheMgr.Get(id, p, len);
+  except
+    on e: Exception do
+    begin
+      lua_pushboolean(L, False);
+      lua_pushstring(L, PChar(e.Message));
+      Result := 2;
+      Exit;
+    end;
+  end;
+  lua_pushboolean(L, r);
+  Result := 1;
+end;
+
+initialization
+  Randomize();
+  psdtool := TPSDToolIPC.Create();
+  cacheMgr := TCacheManager.Create();
+
+
+finalization
+  psdtool.Free();
+  cacheMgr.Free();
 
 end.

@@ -6,7 +6,7 @@ unit main;
 interface
 
 uses
-  SysUtils, Classes, Process, remote, util;
+  SysUtils, Classes, Process, hook, remote, util;
 
 type
 
@@ -14,7 +14,7 @@ type
 
   TPSDToolIPC = class
   private
-    FStateMap: TStateMap;
+    FHooker: THooker;
     FRemoteProcess: TProcess;
     FReceiver: TReceiver;
     FCS: TRTLCriticalSection;
@@ -38,13 +38,10 @@ type
     procedure ShowGUI();
   end;
 
-var
-  psdtool: TPSDToolIPC;
-
 implementation
 
 uses
-  Windows, find, hook;
+  Windows, find;
 
 { TPSDToolIPC }
 
@@ -53,8 +50,14 @@ var
   ws: WideString;
 begin
   inherited Create;
-  if Hooker <> nil then
-    Hooker.OnPressShiftCtrlAltA:=@OnShiftCtrlAltA;
+  if IsExEditWindowExists() then
+  begin
+    FHooker := THooker.Create();
+    FHooker.OnPressShiftCtrlAltA := @OnShiftCtrlAltA;
+  end
+  else
+    FHooker := nil;
+
   InitCriticalSection(FCS);
   FRemoteProcess := TProcess.Create(nil);
   ws := GetDLLName();
@@ -64,7 +67,6 @@ begin
   FRemoteProcess.Executable := ws;
   FRemoteProcess.Options := [poUsePipes, poNoConsole];
   FReceiver := nil;
-  FStateMap := TStateMap.Create();
 end;
 
 destructor TPSDToolIPC.Destroy;
@@ -86,11 +88,12 @@ begin
     FreeAndNil(FReceiver);
   end;
 
-  FreeAndNil(FStateMap);
   DoneCriticalSection(FCS);
 
-  if Hooker <> nil then
-    Hooker.OnPressShiftCtrlAltA:=nil;
+  if FHooker <> nil then
+  begin
+    FHooker.Free;
+  end;
   inherited Destroy;
 end;
 
@@ -324,10 +327,4 @@ begin
   LeaveCriticalSection(FCS);
 end;
 
-initialization
-  Randomize();
-  psdtool := TPSDToolIPC.Create();
-
-finalization
-  psdtool.Free();
 end.
