@@ -3,7 +3,6 @@ package layerview
 import (
 	"context"
 	"image"
-	"strings"
 	"time"
 	"unsafe"
 
@@ -26,10 +25,6 @@ const (
 
 type LayerView struct {
 	SymbolFontHandle *nk.UserFont
-
-	ImageList              []string
-	ImageListSelected      string
-	ImageListSelectedIndex int
 
 	Thumbnail     nk.Image
 	ThumbnailTex  uint32
@@ -71,30 +66,9 @@ func (lv *LayerView) UpdateThumbnails(root *layertree.Root, size int, doMain fun
 	}()
 }
 
-func (lv *LayerView) Render(ctx *nk.Context, winRect nk.Rect, img *img.Image) (rootChanged bool, modified bool) {
+func (lv *LayerView) Render(ctx *nk.Context, winRect nk.Rect, img *img.Image) bool {
+	modified := false
 	if nk.NkBegin(ctx, "Layer", winRect, 0) != 0 {
-		n0 := lv.ImageListSelectedIndex
-		if n0 != -1 && (len(lv.ImageList) <= n0 || lv.ImageList[n0] != lv.ImageListSelected) {
-			n0 = -1
-			for i, v := range lv.ImageList {
-				if lv.ImageListSelected == v {
-					n0 = i
-					break
-				}
-			}
-		}
-		nk.NkLayoutRowDynamic(ctx, 28, 1)
-		n1 := int(nk.NkComboString(ctx, "<Select>\x00"+strings.Join(lv.ImageList, "\x00"), int32(n0+1), int32(len(lv.ImageList)+1), 28, nk.NkVec2(winRect.W(), winRect.H()))) - 1
-		if lv.ImageListSelectedIndex != n1 {
-			lv.ImageListSelectedIndex = n1
-			rootChanged = true
-			if n1 != -1 {
-				lv.ImageListSelected = lv.ImageList[n1]
-			} else {
-				lv.ImageListSelected = ""
-			}
-		}
-
 		if img != nil {
 			for i := len(img.PSD.Children) - 1; i >= 0; i-- {
 				modified = lv.layoutLayer(ctx, img, 0, &img.PSD.Children[i], true) || modified
@@ -102,7 +76,7 @@ func (lv *LayerView) Render(ctx *nk.Context, winRect nk.Rect, img *img.Image) (r
 		}
 	}
 	nk.NkEnd(ctx)
-	return
+	return modified
 }
 
 func (lv *LayerView) layoutLayer(ctx *nk.Context, img *img.Image, indent float32, l *layertree.Layer, visible bool) bool {

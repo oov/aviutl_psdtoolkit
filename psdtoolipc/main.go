@@ -32,7 +32,7 @@ import (
 const (
 	winWidth         = 1024
 	winHeight        = 768
-	topPaneHeight    = 56
+	topPaneHeight    = 48
 	bottomPaneHeight = 56
 	layerPaneWidth   = 320
 	layerPaneHeight  = winHeight - bottomPaneHeight - topPaneHeight
@@ -89,6 +89,10 @@ type gui struct {
 	zoom     float64
 	zooming  bool
 
+	ImageList              []string
+	ImageListSelected      string
+	ImageListSelectedIndex int
+
 	LayerView layerview.LayerView
 	MainView  mainview.MainView
 
@@ -140,9 +144,8 @@ func main() {
 		minZoom:  -5,
 		maxZoom:  0,
 		stepZoom: 0.001,
-		LayerView: layerview.LayerView{
-			ImageListSelectedIndex: -1,
-		},
+
+		ImageListSelectedIndex: -1,
 	}
 	g.IPC.Init()
 	g.IPC.ShowGUI = func() (uintptr, error) {
@@ -196,6 +199,6 @@ func main() {
 		log.Fatalln("could not decode bg.png:", err)
 	}
 	g.MainView.Init(bg)
-	// g.Window.Show()
+	g.Window.Show()
 	g.MainLoop(exitCh)
 }

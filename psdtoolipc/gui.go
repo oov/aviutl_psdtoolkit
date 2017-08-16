@@ -2,6 +2,7 @@ package main
 
 import (
 	"math"
+	"strings"
 	"time"
 
 	"github.com/go-gl/gl/v3.2-core/gl"
@@ -78,9 +79,33 @@ func (g *gui) update() {
 	width, height := g.Window.GetSize()
 
 	modified := false
+	rootChanged := false
+	imageList, keys := g.IPC.ImageList()
+	g.ImageList = imageList
 	if nk.NkBegin(ctx, "TopPane", nk.NkRect(0, 0, float32(width), topPaneHeight), 0) != 0 {
+		nk.NkLayoutRowDynamic(ctx, 28, 4)
+		n0 := g.ImageListSelectedIndex
+		if n0 != -1 && (len(g.ImageList) <= n0 || g.ImageList[n0] != g.ImageListSelected) {
+			n0 = -1
+			for i, v := range g.ImageList {
+				if g.ImageListSelected == v {
+					n0 = i
+					break
+				}
+			}
+		}
+		n1 := int(nk.NkComboString(ctx, "<Select>\x00"+strings.Join(g.ImageList, "\x00"), int32(n0+1), int32(len(g.ImageList)+1), 28, nk.NkVec2(600, float32(height)))) - 1
+		if g.ImageListSelectedIndex != n1 {
+			g.ImageListSelectedIndex = n1
+			rootChanged = true
+			if n1 != -1 {
+				g.ImageListSelected = g.ImageList[n1]
+			} else {
+				g.ImageListSelected = ""
+			}
+		}
+
 		if g.img != nil {
-			nk.NkLayoutRowDynamic(ctx, 0, 3)
 			fx, fy := g.img.Layers.FlipX(), g.img.Layers.FlipY()
 			if (nk.NkSelectLabel(ctx, "左右反転", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(fx)) != 0) != fx {
 				modified = g.img.Layers.SetFlipX(!fx) || modified
@@ -97,12 +122,10 @@ func (g *gui) update() {
 	}
 	nk.NkEnd(ctx)
 
-	imageList, keys := g.IPC.ImageList()
-	g.LayerView.ImageList = imageList
-	rootChanged, modifiedLayer := g.LayerView.Render(ctx, nk.NkRect(0, topPaneHeight, layerPaneWidth, float32(height-topPaneHeight)), g.img)
+	modifiedLayer := g.LayerView.Render(ctx, nk.NkRect(0, topPaneHeight, layerPaneWidth, float32(height-topPaneHeight)), g.img)
 	if rootChanged {
-		if g.LayerView.ImageListSelectedIndex != -1 {
-			key := keys[g.LayerView.ImageListSelectedIndex]
+		if g.ImageListSelectedIndex != -1 {
+			key := keys[g.ImageListSelectedIndex]
 			img, err := g.IPC.Image(key.ID, key.FilePath)
 			if err != nil {
 				ods.ODS("error: %v", err)
