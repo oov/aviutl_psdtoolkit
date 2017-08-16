@@ -52,14 +52,6 @@ psdtoolipc = {
     obj.copybuffer("obj", "tmp")
     return obj.getpixeldata()
   end,
-  islast = function(self, limit)
-    for i = 1, limit do
-      if obj.getoption("script_name", i) == "SimpleView@PSDToolIPC" then
-        return false
-      end
-    end
-    return true
-  end,
   msg = function(self, msg)
     obj.load("framebuffer")
     obj.effect("色調補正","明るさ",25)
@@ -136,7 +128,7 @@ PSDToolIPC.dll / PSDToolIPC.exe / @PSDToolIPC.anm をコピー
 }
 f=nil;
 l=nil;
-if (obj.check0 == false) and psdtoolipc:islast(5) then
+if obj.check0 == false then
   psdtoolipc:render()
   psdtoolipc = nil
 end
@@ -152,7 +144,7 @@ if psdtoolipc ~= nil then
   table.insert(psdtoolipc.faview, obj.track1)
   table.insert(psdtoolipc.faview, obj.track2)
   table.insert(psdtoolipc.faview, obj.track3)
-  if (obj.check0 == false) and psdtoolipc:islast(5) then
+  if obj.check0 == false then
     psdtoolipc:render()
     psdtoolipc = nil
   end
@@ -163,6 +155,9 @@ end
 --track1:速さ(秒),0.01,10,0.05,0.01
 --check0:描画先送り,0
 --dialog:ほぼ開き,eye0="";半目,eye1="";ほぼ閉じ,eye2="";閉じ,eye3="";
+-- 個人的な好みにより瞬きの閉じる速度は一瞬にしたいので
+-- 開き→閉じ→開き とスムーズに切り替えるのではなく
+-- 閉じ→開き のみをアニメーションさせるスクリプトです
 if psdtoolipc ~= nil then
   local eye = {}
   if eye3 ~= nil and eye3 ~= "" then
@@ -190,7 +185,7 @@ if psdtoolipc ~= nil then
       break;
     end
   end
-  if (obj.check0 == false) and psdtoolipc:islast(5) then
+  if obj.check0 == false then
     psdtoolipc:render()
     psdtoolipc = nil
   end
