@@ -6,9 +6,10 @@ import (
 	"time"
 
 	"github.com/disintegration/gift"
+	"github.com/pkg/errors"
+
 	"github.com/oov/downscale"
 	"github.com/oov/psd/layertree"
-	"github.com/pkg/errors"
 )
 
 type Image struct {
@@ -27,6 +28,8 @@ type Image struct {
 	Scale   float32
 	OffsetX int
 	OffsetY int
+
+	PFV *PFV
 }
 
 func (img *Image) ScaledCanvasRect() image.Rectangle {

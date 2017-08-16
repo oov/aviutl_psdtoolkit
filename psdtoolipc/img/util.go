@@ -1,5 +1,11 @@
 package img
 
+import "net/url"
+
+func decodeName(s string) (string, error) {
+	return url.PathUnescape(s)
+}
+
 func toHexChar(v byte) byte {
 	if v < 10 {
 		return '0' + v

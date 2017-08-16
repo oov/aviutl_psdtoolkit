@@ -2,11 +2,29 @@ package main
 
 import (
 	"image"
+	"path/filepath"
+	"strings"
 	"unsafe"
 
 	"github.com/go-gl/gl/v3.2-core/gl"
 	"github.com/golang-ui/nuklear/nk"
 )
+
+func extractPSDAndPFV(filenames []string) string {
+	var psd, pfv string
+	for _, s := range filenames {
+		switch strings.ToLower(filepath.Ext(s)) {
+		case ".psd":
+			psd = s
+		case ".pfv":
+			pfv = s
+		}
+	}
+	if psd != "" && pfv != "" && filepath.Dir(psd) == filepath.Dir(pfv) {
+		psd += "|" + filepath.Base(pfv)
+	}
+	return psd
+}
 
 func createTexture(nrgba *image.NRGBA) (uint32, nk.Image) {
 	var tex uint32

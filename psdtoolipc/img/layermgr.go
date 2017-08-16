@@ -327,7 +327,9 @@ func registerFlips(m *LayerManager, l *layertree.Layer, sib []layertree.Layer) {
 }
 
 func enumChildren(m *LayerManager, l *layertree.Layer, sib []layertree.Layer, dir []byte, dup map[string]int) {
-	dir = append(dir, '/')
+	if dir != nil {
+		dir = append(dir, '/')
+	}
 	dir = append(dir, encodeName(l.Name)...)
 	n, ok := dup[l.Name]
 	if ok {

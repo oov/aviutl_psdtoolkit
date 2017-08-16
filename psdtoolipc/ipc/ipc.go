@@ -29,6 +29,7 @@ type sourceImage struct {
 	LastAccess time.Time
 
 	PSD *layertree.Root
+	PFV *img.PFV
 
 	InitialVisibility *string
 	ForceChecked      map[int]struct{} // map[SeqID]
@@ -128,11 +129,12 @@ func (ipc *IPC) getSourceImage(filePath string) (*sourceImage, error) {
 		return r, nil
 	}
 
-	ods.ODS("psd loading: %s", filePath)
+	files := strings.SplitN(filePath, "|", 2)
+	ods.ODS("psd loading: %s", files[0])
 	s := time.Now().UnixNano()
-	f, err := os.Open(filePath)
+	f, err := os.Open(files[0])
 	if err != nil {
-		return nil, errors.Wrap(err, "ipc: cannot open the file")
+		return nil, errors.Wrap(err, "ipc: cannot open the image file")
 	}
 	defer f.Close()
 
@@ -144,7 +146,7 @@ func (ipc *IPC) getSourceImage(filePath string) (*sourceImage, error) {
 		return nil, errors.Wrap(err, "ipc: cannot seek")
 	}
 
-	psd, err := layertree.New(context.Background(), f, &layertree.Options{
+	root, err := layertree.New(context.Background(), f, &layertree.Options{
 		LayerNameEncodingDetector: autoDetect,
 	})
 	if err != nil {
@@ -152,7 +154,21 @@ func (ipc *IPC) getSourceImage(filePath string) (*sourceImage, error) {
 	}
 	ods.ODS("psd loading: %dms", (time.Now().UnixNano()-s)/1e6)
 
-	lm := img.NewLayerManager(psd)
+	lm := img.NewLayerManager(root)
+
+	var pf *img.PFV
+	if len(files) > 1 {
+		f2, err := os.Open(files[1])
+		if err != nil {
+			return nil, errors.Wrap(err, "ipc: cannot open the pfv file")
+		}
+		defer f2.Close()
+		pf, err = img.NewPFV(f2, lm)
+		if err != nil {
+			return nil, errors.Wrap(err, "ipc: cannot parse the pfv file")
+		}
+	}
+
 	lm.Normalize()
 	state := lm.SerializeVisibility()
 	srcImage := &sourceImage{
@@ -160,7 +176,8 @@ func (ipc *IPC) getSourceImage(filePath string) (*sourceImage, error) {
 		FileHash:   hash.Sum32(),
 		LastAccess: time.Now(),
 
-		PSD: psd,
+		PSD: root,
+		PFV: pf,
 
 		InitialVisibility: &state,
 	}
@@ -193,6 +210,8 @@ func (ipc *IPC) load(id int, filePath string) (*img.Image, error) {
 		InitialVisibility: r.InitialVisibility,
 
 		Scale: 1,
+
+		PFV: r.PFV,
 	}
 	ipc.hotImages[StateKey{id, filePath}] = himg
 	ipc.updateImageList()

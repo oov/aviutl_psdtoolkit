@@ -32,7 +32,7 @@ import (
 const (
 	winWidth         = 1024
 	winHeight        = 768
-	topPaneHeight    = 48
+	topPaneHeight    = 56
 	bottomPaneHeight = 56
 	layerPaneWidth   = 320
 	layerPaneHeight  = winHeight - bottomPaneHeight - topPaneHeight
@@ -178,8 +178,8 @@ func main() {
 	width, height := win.GetSize()
 	gl.Viewport(0, 0, int32(width), int32(height))
 
-	win.SetDropCallback(func(w *glfw.Window, names []string) {
-		img, err := g.IPC.Image(0, names[0])
+	win.SetDropCallback(func(w *glfw.Window, filenames []string) {
+		img, err := g.IPC.Image(0, extractPSDAndPFV(filenames))
 		if err != nil {
 			ods.ODS("error: %v", err)
 			return
