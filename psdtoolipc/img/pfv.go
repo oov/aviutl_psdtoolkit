@@ -2,20 +2,25 @@ package img
 
 import (
 	"bufio"
+	"encoding/base64"
+	"encoding/binary"
 	"io"
 	"strings"
+	"time"
 
 	"github.com/oov/aviutl_psdtoolipc/psdtoolipc/ods"
 	"github.com/pkg/errors"
 )
 
 type PFV struct {
-	Setting map[string]string
-	Root    Node
+	Setting    map[string]string
+	Root       Node
+	FaviewRoot FaviewNode
 }
 
 type Node struct {
 	Name          string
+	Open          bool
 	Children      []Node
 	Parent        *Node
 	FilterSetting []bool
@@ -96,6 +101,9 @@ func NewPFV(r io.Reader, mgr *LayerManager) (*PFV, error) {
 		}
 	}
 	if err := sc.Err(); err != nil {
+		return nil, errors.Wrap(err, "pfv: unexpected error")
+	}
+	if err := registerFaview(p); err != nil {
 		return nil, errors.Wrap(err, "pfv: unexpected error")
 	}
 	return p, nil
@@ -192,10 +200,126 @@ func insertNodeRecursive(root *Node, name string) (*Node, error) {
 		}
 		if !found {
 			cur.Children = append(cur.Children, Node{
-				Name: s,
+				Name:   s,
+				Parent: cur,
 			})
 			cur = &cur.Children[len(cur.Children)-1]
 		}
 	}
 	return cur, nil
+}
+
+type FaviewNode struct {
+	NameNode *Node
+
+	Items         []*Node
+	ItemNameList  string
+	SelectedIndex int32
+	LastModified  time.Time
+
+	Parent   *FaviewNode
+	Children []FaviewNode
+}
+
+func registerFaview(p *PFV) error {
+	enumFaviewRoot(&p.FaviewRoot, &p.Root)
+	if len(p.FaviewRoot.Children) > 0 {
+		nameList := make([]string, 0, len(p.FaviewRoot.Children))
+		for i := range p.FaviewRoot.Children {
+			nameList = append(nameList, p.FaviewRoot.Children[i].NameNode.Name)
+		}
+		p.FaviewRoot.ItemNameList = strings.Join(nameList, "\x00")
+		p.FaviewRoot.SelectedIndex = 0
+	}
+	return nil
+}
+
+func enumFaviewRoot(fn *FaviewNode, n *Node) {
+	if len(n.Name) > 2 && n.Name[0] == '*' {
+		fn.Children = append(fn.Children, FaviewNode{
+			NameNode: n,
+			Parent:   fn,
+		})
+		switch registerFaviewChildren(&fn.Children[len(fn.Children)-1]) {
+		case 0:
+			fn.Children = fn.Children[:len(fn.Children)-1]
+		default:
+			return
+		}
+	}
+	for i := range n.Children {
+		enumFaviewRoot(fn, &n.Children[i])
+	}
+}
+
+func registerFaviewChildren(fn *FaviewNode) int {
+	n := 0
+	nameList := []string{}
+	for i := range fn.NameNode.Children {
+		cn := &fn.NameNode.Children[i]
+		if cn.Item() {
+			fn.Items = append(fn.Items, cn)
+			n++
+			nameList = append(nameList, cn.Name)
+			continue
+		}
+		if cn.Filter() || cn.Folder() {
+			fn.Children = append(fn.Children, FaviewNode{
+				NameNode: cn,
+				Parent:   fn,
+			})
+			n += registerFaviewChildren(&fn.Children[len(fn.Children)-1])
+		}
+	}
+	if len(nameList) > 0 {
+		fn.ItemNameList = strings.Join(nameList, "\x00")
+		fn.SelectedIndex = 0
+	}
+	return n
+}
+
+func (fn *FaviewNode) State() string {
+	settings := fn.Items[fn.SelectedIndex].Setting
+	filter := make([]bool, len(settings))
+	for i := range filter {
+		filter[i] = true
+	}
+	makeFilter(filter, fn.NameNode)
+
+	buf := make([]byte, 2+(len(settings)*2+7)/8)
+	binary.LittleEndian.PutUint16(buf, uint16(len(settings)))
+	var v byte
+	d := 2
+	for i, pass := range filter {
+		v <<= 2
+		if pass {
+			if settings[i] {
+				v += 3
+			} else {
+				v += 2
+			}
+		}
+		if i&0x3 == 0x3 {
+			buf[d] = v
+			v = 0
+			d++
+		}
+	}
+	if d < len(buf) {
+		buf[d] = v
+	}
+	return "F." + base64.RawURLEncoding.EncodeToString(encodePackBits(buf))
+}
+
+func makeFilter(f []bool, n *Node) {
+	if n.Filter() {
+		for i, v := range n.FilterSetting {
+			if !v {
+				f[i] = false
+			}
+		}
+	}
+	if n.Parent != nil {
+		makeFilter(f, n.Parent)
+	}
 }

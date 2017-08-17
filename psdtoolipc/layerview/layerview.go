@@ -21,6 +21,10 @@ const (
 	symbolFolderClose   = "\u0021"
 	symbolFolderOpen    = "\u0022"
 	symbolClippingArrow = "\u0027"
+	symbolFilter        = "\u0028"
+	symbolFile          = "\u0029"
+	symbolLeftArrow     = "\u002A"
+	symbolRightArrow    = "\u002B"
 )
 
 type LayerView struct {
@@ -29,6 +33,8 @@ type LayerView struct {
 	Thumbnail     nk.Image
 	ThumbnailTex  uint32
 	ThumbnailChip map[int]nk.Image
+
+	LayerFavSelectedIndex int32
 }
 
 func (lv *LayerView) Init() {
@@ -66,12 +72,60 @@ func (lv *LayerView) UpdateThumbnails(root *layertree.Root, size int, doMain fun
 	}()
 }
 
+func b2i(b bool) int32 {
+	if b {
+		return 1
+	}
+	return 0
+}
+
 func (lv *LayerView) Render(ctx *nk.Context, winRect nk.Rect, img *img.Image) bool {
 	modified := false
 	if nk.NkBegin(ctx, "Layer", winRect, 0) != 0 {
 		if img != nil {
-			for i := len(img.PSD.Children) - 1; i >= 0; i-- {
-				modified = lv.layoutLayer(ctx, img, 0, &img.PSD.Children[i], true) || modified
+			if img.PFV != nil {
+				if len(img.PFV.FaviewRoot.Children) > 0 {
+					nk.NkLayoutRowDynamic(ctx, 28, 3)
+					if nk.NkSelectLabel(ctx, "レイヤー", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.LayerFavSelectedIndex == 0)) != b2i(lv.LayerFavSelectedIndex == 0) {
+						lv.LayerFavSelectedIndex = 0
+					}
+					if nk.NkSelectLabel(ctx, "シンプルV", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.LayerFavSelectedIndex == 1)) != b2i(lv.LayerFavSelectedIndex == 1) {
+						lv.LayerFavSelectedIndex = 1
+					}
+					if nk.NkSelectLabel(ctx, "お気に入り", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.LayerFavSelectedIndex == 2)) != b2i(lv.LayerFavSelectedIndex == 2) {
+						lv.LayerFavSelectedIndex = 2
+					}
+				} else {
+					nk.NkLayoutRowDynamic(ctx, 28, 2)
+					if nk.NkSelectLabel(ctx, "レイヤー", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.LayerFavSelectedIndex == 0)) != b2i(lv.LayerFavSelectedIndex == 0) {
+						lv.LayerFavSelectedIndex = 0
+					}
+					if nk.NkSelectLabel(ctx, "お気に入り", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.LayerFavSelectedIndex == 2)) != b2i(lv.LayerFavSelectedIndex == 2) {
+						lv.LayerFavSelectedIndex = 2
+					}
+				}
+			} else {
+				lv.LayerFavSelectedIndex = 0
+			}
+
+			switch lv.LayerFavSelectedIndex {
+			case 0:
+				for i := len(img.PSD.Children) - 1; i >= 0; i-- {
+					modified = lv.layoutLayer(ctx, img, 0, &img.PSD.Children[i], true) || modified
+				}
+			case 1:
+				if img.PFV != nil && len(img.PFV.FaviewRoot.Children) > 0 {
+					nk.NkLayoutRowDynamic(ctx, 28, 1)
+					img.PFV.FaviewRoot.SelectedIndex = nk.NkComboString(ctx, img.PFV.FaviewRoot.ItemNameList, img.PFV.FaviewRoot.SelectedIndex, int32(len(img.PFV.FaviewRoot.Children)), 28, nk.NkVec2(winRect.W(), winRect.H()))
+					children := img.PFV.FaviewRoot.Children[img.PFV.FaviewRoot.SelectedIndex].Children
+					for i := range children {
+						modified = lv.layoutFaview(ctx, img, 0, &children[i]) || modified
+					}
+				}
+			case 2:
+				if img.PFV != nil {
+					modified = lv.layoutFavorites(ctx, img, 0, &img.PFV.Root) || modified
+				}
 			}
 		}
 	}
@@ -169,6 +223,167 @@ func (lv *LayerView) layoutLayer(ctx *nk.Context, img *img.Image, indent float32
 	if l.FolderOpen {
 		for i := len(l.Children) - 1; i >= 0; i-- {
 			modified = lv.layoutLayer(ctx, img, indent+indentSize, &l.Children[i], visible) || modified
+		}
+	}
+	return modified
+}
+
+func (lv *LayerView) layoutFavorites(ctx *nk.Context, img *img.Image, indent float32, n *img.Node) bool {
+	modified := false
+	const (
+		visibleSize  = 24
+		collapseSize = 24
+		clippingSize = 16
+		marginSize   = 8
+		indentSize   = 16
+	)
+	nk.NkLayoutSpaceBegin(ctx, nk.Static, 28, 4)
+	bounds := nk.NkLayoutSpaceBounds(ctx)
+
+	nk.NkStylePushFont(ctx, lv.SymbolFontHandle)
+	nk.NkStylePushStyleItem(ctx, nkhelper.GetStyleButtonNormalPtr(ctx), nk.NkStyleItemColor(nk.Color{}))
+	nk.NkStylePushFloat(ctx, nkhelper.GetStyleButtonBorderPtr(ctx), 0)
+	nk.NkStylePushVec2(ctx, nkhelper.GetStyleButtonPaddingPtr(ctx), nk.NkVec2(0, 0))
+
+	left := float32(indent)
+	if n.Folder() || n.Filter() {
+		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, collapseSize, bounds.H()))
+		symbol := symbolFolderClose
+		if n.Open {
+			symbol = symbolFolderOpen
+		}
+		if nk.NkButtonLabel(ctx, symbol) != 0 {
+			n.Open = !n.Open
+		}
+		left += collapseSize + marginSize
+	}
+	if n.Filter() {
+		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, collapseSize, bounds.H()))
+		nk.NkLabel(ctx, symbolFilter, nk.TextLeft)
+		left += collapseSize
+	} else if n.Item() {
+		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, collapseSize, bounds.H()))
+		nk.NkLabel(ctx, symbolFile, nk.TextLeft)
+		left += collapseSize
+	}
+
+	nk.NkStylePopVec2(ctx)
+	nk.NkStylePopFloat(ctx)
+	nk.NkStylePopStyleItem(ctx)
+	nk.NkStylePopFont(ctx)
+
+	nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, bounds.W()-left, bounds.H()))
+	nk.NkLabel(ctx, n.Name, nk.TextLeft)
+
+	nk.NkLayoutSpaceEnd(ctx)
+
+	if (n.Folder() || n.Filter()) && n.Open {
+		for i := range n.Children {
+			modified = lv.layoutFavorites(ctx, img, indent+indentSize, &n.Children[i]) || modified
+		}
+	}
+	return modified
+}
+
+func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float32, n *img.FaviewNode) bool {
+	modified := false
+	const (
+		buttonSize = 32
+		marginSize = 8
+		indentSize = 16
+	)
+	nk.NkLayoutSpaceBegin(ctx, nk.Static, 28, 1)
+	bounds := nk.NkLayoutSpaceBounds(ctx)
+
+	left := indent
+	nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, bounds.W()-left, bounds.H()))
+	nk.NkLabel(ctx, n.NameNode.Name, nk.TextLeft)
+
+	nk.NkLayoutSpaceEnd(ctx)
+
+	if len(n.Items) > 0 {
+		nk.NkLayoutSpaceBegin(ctx, nk.Static, 28, 3)
+		bounds := nk.NkLayoutSpaceBounds(ctx)
+
+		left = indent + marginSize
+
+		nk.NkStylePushFont(ctx, lv.SymbolFontHandle)
+		nk.NkStylePushStyleItem(ctx, nkhelper.GetStyleButtonNormalPtr(ctx), nk.NkStyleItemColor(nk.Color{}))
+		nk.NkStylePushFloat(ctx, nkhelper.GetStyleButtonBorderPtr(ctx), 0)
+		nk.NkStylePushVec2(ctx, nkhelper.GetStyleButtonPaddingPtr(ctx), nk.NkVec2(0, 0))
+
+		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, buttonSize, bounds.H()))
+		if nk.NkButtonLabel(ctx, symbolLeftArrow) != 0 {
+			n.SelectedIndex = int32((len(n.Items) + int(n.SelectedIndex) - 1) % len(n.Items))
+			n.LastModified = time.Now()
+			m, err := img.Layers.DeserializeVisibility(n.State())
+			if err != nil {
+				ods.ODS("cannot apply serialized data: %v", err)
+			} else {
+				modified = m || modified
+			}
+		}
+		left += buttonSize
+
+		nk.NkStylePopVec2(ctx)
+		nk.NkStylePopFloat(ctx)
+		nk.NkStylePopStyleItem(ctx)
+		nk.NkStylePopFont(ctx)
+
+		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, bounds.W()-left-buttonSize, bounds.H()))
+		if idx := nk.NkComboString(ctx, n.ItemNameList, n.SelectedIndex, int32(len(n.Items)), 28, nk.NkVec2(bounds.W(), 400)); idx != n.SelectedIndex {
+			n.SelectedIndex = idx
+			n.LastModified = time.Now()
+			m, err := img.Layers.DeserializeVisibility(n.State())
+			if err != nil {
+				ods.ODS("cannot apply serialized data: %v", err)
+			} else {
+				modified = m || modified
+			}
+		}
+		left += bounds.W() - left - buttonSize
+
+		nk.NkStylePushFont(ctx, lv.SymbolFontHandle)
+		nk.NkStylePushStyleItem(ctx, nkhelper.GetStyleButtonNormalPtr(ctx), nk.NkStyleItemColor(nk.Color{}))
+		nk.NkStylePushFloat(ctx, nkhelper.GetStyleButtonBorderPtr(ctx), 0)
+		nk.NkStylePushVec2(ctx, nkhelper.GetStyleButtonPaddingPtr(ctx), nk.NkVec2(0, 0))
+
+		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, buttonSize, bounds.H()))
+		if nk.NkButtonLabel(ctx, symbolRightArrow) != 0 {
+			n.SelectedIndex = int32((int(n.SelectedIndex) + 1) % len(n.Items))
+			n.LastModified = time.Now()
+			m, err := img.Layers.DeserializeVisibility(n.State())
+			if err != nil {
+				ods.ODS("cannot apply serialized data: %v", err)
+			} else {
+				modified = m || modified
+			}
+		}
+		left += buttonSize
+
+		nk.NkStylePopVec2(ctx)
+		nk.NkStylePopFloat(ctx)
+		nk.NkStylePopStyleItem(ctx)
+		nk.NkStylePopFont(ctx)
+
+		left = indent + marginSize
+		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, bounds.W()-left, bounds.H()))
+		if idx := nk.NkSlideInt(ctx, 0, n.SelectedIndex, int32(len(n.Items)-1), 1); idx != n.SelectedIndex {
+			n.SelectedIndex = idx
+			n.LastModified = time.Now()
+			m, err := img.Layers.DeserializeVisibility(n.State())
+			if err != nil {
+				ods.ODS("cannot apply serialized data: %v", err)
+			} else {
+				modified = m || modified
+			}
+		}
+		nk.NkLayoutSpaceEnd(ctx)
+	}
+
+	if len(n.Children) > 0 {
+		for i := range n.Children {
+			modified = lv.layoutFaview(ctx, img, indent+indentSize, &n.Children[i]) || modified
 		}
 	}
 	return modified
