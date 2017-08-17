@@ -98,6 +98,7 @@ func (ipc *IPC) Image(id int, filePath string) (*img.Image, error) {
 			r.PSD = ro.PSD.Clone()
 			r.Layers = img.NewLayerManager(r.PSD)
 			r.Scale = 1
+			r.Layers.SetFlip(ro.Layers.Flip())
 			ipc.usingInGUI = StateKey{id, filePath}
 		}
 	})
