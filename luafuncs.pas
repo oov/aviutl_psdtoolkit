@@ -108,8 +108,8 @@ var
   id: integer;
   filename, tmp: ShiftJISString;
 
-  Layers: UTF8String;
-  pLayers: PUTF8String;
+  Layer: UTF8String;
+  pLayer: PUTF8String;
   Scale: single;
   pScale: PSingle;
   OffsetX, OffsetY: integer;
@@ -128,11 +128,11 @@ begin
     if lua_isstring(L, 4) then
     begin
       tmp := lua_tostring(L, 4);
-      Layers := tmp;
-      pLayers := @Layers;
+      Layer := tmp;
+      pLayer := @Layer;
     end
     else
-      pLayers := nil;
+      pLayer := nil;
 
     if lua_isnumber(L, 5) then
     begin
@@ -158,7 +158,7 @@ begin
     else
       pOffsetY := nil;
 
-    psdtool.SetProperties(id, filename, pLayers, pScale,
+    psdtool.SetProperties(id, filename, pLayer, pScale,
       pOffsetX, pOffsetY, Modified, Width, Height);
   except
     on e: Exception do

@@ -178,7 +178,7 @@ func (lv *LayerView) layoutLayer(ctx *nk.Context, img *img.Image, indent float32
 			symbol = symbolEyeOpen
 		}
 		if nk.NkButtonLabel(ctx, symbol) != 0 {
-			modified = img.Layers.SetVisible(l.SeqID, !l.Visible) || modified
+			modified = img.Layers.SetVisible(l.SeqID, !l.Visible, img.Flip) || modified
 		}
 	}
 	left += visibleSize + marginSize + indent
@@ -319,11 +319,12 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 		if nk.NkButtonLabel(ctx, symbolLeftArrow) != 0 {
 			n.SelectedIndex = int32((len(n.Items) + int(n.SelectedIndex) - 1) % len(n.Items))
 			n.LastModified = time.Now()
-			m, err := img.Layers.DeserializeVisibility(n.State())
+			m, flip, err := img.Layers.DeserializeVisibility(n.State(), img.Flip)
 			if err != nil {
 				ods.ODS("cannot apply serialized data: %v", err)
 			} else {
 				modified = m || modified
+				img.Flip = flip
 			}
 		}
 		left += buttonSize
@@ -337,11 +338,12 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 		if idx := nk.NkComboString(ctx, n.ItemNameList, n.SelectedIndex, int32(len(n.Items)), 28, nk.NkVec2(bounds.W(), 400)); idx != n.SelectedIndex {
 			n.SelectedIndex = idx
 			n.LastModified = time.Now()
-			m, err := img.Layers.DeserializeVisibility(n.State())
+			m, flip, err := img.Layers.DeserializeVisibility(n.State(), img.Flip)
 			if err != nil {
 				ods.ODS("cannot apply serialized data: %v", err)
 			} else {
 				modified = m || modified
+				img.Flip = flip
 			}
 		}
 		left += bounds.W() - left - buttonSize*2 - marginSize
@@ -355,11 +357,12 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 		if nk.NkButtonLabel(ctx, symbolRightArrow) != 0 {
 			n.SelectedIndex = int32((int(n.SelectedIndex) + 1) % len(n.Items))
 			n.LastModified = time.Now()
-			m, err := img.Layers.DeserializeVisibility(n.State())
+			m, flip, err := img.Layers.DeserializeVisibility(n.State(), img.Flip)
 			if err != nil {
 				ods.ODS("cannot apply serialized data: %v", err)
 			} else {
 				modified = m || modified
+				img.Flip = flip
 			}
 		}
 		left += buttonSize
@@ -381,11 +384,12 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 		if idx := nk.NkSlideInt(ctx, 0, n.SelectedIndex, int32(len(n.Items)-1), 1); idx != n.SelectedIndex {
 			n.SelectedIndex = idx
 			n.LastModified = time.Now()
-			m, err := img.Layers.DeserializeVisibility(n.State())
+			m, flip, err := img.Layers.DeserializeVisibility(n.State(), img.Flip)
 			if err != nil {
 				ods.ODS("cannot apply serialized data: %v", err)
 			} else {
 				modified = m || modified
+				img.Flip = flip
 			}
 		}
 		nk.NkLayoutSpaceEnd(ctx)

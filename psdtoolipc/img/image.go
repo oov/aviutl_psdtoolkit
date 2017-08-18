@@ -12,6 +12,15 @@ import (
 	"github.com/oov/psd/layertree"
 )
 
+type Flip int
+
+const (
+	FlipNone Flip = iota
+	FlipX
+	FlipY
+	FlipXY
+)
+
 type Image struct {
 	FilePath   *string
 	FileHash   uint32
@@ -20,6 +29,7 @@ type Image struct {
 	PSD    *layertree.Root
 	image  *image.RGBA
 	Layers *LayerManager
+	Flip   Flip
 
 	InitialVisibility *string
 
@@ -30,6 +40,38 @@ type Image struct {
 	OffsetY int
 
 	PFV *PFV
+}
+
+func (img *Image) FlipX() bool {
+	return img.Flip == FlipX || img.Flip == FlipXY
+}
+
+func (img *Image) FlipY() bool {
+	return img.Flip == FlipY || img.Flip == FlipXY
+}
+
+func (img *Image) SetFlipX(v bool) bool {
+	if (img.Flip&FlipX != 0) == v {
+		return false
+	}
+	if v {
+		img.Flip |= FlipX
+	} else {
+		img.Flip &= ^FlipX
+	}
+	return true
+}
+
+func (img *Image) SetFlipY(v bool) bool {
+	if (img.Flip&FlipY != 0) == v {
+		return false
+	}
+	if v {
+		img.Flip |= FlipY
+	} else {
+		img.Flip &= ^FlipY
+	}
+	return true
 }
 
 func (img *Image) ScaledCanvasRect() image.Rectangle {
@@ -65,7 +107,7 @@ func (img *Image) Render(ctx context.Context) (*image.RGBA, error) {
 		}
 		rgba = tmp
 	}
-	f := img.Layers.Flip()
+	f := img.Flip
 	if f != FlipNone {
 		tmp := image.NewRGBA(rgba.Rect)
 		g := gift.New()
@@ -101,6 +143,6 @@ func (img *Image) Serialize() *ImageState {
 		OffsetX: img.OffsetX,
 		OffsetY: img.OffsetY,
 
-		Layer: img.Layers.SerializeVisibility(),
+		Layer: img.Layers.SerializeVisibility(img.Flip),
 	}
 }

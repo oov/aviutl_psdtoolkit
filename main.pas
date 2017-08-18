@@ -33,7 +33,7 @@ type
       Width: integer; Height: integer);
     function GetLayerNames(id: integer; filename: UTF8String): UTF8String;
     procedure SetProperties(id: integer; filename: UTF8String;
-      Layers: PUTF8String; Scale: PSingle; OffsetX: System.PInteger;
+      Layer: PUTF8String; Scale: PSingle; OffsetX: System.PInteger;
       OffsetY: System.PInteger; out Modified: boolean; out Width: integer;
       out Height: integer);
     procedure ShowGUI();
@@ -143,12 +143,12 @@ begin
 end;
 
 procedure TPSDToolIPC.SetProperties(id: integer; filename: UTF8String;
-  Layers: PUTF8String; Scale: PSingle; OffsetX: System.PInteger;
+  Layer: PUTF8String; Scale: PSingle; OffsetX: System.PInteger;
   OffsetY: System.PInteger; out Modified: boolean; out Width: integer;
   out Height: integer);
 const
   PROPID_END = 0;
-  PROPID_LAYERS = 1;
+  PROPID_LAYER = 1;
   PROPID_SCALE = 2;
   PROPID_OFFSETX = 3;
   PROPID_OFFSETY = 4;
@@ -158,11 +158,11 @@ begin
     PrepareIPC();
     FRemoteProcess.Input.WriteBuffer('PROP', 4);
     WriteIdAndFileName(FRemoteProcess.Input, id, filename);
-    if Layers <> nil then
+    if Layer <> nil then
     begin
-      WriteInt32(FRemoteProcess.Input, PROPID_LAYERS);
-      WriteString(FRemoteProcess.Input, Layers^);
-      ODS('  Layers: %s', [Layers^]);
+      WriteInt32(FRemoteProcess.Input, PROPID_LAYER);
+      WriteString(FRemoteProcess.Input, Layer^);
+      ODS('  Layer: %s', [Layer^]);
     end;
     if Scale <> nil then
     begin

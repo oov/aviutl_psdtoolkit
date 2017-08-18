@@ -106,12 +106,12 @@ func (g *gui) update() {
 		}
 
 		if g.img != nil {
-			fx, fy := g.img.Layers.FlipX(), g.img.Layers.FlipY()
+			fx, fy := g.img.FlipX(), g.img.FlipY()
 			if (nk.NkSelectLabel(ctx, "左右反転", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(fx)) != 0) != fx {
-				modified = g.img.Layers.SetFlipX(!fx) || modified
+				modified = g.img.SetFlipX(!fx) || modified
 			}
 			if (nk.NkSelectLabel(ctx, "上下反転", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(fy)) != 0) != fy {
-				modified = g.img.Layers.SetFlipY(!fy) || modified
+				modified = g.img.SetFlipY(!fy) || modified
 			}
 			if nk.NkButtonLabel(ctx, "送る") != 0 {
 				if err := g.IPC.SendEditingImageState(g.img.Serialize()); err != nil {
@@ -139,7 +139,7 @@ func (g *gui) update() {
 		}
 	} else if modified || modifiedLayer {
 		g.img.Modified = true
-		g.img.Layers.Normalize()
+		g.img.Layers.Normalize(g.img.Flip)
 		updateRenderedImage(g, g.img)
 	}
 

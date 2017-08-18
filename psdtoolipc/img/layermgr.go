@@ -10,19 +10,8 @@ import (
 	"github.com/oov/psd/layertree"
 )
 
-type Flip int
-
-const (
-	FlipNone Flip = iota
-	FlipX
-	FlipY
-	FlipXY
-)
-
 type LayerManager struct {
 	Renderer *layertree.Renderer
-
-	flip Flip
 
 	Mapped   map[int]*layertree.Layer
 	Flat     []int
@@ -61,46 +50,6 @@ func NewLayerManager(root *layertree.Root) *LayerManager {
 		m.Group[seqID] = &g
 	}
 	return m
-}
-
-func (m *LayerManager) SetFlip(f Flip) {
-	m.flip = f
-}
-
-func (m *LayerManager) Flip() Flip {
-	return m.flip
-}
-
-func (m *LayerManager) FlipX() bool {
-	return m.flip == FlipX || m.flip == FlipXY
-}
-
-func (m *LayerManager) FlipY() bool {
-	return m.flip == FlipY || m.flip == FlipXY
-}
-
-func (m *LayerManager) SetFlipX(v bool) bool {
-	if (m.flip&FlipX != 0) == v {
-		return false
-	}
-	if v {
-		m.flip |= FlipX
-	} else {
-		m.flip &= ^FlipX
-	}
-	return true
-}
-
-func (m *LayerManager) SetFlipY(v bool) bool {
-	if (m.flip&FlipY != 0) == v {
-		return false
-	}
-	if v {
-		m.flip |= FlipY
-	} else {
-		m.flip &= ^FlipY
-	}
-	return true
 }
 
 func (m *LayerManager) setVisible(seqID int, visible bool) bool {
@@ -162,37 +111,37 @@ func (m *LayerManager) setVisible(seqID int, visible bool) bool {
 	return true
 }
 
-func (m *LayerManager) SetVisible(seqID int, visible bool) bool {
+func (m *LayerManager) SetVisible(seqID int, visible bool, flip Flip) bool {
 	modified := m.setVisible(seqID, visible)
-	modified = m.NormalizeFlipOne(seqID) || modified
+	modified = m.NormalizeFlipOne(seqID, flip) || modified
 	return modified
 }
 
-func (m *LayerManager) normalizeGroup(seqID int) {
+func (m *LayerManager) normalizeGroupMap(seqID int, layers map[int]*bool) bool {
 	g, ok := m.Group[seqID]
 	if !ok {
-		return
+		return false
 	}
 
-	r := m.Renderer
+	modified := false
 	var done bool
 	for i := len(*g) - 1; i >= 0; i-- {
-		l := m.Mapped[(*g)[i]]
-		if !l.Visible {
+		seqID := (*g)[i]
+		if !*layers[seqID] {
 			continue
 		}
 		if !done {
 			done = true
 			continue
 		}
-		l.Visible = false
-		r.SetDirtyByLayer(l)
+		*layers[seqID] = false
+		modified = true
 	}
 	if !done && len(*g) > 0 {
-		l := m.Mapped[(*g)[len(*g)-1]]
-		l.Visible = true
-		r.SetDirtyByLayer(l)
+		*layers[(*g)[len(*g)-1]] = true
+		modified = true
 	}
+	return modified
 }
 
 func (m *LayerManager) normalizeFlipOne(seqID int, Pair map[int]*[2]int, flipped bool) bool {
@@ -219,44 +168,64 @@ func (m *LayerManager) normalizeFlipOne(seqID int, Pair map[int]*[2]int, flipped
 	return modified
 }
 
-func (m *LayerManager) NormalizeFlipOne(seqID int) bool {
-	modified := m.normalizeFlipOne(seqID, m.FlipXPair, m.flip == FlipX)
-	modified = m.normalizeFlipOne(seqID, m.FlipYPair, m.flip == FlipY) || modified
-	modified = m.normalizeFlipOne(seqID, m.FlipXYPair, m.flip == FlipXY) || modified
+func (m *LayerManager) NormalizeFlipOne(seqID int, flip Flip) bool {
+	modified := m.normalizeFlipOne(seqID, m.FlipXPair, flip == FlipX)
+	modified = m.normalizeFlipOne(seqID, m.FlipYPair, flip == FlipY) || modified
+	modified = m.normalizeFlipOne(seqID, m.FlipXYPair, flip == FlipXY) || modified
 	return modified
 }
 
-func (m *LayerManager) normalizeFlip(Pair map[int]*[2]int, flipped bool) {
-	r := m.Renderer
+func (m *LayerManager) normalizeFlipMap(Pair map[int]*[2]int, flipped bool, layers map[int]*bool) bool {
+	modified := false
 	processed := map[*[2]int]struct{}{}
 	for _, pair := range Pair {
 		if _, ok := processed[pair]; ok {
 			continue
 		}
-		org, mrr := m.Mapped[pair[0]], m.Mapped[pair[1]]
-		if !org.Visible && !mrr.Visible {
+		org, mrr := layers[pair[0]], layers[pair[1]]
+		if !*org && !*mrr {
 			continue
 		}
-		if org.Visible == flipped {
-			org.Visible = !flipped
-			r.SetDirtyByLayer(org)
+		if *org == flipped {
+			*org = !flipped
+			modified = true
 		}
-		if mrr.Visible != flipped {
-			mrr.Visible = flipped
-			r.SetDirtyByLayer(mrr)
+		if *mrr != flipped {
+			*mrr = flipped
+			modified = true
 		}
 		processed[pair] = struct{}{}
 	}
+	return modified
 }
 
-func (m *LayerManager) Normalize() {
-	for seqID := range m.ForceVisible {
+func (m *LayerManager) Normalize(flip Flip) bool {
+	layers := make(map[int]*bool, len(m.Flat))
+	for _, seqID := range m.Flat {
+		b := m.Mapped[seqID].Visible
+		layers[seqID] = &b
+	}
+	if !m.NormalizeMap(layers, flip) {
+		return false
+	}
+	for seqID, visible := range layers {
 		l := m.Mapped[seqID]
-		if l.Visible == true {
+		if l.Visible != *visible {
+			l.Visible = *visible
+			m.Renderer.SetDirtyByLayer(l)
+		}
+	}
+	return true
+}
+
+func (m *LayerManager) NormalizeMap(layers map[int]*bool, flip Flip) bool {
+	modified := false
+	for seqID := range m.ForceVisible {
+		if *layers[seqID] == true {
 			continue
 		}
-		l.Visible = true
-		m.Renderer.SetDirtyByLayer(l)
+		*layers[seqID] = true
+		modified = true
 	}
 
 	processed := map[*[]int]struct{}{}
@@ -264,13 +233,14 @@ func (m *LayerManager) Normalize() {
 		if _, ok := processed[g]; ok {
 			continue
 		}
-		m.normalizeGroup(seqID)
+		m.normalizeGroupMap(seqID, layers)
 		processed[g] = struct{}{}
 	}
 
-	m.normalizeFlip(m.FlipXPair, m.flip == FlipX)
-	m.normalizeFlip(m.FlipYPair, m.flip == FlipY)
-	m.normalizeFlip(m.FlipXYPair, m.flip == FlipXY)
+	m.normalizeFlipMap(m.FlipXPair, flip == FlipX, layers)
+	m.normalizeFlipMap(m.FlipYPair, flip == FlipY, layers)
+	m.normalizeFlipMap(m.FlipXYPair, flip == FlipXY, layers)
+	return modified
 }
 
 func isForceVisible(s string) bool {
@@ -361,30 +331,28 @@ func enumChildren(m *LayerManager, l *layertree.Layer, sib []layertree.Layer, di
 	}
 }
 
-func (m *LayerManager) DeserializeVisibility(s string) (bool, error) {
+func (m *LayerManager) DeserializeVisibility(s string, flip Flip) (bool, Flip, error) {
+	layers := make(map[int]*bool, len(m.Flat))
 	n := make([]bool, len(m.Flat))
-	for i, seqID := range m.Flat {
-		l := m.Mapped[seqID]
-		n[i] = l.Visible
+	for index, seqID := range m.Flat {
+		n[index] = m.Mapped[seqID].Visible
+		layers[seqID] = &n[index]
 	}
 
-	var newFlip Flip
-	flipChanged := false
 	for _, line := range strings.Split(s, " ") {
 		buf, err := base64.RawURLEncoding.DecodeString(line[2:])
 		if err != nil {
-			return false, err
+			return false, flip, err
 		}
 		switch line[:2] {
 		case "V.":
-			if len(m.Flat) != int(binary.LittleEndian.Uint16(buf)) {
-				return false, errors.New("img: number of layers mismatch")
+			if len(n) != int(binary.LittleEndian.Uint16(buf)) {
+				return false, flip, errors.New("img: number of layers mismatch")
 			}
 			i := 0
-			newFlip = Flip(buf[2])
-			flipChanged = true
+			flip = Flip(buf[2])
 			for _, v := range buf[3:] {
-				if i+7 < len(m.Flat) {
+				if i+7 < len(layers) {
 					n[i+0] = v&0x80 != 0
 					n[i+1] = v&0x40 != 0
 					n[i+2] = v&0x20 != 0
@@ -396,8 +364,8 @@ func (m *LayerManager) DeserializeVisibility(s string) (bool, error) {
 					i += 8
 					continue
 				}
-				v <<= 8 - uint(len(m.Flat)-i)
-				for i < len(m.Flat) {
+				v <<= 8 - uint(len(layers)-i)
+				for i < len(layers) {
 					n[i] = v&0x80 != 0
 					v <<= 1
 					i++
@@ -405,14 +373,14 @@ func (m *LayerManager) DeserializeVisibility(s string) (bool, error) {
 			}
 		case "F.":
 			if buf, err = decodePackBits(buf); err != nil {
-				return false, err
+				return false, flip, err
 			}
-			if len(m.Flat) != int(binary.LittleEndian.Uint16(buf)) {
-				return false, errors.New("img: number of layers mismatch")
+			if len(n) != int(binary.LittleEndian.Uint16(buf)) {
+				return false, flip, errors.New("img: number of layers mismatch")
 			}
 			i := 0
 			for _, v := range buf[2:] {
-				if i+3 < len(m.Flat) {
+				if i+3 < len(layers) {
 					if v&0x80 != 0 {
 						n[i+0] = v&0x40 != 0
 					}
@@ -428,8 +396,8 @@ func (m *LayerManager) DeserializeVisibility(s string) (bool, error) {
 					i += 4
 					continue
 				}
-				v <<= (4 - uint(len(m.Flat)-i)) * 2
-				for i < len(m.Flat) {
+				v <<= (4 - uint(len(layers)-i)) * 2
+				for i < len(layers) {
 					if v&0x80 != 0 {
 						n[i] = v&0x40 != 0
 					}
@@ -440,30 +408,24 @@ func (m *LayerManager) DeserializeVisibility(s string) (bool, error) {
 		}
 	}
 
-	r := m.Renderer
+	m.NormalizeMap(layers, flip)
 	modified := false
-	if flipChanged && newFlip != m.flip {
-		m.flip = newFlip
-		modified = true
-	}
-	for i, b := range n {
-		l := m.Mapped[m.Flat[i]]
-		if l.Visible != b {
-			l.Visible = b
+	r := m.Renderer
+	for seqID, visible := range layers {
+		l := m.Mapped[seqID]
+		if l.Visible != *visible {
+			l.Visible = *visible
 			r.SetDirtyByLayer(l)
 			modified = true
 		}
 	}
-	if modified {
-		m.Normalize()
-	}
-	return modified, nil
+	return modified, flip, nil
 }
 
-func (m *LayerManager) SerializeVisibility() string {
+func (m *LayerManager) SerializeVisibility(flip Flip) string {
 	buf := make([]byte, 3+(len(m.Flat)+7)/8)
 	binary.LittleEndian.PutUint16(buf, uint16(len(m.Flat)))
-	buf[2] = byte(m.flip)
+	buf[2] = byte(flip)
 	var v byte
 	d := 3
 	for i, l := range m.Flat {

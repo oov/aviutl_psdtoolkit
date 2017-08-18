@@ -98,7 +98,6 @@ func (ipc *IPC) Image(id int, filePath string) (*img.Image, error) {
 			r.PSD = ro.PSD.Clone()
 			r.Layers = img.NewLayerManager(r.PSD)
 			r.Scale = 1
-			r.Layers.SetFlip(ro.Layers.Flip())
 			ipc.usingInGUI = StateKey{id, filePath}
 		}
 	})
@@ -170,8 +169,8 @@ func (ipc *IPC) getSourceImage(filePath string) (*sourceImage, error) {
 		}
 	}
 
-	lm.Normalize()
-	state := lm.SerializeVisibility()
+	lm.Normalize(img.FlipNone)
+	state := lm.SerializeVisibility(img.FlipNone)
 	srcImage := &sourceImage{
 		FilePath:   &filePath,
 		FileHash:   hash.Sum32(),
@@ -249,22 +248,23 @@ func (ipc *IPC) getLayerNames(id int, filePath string) (string, error) {
 	return strings.Join(s, "\n"), nil
 }
 
-func (ipc *IPC) setProps(id int, filePath string, layers *string, scale *float32, offsetX, offsetY *int) (bool, int, int, error) {
+func (ipc *IPC) setProps(id int, filePath string, layer *string, scale *float32, offsetX, offsetY *int) (bool, int, int, error) {
 	himg, err := ipc.load(id, filePath)
 	if err != nil {
 		return false, 0, 0, errors.Wrap(err, "ipc: could not load")
 	}
 	modified := himg.Modified
-	if layers != nil {
-		if *layers == "" {
-			layers = himg.InitialVisibility
+	if layer != nil {
+		if *layer == "" {
+			layer = himg.InitialVisibility
 		}
-		b, err := himg.Layers.DeserializeVisibility(*layers)
+		b, flip, err := himg.Layers.DeserializeVisibility(*layer, himg.Flip)
 		if err != nil {
 			return false, 0, 0, errors.Wrap(err, "ipc: deserialize failed")
 		}
 		if b {
 			modified = true
+			himg.Flip = flip
 		}
 	}
 	if scale != nil {
@@ -387,12 +387,12 @@ func (ipc *IPC) dispatch(cmd string) error {
 		}
 		const (
 			propEnd = iota
-			propLayers
+			propLayer
 			propScale
 			propOffsetX
 			propOffsetY
 		)
-		var layers *string
+		var layer *string
 		var scale *float32
 		var offsetX, offsetY *int
 	readProps:
@@ -404,13 +404,13 @@ func (ipc *IPC) dispatch(cmd string) error {
 			switch pid {
 			case propEnd:
 				break readProps
-			case propLayers:
+			case propLayer:
 				s, err := readString()
 				if err != nil {
 					return err
 				}
-				layers = &s
-				ods.ODS("  Layers: %s", s)
+				layer = &s
+				ods.ODS("  Layer: %s", s)
 			case propScale:
 				f, err := readFloat32()
 				if err != nil {
@@ -434,7 +434,7 @@ func (ipc *IPC) dispatch(cmd string) error {
 				ods.ODS("  OffsetY: %d", i)
 			}
 		}
-		modified, width, height, err := ipc.setProps(id, filePath, layers, scale, offsetX, offsetY)
+		modified, width, height, err := ipc.setProps(id, filePath, layer, scale, offsetX, offsetY)
 		if err != nil {
 			return err
 		}
