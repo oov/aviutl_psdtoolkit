@@ -23,8 +23,9 @@ const (
 	symbolClippingArrow = "\u0027"
 	symbolFilter        = "\u0028"
 	symbolFile          = "\u0029"
-	symbolLeftArrow     = "\u002A"
-	symbolRightArrow    = "\u002B"
+	symbolLeftArrow     = "\u002a"
+	symbolRightArrow    = "\u002b"
+	symbolClipboard     = "\u002c"
 )
 
 type LayerView struct {
@@ -35,6 +36,8 @@ type LayerView struct {
 	ThumbnailChip map[int]nk.Image
 
 	LayerFavSelectedIndex int32
+
+	CopyToClipboard func(s string)
 }
 
 func (lv *LayerView) Init() {
@@ -302,7 +305,7 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 	nk.NkLayoutSpaceEnd(ctx)
 
 	if len(n.Items) > 0 {
-		nk.NkLayoutSpaceBegin(ctx, nk.Static, 28, 3)
+		nk.NkLayoutSpaceBegin(ctx, nk.Static, 28, 4)
 		bounds := nk.NkLayoutSpaceBounds(ctx)
 
 		left = indent + marginSize
@@ -330,7 +333,7 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 		nk.NkStylePopStyleItem(ctx)
 		nk.NkStylePopFont(ctx)
 
-		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, bounds.W()-left-buttonSize, bounds.H()))
+		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, bounds.W()-left-buttonSize*2-marginSize, bounds.H()))
 		if idx := nk.NkComboString(ctx, n.ItemNameList, n.SelectedIndex, int32(len(n.Items)), 28, nk.NkVec2(bounds.W(), 400)); idx != n.SelectedIndex {
 			n.SelectedIndex = idx
 			n.LastModified = time.Now()
@@ -341,7 +344,7 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 				modified = m || modified
 			}
 		}
-		left += bounds.W() - left - buttonSize
+		left += bounds.W() - left - buttonSize*2 - marginSize
 
 		nk.NkStylePushFont(ctx, lv.SymbolFontHandle)
 		nk.NkStylePushStyleItem(ctx, nkhelper.GetStyleButtonNormalPtr(ctx), nk.NkStyleItemColor(nk.Color{}))
@@ -364,6 +367,13 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 		nk.NkStylePopVec2(ctx)
 		nk.NkStylePopFloat(ctx)
 		nk.NkStylePopStyleItem(ctx)
+
+		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, buttonSize, bounds.H()))
+		if nk.NkButtonLabel(ctx, symbolClipboard) != 0 {
+			lv.CopyToClipboard(n.State())
+		}
+		left += buttonSize
+
 		nk.NkStylePopFont(ctx)
 
 		left = indent + marginSize

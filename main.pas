@@ -19,6 +19,7 @@ type
     FReceiver: TReceiver;
     FCS: TRTLCriticalSection;
     FEditingImageState: WideString;
+    FPSDToolWindow: THandle;
     procedure SendEditingImageStateToExEdit;
     procedure PrepareIPC();
     procedure OnRequest(Sender: TObject; const Command: UTF8String);
@@ -214,12 +215,15 @@ begin
   finally
     FReceiver.Done();
   end;
-  if h <> 0 then
+  if h <> 0 then begin
+    FPSDToolWindow := h;
     SetForegroundWindow(h);
+  end;
 end;
 
 procedure TPSDToolIPC.SendEditingImageStateToExEdit;
 var
+  h: THandle;
   ws: WideString;
   w: TExEditWindow;
   pw: TExEditParameterDialog;
@@ -228,6 +232,7 @@ begin
   EnterCriticalSection(FCS);
   try
     ws := FEditingImageState;
+    h := FPSDToolWindow;
   finally
     LeaveCriticalSection(FCS);
   end;
@@ -252,6 +257,7 @@ begin
       end;
     end;
   end;
+  MessageBoxW(h, 'Target not found.', 'PSDToolIPC', MB_ICONERROR);
 end;
 
 procedure TPSDToolIPC.PrepareIPC;

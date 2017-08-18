@@ -17,6 +17,7 @@ import (
 
 	// _ "net/http/pprof"
 
+	"github.com/atotto/clipboard"
 	"github.com/go-gl/gl/v3.2-core/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/golang-ui/nuklear/nk"
@@ -154,6 +155,11 @@ func main() {
 		})
 		return uintptr(unsafe.Pointer(g.Window.GetWin32Window())), nil
 	}
+	g.LayerView.CopyToClipboard = func(s string) {
+		if err := clipboard.WriteAll(s); err != nil {
+			ods.ODS("cannot copy to the clipboard: %v", err)
+		}
+	}
 
 	exitCh := make(chan struct{})
 	go g.IPC.Main(exitCh)
@@ -199,6 +205,6 @@ func main() {
 		log.Fatalln("could not decode bg.png:", err)
 	}
 	g.MainView.Init(bg)
-	g.Window.Show()
+	// g.Window.Show()
 	g.MainLoop(exitCh)
 }

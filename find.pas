@@ -90,6 +90,8 @@ begin
     h := FindControl(Parent, h, 'ComboBox', nil);
     if h = 0 then
       Exit;
+    if not IsWindowVisible(h) then
+      continue;
     s := GetComboBoxSelectedItem(h);
     if Pos(WideString('Render@PSDToolIPC'), s) = Length(s) - 16 then
       Result := h;
