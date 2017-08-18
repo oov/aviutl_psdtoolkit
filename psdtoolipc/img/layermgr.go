@@ -255,7 +255,7 @@ func (m *LayerManager) Normalize() {
 		if l.Visible == true {
 			continue
 		}
-		l.Visible = false
+		l.Visible = true
 		m.Renderer.SetDirtyByLayer(l)
 	}
 
