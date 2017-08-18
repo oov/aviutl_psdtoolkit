@@ -134,10 +134,10 @@ if obj.check0 == false then
 end
 
 @SimpleView
---track0:,0,999,0,1
---track1:,0,999,0,1
---track2:,0,999,0,1
---track3:,0,999,0,1
+--track0:,-1,999,-1,1
+--track1:,-1,999,-1,1
+--track2:,-1,999,-1,1
+--track3:,-1,999,-1,1
 --check0:描画先送り,0
 if psdtoolipc ~= nil then
   table.insert(psdtoolipc.faview, obj.track0)
@@ -151,13 +151,11 @@ if psdtoolipc ~= nil then
 end
 
 @目パチ
---track0:間隔(秒),0,100,4,0.1
---track1:速さ(秒),0.01,10,0.05,0.01
+--track0:間隔,0,10000,120,1
+--track1:速さ,1,100,1,1
+--track2:オフセット,0,10000,0,1
 --check0:描画先送り,0
 --dialog:ほぼ開き,eye0="";半目,eye1="";ほぼ閉じ,eye2="";閉じ,eye3="";
--- 個人的な好みにより瞬きの閉じる速度は一瞬にしたいので
--- 開き→閉じ→開き とスムーズに切り替えるのではなく
--- 閉じ→開き のみをアニメーションさせるスクリプトです
 if psdtoolipc ~= nil then
   local eye = {}
   if eye3 ~= nil and eye3 ~= "" then
@@ -172,17 +170,21 @@ if psdtoolipc ~= nil then
   if eye0 ~= nil and eye0 ~= "" then
     table.insert(eye, eye0)
   end
-  local interval = obj.track0
-  local speed = obj.track1
-  local basetime = obj.time + obj.rand(0,1000,1122,0)/100 + interval - speed*#eye
-  local blink = basetime % interval
-  local blink2 = (basetime + interval*obj.rand(0,5,1234,0) - speed*#eye*2) % (interval * 5)
-  for i, v in ipairs(eye) do
-    local l = speed*i
-    local r = l + speed
-    if (l <= blink and blink < r)or(l <= blink2 and blink2 < r) then
-      psdtoolipc.layer = psdtoolipc.layer .. " " .. v
-      break;
+  if #eye > 0 then
+    -- 閉じかけの絵を1枚挟んで一気に閉じたあと少しずつ開く
+    table.insert(eye, 1, eye[#eye])
+
+    local interval, speed, offset = obj.track0, obj.track1, obj.track2
+    local basetime = obj.frame + interval + offset
+    local blink = basetime % interval
+    local blink2 = (basetime + interval*obj.rand(0,5,1234,0) + speed*#eye*2) % (interval * 5)
+    for i, v in ipairs(eye) do
+      local l = speed*i
+      local r = l + speed
+      if (l <= blink and blink < r)or(l <= blink2 and blink2 < r) then
+        psdtoolipc.layer = psdtoolipc.layer .. " " .. v
+        break;
+      end
     end
   end
   if obj.check0 == false then
