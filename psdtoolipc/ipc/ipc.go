@@ -258,7 +258,11 @@ func (ipc *IPC) setProps(id int, filePath string, layer *string, scale *float32,
 		if *layer == "" {
 			layer = himg.InitialVisibility
 		}
-		b, flip, err := himg.Layers.DeserializeVisibility(*layer, himg.Flip)
+		var froot *img.FaviewNode
+		if himg.PFV != nil {
+			froot = &himg.PFV.FaviewRoot
+		}
+		b, flip, err := himg.Layers.DeserializeVisibility(*layer, himg.Flip, froot)
 		if err != nil {
 			return false, 0, 0, errors.Wrap(err, "ipc: deserialize failed")
 		}

@@ -119,7 +119,14 @@ func (lv *LayerView) Render(ctx *nk.Context, winRect nk.Rect, img *img.Image) bo
 			case 1:
 				if img.PFV != nil && len(img.PFV.FaviewRoot.Children) > 0 {
 					nk.NkLayoutRowDynamic(ctx, 28, 1)
-					img.PFV.FaviewRoot.SelectedIndex = nk.NkComboString(ctx, img.PFV.FaviewRoot.ItemNameList, img.PFV.FaviewRoot.SelectedIndex, int32(len(img.PFV.FaviewRoot.Children)), 28, nk.NkVec2(winRect.W(), winRect.H()))
+					img.PFV.FaviewRoot.SelectedIndex = int(nk.NkComboString(
+						ctx,
+						img.PFV.FaviewRoot.ItemNameList,
+						int32(img.PFV.FaviewRoot.SelectedIndex),
+						int32(len(img.PFV.FaviewRoot.Children)),
+						28,
+						nk.NkVec2(winRect.W(), winRect.H()),
+					))
 					children := img.PFV.FaviewRoot.Children[img.PFV.FaviewRoot.SelectedIndex].Children
 					for i := range children {
 						modified = lv.layoutFaview(ctx, img, 0, &children[i]) || modified
@@ -288,6 +295,22 @@ func (lv *LayerView) layoutFavorites(ctx *nk.Context, img *img.Image, indent flo
 	return modified
 }
 
+func applyFaview(himg *img.Image, n *img.FaviewNode, newSelectedIndex int) bool {
+	n.SelectedIndex = newSelectedIndex
+	n.LastModified = time.Now()
+	var froot *img.FaviewNode
+	if himg.PFV != nil {
+		froot = &himg.PFV.FaviewRoot
+	}
+	m, flip, err := himg.Layers.DeserializeVisibility(n.State(), himg.Flip, froot)
+	if err != nil {
+		ods.ODS("cannot apply serialized data: %v", err)
+		return false
+	}
+	himg.Flip = flip
+	return m
+}
+
 func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float32, n *img.FaviewNode) bool {
 	modified := false
 	const (
@@ -317,15 +340,7 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 
 		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, buttonSize, bounds.H()))
 		if nk.NkButtonLabel(ctx, symbolLeftArrow) != 0 {
-			n.SelectedIndex = int32((len(n.Items) + int(n.SelectedIndex) - 1) % len(n.Items))
-			n.LastModified = time.Now()
-			m, flip, err := img.Layers.DeserializeVisibility(n.State(), img.Flip)
-			if err != nil {
-				ods.ODS("cannot apply serialized data: %v", err)
-			} else {
-				modified = m || modified
-				img.Flip = flip
-			}
+			modified = applyFaview(img, n, (len(n.Items)+n.SelectedIndex-1)%len(n.Items)) || modified
 		}
 		left += buttonSize
 
@@ -335,16 +350,8 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 		nk.NkStylePopFont(ctx)
 
 		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, bounds.W()-left-buttonSize*2-marginSize, bounds.H()))
-		if idx := nk.NkComboString(ctx, n.ItemNameList, n.SelectedIndex, int32(len(n.Items)), 28, nk.NkVec2(bounds.W(), 400)); idx != n.SelectedIndex {
-			n.SelectedIndex = idx
-			n.LastModified = time.Now()
-			m, flip, err := img.Layers.DeserializeVisibility(n.State(), img.Flip)
-			if err != nil {
-				ods.ODS("cannot apply serialized data: %v", err)
-			} else {
-				modified = m || modified
-				img.Flip = flip
-			}
+		if idx := int(nk.NkComboString(ctx, n.ItemNameList, int32(n.SelectedIndex), int32(len(n.Items)), 28, nk.NkVec2(bounds.W(), 400))); idx != n.SelectedIndex {
+			modified = applyFaview(img, n, idx) || modified
 		}
 		left += bounds.W() - left - buttonSize*2 - marginSize
 
@@ -355,15 +362,7 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 
 		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, buttonSize, bounds.H()))
 		if nk.NkButtonLabel(ctx, symbolRightArrow) != 0 {
-			n.SelectedIndex = int32((int(n.SelectedIndex) + 1) % len(n.Items))
-			n.LastModified = time.Now()
-			m, flip, err := img.Layers.DeserializeVisibility(n.State(), img.Flip)
-			if err != nil {
-				ods.ODS("cannot apply serialized data: %v", err)
-			} else {
-				modified = m || modified
-				img.Flip = flip
-			}
+			modified = applyFaview(img, n, (n.SelectedIndex+1)%len(n.Items)) || modified
 		}
 		left += buttonSize
 
@@ -381,16 +380,8 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 
 		left = indent + marginSize
 		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, bounds.W()-left, bounds.H()))
-		if idx := nk.NkSlideInt(ctx, 0, n.SelectedIndex, int32(len(n.Items)-1), 1); idx != n.SelectedIndex {
-			n.SelectedIndex = idx
-			n.LastModified = time.Now()
-			m, flip, err := img.Layers.DeserializeVisibility(n.State(), img.Flip)
-			if err != nil {
-				ods.ODS("cannot apply serialized data: %v", err)
-			} else {
-				modified = m || modified
-				img.Flip = flip
-			}
+		if idx := int(nk.NkSlideInt(ctx, 0, int32(n.SelectedIndex), int32(len(n.Items)-1), 1)); idx != n.SelectedIndex {
+			modified = applyFaview(img, n, idx) || modified
 		}
 		nk.NkLayoutSpaceEnd(ctx)
 	}

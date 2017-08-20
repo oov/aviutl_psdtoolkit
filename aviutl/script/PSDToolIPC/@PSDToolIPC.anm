@@ -1,22 +1,39 @@
 @Render
 --track0:縮小率,0.01,100,100,0.01
---track1:オフセットX,-5000,5000,0,1
---track2:オフセットY,-5000,5000,0,1
---check0:描画先送り,0
+--track2:オフセットX,-5000,5000,0,1
+--track3:オフセットY,-5000,5000,0,1
+--check0:ここで描画,1
 --param:
 require("PSDToolIPC")
 psdtoolipc = {
   id = obj.layer,
   file = f ~= nil and f or "",
   layer = l ~= nil and l or "",
+  layeradd = "",
   faview = {},
   scale = obj.track0/100,
-  offsetx = obj.track1,
-  offsety = obj.track2,
+  offsetx = obj.track2,
+  offsety = obj.track3,
   render = function(self)
     if self.file == "" then
       self:usage()
       return
+    end
+    if #self.faview > 0 then
+      local empty = true
+      for i, v in ipairs(self.faview) do
+        if v == -1 then
+          self.faview[i] = ""
+        else
+          empty = false
+        end
+      end
+      if not empty then
+        self.layeradd = " S." .. table.concat(self.faview, "_") .. self.layeradd
+      end
+    end
+    if self.layeradd ~= "" then
+      self.layer = self.layer .. self.layeradd
     end
     local ok, modified, width, height = PSDToolIPC.setprops(self.id, self.file, self)
     if not ok then
@@ -128,7 +145,7 @@ PSDToolIPC.dll / PSDToolIPC.exe / @PSDToolIPC.anm をコピー
 }
 f=nil;
 l=nil;
-if obj.check0 == false then
+if obj.check0 then
   psdtoolipc:render()
   psdtoolipc = nil
 end
@@ -138,26 +155,29 @@ end
 --track1:,-1,999,-1,1
 --track2:,-1,999,-1,1
 --track3:,-1,999,-1,1
---check0:描画先送り,0
+--check0:ここで描画,1
 if psdtoolipc ~= nil then
   table.insert(psdtoolipc.faview, obj.track0)
   table.insert(psdtoolipc.faview, obj.track1)
   table.insert(psdtoolipc.faview, obj.track2)
   table.insert(psdtoolipc.faview, obj.track3)
-  if obj.check0 == false then
+  if obj.check0 then
     psdtoolipc:render()
     psdtoolipc = nil
   end
 end
 
 @目パチ
---track0:間隔,0,10000,120,1
+--track0:間隔,0,1000,120,1
 --track1:速さ,1,100,1,1
 --track2:オフセット,0,10000,0,1
---check0:描画先送り,0
---dialog:ほぼ開き,eye0="";半目,eye1="";ほぼ閉じ,eye2="";閉じ,eye3="";
+--check0:ここで描画,1
+--dialog:開き,eye0="";ほぼ開き,eye1="";半目,eye2="";ほぼ閉じ,eye3="";閉じ,eye4="";
 if psdtoolipc ~= nil then
   local eye = {}
+  if eye4 ~= nil and eye4 ~= "" then
+    table.insert(eye, eye4)
+  end
   if eye3 ~= nil and eye3 ~= "" then
     table.insert(eye, eye3)
   end
@@ -172,22 +192,27 @@ if psdtoolipc ~= nil then
   end
   if #eye > 0 then
     -- 閉じかけの絵を1枚挟んで一気に閉じたあと少しずつ開く
-    table.insert(eye, 1, eye[#eye])
+    table.insert(eye, 1, eye[#eye-1])
 
     local interval, speed, offset = obj.track0, obj.track1, obj.track2
     local basetime = obj.frame + interval + offset
     local blink = basetime % interval
     local blink2 = (basetime + interval*obj.rand(0,5,1234,0) + speed*#eye*2) % (interval * 5)
+    local applied = false
     for i, v in ipairs(eye) do
       local l = speed*i
       local r = l + speed
       if (l <= blink and blink < r)or(l <= blink2 and blink2 < r) then
-        psdtoolipc.layer = psdtoolipc.layer .. " " .. v
+        psdtoolipc.layeradd = psdtoolipc.layeradd .. " " .. v
+        applied = true
         break;
       end
     end
+    if not applied then
+      psdtoolipc.layeradd = psdtoolipc.layeradd .. " " .. eye[#eye]
+    end
   end
-  if obj.check0 == false then
+  if obj.check0 then
     psdtoolipc:render()
     psdtoolipc = nil
   end

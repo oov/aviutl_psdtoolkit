@@ -3,10 +3,12 @@ package img
 import (
 	"encoding/base64"
 	"encoding/binary"
+	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
 
+	"github.com/oov/aviutl_psdtoolipc/psdtoolipc/ods"
 	"github.com/oov/psd/layertree"
 )
 
@@ -331,7 +333,7 @@ func enumChildren(m *LayerManager, l *layertree.Layer, sib []layertree.Layer, di
 	}
 }
 
-func (m *LayerManager) DeserializeVisibility(s string, flip Flip) (bool, Flip, error) {
+func (m *LayerManager) DeserializeVisibility(s string, flip Flip, faviewRoot *FaviewNode) (bool, Flip, error) {
 	layers := make(map[int]*bool, len(m.Flat))
 	n := make([]bool, len(m.Flat))
 	for index, seqID := range m.Flat {
@@ -339,13 +341,14 @@ func (m *LayerManager) DeserializeVisibility(s string, flip Flip) (bool, Flip, e
 		layers[seqID] = &n[index]
 	}
 
+	var items []*FaviewNode
 	for _, line := range strings.Split(s, " ") {
-		buf, err := base64.RawURLEncoding.DecodeString(line[2:])
-		if err != nil {
-			return false, flip, err
-		}
 		switch line[:2] {
 		case "V.":
+			buf, err := base64.RawURLEncoding.DecodeString(line[2:])
+			if err != nil {
+				return false, flip, err
+			}
 			if len(n) != int(binary.LittleEndian.Uint16(buf)) {
 				return false, flip, errors.New("img: number of layers mismatch")
 			}
@@ -372,6 +375,10 @@ func (m *LayerManager) DeserializeVisibility(s string, flip Flip) (bool, Flip, e
 				}
 			}
 		case "F.":
+			buf, err := base64.RawURLEncoding.DecodeString(line[2:])
+			if err != nil {
+				return false, flip, err
+			}
 			if buf, err = decodePackBits(buf); err != nil {
 				return false, flip, err
 			}
@@ -403,6 +410,36 @@ func (m *LayerManager) DeserializeVisibility(s string, flip Flip) (bool, Flip, e
 					}
 					v <<= 2
 					i++
+				}
+			}
+		case "S.":
+			if items == nil {
+				if faviewRoot == nil {
+					ods.ODS("do not have faview data. skipped.")
+					continue
+				}
+				items = faviewRoot.EnumItemNode()
+			}
+			values := strings.Split(line[2:], "_")
+			for i := 0; i < len(items) && i < len(values); i++ {
+				if values[i] == "" {
+					continue
+				}
+				index, err := strconv.Atoi(values[i])
+				if err != nil {
+					ods.ODS("%q is not a valid number. skipped.", values[i])
+					continue
+				}
+				if index < 0 || index >= len(items[i].Items) {
+					ods.ODS("index %d is out of range. skipped.", index)
+					continue
+				}
+				f, v := items[i].RawState(index)
+				for i, pass := range f {
+					if !pass {
+						continue
+					}
+					n[i] = v[i]
 				}
 			}
 		}

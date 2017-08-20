@@ -109,6 +109,7 @@ func NewPFV(r io.Reader, mgr *LayerManager) (*PFV, error) {
 	return p, nil
 }
 
+/*
 func dump(n *Node, indent string) {
 	ods.ODS("%s%s", indent, n.Name)
 	for i := range n.Children {
@@ -116,6 +117,7 @@ func dump(n *Node, indent string) {
 		dump(cn, indent+"  ")
 	}
 }
+*/
 
 func insert(root *Node, typ string, name string, data []string, mgr *LayerManager) error {
 	n, err := insertNodeRecursive(root, name)
@@ -214,7 +216,7 @@ type FaviewNode struct {
 
 	Items         []*Node
 	ItemNameList  string
-	SelectedIndex int32
+	SelectedIndex int
 	LastModified  time.Time
 
 	Parent   *FaviewNode
@@ -278,22 +280,41 @@ func registerFaviewChildren(fn *FaviewNode) int {
 	return n
 }
 
-func (fn *FaviewNode) State() string {
-	settings := fn.Items[fn.SelectedIndex].Setting
-	filter := make([]bool, len(settings))
+func (fn *FaviewNode) EnumItemNode() []*FaviewNode {
+	r := []*FaviewNode{}
+	enumItemNode(fn, &r)
+	return r
+}
+
+func enumItemNode(n *FaviewNode, a *[]*FaviewNode) {
+	if n.Items != nil {
+		*a = append(*a, n)
+	}
+	for i := range n.Children {
+		enumItemNode(&n.Children[i], a)
+	}
+}
+
+func (fn *FaviewNode) RawState(index int) (filter, visibility []bool) {
+	visibility = fn.Items[index].Setting
+	filter = make([]bool, len(visibility))
 	for i := range filter {
 		filter[i] = true
 	}
 	makeFilter(filter, fn.NameNode)
+	return filter, visibility
+}
 
-	buf := make([]byte, 2+(len(settings)*2+7)/8)
-	binary.LittleEndian.PutUint16(buf, uint16(len(settings)))
+func (fn *FaviewNode) State() string {
+	filter, visibility := fn.RawState(fn.SelectedIndex)
+	buf := make([]byte, 2+(len(visibility)*2+7)/8)
+	binary.LittleEndian.PutUint16(buf, uint16(len(visibility)))
 	var v byte
 	d := 2
 	for i, pass := range filter {
 		v <<= 2
 		if pass {
-			if settings[i] {
+			if visibility[i] {
 				v += 3
 			} else {
 				v += 2
