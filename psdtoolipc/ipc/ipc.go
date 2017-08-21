@@ -115,7 +115,7 @@ func (ipc *IPC) updateImageList() {
 	sort.Sort(keys)
 	s := make([]string, len(keys))
 	for i, key := range keys {
-		s[i] = "ID: " + itoa(key.ID) + " / " + filepath.Base(key.FilePath)
+		s[i] = fmt.Sprintf("ID: %06d / %s", key.ID, filepath.Base(key.FilePath))
 	}
 	ipc.m.Lock()
 	ipc.hotImageList = s
