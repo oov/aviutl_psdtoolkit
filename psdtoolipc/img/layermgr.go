@@ -235,13 +235,13 @@ func (m *LayerManager) NormalizeMap(layers map[int]*bool, flip Flip) bool {
 		if _, ok := processed[g]; ok {
 			continue
 		}
-		m.normalizeGroupMap(seqID, layers)
+		modified = m.normalizeGroupMap(seqID, layers) || modified
 		processed[g] = struct{}{}
 	}
 
-	m.normalizeFlipMap(m.FlipXPair, flip == FlipX, layers)
-	m.normalizeFlipMap(m.FlipYPair, flip == FlipY, layers)
-	m.normalizeFlipMap(m.FlipXYPair, flip == FlipXY, layers)
+	modified = m.normalizeFlipMap(m.FlipXPair, flip == FlipX, layers) || modified
+	modified = m.normalizeFlipMap(m.FlipYPair, flip == FlipY, layers) || modified
+	modified = m.normalizeFlipMap(m.FlipXYPair, flip == FlipXY, layers) || modified
 	return modified
 }
 
