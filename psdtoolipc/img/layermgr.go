@@ -343,6 +343,9 @@ func (m *LayerManager) DeserializeVisibility(s string, flip Flip, faviewRoot *Fa
 
 	var items []*FaviewNode
 	for _, line := range strings.Split(s, " ") {
+		if len(line) < 2 {
+			continue
+		}
 		switch line[:2] {
 		case "V.":
 			buf, err := base64.RawURLEncoding.DecodeString(line[2:])
