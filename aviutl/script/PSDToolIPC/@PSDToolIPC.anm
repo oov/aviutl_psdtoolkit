@@ -1,3 +1,4 @@
+-- 雀の往来
 @Render
 --track0:ID,0,999,0,1
 --track1:縮小率,0.01,100,100,0.01
@@ -5,88 +6,18 @@
 --track3:オフセットY,-5000,5000,0,1
 --check0:ここで描画,1
 --param:
-require("PSDToolIPC")
-psdtoolipc = {
-  id = obj.track0*1000 + obj.layer,
-  file = f ~= nil and f or "",
-  layer = l ~= nil and l or "",
-  layeradd = "",
-  faview = {},
-  scale = obj.track1/100,
-  offsetx = obj.track2,
-  offsety = obj.track3,
-  render = function(self)
-    if self.file == "" then
-      self:usage()
-      return
-    end
-    if #self.faview > 0 then
-      local empty = true
-      for i, v in ipairs(self.faview) do
-        if v == -1 then
-          self.faview[i] = ""
-        else
-          empty = false
-        end
-      end
-      if not empty then
-        self.layeradd = " S." .. table.concat(self.faview, "_") .. self.layeradd
-      end
-    end
-    if self.layeradd ~= "" then
-      self.layer = self.layer .. self.layeradd
-    end
-    local ok, modified, width, height = PSDToolIPC.setprops(self.id, self.file, self)
-    if not ok then
-      self:msg("<s,,B>[PSDToolIPC] 画像の読み込みに失敗しました\n\n"..modified)
-      return
-    end
-    if not modified then
-      local data, w, h = self:getpixeldata(width, height)
-      if PSDToolIPC.getcache("cache:"..self.id.." "..self.file, data, w * 4 * h) then
-        obj.putpixeldata(data)
-        obj.copybuffer("cache:"..self.id.." "..self.file, "obj")
-        return
-      end
-    end
-    local data, w, h = self:getpixeldata(width, height)
-    local ok, msg = PSDToolIPC.draw(self.id, self.file, data, w, h)
-    if not ok then
-      self:msg("<s,,B>[PSDToolIPC] 描画中にエラーが発生しました\n\n"..msg)
-      return
-    end
-    PSDToolIPC.putcache("cache:"..self.id.." "..self.file, data, w * 4 * h, false)
-    obj.putpixeldata(data)
-  end,
-  getpixeldata = function(self, width, height)
-    local maxw, maxh = obj.getinfo("image_max")
-    if width > maxw then
-      width = maxw
-    end
-    if height > maxh then
-      height = maxh
-    end
-    obj.setoption("drawtarget","tempbuffer", width, height)
-    obj.copybuffer("obj", "tmp")
-    return obj.getpixeldata()
-  end,
-  msg = function(self, msg)
-    obj.load("figure", "背景", 0, 1, 1)
-    obj.alpha = 0.75
-    obj.draw()
-    obj.setfont("ＭＳ ゴシック", 16, 3, "0xffffff", "0x000000")
-    obj.load("text", msg)
-    obj.draw()
-  end,
-  usage = function(self)
-    self:msg([[<s,,B>[PSDToolIPC] 画像が読み込まれていません。]])
-  end
-}
-f=nil;
-l=nil;
+require("PSDToolIPCLib")
+PSDToolIPCLib.psd:init(
+  obj.track0*1000 + obj.layer,
+  f ~= nil and f or "",
+  l ~= nil and l or "",
+  obj.track1/100,
+  obj.track2,
+  obj.track3
+)
 if obj.check0 then
-  psdtoolipc:render()
-  psdtoolipc = nil
+  PSDToolIPCLib.psd:render()
+  PSDToolIPCLib.psd:cleanup()
 end
 
 @SimpleView
@@ -95,14 +26,116 @@ end
 --track2:,-1,999,-1,1
 --track3:,-1,999,-1,1
 --check0:ここで描画,1
-if psdtoolipc ~= nil then
-  table.insert(psdtoolipc.faview, obj.track0)
-  table.insert(psdtoolipc.faview, obj.track1)
-  table.insert(psdtoolipc.faview, obj.track2)
-  table.insert(psdtoolipc.faview, obj.track3)
+if PSDToolIPCLib.psd ~= nil then
+  table.insert(PSDToolIPCLib.psd.faview, obj.track0)
+  table.insert(PSDToolIPCLib.psd.faview, obj.track1)
+  table.insert(PSDToolIPCLib.psd.faview, obj.track2)
+  table.insert(PSDToolIPCLib.psd.faview, obj.track3)
   if obj.check0 then
-    psdtoolipc:render()
-    psdtoolipc = nil
+    PSDToolIPCLib.psd:render()
+    PSDToolIPCLib.psd:cleanup()
+  end
+end
+
+@口パク バッファ
+--track0:ローカット,1,16000,100,1
+--track1:ハイカット,1,16000,1000,1
+--track2:しきい値,1,2000,20,1
+local n, rate, buf = obj.getaudio(nil, "audiobuffer", "spectrum", 32)
+local v = PSDToolIPCLib.talking(buf, rate, obj.track0, obj.track1, obj.track2)
+PSDToolIPCLib.phoneme = v and "a" or ""
+
+@口パク wavファイル
+--track0:ローカット,1,16000,100,1
+--track1:ハイカット,1,16000,1000,1
+--track2:しきい値,1,2000,20,1
+--file:
+if file ~= nil then
+  local n, rate, buf = obj.getaudio(nil, file, "spectrum", 32)
+  local v = PSDToolIPCLib.talking(buf, rate, obj.track0, obj.track1, obj.track2)
+  PSDToolIPCLib.phoneme = v and "a" or ""
+end
+
+@口パク labファイル
+--file:
+if file ~= nil then
+  PSDToolIPCLib.phoneme = PSDToolIPCLib.talkingphoneme(file, obj.time)
+end
+
+@口パク あいうえお
+--check0:ここで描画,1
+--dialog:あ,a="";い,i="";う,u="";え,e="";お,o="";ん,n="";
+if PSDToolIPCLib.psd ~= nil then
+  local v = "";
+  if PSDToolIPCLib.phoneme == "a" then
+    v = a ~= nil and a or ""
+  elseif PSDToolIPCLib.phoneme == "i" then
+    v = i ~= nil and i or ""
+  elseif PSDToolIPCLib.phoneme == "u" then
+    v = u ~= nil and u or ""
+  elseif PSDToolIPCLib.phoneme == "e" then
+    v = e ~= nil and e or ""
+  elseif PSDToolIPCLib.phoneme == "o" then
+    v = o ~= nil and o or ""
+  else
+    v = n ~= nil and n or ""
+  end
+  if v ~= "" then
+    PSDToolIPCLib.psd.layeradd = PSDToolIPCLib.psd.layeradd .. " " .. v
+  end
+  if obj.check0 then
+    PSDToolIPCLib.psd:render()
+    PSDToolIPCLib.psd:cleanup()
+  end
+end
+
+@口パク
+--track0:速さ,1,100,1,1
+--check0:ここで描画,1
+--dialog:開き,m0="";ほぼ開き,m1="";半開き,m2="";ほぼ閉じ,m3="";閉じ,m4="";
+if PSDToolIPCLib.psd ~= nil then
+  local m = {}
+  if m4 ~= nil and m4 ~= "" then
+    table.insert(m, m4)
+  end
+  if m3 ~= nil and m3 ~= "" then
+    table.insert(m, m3)
+  end
+  if m2 ~= nil and m2 ~= "" then
+    table.insert(m, m2)
+  end
+  if m1 ~= nil and m1 ~= "" then
+    table.insert(m, m1)
+  end
+  if m0 ~= nil and m0 ~= "" then
+    table.insert(m, m0)
+  end
+  if #m > 0 then
+    local speed = obj.track0
+    local id = PSDToolIPCLib.psd.id
+    local stat = PSDToolIPCLib.talkstat[id] or {frame = obj.frame-1, n = 0}
+    if stat.frame ~= obj.frame-1 then
+      stat.n = 0
+    end
+    stat.frame = obj.frame
+    local p = PSDToolIPCLib.phoneme
+    if p == "a" or p == "i" or p == "u" or p == "e" or p == "o" then
+      stat.n = stat.n + 1
+      if stat.n > #m*speed - 1 then
+        stat.n = #m*speed - 1
+      end
+    else
+      stat.n = stat.n - 1
+      if stat.n < 0 then
+        stat.n = 0
+      end
+    end
+    PSDToolIPCLib.psd.layeradd = PSDToolIPCLib.psd.layeradd .. " " .. m[math.floor(stat.n / speed) + 1]
+    PSDToolIPCLib.talkstat[id] = stat
+    if obj.check0 then
+      PSDToolIPCLib.psd:render()
+      PSDToolIPCLib.psd:cleanup()
+    end
   end
 end
 
@@ -111,48 +144,47 @@ end
 --track1:速さ,1,100,1,1
 --track2:オフセット,0,10000,0,1
 --check0:ここで描画,1
---dialog:開き,eye0="";ほぼ開き,eye1="";半目,eye2="";ほぼ閉じ,eye3="";閉じ,eye4="";
-if psdtoolipc ~= nil then
-  local eye = {}
-  if eye4 ~= nil and eye4 ~= "" then
-    table.insert(eye, eye4)
+--dialog:開き,m0="";ほぼ開き,m1="";半開き,m2="";ほぼ閉じ,m3="";閉じ,m4="";
+if PSDToolIPCLib.psd ~= nil then
+  local m = {}
+  if m4 ~= nil and m4 ~= "" then
+    table.insert(m, m4)
   end
-  if eye3 ~= nil and eye3 ~= "" then
-    table.insert(eye, eye3)
+  if m3 ~= nil and m3 ~= "" then
+    table.insert(m, m3)
   end
-  if eye2 ~= nil and eye2 ~= "" then
-    table.insert(eye, eye2)
+  if m2 ~= nil and m2 ~= "" then
+    table.insert(m, m2)
   end
-  if eye1 ~= nil and eye1 ~= "" then
-    table.insert(eye, eye1)
+  if m1 ~= nil and m1 ~= "" then
+    table.insert(m, m1)
   end
-  if eye0 ~= nil and eye0 ~= "" then
-    table.insert(eye, eye0)
+  if m0 ~= nil and m0 ~= "" then
+    table.insert(m, m0)
   end
-  if #eye > 0 then
-    -- 閉じかけの絵を1枚挟んで一気に閉じたあと少しずつ開く
-    table.insert(eye, 1, eye[#eye-1])
+  if #m > 0 then
+    table.insert(m, 1, m[#m-1])
 
     local interval, speed, offset = obj.track0, obj.track1, obj.track2
     local basetime = obj.frame + interval + offset
     local blink = basetime % interval
-    local blink2 = (basetime + interval*obj.rand(0,5,1234,0) + speed*#eye*2) % (interval * 5)
+    local blink2 = (basetime + speed*#m*2) % (interval * 5)
     local applied = false
-    for i, v in ipairs(eye) do
+    for i, v in ipairs(m) do
       local l = speed*i
       local r = l + speed
       if (l <= blink and blink < r)or(l <= blink2 and blink2 < r) then
-        psdtoolipc.layeradd = psdtoolipc.layeradd .. " " .. v
+        PSDToolIPCLib.psd.layeradd = PSDToolIPCLib.psd.layeradd .. " " .. v
         applied = true
         break;
       end
     end
     if not applied then
-      psdtoolipc.layeradd = psdtoolipc.layeradd .. " " .. eye[#eye]
+      PSDToolIPCLib.psd.layeradd = PSDToolIPCLib.psd.layeradd .. " " .. m[#m]
     end
   end
   if obj.check0 then
-    psdtoolipc:render()
-    psdtoolipc = nil
+    PSDToolIPCLib.psd:render()
+    PSDToolIPCLib.psd:cleanup()
   end
 end
