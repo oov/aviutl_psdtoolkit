@@ -103,6 +103,11 @@ func NewPFV(r io.Reader, mgr *LayerManager) (*PFV, error) {
 	if err := sc.Err(); err != nil {
 		return nil, errors.Wrap(err, "pfv: unexpected error")
 	}
+	if len(data) > 0 {
+		if err = insert(&p.Root, typ, name, data, mgr); err != nil {
+			return nil, err
+		}
+	}
 	if err := registerFaview(p); err != nil {
 		return nil, errors.Wrap(err, "pfv: unexpected error")
 	}
