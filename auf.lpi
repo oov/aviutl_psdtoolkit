@@ -13,7 +13,7 @@
       </Flags>
       <SessionStorage Value="None"/>
       <MainUnit Value="0"/>
-      <Title Value="psdtoolipc"/>
+      <Title Value="auf"/>
       <UseAppBundle Value="False"/>
       <ResourceType Value="res"/>
     </General>
@@ -33,58 +33,68 @@
       <local>
         <FormatVersion Value="1"/>
       </local>
-      <environment>
-        <UserOverrides Count="1">
-          <Variable0 Name="PSDTOOLIPCDEBUG" Value="1"/>
-        </UserOverrides>
-      </environment>
     </RunParams>
-    <Units Count="8">
+    <Units Count="11">
       <Unit0>
-        <Filename Value="psdtoolipc.lpr"/>
+        <Filename Value="auf.lpr"/>
         <IsPartOfProject Value="True"/>
       </Unit0>
       <Unit1>
-        <Filename Value="main.pas"/>
+        <Filename Value="audioeffector.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Main"/>
+        <UnitName Value="AudioEffector"/>
       </Unit1>
       <Unit2>
-        <Filename Value="util.pas"/>
+        <Filename Value="aviutl.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Util"/>
+        <UnitName Value="AviUtl"/>
       </Unit2>
       <Unit3>
-        <Filename Value="find.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="Find"/>
-      </Unit3>
-      <Unit4>
-        <Filename Value="remote.pas"/>
-        <IsPartOfProject Value="True"/>
-        <UnitName Value="Remote"/>
-      </Unit4>
-      <Unit5>
         <Filename Value="lua.pas"/>
         <IsPartOfProject Value="True"/>
+      </Unit3>
+      <Unit4>
+        <Filename Value="audiobuf.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="AudioBuf"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="rbgeqfilter.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="RbgEQFilter"/>
       </Unit5>
       <Unit6>
-        <Filename Value="luafuncs.pas"/>
+        <Filename Value="mdadynamics.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="LuaFuncs"/>
+        <UnitName Value="MDADynamics"/>
       </Unit6>
       <Unit7>
-        <Filename Value="cache.pas"/>
+        <Filename Value="lag.pas"/>
         <IsPartOfProject Value="True"/>
-        <UnitName Value="Cache"/>
+        <UnitName Value="Lag"/>
       </Unit7>
+      <Unit8>
+        <Filename Value="circularbuffer.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="CircularBuffer"/>
+      </Unit8>
+      <Unit9>
+        <Filename Value="aufmain.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="AUFMain"/>
+      </Unit9>
+      <Unit10>
+        <Filename Value="psdtoolipcassist.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="PSDToolIPCAssist"/>
+      </Unit10>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
     <Version Value="11"/>
     <PathDelim Value="\"/>
     <Target>
-      <Filename Value="PSDToolIPC.dll" ApplyConventions="False"/>
+      <Filename Value="PSDToolIPC.auf" ApplyConventions="False"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>

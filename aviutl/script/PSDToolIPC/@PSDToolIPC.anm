@@ -37,7 +37,7 @@ if PSDToolIPCLib.psd ~= nil then
   end
 end
 
-@口パク バッファ
+@口パク準備 バッファ
 --track0:ローカット,1,16000,100,1
 --track1:ハイカット,1,16000,1000,1
 --track2:しきい値,1,2000,20,1
@@ -45,19 +45,21 @@ local n, rate, buf = obj.getaudio(nil, "audiobuffer", "spectrum", 32)
 local v = PSDToolIPCLib.talking(buf, rate, obj.track0, obj.track1, obj.track2)
 PSDToolIPCLib.phoneme = v and "a" or ""
 
-@口パク wavファイル
+@口パク準備 wavファイル
 --track0:ローカット,1,16000,100,1
 --track1:ハイカット,1,16000,1000,1
 --track2:しきい値,1,2000,20,1
 --file:
+PSDToolIPCLib.retnil()
 if file ~= nil then
   local n, rate, buf = obj.getaudio(nil, file, "spectrum", 32)
   local v = PSDToolIPCLib.talking(buf, rate, obj.track0, obj.track1, obj.track2)
   PSDToolIPCLib.phoneme = v and "a" or ""
 end
 
-@口パク labファイル
+@口パク準備 labファイル
 --file:
+PSDToolIPCLib.retnil()
 if file ~= nil then
   PSDToolIPCLib.phoneme = PSDToolIPCLib.talkingphoneme(file, obj.time)
 end
@@ -80,6 +82,7 @@ if PSDToolIPCLib.psd ~= nil then
   else
     v = n ~= nil and n or ""
   end
+  PSDToolIPCLib.phoneme = ""
   if v ~= "" then
     PSDToolIPCLib.psd.layeradd = PSDToolIPCLib.psd.layeradd .. " " .. v
   end
@@ -113,11 +116,10 @@ if PSDToolIPCLib.psd ~= nil then
   if #m > 0 then
     local speed = obj.track0
     local id = PSDToolIPCLib.psd.id
-    local stat = PSDToolIPCLib.talkstat[id] or {frame = obj.frame-1, n = 0}
+    local stat = PSDToolIPCLib.talkstat[id] or {frame = obj.frame-1, n = 0, p = ""}
     if stat.frame ~= obj.frame-1 then
       stat.n = 0
     end
-    stat.frame = obj.frame
     local p = PSDToolIPCLib.phoneme
     if p == "a" or p == "i" or p == "u" or p == "e" or p == "o" then
       stat.n = stat.n + 1
@@ -130,12 +132,15 @@ if PSDToolIPCLib.psd ~= nil then
         stat.n = 0
       end
     end
+    stat.frame = obj.frame
+    stat.p = p
     PSDToolIPCLib.psd.layeradd = PSDToolIPCLib.psd.layeradd .. " " .. m[math.floor(stat.n / speed) + 1]
     PSDToolIPCLib.talkstat[id] = stat
-    if obj.check0 then
-      PSDToolIPCLib.psd:render()
-      PSDToolIPCLib.psd:cleanup()
-    end
+    PSDToolIPCLib.phoneme = ""
+  end
+  if obj.check0 then
+    PSDToolIPCLib.psd:render()
+    PSDToolIPCLib.psd:cleanup()
   end
 end
 
@@ -163,7 +168,9 @@ if PSDToolIPCLib.psd ~= nil then
     table.insert(m, m0)
   end
   if #m > 0 then
-    table.insert(m, 1, m[#m-1])
+    if #m > 3 then
+      table.insert(m, 1, m[#m-1])
+    end
 
     local interval, speed, offset = obj.track0, obj.track1, obj.track2
     local basetime = obj.frame + interval + offset

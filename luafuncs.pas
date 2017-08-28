@@ -1,4 +1,4 @@
-unit luafuncs;
+unit LuaFuncs;
 
 {$mode objfpc}{$H+}
 {$CODEPAGE UTF-8}
@@ -34,7 +34,7 @@ const
 implementation
 
 uses
-  main, cache, util;
+  Main, Cache, Util;
 
 var
   psdtool: TPSDToolIPC;

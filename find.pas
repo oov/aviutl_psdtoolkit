@@ -1,4 +1,4 @@
-unit find;
+unit Find;
 
 {$mode objfpc}{$H+}
 {$CODEPAGE UTF-8}
@@ -29,7 +29,7 @@ function FindExEditParameterDialog(out pw: TExEditParameterDialog): boolean;
 implementation
 
 uses
-  util;
+  Util;
 
 function FindControl(Parent, Prev: THandle; ControlClass: WideString;
   Rect: PRect): THandle;

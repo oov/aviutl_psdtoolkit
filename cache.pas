@@ -1,4 +1,4 @@
-unit cache;
+unit Cache;
 
 {$mode objfpc}{$H+}{$Q-}
 {$CODEPAGE UTF-8}
@@ -176,7 +176,7 @@ begin
       IT.Free;
     end;
   end;
-
+  FreeAndNil(FCacheMap);
   RTLEventDestroy(FNotify);
   DoneCriticalSection(FCS);
   inherited Destroy;

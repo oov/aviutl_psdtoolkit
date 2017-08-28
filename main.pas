@@ -1,4 +1,4 @@
-unit main;
+unit Main;
 
 {$mode objfpc}{$H+}
 {$CODEPAGE UTF-8}
@@ -6,7 +6,7 @@ unit main;
 interface
 
 uses
-  SysUtils, Classes, Process, hook, remote, util;
+  SysUtils, Classes, Process, Remote, Util;
 
 type
 
@@ -14,7 +14,6 @@ type
 
   TPSDToolIPC = class
   private
-    FHooker: THooker;
     FRemoteProcess: TProcess;
     FReceiver: TReceiver;
     FCS: TRTLCriticalSection;
@@ -42,7 +41,7 @@ type
 implementation
 
 uses
-  Windows, find;
+  Windows, Find;
 
 { TPSDToolIPC }
 
@@ -51,14 +50,6 @@ var
   ws: WideString;
 begin
   inherited Create;
-  if IsExEditWindowExists() then
-  begin
-    FHooker := THooker.Create();
-    FHooker.OnPressShiftCtrlAltA := @OnShiftCtrlAltA;
-  end
-  else
-    FHooker := nil;
-
   InitCriticalSection(FCS);
   FRemoteProcess := TProcess.Create(nil);
   ws := GetDLLName();
@@ -90,11 +81,6 @@ begin
   end;
 
   DoneCriticalSection(FCS);
-
-  if FHooker <> nil then
-  begin
-    FHooker.Free;
-  end;
   inherited Destroy;
 end;
 

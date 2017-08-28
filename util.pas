@@ -1,4 +1,4 @@
-unit util;
+unit Util;
 
 {$mode objfpc}{$H+}
 {$CODEPAGE UTF-8}

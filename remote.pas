@@ -1,4 +1,4 @@
-unit remote;
+unit Remote;
 
 {$mode objfpc}{$H+}
 {$CODEPAGE UTF-8}
@@ -40,7 +40,7 @@ type
 implementation
 
 uses
-  util;
+  Util;
 
 { TReceiver }
 

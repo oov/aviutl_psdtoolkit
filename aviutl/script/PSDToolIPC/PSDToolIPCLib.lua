@@ -14,6 +14,7 @@ PSDToolIPCLib.psd = {
     self.file = file
     self.layer = layer
     self.layeradd = ""
+    self.faview = {}
     self.scale = scale
     self.offsetx = offsetx
     self.offsety = offsety
@@ -128,5 +129,9 @@ end
 PSDToolIPCLib.phoneme = ""
 
 PSDToolIPCLib.talkstat = {}
+
+PSDToolIPCLib.retnil = function()
+  return nil
+end
 
 return PSDToolIPCLib

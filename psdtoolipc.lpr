@@ -4,14 +4,13 @@ library psdtoolipc;
 {$CODEPAGE UTF-8}
 
 uses
-  main,
-  find,
-  remote,
+  Main,
+  Find,
+  Remote,
   lua,
-  util,
-  luafuncs,
-  hook,
-  cache;
+  Util,
+  LuaFuncs,
+  Cache;
 
   function luaopen_PSDToolIPC(L: Plua_State): integer; cdecl;
   var
