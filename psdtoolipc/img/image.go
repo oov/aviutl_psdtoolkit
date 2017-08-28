@@ -42,6 +42,12 @@ type Image struct {
 	PFV *PFV
 }
 
+func (img *Image) Clone() *Image {
+	r := *img
+	r.image = nil
+	return &r
+}
+
 func (img *Image) FlipX() bool {
 	return img.Flip == FlipX || img.Flip == FlipXY
 }

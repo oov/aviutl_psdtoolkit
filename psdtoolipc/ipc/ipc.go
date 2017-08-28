@@ -88,13 +88,13 @@ func (ipc *IPC) ImageList() ([]string, StateKeys) {
 }
 
 func (ipc *IPC) Image(id int, filePath string) (*img.Image, error) {
-	var r img.Image
+	var r *img.Image
 	var err error
 	ipc.do(func() {
 		var ro *img.Image
 		ro, err = ipc.load(id, filePath)
 		if err == nil {
-			r = *ro
+			r = ro.Clone()
 			r.PSD = ro.PSD.Clone()
 			r.Layers = img.NewLayerManager(r.PSD)
 			r.Scale = 1
@@ -104,7 +104,7 @@ func (ipc *IPC) Image(id int, filePath string) (*img.Image, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &r, nil
+	return r, nil
 }
 
 func (ipc *IPC) updateImageList() {
