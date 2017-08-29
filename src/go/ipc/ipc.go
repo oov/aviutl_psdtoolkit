@@ -315,16 +315,16 @@ func (ipc *IPC) SendEditingImageState(s *img.ImageState) error {
 		if err = writeString(s.FilePath); err != nil {
 			return
 		}
-		if err = writeInt32(int(int32(s.FileHash))); err != nil {
+		if err = writeUint32(s.FileHash); err != nil {
 			return
 		}
 		if err = writeFloat32(s.Scale); err != nil {
 			return
 		}
-		if err = writeInt32(s.OffsetX); err != nil {
+		if err = writeInt32(int32(s.OffsetX)); err != nil {
 			return
 		}
-		if err = writeInt32(s.OffsetY); err != nil {
+		if err = writeInt32(int32(s.OffsetY)); err != nil {
 			return
 		}
 		if err = writeString(s.Layer); err != nil {
@@ -365,7 +365,7 @@ func (ipc *IPC) dispatch(cmd string) error {
 		if err != nil {
 			return err
 		}
-		if err = writeInt32(0x80000000); err != nil {
+		if err = writeUint32(0x80000000); err != nil {
 			return err
 		}
 		return writeBinary(b)
@@ -379,7 +379,7 @@ func (ipc *IPC) dispatch(cmd string) error {
 		if err != nil {
 			return err
 		}
-		if err = writeInt32(0x80000000); err != nil {
+		if err = writeUint32(0x80000000); err != nil {
 			return err
 		}
 		return writeString(s)
@@ -443,23 +443,23 @@ func (ipc *IPC) dispatch(cmd string) error {
 			return err
 		}
 		ods.ODS("  Modified: %v / Width: %d / Height: %d", modified, width, height)
-		if err = writeInt32(0x80000000); err != nil {
+		if err = writeUint32(0x80000000); err != nil {
 			return err
 		}
 		if err = writeBool(modified); err != nil {
 			return err
 		}
-		if err = writeInt32(width); err != nil {
+		if err = writeUint32(uint32(width)); err != nil {
 			return err
 		}
-		return writeInt32(height)
+		return writeUint32(uint32(height))
 
 	case "SGUI":
 		h, err := ipc.showGUI()
 		if err != nil {
 			return err
 		}
-		if err = writeInt32(0x80000000); err != nil {
+		if err = writeUint32(0x80000000); err != nil {
 			return err
 		}
 		return writeUint64(uint64(h))

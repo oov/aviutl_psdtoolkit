@@ -85,8 +85,12 @@ func writeUint64(i uint64) error {
 	return binary.Write(os.Stdout, binary.LittleEndian, i)
 }
 
-func writeInt32(i int) error {
-	return binary.Write(os.Stdout, binary.LittleEndian, int32(i))
+func writeInt32(i int32) error {
+	return binary.Write(os.Stdout, binary.LittleEndian, i)
+}
+
+func writeUint32(i uint32) error {
+	return binary.Write(os.Stdout, binary.LittleEndian, i)
 }
 
 func writeFloat32(v float32) error {
@@ -101,7 +105,7 @@ func writeBool(v bool) error {
 }
 
 func writeString(s string) error {
-	if err := writeInt32(len(s)); err != nil {
+	if err := writeInt32(int32(len(s))); err != nil {
 		return err
 	}
 	if _, err := os.Stdout.WriteString(s); err != nil {
@@ -113,10 +117,10 @@ func writeString(s string) error {
 
 func writeReply(err error) error {
 	if err == nil {
-		return writeInt32(0x80000000)
+		return writeUint32(0x80000000)
 	}
 	s := err.Error()
-	if err := writeInt32(len(s) | 0x80000000); err != nil {
+	if err := writeUint32(uint32(len(s)&0x7fffffff) | 0x80000000); err != nil {
 		return err
 	}
 	if _, err := os.Stdout.WriteString(s); err != nil {
@@ -127,7 +131,7 @@ func writeReply(err error) error {
 }
 
 func writeBinary(b []byte) error {
-	if err := writeInt32(len(b)); err != nil {
+	if err := writeInt32(int32(len(b))); err != nil {
 		return err
 	}
 	if _, err := os.Stdout.Write(b); err != nil {
