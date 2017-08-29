@@ -199,7 +199,7 @@ func main() {
 	g.initFont()
 	g.LayerView.Init()
 
-	bg, err := png.Decode(bytes.NewReader(assets.MustAsset("assets/bg.png")))
+	bg, err := png.Decode(bytes.NewReader(assets.MustAsset("bg.png")))
 	if err != nil {
 		log.Fatalln("could not decode bg.png:", err)
 	}
