@@ -22,7 +22,7 @@ PSDToolKit は AviUtl の拡張編集プラグイン上で PSD ファイルを�
   - SimpleView
   - 口パク
   - 目パチ
-- script/PSDToolKit/PSDToolKitLib.lua - 実際に処理を行う Lua のメイン部
+- script/PSDToolKit/PSDToolKitLib.lua - Lua で行うメイン処理が書かれたファイル
   - PSDToolKit.dll を使用した PSD ファイルの描画
   - 周波数帯域を指定したトーク中判定
   - lab ファイルによる音素判定

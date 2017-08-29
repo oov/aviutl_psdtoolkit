@@ -1,3 +1,6 @@
+@rem copy readme
+copy /B /Y README.md bin\README.md
+
 @rem copy script files
 copy /B /Y src\lua\PSDToolKitLib.lua bin\script\PSDToolKit\
 copy /B /Y src\lua\@PSDToolKit.anm bin\script\PSDToolKit\
