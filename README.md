@@ -18,7 +18,7 @@ PSDToolKit は AviUtl の拡張編集プラグイン上で PSD ファイルを�
   - PSDToolKit.dll が使用します
   - 手動で起動しても基本的にはなにもできません
 - script/PSDToolKit/@PSDToolKit.anm - AviUtl 用の Lua スクリプトセット
-  - Render
+  - Assign / Render
   - SimpleView
   - 口パク
   - 目パチ

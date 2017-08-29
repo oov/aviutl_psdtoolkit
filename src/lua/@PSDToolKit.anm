@@ -1,10 +1,10 @@
 -- 雀の往来
-@Render
+@Assign
 --track0:ID,0,999,0,1
 --track1:縮小率,0.01,100,100,0.01
 --track2:オフセットX,-5000,5000,0,1
 --track3:オフセットY,-5000,5000,0,1
---check0:描画,1
+--check0:Render,1
 --param:
 require("PSDToolKitLib")
 PSDToolKitLib.psd:init(
@@ -22,24 +22,19 @@ if obj.check0 then
   PSDToolKitLib.psd:cleanup()
 end
 
+@Render
+PSDToolKitLib.psd:render()
+PSDToolKitLib.psd:cleanup()
+
 @SimpleView
 --track0:,-1,999,-1,1
 --track1:,-1,999,-1,1
 --track2:,-1,999,-1,1
 --track3:,-1,999,-1,1
---check0:描画,1
 table.insert(PSDToolKitLib.psd.faview, obj.track0)
 table.insert(PSDToolKitLib.psd.faview, obj.track1)
 table.insert(PSDToolKitLib.psd.faview, obj.track2)
 table.insert(PSDToolKitLib.psd.faview, obj.track3)
-if obj.check0 then
-  PSDToolKitLib.psd:render()
-  PSDToolKitLib.psd:cleanup()
-end
-
-@描画
-PSDToolKitLib.psd:render()
-PSDToolKitLib.psd:cleanup()
 
 @口パク準備 バッファ
 --track0:ローカット,1,16000,100,1
@@ -74,7 +69,6 @@ end
 file = nil
 
 @口パク あいうえお
---check0:描画,1
 --dialog:あ,a="";い,i="";う,u="";え,e="";お,o="";ん,n="";
 local v = "";
 if PSDToolKitLib.phoneme == "a" then
@@ -94,14 +88,9 @@ PSDToolKitLib.phoneme = ""
 if v ~= "" then
   PSDToolKitLib.psd.layeradd = PSDToolKitLib.psd.layeradd .. " " .. v
 end
-if obj.check0 then
-  PSDToolKitLib.psd:render()
-  PSDToolKitLib.psd:cleanup()
-end
 
 @口パク
 --track0:速さ,1,100,1,1
---check0:描画,1
 --dialog:開き,m0="";ほぼ開き,m1="";半開き,m2="";ほぼ閉じ,m3="";閉じ,m4="";
 local m = {}
 if m4 ~= nil and m4 ~= "" then
@@ -144,16 +133,11 @@ if #m > 0 then
   PSDToolKitLib.talkstat[id] = stat
   PSDToolKitLib.phoneme = ""
 end
-if obj.check0 then
-  PSDToolKitLib.psd:render()
-  PSDToolKitLib.psd:cleanup()
-end
 
 @目パチ
 --track0:間隔,0,1000,120,1
 --track1:速さ,1,100,1,1
 --track2:オフセット,0,10000,0,1
---check0:描画,1
 --dialog:開き,m0="";ほぼ開き,m1="";半開き,m2="";ほぼ閉じ,m3="";閉じ,m4="";
 local m = {}
 if m4 ~= nil and m4 ~= "" then
@@ -193,8 +177,4 @@ if #m > 0 then
   if not applied then
     PSDToolKitLib.psd.layeradd = PSDToolKitLib.psd.layeradd .. " " .. m[#m]
   end
-end
-if obj.check0 then
-  PSDToolKitLib.psd:render()
-  PSDToolKitLib.psd:cleanup()
 end

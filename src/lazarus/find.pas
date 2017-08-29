@@ -93,7 +93,7 @@ begin
     if not IsWindowVisible(h) then
       continue;
     s := GetComboBoxSelectedItem(h);
-    if Pos(WideString('Render@PSDToolKit'), s) = Length(s) - 16 then
+    if Pos(WideString('Assign@PSDToolKit'), s) = Length(s) - 16 then
       Result := h;
   end;
 end;
