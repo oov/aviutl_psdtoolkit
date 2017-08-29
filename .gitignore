@@ -1,0 +1,4 @@
+bin
+aviutl
+src/lazarus/lib
+src/go/assets/bindata.go
