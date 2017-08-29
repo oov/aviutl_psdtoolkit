@@ -53,8 +53,8 @@ PSDToolKitLib.psd = {
       local data, w, h = self:getpixeldata(width, height)
       if PSDToolKit.getcache("cache:"..self.id.." "..self.file, data, w * 4 * h) then
         obj.putpixeldata(data)
-        obj.cx = 0.5
-        obj.cy = 0
+        obj.cx = w % 2 == 1 and 0.5 or 0
+        obj.cy = h % 2 == 1 and 0.5 or 0
         return
       end
     end
@@ -66,8 +66,8 @@ PSDToolKitLib.psd = {
     end
     PSDToolKit.putcache("cache:"..self.id.." "..self.file, data, w * 4 * h, false)
     obj.putpixeldata(data)
-    obj.cx = 0.5
-    obj.cy = 0
+    obj.cx = w % 2 == 1 and 0.5 or 0
+    obj.cy = h % 2 == 1 and 0.5 or 0
   end,
   getpixeldata = function(self, width, height)
     local maxw, maxh = obj.getinfo("image_max")
@@ -88,6 +88,8 @@ PSDToolKitLib.psd = {
     obj.setfont("Arial", 16, 0, "0xffffff", "0x000000")
     obj.load("text", "<s,,B>" .. msg)
     obj.draw()
+    obj.cx = obj.w % 2 == 1 and 0.5 or 0
+    obj.cy = obj.h % 2 == 1 and 0.5 or 0
   end
 }
 
