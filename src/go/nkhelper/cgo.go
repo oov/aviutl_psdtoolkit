@@ -1,3 +1,5 @@
+//go:generate go run genrange.go
+
 package nkhelper
 
 /*
@@ -12,17 +14,7 @@ package nkhelper
 #include "nuklear.h"
 #include <stdio.h>
 
-const nk_rune nk_font_japanese_glyph_ranges[] = {
-    0x0020, 0x00FF,
-    0x2200, 0x22FF, // Mathematical Operators
-    0x3000, 0x303F, // CJK Symbols and Punctuation
-    0x3040, 0x309F, // Hiragana
-    0x30A0, 0x30FF, // Katakana
-    0x0370, 0x03FF, // Greek and Coptic
-    0xFF00, 0xFFEF, // Halfwidth and Fullwidth Forms
-    0x4E00, 0x9FFF, // CJK Unified Ideographs
-    0
-};
+#include "jprange.h"
 void set_japanese_glyph_ranges(void *p) {
 	struct nk_font_config *fc = p;
 	fc->range = &nk_font_japanese_glyph_ranges[0];
