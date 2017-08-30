@@ -27,6 +27,7 @@ func (g *gui) initFont() {
 	g.Font.SymbolHandle = g.Font.Symbol.Handle()
 
 	nk.NkStyleSetFont(g.Context, g.Font.SansHandle)
+	g.LayerView.MainFontHandle = g.Font.SansHandle
 	g.LayerView.SymbolFontHandle = g.Font.SymbolHandle
 }
 

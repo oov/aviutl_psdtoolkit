@@ -30,6 +30,7 @@ const (
 )
 
 type LayerView struct {
+	MainFontHandle   *nk.UserFont
 	SymbolFontHandle *nk.UserFont
 
 	Thumbnail     nk.Image
@@ -144,43 +145,29 @@ func (lv *LayerView) Render(ctx *nk.Context, winRect nk.Rect, img *img.Image) bo
 	return modified
 }
 
-func (lv *LayerView) layoutLayer(ctx *nk.Context, img *img.Image, indent float32, l *layertree.Layer, visible bool) bool {
-	modified := false
+func drawTextMiddle(canvas *nk.CommandBuffer, rect nk.Rect, s string, font *nk.UserFont, col nk.Color) {
+	ofs := (rect.H() - nkhelper.FontHeight(font)) * 0.5
+	r := nk.NkRect(rect.X(), rect.Y()+ofs, rect.W(), rect.H())
+	nk.NkDrawText(canvas, r, s, int32(len(s)), font, nk.Color{}, col)
+}
+
+func layerTreeItem(ctx *nk.Context, indent float32, sansFont, symbolsFont *nk.UserFont, thumb nk.Image, visible, forceVisible bool, l *layertree.Layer) bool {
+	clicked := false
 	const (
 		visibleSize  = 24
 		collapseSize = 24
 		clippingSize = 16
 		marginSize   = 8
-		indentSize   = 16
 	)
-	nk.NkLayoutSpaceBegin(ctx, nk.Static, 28, 4)
 	bounds := nk.NkLayoutSpaceBounds(ctx)
 
-	visible = visible && l.Visible
-	if l.Clipping {
-		visible = visible && l.ClippedBy.Visible
-	}
-	if !visible {
-		var nc nk.Color
-		c := nkhelper.GetStyleTextColorPtr(ctx)
-		r, g, b, a := c.RGBA()
-		nc.SetRGBA(r, g, b, a/4)
-		nk.NkStylePushColor(ctx, c, nc)
-
-		c = nkhelper.GetStyleButtonTextNormalColorPtr(ctx)
-		r, g, b, a = c.RGBA()
-		nc.SetRGBA(r, g, b, a/4)
-		nk.NkStylePushColor(ctx, c, nc)
-	}
-
-	nk.NkStylePushFont(ctx, lv.SymbolFontHandle)
-	nk.NkStylePushStyleItem(ctx, nkhelper.GetStyleButtonNormalPtr(ctx), nk.NkStyleItemColor(nk.Color{}))
-	nk.NkStylePushFloat(ctx, nkhelper.GetStyleButtonBorderPtr(ctx), 0)
-	nk.NkStylePushVec2(ctx, nkhelper.GetStyleButtonPaddingPtr(ctx), nk.NkVec2(0, 0))
-
-	left := float32(indent)
 	if l.Folder {
-		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, collapseSize, bounds.H()))
+		nk.NkStylePushFont(ctx, symbolsFont)
+		nk.NkStylePushStyleItem(ctx, nkhelper.GetStyleButtonNormalPtr(ctx), nk.NkStyleItemColor(nk.Color{}))
+		nk.NkStylePushFloat(ctx, nkhelper.GetStyleButtonBorderPtr(ctx), 0)
+		nk.NkStylePushVec2(ctx, nkhelper.GetStyleButtonPaddingPtr(ctx), nk.NkVec2(0, 0))
+
+		nk.NkLayoutSpacePush(ctx, nk.NkRect(indent, 0, collapseSize, bounds.H()))
 		symbol := symbolFolderClose
 		if l.FolderOpen {
 			symbol = symbolFolderOpen
@@ -188,51 +175,74 @@ func (lv *LayerView) layoutLayer(ctx *nk.Context, img *img.Image, indent float32
 		if nk.NkButtonLabel(ctx, symbol) != 0 {
 			l.FolderOpen = !l.FolderOpen
 		}
-		left += collapseSize + marginSize
+		nk.NkStylePopVec2(ctx)
+		nk.NkStylePopFloat(ctx)
+		nk.NkStylePopStyleItem(ctx)
+		nk.NkStylePopFont(ctx)
+	}
+	indent += collapseSize + marginSize
+
+	w := float32(nkhelper.TextWidth(sansFont, l.Name) + marginSize*3 + visibleSize)
+	nk.NkLayoutSpacePush(ctx, nk.NkRect(indent, 0, w, bounds.H()))
+
+	var rect nk.Rect
+	state := nk.NkWidget(&rect, ctx)
+	if state == 0 {
+		return false
 	}
 
-	nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, visibleSize, bounds.H()))
-	if _, ok := img.Layers.ForceVisible[l.SeqID]; ok {
-		nk.NkLabel(ctx, symbolEyeOpenLocked, nk.TextLeft)
+	canvas := nk.NkWindowGetCanvas(ctx)
+	var bg nk.Color
+
+	if state != nk.WidgetRom {
+		if !forceVisible && nk.NkWidgetIsHovered(ctx) != 0 {
+			bg.SetA(32)
+			if nk.NkWidgetHasMouseClickDown(ctx, nk.ButtonLeft, nk.True) != 0 {
+				clicked = nk.NkInputIsMousePressed(ctx.Input(), nk.ButtonLeft) != 0
+			}
+		}
+	}
+	nk.NkFillRect(canvas, rect, 4, bg)
+
+	var visibleSymbol string
+	if forceVisible {
+		visibleSymbol = symbolEyeOpenLocked
 	} else {
-		symbol := symbolEyeClose
 		if l.Visible {
-			symbol = symbolEyeOpen
-		}
-		if nk.NkButtonLabel(ctx, symbol) != 0 {
-			modified = img.Layers.SetVisible(l.SeqID, !l.Visible, img.Flip) || modified
+			visibleSymbol = symbolEyeOpen
+		} else {
+			visibleSymbol = symbolEyeClose
 		}
 	}
-	left += visibleSize + marginSize
-
-	if !l.Folder {
-		if l.Clipping {
-			left += marginSize / 2
-			nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, clippingSize, bounds.H()))
-			nk.NkLabel(ctx, symbolClippingArrow, nk.TextLeft)
-			left += clippingSize
-		}
-
-		if img, ok := lv.ThumbnailChip[l.SeqID]; ok {
-			nk.NkLayoutSpacePush(ctx, nk.NkRect(left, (bounds.H()-collapseSize)/2, collapseSize, collapseSize))
-			nk.NkImage(ctx, img)
-		}
-		left += collapseSize + marginSize
-	}
-
-	nk.NkStylePopVec2(ctx)
-	nk.NkStylePopFloat(ctx)
-	nk.NkStylePopStyleItem(ctx)
-	nk.NkStylePopFont(ctx)
-
-	nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, bounds.W()-left, bounds.H()))
-	nk.NkLabel(ctx, l.Name, nk.TextLeft)
-
+	var fg nk.Color
+	c := nkhelper.GetStyleTextColorPtr(ctx)
+	fg.SetRGBA(c.R(), c.G(), c.B(), c.A())
 	if !visible {
-		nk.NkStylePopColor(ctx)
-		nk.NkStylePopColor(ctx)
+		fg.SetA(fg.A() / 4)
 	}
+	rect = nk.NkRect(rect.X()+marginSize, rect.Y(), rect.W()-marginSize, rect.H())
+	drawTextMiddle(canvas, rect, visibleSymbol, symbolsFont, fg)
+	rect = nk.NkRect(rect.X()+marginSize+visibleSize, rect.Y(), rect.W()-marginSize-visibleSize, rect.H())
+	drawTextMiddle(canvas, rect, l.Name, sansFont, fg)
+	return clicked
+}
 
+func (lv *LayerView) layoutLayer(ctx *nk.Context, img *img.Image, indent float32, l *layertree.Layer, visible bool) bool {
+	modified := false
+	const (
+		indentSize = 16
+	)
+
+	visible = visible && l.Visible
+	if l.Clipping {
+		visible = visible && l.ClippedBy.Visible
+	}
+	_, forceVisible := img.Layers.ForceVisible[l.SeqID]
+	thumb, _ := lv.ThumbnailChip[l.SeqID]
+	nk.NkLayoutSpaceBegin(ctx, nk.Static, 28, 2)
+	if layerTreeItem(ctx, indent, lv.MainFontHandle, lv.SymbolFontHandle, thumb, visible, forceVisible, l) {
+		modified = img.Layers.SetVisible(l.SeqID, !l.Visible, img.Flip) || modified
+	}
 	nk.NkLayoutSpaceEnd(ctx)
 
 	if l.FolderOpen {

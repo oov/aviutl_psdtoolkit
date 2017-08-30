@@ -131,8 +131,8 @@ func (mv *MainView) Render(ctx *nk.Context, winRect nk.Rect, zoom float64) {
 			nk.NkLayoutSpacePush(ctx, nk.NkRect(
 				float32(imageRect.Min.X),
 				float32(imageRect.Min.Y),
-				float32(imageRect.Dx()),
-				float32(imageRect.Dy()),
+				float32(imageRect.Dx()-1),
+				float32(imageRect.Dy()-1),
 			))
 			cmdbuf := nk.NkWindowGetCanvas(ctx)
 			var widgetRect nk.Rect

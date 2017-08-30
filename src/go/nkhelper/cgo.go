@@ -84,6 +84,15 @@ void set_panel_offset(void *p, void *o) {
 	*pn->offset_y = offset->y;
 }
 
+float font_height(void *p) {
+	struct nk_user_font *f = p;
+	return f->height;
+}
+
+float text_width(void *p, void *s, int len) {
+	struct nk_user_font *f = p;
+	return f->width(f->userdata, f->height, s, len);
+}
 */
 import "C"
 
@@ -138,4 +147,12 @@ func GetPanelOffset(p *nk.Panel) nk.Vec2 {
 
 func SetPanelOffset(p *nk.Panel, offset nk.Vec2) {
 	C.set_panel_offset(unsafe.Pointer(p.Ref()), unsafe.Pointer(offset.Ref()))
+}
+
+func FontHeight(p *nk.UserFont) float32 {
+	return float32(C.font_height(unsafe.Pointer(p.Ref())))
+}
+
+func TextWidth(p *nk.UserFont, s string) float32 {
+	return float32(C.text_width(unsafe.Pointer(p.Ref()), unsafe.Pointer(&[]byte(s)[0]), C.int(len(s))))
 }
