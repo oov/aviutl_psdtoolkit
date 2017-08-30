@@ -18,6 +18,7 @@ import (
 const (
 	symbolEyeClose      = "\u0025"
 	symbolEyeOpen       = "\u0026"
+	symbolEyeOpenLocked = "\u002d"
 	symbolFolderClose   = "\u0021"
 	symbolFolderOpen    = "\u0022"
 	symbolClippingArrow = "\u0027"
@@ -177,19 +178,7 @@ func (lv *LayerView) layoutLayer(ctx *nk.Context, img *img.Image, indent float32
 	nk.NkStylePushFloat(ctx, nkhelper.GetStyleButtonBorderPtr(ctx), 0)
 	nk.NkStylePushVec2(ctx, nkhelper.GetStyleButtonPaddingPtr(ctx), nk.NkVec2(0, 0))
 
-	left := float32(0)
-	if _, ok := img.Layers.ForceVisible[l.SeqID]; !ok {
-		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, visibleSize, bounds.H()))
-		symbol := symbolEyeClose
-		if l.Visible {
-			symbol = symbolEyeOpen
-		}
-		if nk.NkButtonLabel(ctx, symbol) != 0 {
-			modified = img.Layers.SetVisible(l.SeqID, !l.Visible, img.Flip) || modified
-		}
-	}
-	left += visibleSize + marginSize + indent
-
+	left := float32(indent)
 	if l.Folder {
 		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, collapseSize, bounds.H()))
 		symbol := symbolFolderClose
@@ -200,7 +189,23 @@ func (lv *LayerView) layoutLayer(ctx *nk.Context, img *img.Image, indent float32
 			l.FolderOpen = !l.FolderOpen
 		}
 		left += collapseSize + marginSize
+	}
+
+	nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, visibleSize, bounds.H()))
+	if _, ok := img.Layers.ForceVisible[l.SeqID]; ok {
+		nk.NkLabel(ctx, symbolEyeOpenLocked, nk.TextLeft)
 	} else {
+		symbol := symbolEyeClose
+		if l.Visible {
+			symbol = symbolEyeOpen
+		}
+		if nk.NkButtonLabel(ctx, symbol) != 0 {
+			modified = img.Layers.SetVisible(l.SeqID, !l.Visible, img.Flip) || modified
+		}
+	}
+	left += visibleSize + marginSize
+
+	if !l.Folder {
 		if l.Clipping {
 			left += marginSize / 2
 			nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, clippingSize, bounds.H()))
