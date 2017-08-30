@@ -59,6 +59,10 @@ type StateKey struct {
 	FilePath string
 }
 
+func (k *StateKey) String() string {
+	return fmt.Sprintf("ID: %06d / %s", k.ID, filepath.Base(k.FilePath))
+}
+
 type StateKeys []StateKey
 
 func (a StateKeys) Len() int      { return len(a) }
@@ -87,8 +91,9 @@ func (ipc *IPC) ImageList() ([]string, StateKeys) {
 	return il, k
 }
 
-func (ipc *IPC) Image(id int, filePath string) (*img.Image, error) {
+func (ipc *IPC) Image(id int, filePath string) (*img.Image, int, StateKey, error) {
 	var r *img.Image
+	idx := -1
 	var err error
 	ipc.do(func() {
 		var ro *img.Image
@@ -99,12 +104,21 @@ func (ipc *IPC) Image(id int, filePath string) (*img.Image, error) {
 			r.Layers = img.NewLayerManager(r.PSD)
 			r.Scale = 1
 			ipc.usingInGUI = StateKey{id, filePath}
+
+			_, ks := ipc.ImageList()
+			for i, k := range ks {
+				if k.FilePath == filePath && k.ID == id {
+					idx = i
+					break
+				}
+			}
+
 		}
 	})
 	if err != nil {
-		return nil, err
+		return nil, 0, StateKey{}, err
 	}
-	return r, nil
+	return r, idx, StateKey{ID: id, FilePath: filePath}, nil
 }
 
 func (ipc *IPC) updateImageList() {
@@ -115,7 +129,7 @@ func (ipc *IPC) updateImageList() {
 	sort.Sort(keys)
 	s := make([]string, len(keys))
 	for i, key := range keys {
-		s[i] = fmt.Sprintf("ID: %06d / %s", key.ID, filepath.Base(key.FilePath))
+		s[i] = key.String()
 	}
 	ipc.m.Lock()
 	ipc.hotImageList = s

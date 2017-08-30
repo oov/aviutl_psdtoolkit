@@ -128,10 +128,12 @@ func (g *gui) update() {
 	if rootChanged {
 		if g.ImageListSelectedIndex != -1 {
 			key := keys[g.ImageListSelectedIndex]
-			img, err := g.IPC.Image(key.ID, key.FilePath)
+			img, idx, _, err := g.IPC.Image(key.ID, key.FilePath)
 			if err != nil {
 				ods.ODS("error: %v", err)
 			} else {
+				g.ImageListSelectedIndex = idx
+				g.ImageListSelected = key.String()
 				g.intializeView(img)
 			}
 		} else {

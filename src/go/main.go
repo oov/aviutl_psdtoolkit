@@ -187,11 +187,13 @@ func main() {
 	gl.Viewport(0, 0, int32(width), int32(height))
 
 	win.SetDropCallback(func(w *glfw.Window, filenames []string) {
-		img, err := g.IPC.Image(0, extractPSDAndPFV(filenames))
+		img, idx, stateKey, err := g.IPC.Image(0, extractPSDAndPFV(filenames))
 		if err != nil {
 			ods.ODS("error: %v", err)
 			return
 		}
+		g.ImageListSelectedIndex = idx
+		g.ImageListSelected = stateKey.String()
 		g.intializeView(img)
 	})
 
