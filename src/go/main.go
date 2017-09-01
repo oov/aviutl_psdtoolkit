@@ -7,7 +7,6 @@ import (
 	"image"
 	"image/png"
 	"log"
-	"os"
 	"runtime"
 	"runtime/debug"
 	"time"
@@ -26,7 +25,6 @@ import (
 	"github.com/oov/aviutl_psdtoolkit/src/go/layerview"
 	"github.com/oov/aviutl_psdtoolkit/src/go/mainview"
 	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
-	"github.com/oov/psd/layertree"
 )
 
 const (
@@ -45,20 +43,6 @@ const (
 
 func init() {
 	runtime.LockOSThread()
-}
-
-type file struct {
-	*os.File
-	size int64
-}
-
-func (f *file) Size() int64 {
-	return f.size
-}
-
-type loadadData struct {
-	Root *layertree.Root
-	Err  error
 }
 
 type viewResizeMode int
