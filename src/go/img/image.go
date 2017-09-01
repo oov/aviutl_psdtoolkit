@@ -9,7 +9,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/oov/downscale"
-	"github.com/oov/psd/layertree"
+	"github.com/oov/psd/composite"
 )
 
 type Flip int
@@ -26,7 +26,7 @@ type Image struct {
 	FileHash   uint32
 	LastAccess time.Time
 
-	PSD    *layertree.Root
+	PSD    *composite.Tree
 	image  *image.RGBA
 	Layers *LayerManager
 	Flip   Flip

@@ -20,7 +20,7 @@ import (
 	"github.com/oov/aviutl_psdtoolkit/src/go/img"
 	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
 	"github.com/oov/psd/blend"
-	"github.com/oov/psd/layertree"
+	"github.com/oov/psd/composite"
 )
 
 type sourceImage struct {
@@ -28,7 +28,7 @@ type sourceImage struct {
 	FileHash   uint32
 	LastAccess time.Time
 
-	PSD *layertree.Root
+	PSD *composite.Tree
 	PFV *img.PFV
 
 	InitialVisibility *string
@@ -160,7 +160,7 @@ func (ipc *IPC) getSourceImage(filePath string) (*sourceImage, error) {
 		return nil, errors.Wrap(err, "ipc: cannot seek")
 	}
 
-	root, err := layertree.New(context.Background(), f, &layertree.Options{
+	root, err := composite.New(context.Background(), f, &composite.Options{
 		LayerNameEncodingDetector: autoDetect,
 	})
 	if err != nil {

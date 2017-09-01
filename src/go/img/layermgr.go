@@ -9,13 +9,13 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
-	"github.com/oov/psd/layertree"
+	"github.com/oov/psd/composite"
 )
 
 type LayerManager struct {
-	Renderer *layertree.Renderer
+	Renderer *composite.Renderer
 
-	Mapped   map[int]*layertree.Layer
+	Mapped   map[int]*composite.Layer
 	Flat     []int
 	FullPath map[string]int // int != SeqID
 
@@ -26,11 +26,11 @@ type LayerManager struct {
 	FlipXYPair   map[int]*[2]int
 }
 
-func NewLayerManager(root *layertree.Root) *LayerManager {
+func NewLayerManager(tree *composite.Tree) *LayerManager {
 	m := &LayerManager{
-		Renderer: root.Renderer,
+		Renderer: tree.Renderer,
 
-		Mapped:   map[int]*layertree.Layer{},
+		Mapped:   map[int]*composite.Layer{},
 		Flat:     []int{},
 		FullPath: map[string]int{},
 
@@ -42,10 +42,10 @@ func NewLayerManager(root *layertree.Root) *LayerManager {
 	}
 	dup := map[string]int{}
 	var g []int
-	for i := range root.Children {
-		enumChildren(m, &root.Children[i], root.Children, nil, dup)
-		if isGroup(root.Children[i].Name) {
-			g = append(g, root.Children[i].SeqID)
+	for i := range tree.Root.Children {
+		enumChildren(m, &tree.Root.Children[i], tree.Root.Children, nil, dup)
+		if isGroup(tree.Root.Children[i].Name) {
+			g = append(g, tree.Root.Children[i].SeqID)
 		}
 	}
 	for _, seqID := range g {
@@ -116,6 +116,20 @@ func (m *LayerManager) setVisible(seqID int, visible bool) bool {
 func (m *LayerManager) SetVisible(seqID int, visible bool, flip Flip) bool {
 	modified := m.setVisible(seqID, visible)
 	modified = m.NormalizeFlipOne(seqID, flip) || modified
+	return modified
+}
+
+func (m *LayerManager) SetVisibleExclusive(seqID int, visible bool, flip Flip) bool {
+	if _, ok := m.Group[seqID]; ok {
+		return m.SetVisible(seqID, visible, flip)
+	}
+	modified := false
+	for _, l := range m.Mapped[seqID].Parent.Children {
+		if _, ok := m.Group[l.SeqID]; ok {
+			continue
+		}
+		modified = m.SetVisible(l.SeqID, l.SeqID == seqID && visible, flip) || modified
+	}
 	return modified
 }
 
@@ -253,7 +267,7 @@ func isGroup(s string) bool {
 	return len(s) > 2 && s[0] == '*' && s[1] != '*'
 }
 
-func registerFlips(m *LayerManager, l *layertree.Layer, sib []layertree.Layer) {
+func registerFlips(m *LayerManager, l *composite.Layer, sib []composite.Layer) {
 	tokens := strings.Split(l.Name, ":")
 	var orgName string
 	for i := len(tokens) - 1; i >= 0; i-- {
@@ -270,7 +284,7 @@ func registerFlips(m *LayerManager, l *layertree.Layer, sib []layertree.Layer) {
 		break
 	}
 
-	var org *layertree.Layer
+	var org *composite.Layer
 	for i, l2 := range sib {
 		if l2.Name == orgName {
 			org = &sib[i]
@@ -298,7 +312,7 @@ func registerFlips(m *LayerManager, l *layertree.Layer, sib []layertree.Layer) {
 	}
 }
 
-func enumChildren(m *LayerManager, l *layertree.Layer, sib []layertree.Layer, dir []byte, dup map[string]int) {
+func enumChildren(m *LayerManager, l *composite.Layer, sib []composite.Layer, dir []byte, dup map[string]int) {
 	if dir != nil {
 		dir = append(dir, '/')
 	}

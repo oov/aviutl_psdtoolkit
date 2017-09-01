@@ -12,7 +12,7 @@ import (
 	"github.com/oov/aviutl_psdtoolkit/src/go/img"
 	"github.com/oov/aviutl_psdtoolkit/src/go/nkhelper"
 	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
-	"github.com/oov/psd/layertree"
+	"github.com/oov/psd/composite"
 )
 
 const (
@@ -47,11 +47,11 @@ func (lv *LayerView) Init() {
 	lv.ThumbnailChip = map[int]nk.Image{}
 }
 
-func (lv *LayerView) UpdateThumbnails(root *layertree.Root, size int, doMain func(func())) {
+func (lv *LayerView) UpdateThumbnails(tree *composite.Tree, size int, doMain func(func())) {
 	lv.ThumbnailChip = map[int]nk.Image{}
 	go func() {
 		s := time.Now().UnixNano()
-		rgba, ptMap, err := root.ThumbnailSheet(context.Background(), size)
+		rgba, ptMap, err := tree.ThumbnailSheet(context.Background(), size)
 		if err != nil {
 			ods.ODS("thumbnail: %v", err)
 			return
@@ -115,8 +115,8 @@ func (lv *LayerView) Render(ctx *nk.Context, winRect nk.Rect, img *img.Image) bo
 
 			switch lv.LayerFavSelectedIndex {
 			case 0:
-				for i := len(img.PSD.Children) - 1; i >= 0; i-- {
-					modified = lv.layoutLayer(ctx, img, 0, &img.PSD.Children[i], true) || modified
+				for i := len(img.PSD.Root.Children) - 1; i >= 0; i-- {
+					modified = lv.layoutLayer(ctx, img, 0, &img.PSD.Root.Children[i], true) || modified
 				}
 			case 1:
 				if img.PFV != nil && len(img.PFV.FaviewRoot.Children) > 0 {
@@ -151,8 +151,9 @@ func drawTextMiddle(canvas *nk.CommandBuffer, rect nk.Rect, s string, font *nk.U
 	nk.NkDrawText(canvas, r, s, int32(len(s)), font, nk.Color{}, col)
 }
 
-func layerTreeItem(ctx *nk.Context, indent float32, sansFont, symbolsFont *nk.UserFont, thumb nk.Image, visible, forceVisible bool, l *layertree.Layer) bool {
-	clicked := false
+func layerTreeItem(ctx *nk.Context, indent float32, sansFont, symbolsFont *nk.UserFont, thumb nk.Image, visible, forceVisible bool, l *composite.Layer) (clicked bool, ctrl bool) {
+	clicked = false
+	ctrl = false
 	const (
 		visibleSize  = 24
 		collapseSize = 24
@@ -188,7 +189,7 @@ func layerTreeItem(ctx *nk.Context, indent float32, sansFont, symbolsFont *nk.Us
 	var rect nk.Rect
 	state := nk.NkWidget(&rect, ctx)
 	if state == 0 {
-		return false
+		return false, false
 	}
 
 	canvas := nk.NkWindowGetCanvas(ctx)
@@ -197,9 +198,8 @@ func layerTreeItem(ctx *nk.Context, indent float32, sansFont, symbolsFont *nk.Us
 	if state != nk.WidgetRom {
 		if !forceVisible && nk.NkWidgetIsHovered(ctx) != 0 {
 			bg.SetA(32)
-			if nk.NkWidgetHasMouseClickDown(ctx, nk.ButtonLeft, nk.True) != 0 {
-				clicked = nk.NkInputIsMousePressed(ctx.Input(), nk.ButtonLeft) != 0
-			}
+			clicked = nk.NkInputIsMousePressed(ctx.Input(), nk.ButtonLeft) != 0
+			ctrl = nk.NkInputIsKeyDown(ctx.Input(), nk.KeyCtrl) != 0
 		}
 	}
 	nk.NkFillRect(canvas, rect, 4, bg)
@@ -224,10 +224,10 @@ func layerTreeItem(ctx *nk.Context, indent float32, sansFont, symbolsFont *nk.Us
 	drawTextMiddle(canvas, rect, visibleSymbol, symbolsFont, fg)
 	rect = nk.NkRect(rect.X()+marginSize+visibleSize, rect.Y(), rect.W()-marginSize-visibleSize, rect.H())
 	drawTextMiddle(canvas, rect, l.Name, sansFont, fg)
-	return clicked
+	return clicked, ctrl
 }
 
-func (lv *LayerView) layoutLayer(ctx *nk.Context, img *img.Image, indent float32, l *layertree.Layer, visible bool) bool {
+func (lv *LayerView) layoutLayer(ctx *nk.Context, img *img.Image, indent float32, l *composite.Layer, visible bool) bool {
 	modified := false
 	const (
 		indentSize = 16
@@ -239,9 +239,13 @@ func (lv *LayerView) layoutLayer(ctx *nk.Context, img *img.Image, indent float32
 	}
 	_, forceVisible := img.Layers.ForceVisible[l.SeqID]
 	thumb, _ := lv.ThumbnailChip[l.SeqID]
-	nk.NkLayoutSpaceBegin(ctx, nk.Static, 28, 2)
-	if layerTreeItem(ctx, indent, lv.MainFontHandle, lv.SymbolFontHandle, thumb, visible, forceVisible, l) {
-		modified = img.Layers.SetVisible(l.SeqID, !l.Visible, img.Flip) || modified
+	nk.NkLayoutSpaceBegin(ctx, nk.Static, 28, 3)
+	if clicked, ctrl := layerTreeItem(ctx, indent, lv.MainFontHandle, lv.SymbolFontHandle, thumb, visible, forceVisible, l); clicked {
+		if ctrl {
+			modified = img.Layers.SetVisibleExclusive(l.SeqID, !l.Visible, img.Flip) || modified
+		} else {
+			modified = img.Layers.SetVisible(l.SeqID, !l.Visible, img.Flip) || modified
+		}
 	}
 	nk.NkLayoutSpaceEnd(ctx)
 
