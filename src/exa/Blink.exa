@@ -1,0 +1,13 @@
+[vo]
+length=256
+[vo.0]
+_name=アニメーション効果
+track0=120.00
+track1=1.00
+track2=0.00
+track3=0.00
+check0=0
+type=0
+filter=2
+name=目パチ@PSDToolKit
+param=m0="";m1="";m2="";m3="";m4="";

@@ -4,7 +4,7 @@
 --track1:縮小率,0.01,100,100,0.01
 --track2:オフセットX,-5000,5000,0,1
 --track3:オフセットY,-5000,5000,0,1
---check0:Render,1
+--check0:描画も行う,1
 --param:
 require("PSDToolKitLib")
 PSDToolKitLib.psd:init(
@@ -22,11 +22,11 @@ if obj.check0 then
   PSDToolKitLib.psd:cleanup()
 end
 
-@Render
+@描画
 PSDToolKitLib.psd:render()
 PSDToolKitLib.psd:cleanup()
 
-@SimpleView
+@シンプルビュー
 --track0:,-1,999,-1,1
 --track1:,-1,999,-1,1
 --track2:,-1,999,-1,1
@@ -35,30 +35,6 @@ table.insert(PSDToolKitLib.psd.faview, obj.track0)
 table.insert(PSDToolKitLib.psd.faview, obj.track1)
 table.insert(PSDToolKitLib.psd.faview, obj.track2)
 table.insert(PSDToolKitLib.psd.faview, obj.track3)
-
-@口パク準備
---track0:ローカット,1,16000,100,1
---track1:ハイカット,1,16000,1000,1
---track2:しきい値,1,2000,20,1
---check0:編集全体の音声を元にする,0
---file:
-tonumber(nil)
-require("PSDToolKitLib")
-if obj.check0 then
-  local n, rate, buf = obj.getaudio(nil, "audiobuffer", "spectrum", 32)
-  local v = PSDToolKitLib.talking(buf, rate, obj.track0, obj.track1, obj.track2)
-  PSDToolKitLib.phoneme = v and "a" or ""
-elseif file ~= nil then
-  local ext = string.lower(string.sub(file, -4))
-  if ext == ".lab" then
-    PSDToolKitLib.phoneme = PSDToolKitLib.talkingphoneme(file, obj.time)
-  elseif ext == ".wav" then
-    local n, rate, buf = obj.getaudio(nil, file, "spectrum", 32)
-    local v = PSDToolKitLib.talking(buf, rate, obj.track0, obj.track1, obj.track2)
-    PSDToolKitLib.phoneme = v and "a" or ""
-  end
-  file = nil
-end
 
 @口パク あいうえお
 --dialog:あ,a="";い,i="";う,u="";え,e="";お,o="";ん,n="";

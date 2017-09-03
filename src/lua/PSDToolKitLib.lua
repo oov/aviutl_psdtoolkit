@@ -9,6 +9,7 @@ PSDToolKitLib.psd = {
   scale = 1,
   offsetx = 0,
   offsety = 0,
+  rendered = false,
   init = function(self, id, file, layer, scale, offsetx, offsety)
     self.id = id
     self.file = file
@@ -18,11 +19,14 @@ PSDToolKitLib.psd = {
     self.scale = scale
     self.offsetx = offsetx
     self.offsety = offsety
-  end,
-  cleanup = function(self)
-    self:init(0, "", "", 1, 0, 0)
+    self.rendered = false
   end,
   render = function(self)
+    if self.rendered then
+      self:msg("[PSDToolKit] ALREADY RENDERED")
+      return
+    end
+    self.rendered = true
     require("PSDToolKit")
     if self.file == "" then
       self:msg("[PSDToolKit] NO IMAGE")

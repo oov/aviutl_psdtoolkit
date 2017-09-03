@@ -8,7 +8,7 @@ PSDToolKit は AviUtl の拡張編集プラグイン上で PSD ファイルを�
 - PSDToolKit.auf - AviUtl 用のプラグインセット
   - PSDToolKitAssist
     - メニューから PSDToolKit のメインウィンドウを表示
-    - ショートカットキーから PSDToolKit のメインウィンドウを表示
+    - ショートカットキー（デフォルト `Ctrl+W`）から PSDToolKit のメインウィンドウを表示
   - AudioEffect, AudioMaster
     - オーディオエフェクター（イコライザー、コンプレッサー）機能を追加
 - script/PSDToolKit/PSDToolKit.dll - AviUtl 用の Lua プラグイン
