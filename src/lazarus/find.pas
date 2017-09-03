@@ -37,12 +37,14 @@ var
   h: THandle;
   r: TRect;
   pt: TPoint;
+  cls: PWideChar;
 begin
   Result := 0;
   h := Prev;
+  cls := PWideChar(ControlClass);
   while Result = 0 do
   begin
-    h := FindWindowExW(Parent, h, PWideChar(ControlClass), nil);
+    h := FindWindowExW(Parent, h, cls, nil);
     if h = 0 then
       Exit;
     if Rect <> nil then
@@ -150,10 +152,11 @@ end;
 
 function FindExEditWindow(out w: TExEditWindow): boolean;
 var
-  h, Window, ComboBox, Config: THandle;
+  h, Window, ComboBox: THandle;
   pid, mypid: DWORD;
 begin
   Result := False;
+  FillChar(w, SizeOf(w), 0);
   mypid := GetCurrentProcessId();
   h := 0;
   Window := 0;
@@ -170,13 +173,9 @@ begin
   end;
 
   ComboBox := FindPSDToolKitSelectedComboBox(Window);
-  if ComboBox = 0 then
-    Exit;
-  Config := FindSiblingControl(Window, ComboBox, 'Button');
-  if Config = 0 then
-    Exit;
+  if ComboBox <> 0 then
+    w.Config := FindSiblingControl(Window, ComboBox, 'Button');
   w.Window := Window;
-  w.Config := Config;
   Result := True;
 end;
 

@@ -22,7 +22,7 @@ type
     procedure SendEditingImageStateToExEdit;
     procedure PrepareIPC();
     procedure OnRequest(Sender: TObject; const Command: UTF8String);
-    procedure OnShiftCtrlAltA(Sender: TObject);
+    procedure OnReceiveEditingImageState();
     procedure EnterCS(CommandName: string);
     procedure LeaveCS(CommandName: string);
   public
@@ -201,7 +201,8 @@ begin
   finally
     FReceiver.Done();
   end;
-  if h <> 0 then begin
+  if h <> 0 then
+  begin
     FPSDToolWindow := h;
     SetForegroundWindow(h);
   end;
@@ -228,7 +229,7 @@ begin
     SendMessageW(pw.Edit, WM_SETTEXT, 0, {%H-}LPARAM(PWideChar(ws)));
     Exit;
   end;
-  if FindExEditWindow(w) then
+  if FindExEditWindow(w) and (w.Config <> 0) then
   begin
     PostMessage(w.Config, BM_CLICK, 0, 0);
     n := GetTickCount() + 3000;
@@ -270,40 +271,37 @@ begin
 end;
 
 procedure TPSDToolKit.OnRequest(Sender: TObject; const Command: UTF8String);
+begin
+  case Command of
+    'EDIS': OnReceiveEditingImageState();
+  end;
+end;
+
+procedure TPSDToolKit.OnReceiveEditingImageState;
 var
   FileHash: DWORD;
   Scale: single;
   OffsetX, OffsetY: integer;
   FilePath, State: UTF8String;
 begin
-  case Command of
-    'EDIS':
-    begin
-      FilePath := FReceiver.ReadString();
-      FileHash := DWORD(FReceiver.ReadInt32());
-      Scale := FReceiver.ReadSingle();
-      OffsetX := FReceiver.ReadInt32();
-      OffsetY := FReceiver.ReadInt32();
-      State := FReceiver.ReadString();
-      ODS('  -> FilePath: %s / FileHash: %08x / Scale: %f / OffsetX: %d / OffsetY: %d / State: %s',
-        [FilePath, FileHash, Scale, OffsetX, OffsetY, State]);
-      EnterCS('EDIS');
-      try
-        FRemoteProcess.Input.WriteDWord($80000000);
-        FEditingImageState :=
-          WideString(UTF8String(Format('f="%s";l="%s";',
-          [StringifyForLua(FilePath), State])));
-      finally
-        LeaveCS('EDIS');
-      end;
-      TThread.ExecuteInThread(@SendEditingImageStateToExEdit).FreeOnTerminate := True;
-    end;
+  FilePath := FReceiver.ReadString();
+  FileHash := DWORD(FReceiver.ReadInt32());
+  Scale := FReceiver.ReadSingle();
+  OffsetX := FReceiver.ReadInt32();
+  OffsetY := FReceiver.ReadInt32();
+  State := FReceiver.ReadString();
+  ODS('  -> FilePath: %s / FileHash: %08x / Scale: %f / OffsetX: %d / OffsetY: %d / State: %s',
+    [FilePath, FileHash, Scale, OffsetX, OffsetY, State]);
+  EnterCS('EDIS');
+  try
+    FRemoteProcess.Input.WriteDWord($80000000);
+    FEditingImageState :=
+      WideString(UTF8String(Format('f="%s";l="%s";',
+      [StringifyForLua(FilePath), State])));
+  finally
+    LeaveCS('EDIS');
   end;
-end;
-
-procedure TPSDToolKit.OnShiftCtrlAltA(Sender: TObject);
-begin
-  ShowGUI();
+  TThread.ExecuteInThread(@SendEditingImageStateToExEdit).FreeOnTerminate := True;
 end;
 
 procedure TPSDToolKit.EnterCS(CommandName: string);
