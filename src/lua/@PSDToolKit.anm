@@ -19,14 +19,9 @@ f = nil
 l = nil
 if obj.check0 then
   PSDToolKitLib.psd:render()
-  PSDToolKitLib.psd:cleanup()
 end
 
-@描画
-PSDToolKitLib.psd:render()
-PSDToolKitLib.psd:cleanup()
-
-@シンプルビュー
+@SimpleView
 --track0:,-1,999,-1,1
 --track1:,-1,999,-1,1
 --track2:,-1,999,-1,1
@@ -35,6 +30,9 @@ table.insert(PSDToolKitLib.psd.faview, obj.track0)
 table.insert(PSDToolKitLib.psd.faview, obj.track1)
 table.insert(PSDToolKitLib.psd.faview, obj.track2)
 table.insert(PSDToolKitLib.psd.faview, obj.track3)
+
+@描画
+PSDToolKitLib.psd:render()
 
 @口パク あいうえお
 --dialog:あ,a="";い,i="";う,u="";え,e="";お,o="";ん,n="";
