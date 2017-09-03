@@ -8,7 +8,6 @@ sed 's/\r//' README.md | sed 's/$/\r/' > bin/README.txt
 # copy alias files
 sed 's/\r//' 'src/exa/NewObject.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/PSDToolKitオブジェクト.exa'
 sed 's/\r//' 'src/exa/Render.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/オブジェクト描画.exa'
-sed 's/\r//' 'src/exa/SimpleView.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/シンプルビュー.exa'
 sed 's/\r//' 'src/exa/Blink.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/目パチ.exa'
 sed 's/\r//' 'src/exa/TalkDetector.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/口パク準備.exa'
 sed 's/\r//' 'src/exa/LipSync.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/口パク　開閉のみ.exa'

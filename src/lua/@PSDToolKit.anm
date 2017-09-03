@@ -21,16 +21,6 @@ if obj.check0 then
   PSDToolKitLib.psd:render()
 end
 
-@SimpleView
---track0:,-1,999,-1,1
---track1:,-1,999,-1,1
---track2:,-1,999,-1,1
---track3:,-1,999,-1,1
-table.insert(PSDToolKitLib.psd.faview, obj.track0)
-table.insert(PSDToolKitLib.psd.faview, obj.track1)
-table.insert(PSDToolKitLib.psd.faview, obj.track2)
-table.insert(PSDToolKitLib.psd.faview, obj.track3)
-
 @•`‰æ
 PSDToolKitLib.psd:render()
 
