@@ -20,7 +20,7 @@ type
     constructor Create();
     destructor Destroy(); override;
     function InitProc(fp: PFilter): boolean;
-    function ExitProc(fp: PFilter): boolean;
+    function ExitProc({%H-}fp: PFilter): boolean;
     property Entry: PFilterDLL read GetEntry;
   end;
 
@@ -32,7 +32,7 @@ uses
 var
   MainDLLInstance: THandle;
 
-function LuaAllocator(ud, ptr: Pointer; osize, nsize: size_t): Pointer; cdecl;
+function LuaAllocator({%H-}ud, ptr: Pointer; {%H-}osize, nsize: size_t): Pointer; cdecl;
 begin
   if nsize = 0 then
   begin
@@ -42,7 +42,7 @@ begin
     Exit;
   end;
   if ptr <> nil then
-    Result := ReallocMem(ptr, nsize)
+    Result := ReallocMem({%H-}ptr, nsize)
   else
     Result := GetMem(nsize);
 end;

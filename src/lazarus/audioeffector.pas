@@ -33,7 +33,7 @@ type
     constructor Create();
     destructor Destroy(); override;
     function EffectWndProc(Window: HWND; Message: UINT; WP: WPARAM;
-      LP: LPARAM; Edit: Pointer; Filter: PFilter): integer;
+      {%H-}LP: LPARAM; {%H-}Edit: Pointer; Filter: PFilter): integer;
     function EffectProc(fp: PFilter; fpip: PFilterProcInfo): boolean;
     function MasterProc(fp: PFilter; fpip: PFilterProcInfo): boolean;
     procedure UpdateParamsView();
@@ -162,7 +162,7 @@ begin
         DEFAULT_PITCH or FF_DONTCARE, 'Courier New');
       HideAll(Window);
 
-      GetWindowRect(Window, r);
+      GetWindowRect(Window, {%H-}r);
       FIDCombo := CreateWindowW('COMBOBOX', nil, WS_CHILD or
         WS_TABSTOP or WS_VISIBLE or CBS_DROPDOWNLIST or WS_VSCROLL,
         8, 8, r.Width - 16 - GetSystemMetrics(SM_CXFIXEDFRAME) * 2, 400,
@@ -170,7 +170,7 @@ begin
       SendMessageW(FIDCombo, WM_SETFONT, WPARAM(FFont), 0);
       for i := 0 to 100 do
         SendMessage(FIDCombo, CB_ADDSTRING, 0,
-          LPARAM(PChar(Format('ID: %03d', [i]))));
+          {%H-}LPARAM(PChar(Format('ID: %03d', [i]))));
       SendMessageW(FIDCombo, CB_SETCURSEL, 0, 0);
 
       FParamsLabel := CreateWindowW('STATIC', '', WS_CHILD or

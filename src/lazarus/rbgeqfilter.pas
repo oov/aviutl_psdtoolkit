@@ -206,11 +206,11 @@ begin
     end;
   end;
 
-  b0a0 := b0 / a0;
-  b1a0 := b1 / a0;
-  b2a0 := b2 / a0;
-  a1a0 := a1 / a0;
-  a2a0 := a2 / a0;
+  b0a0 := {%H-}b0 / {%H-}a0;
+  b1a0 := {%H-}b1 / a0;
+  b2a0 := {%H-}b2 / a0;
+  a1a0 := {%H-}a1 / a0;
+  a2a0 := {%H-}a2 / a0;
 end;
 
 procedure TRbjEQFilter.Clear();
