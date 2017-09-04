@@ -172,7 +172,7 @@ func (ipc *IPC) getSourceImage(filePath string) (*sourceImage, error) {
 
 	var pf *img.PFV
 	if len(files) > 1 {
-		f2, err := os.Open(files[1])
+		f2, err := os.Open(filepath.Join(filepath.Dir(files[0]), files[1]))
 		if err != nil {
 			return nil, errors.Wrap(err, "ipc: cannot open the pfv file")
 		}
