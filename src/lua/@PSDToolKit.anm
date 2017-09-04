@@ -21,7 +21,7 @@ if obj.check0 then
   PSDToolKitLib.psd:render()
 end
 
-@描画
+@オブジェクト描画
 PSDToolKitLib.psd:render()
 
 @口パク あいうえお
@@ -42,7 +42,7 @@ else
 end
 PSDToolKitLib.phoneme = ""
 if v ~= "" then
-  PSDToolKitLib.psd.layeradd = PSDToolKitLib.psd.layeradd .. " " .. v
+  table.insert(PSDToolKitLib.psd.layer, v)
 end
 
 @口パク 開閉のみ
@@ -85,7 +85,7 @@ if #m > 0 then
   end
   stat.frame = obj.frame
   stat.p = p
-  PSDToolKitLib.psd.layeradd = PSDToolKitLib.psd.layeradd .. " " .. m[math.floor(stat.n / speed) + 1]
+  table.insert(PSDToolKitLib.psd.layer, m[math.floor(stat.n / speed) + 1])
   PSDToolKitLib.talkstat[id] = stat
   PSDToolKitLib.phoneme = ""
 end
@@ -125,12 +125,12 @@ if #m > 0 then
     local l = speed*i
     local r = l + speed
     if (l <= blink and blink < r)or(l <= blink2 and blink2 < r) then
-      PSDToolKitLib.psd.layeradd = PSDToolKitLib.psd.layeradd .. " " .. v
+      table.insert(PSDToolKitLib.psd.layer, v)
       applied = true
       break;
     end
   end
   if not applied then
-    PSDToolKitLib.psd.layeradd = PSDToolKitLib.psd.layeradd .. " " .. m[#m]
+    table.insert(PSDToolKitLib.psd.layer, m[#m])
   end
 end

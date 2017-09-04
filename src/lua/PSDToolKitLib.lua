@@ -3,8 +3,7 @@ PSDToolKitLib = PSDToolKitLib or {}
 PSDToolKitLib.psd = {
   id = 0,
   file = "",
-  layer = "",
-  layeradd = "",
+  layer = {},
   faview = {},
   scale = 1,
   offsetx = 0,
@@ -13,8 +12,8 @@ PSDToolKitLib.psd = {
   init = function(self, id, file, layer, scale, offsetx, offsety)
     self.id = id
     self.file = file
-    self.layer = layer
-    self.layeradd = ""
+    self.layer = {}
+    table.insert(self.layer, layer)
     self.faview = {}
     self.scale = scale
     self.offsetx = offsetx
@@ -42,11 +41,11 @@ PSDToolKitLib.psd = {
         end
       end
       if not empty then
-        self.layeradd = " S." .. table.concat(self.faview, "_") .. self.layeradd
+        table.insert(self.layer, "S." .. table.concat(self.faview, "_"))
       end
     end
-    if self.layeradd ~= "" then
-      self.layer = self.layer .. self.layeradd
+    if #self.layer > 0 then
+      self.layer = table.concat(self.layer, " ")
     end
     local ok, modified, width, height = PSDToolKit.setprops(self.id, self.file, self)
     if not ok then
