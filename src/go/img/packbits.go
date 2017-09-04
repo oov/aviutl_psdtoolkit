@@ -93,6 +93,7 @@ func encodePackBits(b []byte) []byte {
 		}
 	}
 	if pos != i {
+		repeated = b[i-2] == b[i-1]
 		if repeated {
 			for i-pos > 127 {
 				r = append(r, 0x7f, c)
