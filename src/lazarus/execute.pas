@@ -32,8 +32,8 @@ type
   protected
     procedure Execute; override;
   public
-    constructor Create(Window: THandle; FilePath: UTF8String; SliderName: UTF8String; Names: UTF8String; Values: UTF8String);
-
+    constructor Create(Window: THandle; FilePath: UTF8String;
+      SliderName: UTF8String; Names: UTF8String; Values: UTF8String);
   end;
 
 implementation
@@ -74,8 +74,7 @@ begin
   MessageBoxW(FWindow, 'Target not found.', 'PSDToolKit', MB_ICONERROR);
 end;
 
-constructor TSendEditingImageStateToExEdit.Create(Window: THandle; S: UTF8String
-  );
+constructor TSendEditingImageStateToExEdit.Create(Window: THandle; S: UTF8String);
 begin
   inherited Create(False);
   FreeOnTerminate := True;
@@ -93,9 +92,10 @@ var
   FileName: WideString;
   f: TFileStreamW;
 begin
+  S := StringReplace(Sanitize(ChangeFileExt(ExtractFileName(Token('|', FFilePath)), '') + '-' + FSliderName + '.anm'), '\', '_', [rfReplaceAll]);
   FileName := SaveDialog(FWindow, 'Save SimpleView slider as file',
     'AviUtl animation effect script(*.anm)'#0'*.anm'#0'CSV file(*.csv)'#0'*.csv'#0#0,
-    1, WideString(FSliderName) + '.anm', 'anm', ExtractFilePath(GetDLLName()) + '..');
+    1, WideString(S), 'anm', ExtractFilePath(GetDLLName()) + '..');
   case LowerCase(ExtractFileExt(FileName)) of
     '.anm':
     begin
@@ -157,9 +157,8 @@ begin
   end;
 end;
 
-constructor TExportFaviewSlider.Create(Window: THandle;
-  FilePath: UTF8String; SliderName: UTF8String; Names: UTF8String;
-  Values: UTF8String);
+constructor TExportFaviewSlider.Create(Window: THandle; FilePath: UTF8String;
+  SliderName: UTF8String; Names: UTF8String; Values: UTF8String);
 begin
   inherited Create(False);
   FreeOnTerminate := True;
@@ -171,4 +170,3 @@ begin
 end;
 
 end.
-

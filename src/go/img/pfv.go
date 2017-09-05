@@ -237,6 +237,7 @@ func registerFaview(p *PFV) error {
 		}
 		p.FaviewRoot.ItemNameList = strings.Join(nameList, "\x00")
 		p.FaviewRoot.SelectedIndex = 0
+		p.FaviewRoot.NameNode = &p.Root
 	}
 	return nil
 }
@@ -293,7 +294,9 @@ func (fn *FaviewNode) FullName() string {
 	n := []string{}
 	c := fn
 	for c != nil {
-		n = append(n, fn.NameNode.Name)
+		if c.Parent != nil {
+			n = append(n, c.NameNode.Name)
+		}
 		c = c.Parent
 	}
 	for i, l := 0, len(n)/2; i < l; i++ {

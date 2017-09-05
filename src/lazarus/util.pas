@@ -28,6 +28,7 @@ function CopyToClipboard(const hwnd: THandle; const S: string): boolean;
 
 function Token(const Delimiter: UTF8String; var s: UTF8String): UTF8String;
 function GetDLLName(): WideString;
+function Sanitize(S: UTF8String): UTF8String;
 function StringifyForLua(s: UTF8String): UTF8String;
 function StringifyForCSV(S: UTF8String): UTF8String;
 
@@ -167,6 +168,30 @@ begin
   SetLength(Result, MAX_PATH);
   GetModuleFileNameW(hInstance, @Result[1], MAX_PATH);
   Result := PWideChar(Result);
+end;
+
+function Sanitize(S: UTF8String): UTF8String;
+var
+  si, di: integer;
+  c: char;
+begin
+  SetLength(Result, Length(s));
+  di := 1;
+  for si := 1 to Length(s) do
+  begin
+    case s[si] of
+      #$00, #$01, #$02, #$03, #$04, #$05, #$06, #$07,
+      #$08, #$09, #$0a, #$0b, #$0c, #$0d, #$0e, #$0f,
+      #$10, #$11, #$12, #$13, #$14, #$15, #$16, #$17,
+      #$18, #$19, #$1a, #$1b, #$1c, #$1d, #$1e, #$1f,
+      #$22, #$2a, #$2f, #$3a, #$3c, #$3e, #$3f, #$7c, #$7f: c := '_';
+      else
+        c := s[si];
+    end;
+    Result[di] := c;
+    Inc(di, 1);
+  end;
+  SetLength(Result, di - 1);
 end;
 
 function StringifyForLua(s: UTF8String): UTF8String;
