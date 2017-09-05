@@ -138,12 +138,12 @@ func main() {
 		return uintptr(unsafe.Pointer(g.Window.GetWin32Window())), nil
 	}
 	g.LayerView.CopyToClipboard = func(sliderName, name, value string) {
-		if err := g.IPC.CopyFaviewValue(sliderName, name, value); err != nil {
+		if err := g.IPC.CopyFaviewValue(*g.img.FilePath, sliderName, name, value); err != nil {
 			ods.ODS("cannot copy to the clipboard: %v", err)
 		}
 	}
 	g.LayerView.ExportFaviewSlider = func(sliderName string, names, values []string) {
-		if err := g.IPC.ExportFaviewSlider(sliderName, names, values); err != nil {
+		if err := g.IPC.ExportFaviewSlider(*g.img.FilePath, sliderName, names, values); err != nil {
 			ods.ODS("cannot export faview slider: %v", err)
 		}
 	}

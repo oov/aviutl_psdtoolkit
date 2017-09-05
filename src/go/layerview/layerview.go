@@ -393,13 +393,13 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 
 		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, buttonSize, bounds.H()))
 		if nk.NkButtonLabel(ctx, symbolClipboard) != 0 {
-			lv.CopyToClipboard(n.NameNode.Name, n.Items[n.SelectedIndex].Name, n.State())
+			lv.CopyToClipboard(n.FullName(), n.Items[n.SelectedIndex].Name, n.State())
 		}
 		left += buttonSize
 
 		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, buttonSize, bounds.H()))
 		if nk.NkButtonLabel(ctx, symbolExport) != 0 {
-			lv.ExportFaviewSlider(n.NameNode.Name, n.AllName(), n.AllState())
+			lv.ExportFaviewSlider(n.FullName(), n.AllName(), n.AllState())
 		}
 		left += buttonSize
 

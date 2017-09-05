@@ -34,7 +34,7 @@
         <FormatVersion Value="1"/>
       </local>
     </RunParams>
-    <Units Count="8">
+    <Units Count="9">
       <Unit0>
         <Filename Value="luadll.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -73,6 +73,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="Cache"/>
       </Unit7>
+      <Unit8>
+        <Filename Value="execute.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Execute"/>
+      </Unit8>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

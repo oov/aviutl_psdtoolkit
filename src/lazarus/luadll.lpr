@@ -10,7 +10,8 @@ uses
   lua,
   Util,
   LuaFuncs,
-  Cache;
+  Cache,
+  Execute;
 
   function luaopen_PSDToolKit(L: Plua_State): integer; cdecl;
   var

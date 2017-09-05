@@ -129,26 +129,6 @@ func (img *Image) Render(ctx context.Context) (*image.RGBA, error) {
 	return rgba, nil
 }
 
-type ImageState struct {
-	FilePath string
-	FileHash uint32
-
-	Scale   float32
-	OffsetX int
-	OffsetY int
-
-	Layer string
-}
-
-func (img *Image) Serialize() *ImageState {
-	return &ImageState{
-		FilePath: *img.FilePath,
-		FileHash: img.FileHash,
-
-		Scale:   img.Scale,
-		OffsetX: img.OffsetX,
-		OffsetY: img.OffsetY,
-
-		Layer: img.Layers.SerializeVisibility(img.Flip),
-	}
+func (img *Image) Serialize() string {
+	return img.Layers.SerializeVisibility(img.Flip)
 }

@@ -17,11 +17,7 @@ type
     FRemoteProcess: TProcess;
     FReceiver: TReceiver;
     FCS: TRTLCriticalSection;
-    FEditingImageState: WideString;
-    FSliderName, FSliderItemNames, FSliderItemValues: UTF8String;
     FPSDToolWindow: THandle;
-    procedure SendEditingImageStateToExEdit;
-    procedure ExportFaviewSlider;
     procedure PrepareIPC();
     procedure OnRequest(Sender: TObject; const Command: UTF8String);
     procedure OnReceiveEditingImageState();
@@ -45,7 +41,7 @@ type
 implementation
 
 uses
-  Windows, Find;
+  Windows, Execute;
 
 { TPSDToolKit }
 
@@ -212,127 +208,6 @@ begin
   end;
 end;
 
-procedure TPSDToolKit.SendEditingImageStateToExEdit;
-var
-  h: THandle;
-  ws: WideString;
-  w: TExEditWindow;
-  pw: TExEditParameterDialog;
-  n: DWORD;
-begin
-  EnterCriticalSection(FCS);
-  try
-    ws := FEditingImageState;
-    h := FPSDToolWindow;
-  finally
-    LeaveCriticalSection(FCS);
-  end;
-
-  if FindExEditParameterDialog(pw) then
-  begin
-    SendMessageW(pw.Edit, WM_SETTEXT, 0, {%H-}LPARAM(PWideChar(ws)));
-    Exit;
-  end;
-  if FindExEditWindow(w) and (w.Config <> 0) then
-  begin
-    PostMessage(w.Config, BM_CLICK, 0, 0);
-    n := GetTickCount() + 3000;
-    while n > GetTickCount() do
-    begin
-      Sleep(0);
-      if FindExEditParameterDialog(pw) then
-      begin
-        SendMessageW(pw.Edit, WM_SETTEXT, 0, {%H-}LPARAM(PWideChar(ws)));
-        PostMessage(pw.OK, BM_CLICK, 0, 0);
-        Exit;
-      end;
-    end;
-  end;
-  MessageBoxW(h, 'Target not found.', 'PSDToolKit', MB_ICONERROR);
-end;
-
-procedure TPSDToolKit.ExportFaviewSlider;
-var
-  h: THandle;
-  N: integer;
-  SliderName, Names, Values, S: UTF8String;
-  SS: ShiftJISString;
-  FileName: WideString;
-  f: TFileStreamW;
-begin
-  EnterCriticalSection(FCS);
-  try
-    SliderName := FSliderName;
-    Names := FSliderItemNames;
-    Values := FSliderItemValues;
-    h := FPSDToolWindow;
-  finally
-    LeaveCriticalSection(FCS);
-  end;
-  FileName := SaveDialog(h, 'Save SimpleView slider as file',
-    'AviUtl animation effect script(*.anm)'#0'*.anm'#0'CSV file(*.csv)'#0'*.csv'#0#0,
-    1, WideString(SliderName)+'.anm', 'anm', ExtractFilePath(GetDLLName())+'..');
-  case LowerCase(ExtractFileExt(FileName)) of
-    '.anm':
-    begin
-      f := TFileStreamW.Create(FileName);
-      try
-        N := 0;
-        S := Values;
-        while True do
-        begin
-          Token(#0, S);
-          Inc(N);
-          if S = '' then
-            break;
-        end;
-        SS := SliderName;
-        WriteRawString(f, Format('--track0:%s,1,%d,1,1'#13#10, [SS, N]));
-        WriteRawString(f, 'local names = {');
-        while True do
-        begin
-          S := StringifyForLua(Token(#0, Names)) + ', ';
-          SS := S;
-          WriteRawString(f, SS);
-          if Names = '' then
-            break;
-        end;
-        WriteRawString(f, 'nil}'#13#10);
-        WriteRawString(f, 'local values = {');
-        while True do
-        begin
-          S := StringifyForLua(Token(#0, Values)) + ', ';
-          SS := S;
-          WriteRawString(f, SS);
-          if Values = '' then
-            break;
-        end;
-        WriteRawString(f, 'nil}'#13#10);
-        WriteRawString(f, 'PSDToolKitLib.psd:addstate(values[obj.track0])'#13#10);
-      finally
-        f.Free;
-      end;
-    end;
-    '.csv':
-    begin
-      f := TFileStreamW.Create(FileName);
-      try
-        while True do
-        begin
-          WriteRawString(f, StringifyForCSV(Token(#0, Names)));
-          WriteRawString(f, ',');
-          WriteRawString(f, StringifyForCSV(Token(#0, Values)));
-          WriteRawString(f, #13#10);
-          if (Names = '')and(Values = '') then
-            break;
-        end;
-      finally
-        f.Free;
-      end;
-    end;
-  end;
-end;
-
 procedure TPSDToolKit.PrepareIPC;
 var
   s: UTF8String;
@@ -374,35 +249,27 @@ end;
 
 procedure TPSDToolKit.OnReceiveEditingImageState;
 var
-  FileHash: DWORD;
-  Scale: single;
-  OffsetX, OffsetY: integer;
   FilePath, State: UTF8String;
 begin
   FilePath := FReceiver.ReadString();
-  FileHash := DWORD(FReceiver.ReadInt32());
-  Scale := FReceiver.ReadSingle();
-  OffsetX := FReceiver.ReadInt32();
-  OffsetY := FReceiver.ReadInt32();
   State := FReceiver.ReadString();
-  ODS('  -> FilePath: %s / FileHash: %08x / Scale: %f / OffsetX: %d / OffsetY: %d / State: %s',
-    [FilePath, FileHash, Scale, OffsetX, OffsetY, State]);
+  ODS('  -> FilePath: %s / State: %s', [FilePath, State]);
   EnterCS('EDIS');
   try
     WriteUInt32(FRemoteProcess.Input, $80000000);
-    FEditingImageState :=
-      WideString(UTF8String(Format('f=%s;l=%s;',
-      [StringifyForLua(FilePath), StringifyForLua(State)])));
+    TSendEditingImageStateToExEdit.Create(FPSDToolWindow,
+      UTF8String(Format('f=%s;l=%s;', [StringifyForLua(FilePath),
+      StringifyForLua(State)])));
   finally
     LeaveCS('EDIS');
   end;
-  TThread.ExecuteInThread(@SendEditingImageStateToExEdit).FreeOnTerminate := True;
 end;
 
 procedure TPSDToolKit.OnReceiveCopyFaviewValue;
 var
-  SliderName, Name, Value: UTF8String;
+  FilePath, SliderName, Name, Value: UTF8String;
 begin
+  FilePath := FReceiver.ReadString();
   SliderName := FReceiver.ReadString();
   Name := FReceiver.ReadString();
   Value := FReceiver.ReadString();
@@ -419,8 +286,10 @@ end;
 
 procedure TPSDToolKit.OnReceiveExportFaviewSlider;
 var
-  SliderName, Names, Values: UTF8String;
+  FilePath, SliderName, Names, Values: UTF8String;
 begin
+  FilePath := FReceiver.ReadString();
+
   SliderName := FReceiver.ReadString();
   Names := FReceiver.ReadString();
   Values := FReceiver.ReadString();
@@ -428,13 +297,10 @@ begin
   EnterCS('EXFS');
   try
     WriteUInt32(FRemoteProcess.Input, $80000000);
-    FSliderName := SliderName;
-    FSliderItemNames := Names;
-    FSliderItemValues := Values;
+    TExportFaviewSlider.Create(FPSDToolWindow, FilePath, SliderName, Names, Values);
   finally
     LeaveCS('EXFS');
   end;
-  TThread.ExecuteInThread(@ExportFaviewSlider).FreeOnTerminate := True;
 end;
 
 procedure TPSDToolKit.EnterCS(CommandName: string);

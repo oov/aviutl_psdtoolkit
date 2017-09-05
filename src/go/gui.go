@@ -116,7 +116,7 @@ func (g *gui) update() {
 				modified = g.img.SetFlipY(!fy) || modified
 			}
 			if nk.NkButtonLabel(ctx, "送る") != 0 {
-				if err := g.IPC.SendEditingImageState(g.img.Serialize()); err != nil {
+				if err := g.IPC.SendEditingImageState(*g.img.FilePath, g.img.Serialize()); err != nil {
 					ods.ODS("error: %v", err)
 				}
 			}

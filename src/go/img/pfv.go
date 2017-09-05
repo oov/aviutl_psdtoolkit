@@ -285,6 +285,23 @@ func registerFaviewChildren(fn *FaviewNode) int {
 	return n
 }
 
+func (fn *FaviewNode) Name() string {
+	return fn.NameNode.Name
+}
+
+func (fn *FaviewNode) FullName() string {
+	n := []string{}
+	c := fn
+	for c != nil {
+		n = append(n, fn.NameNode.Name)
+		c = c.Parent
+	}
+	for i, l := 0, len(n)/2; i < l; i++ {
+		n[i], n[len(n)-i-1] = n[len(n)-i-1], n[i]
+	}
+	return strings.Join(n, "\\")
+}
+
 func (fn *FaviewNode) EnumItemNode() []*FaviewNode {
 	r := []*FaviewNode{}
 	enumItemNode(fn, &r)

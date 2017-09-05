@@ -321,27 +321,16 @@ func (ipc *IPC) showGUI() (uintptr, error) {
 	return h, nil
 }
 
-func (ipc *IPC) SendEditingImageState(s *img.ImageState) error {
+func (ipc *IPC) SendEditingImageState(filePath, state string) error {
 	var err error
 	ipc.do(func() {
 		fmt.Print("EDIS")
-		ods.ODS("  FilePath: %s / FileHash: %08x / Scale: %f / OffsetX: %d / OffsetY: %d / State: %s", s.FilePath, s.FileHash, s.Scale, s.OffsetX, s.OffsetY, s.Layer)
-		if err = writeString(s.FilePath); err != nil {
+		ods.ODS("  FilePath: %s", filePath)
+		if err = writeString(filePath); err != nil {
 			return
 		}
-		if err = writeUint32(s.FileHash); err != nil {
-			return
-		}
-		if err = writeFloat32(s.Scale); err != nil {
-			return
-		}
-		if err = writeInt32(int32(s.OffsetX)); err != nil {
-			return
-		}
-		if err = writeInt32(int32(s.OffsetY)); err != nil {
-			return
-		}
-		if err = writeString(s.Layer); err != nil {
+		ods.ODS("  State: %s", state)
+		if err = writeString(state); err != nil {
 			return
 		}
 	})
@@ -355,11 +344,15 @@ func (ipc *IPC) SendEditingImageState(s *img.ImageState) error {
 	return err
 }
 
-func (ipc *IPC) CopyFaviewValue(sliderName, name, value string) error {
+func (ipc *IPC) CopyFaviewValue(filePath, sliderName, name, value string) error {
 	var err error
 	ipc.do(func() {
 		fmt.Print("CPFV")
-		ods.ODS("  sliderName: %s / name: %s / value: %s", sliderName, name, value)
+		ods.ODS("  FilePath: %s", filePath)
+		if err = writeString(filePath); err != nil {
+			return
+		}
+		ods.ODS("  SliderName: %s / Name: %s / Value: %s", sliderName, name, value)
 		if err = writeString(sliderName); err != nil {
 			return
 		}
@@ -380,11 +373,15 @@ func (ipc *IPC) CopyFaviewValue(sliderName, name, value string) error {
 	return err
 }
 
-func (ipc *IPC) ExportFaviewSlider(sliderName string, names, values []string) error {
+func (ipc *IPC) ExportFaviewSlider(filePath, sliderName string, names, values []string) error {
 	var err error
 	ipc.do(func() {
 		fmt.Print("EXFS")
-		ods.ODS("  sliderName: %s / names: %v / values: %v", sliderName, names, values)
+		ods.ODS("  FilePath: %s", filePath)
+		if err = writeString(filePath); err != nil {
+			return
+		}
+		ods.ODS("  SliderName: %s / Names: %v / Values: %v", sliderName, names, values)
 		if err = writeString(sliderName); err != nil {
 			return
 		}
