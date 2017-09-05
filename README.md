@@ -1,14 +1,15 @@
 # PSDToolKit
 
-PSDToolKit は AviUtl の拡張編集プラグイン上で PSD ファイルを扱えるようにするためのツールキットです。  
-動作には 64bit Windows と OpenGL 3.2 以上、そして快適な動作には十分な CPU 速度とメモリが必要です。
+PSDToolKit は AviUtl の拡張編集プラグイン上で PSD ファイルを扱えるようにするためのツールキットです。
+
+動作には 64bit Windows と OpenGL 3.2 以上、そして快適な動作には十分な CPU 速度とメモリが必要です。  
+動作確認は AviUtl version 1.00 / 拡張編集 version 0.92 のみで行っています。
 
 このツールキットは以下のコンポーネントで構成されています。
 
 - PSDToolKit.auf - AviUtl 用のプラグインセット
   - PSDToolKitAssist
-    - メニューから PSDToolKit のメインウィンドウを表示
-    - ショートカットキー（デフォルト `Ctrl+W`）から PSDToolKit のメインウィンドウを表示
+    - メニューに「ウィンドウを表示（デフォルトショートカットキー `Ctrl+W`）」を追加
   - AudioEffect, AudioMaster
     - オーディオエフェクター（イコライザー、コンプレッサー）機能を追加
 - script/PSDToolKit/PSDToolKit.dll - AviUtl 用の Lua プラグイン
@@ -30,12 +31,34 @@ PSDToolKit は AviUtl の拡張編集プラグイン上で PSD ファイルを�
   - PSDToolKit.dll を使用した PSD ファイルの描画
   - 周波数帯域を指定したトーク中判定
   - lab ファイルによる音素判定
+- PSDToolKit/*.exa - 機能を探しやすくするための AviUtl 用エイリアスファイル
+  - PSDToolKitオブジェクト
+  - オブジェクト描画
+  - パーツ差し替え
+  - 口パク　あいうえお
+  - 口パク　開閉のみ
+  - 口パク準備
+  - 目パチ
+
+## 注意事項
+
+PSDToolKit は無保証で提供されます。  
+PSDToolKit を使用したこと及び使用しなかったことによるいかなる損害について、開発者は何も保証しません。
+
+これに同意できない場合、あなたは PSDToolKit を使用することができません。
 
 ## インストール／アンインストール
 
 README.md 以外を exedit.auf がある場所と同じ場所にコピーすればインストール完了です。
 
 アンインストールは exedit.auf がある場所にある PSDToolKit.auf と、同じ場所にある script フォルダー内の PSDToolKit フォルダーを削除すれば完了です。
+
+## バイナリのビルドについて
+
+Bash on Ubuntu on Windows 上で `./build.bash` を行うと必要なファイルがビルドできます。
+
+ソースコードのコンパイルには Go 1.9 windows/amd64、Lazarus 1.6.4 for Windows 32bit が必要です。  
+Lazarus は C:\lazarus にインストールされているのを想定しています。
 
 ## Credits
 
