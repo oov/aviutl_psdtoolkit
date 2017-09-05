@@ -31,7 +31,7 @@ type Image struct {
 	Layers *LayerManager
 	Flip   Flip
 
-	InitialVisibility *string
+	InitialLayerState *string
 
 	Modified bool
 
@@ -130,5 +130,18 @@ func (img *Image) Render(ctx context.Context) (*image.RGBA, error) {
 }
 
 func (img *Image) Serialize() string {
-	return img.Layers.SerializeVisibility(img.Flip)
+	return "L." + itoa(int(img.Flip)) + " " + img.Layers.Serialize()
+}
+
+func (img *Image) Deserialize(s string) (bool, error) {
+	var froot *FaviewNode
+	if img.PFV != nil {
+		froot = &img.PFV.FaviewRoot
+	}
+	m, f, err := img.Layers.Deserialize(s, img.Flip, froot)
+	if err != nil {
+		return false, err
+	}
+	img.Flip = f
+	return m, nil
 }

@@ -2,8 +2,6 @@ package img
 
 import (
 	"bufio"
-	"encoding/base64"
-	"encoding/binary"
 	"io"
 	"strings"
 	"time"
@@ -30,6 +28,25 @@ type Node struct {
 func (n *Node) Item() bool   { return n.Setting != nil }
 func (n *Node) Folder() bool { return n.Children != nil && n.FilterSetting == nil }
 func (n *Node) Filter() bool { return n.FilterSetting != nil }
+
+func (n *Node) RawState() (filter, visibility []bool) {
+	if !n.Item() {
+		panic("node is not item")
+	}
+	filter = make([]bool, len(n.Setting))
+	for i := range filter {
+		filter[i] = true
+	}
+	if makeFilter(filter, n) {
+		return filter, n.Setting
+	}
+	return nil, n.Setting
+}
+
+func (n *Node) State() string {
+	f, v := n.RawState()
+	return serialize(f, v)
+}
 
 func NewPFV(r io.Reader, mgr *LayerManager) (*PFV, error) {
 	sc := bufio.NewScanner(r)
@@ -320,51 +337,19 @@ func enumItemNode(n *FaviewNode, a *[]*FaviewNode) {
 	}
 }
 
-func (fn *FaviewNode) RawState(index int) (filter, visibility []bool) {
-	visibility = fn.Items[index].Setting
-	filter = make([]bool, len(visibility))
-	for i := range filter {
-		filter[i] = true
-	}
-	makeFilter(filter, fn.NameNode)
-	return filter, visibility
+func (fn *FaviewNode) SelectedState() string {
+	return fn.Items[fn.SelectedIndex].State()
 }
 
-func (fn *FaviewNode) State() string {
-	filter, visibility := fn.RawState(fn.SelectedIndex)
-	buf := make([]byte, 2+(len(visibility)*2+7)/8)
-	binary.LittleEndian.PutUint16(buf, uint16(len(visibility)))
-	var v byte
-	d := 2
-	for i, pass := range filter {
-		v <<= 2
-		if pass {
-			if visibility[i] {
-				v += 3
-			} else {
-				v += 2
-			}
-		}
-		if i&0x3 == 0x3 {
-			buf[d] = v
-			v = 0
-			d++
-		}
-	}
-	if d < len(buf) {
-		buf[d] = v
-	}
-	return "F." + base64.RawURLEncoding.EncodeToString(encodePackBits(buf))
+func (fn *FaviewNode) SelectedName() string {
+	return fn.Items[fn.SelectedIndex].Name
 }
 
 func (fn *FaviewNode) AllState() []string {
-	org := fn.SelectedIndex
 	r := make([]string, len(fn.Items))
 	for i := range fn.Items {
-		fn.SelectedIndex = i
-		r[i] = fn.State()
+		r[i] = fn.Items[i].State()
 	}
-	fn.SelectedIndex = org
 	return r
 }
 
@@ -376,15 +361,18 @@ func (fn *FaviewNode) AllName() []string {
 	return r
 }
 
-func makeFilter(f []bool, n *Node) {
+func makeFilter(f []bool, n *Node) bool {
+	modified := false
 	if n.Filter() {
 		for i, v := range n.FilterSetting {
 			if !v {
 				f[i] = false
+				modified = true
 			}
 		}
 	}
 	if n.Parent != nil {
-		makeFilter(f, n.Parent)
+		modified = makeFilter(f, n.Parent) || modified
 	}
+	return modified
 }

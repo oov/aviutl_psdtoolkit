@@ -28,7 +28,7 @@ PSDToolKitLib.psd:render()
 
 @パーツ差し替え
 --track0:パーツ,0,15,0,1
---dialog:0,p0=nil;1,p1=nil;2,p2=nil;3,p3=nil;4,p4=nil;5,p5=nil;6,p6=nil;7,p7=nil;8,p8=nil;9,p9=nil;10,p10=nil;11,p11=nil;12,p12=nil;13,p13=nil;14,p14=nil;15,p15=nil;
+--dialog:0,p0="";1,p1="";2,p2="";3,p3="";4,p4="";5,p5="";6,p6="";7,p7="";8,p8="";9,p9="";10,p10="";11,p11="";12,p12="";13,p13="";14,p14="";15,p15="";
 if obj.track0 == 0 and p0 ~= nil and p0 ~= "" then
   PSDToolKitLib.psd:addstate(p0)
 elseif obj.track0 == 1 and p1 ~= nil and p1 ~= "" then

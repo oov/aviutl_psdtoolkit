@@ -183,9 +183,12 @@ func layerTreeItem(ctx *nk.Context, indent float32, sansFont, symbolsFont *nk.Us
 		nk.NkStylePopStyleItem(ctx)
 		nk.NkStylePopFont(ctx)
 	}
-	indent += collapseSize + marginSize
+	indent += collapseSize + 1
 
-	w := float32(nkhelper.TextWidth(sansFont, l.Name) + marginSize*3 + visibleSize)
+	w := float32(nkhelper.TextWidth(sansFont, l.Name) + marginSize*2 + visibleSize)
+	if l.Clipping {
+		w += visibleSize
+	}
 	nk.NkLayoutSpacePush(ctx, nk.NkRect(indent, 0, w, bounds.H()))
 
 	var rect nk.Rect
@@ -224,7 +227,11 @@ func layerTreeItem(ctx *nk.Context, indent float32, sansFont, symbolsFont *nk.Us
 	}
 	rect = nk.NkRect(rect.X()+marginSize, rect.Y(), rect.W()-marginSize, rect.H())
 	drawTextMiddle(canvas, rect, visibleSymbol, symbolsFont, fg)
-	rect = nk.NkRect(rect.X()+marginSize+visibleSize, rect.Y(), rect.W()-marginSize-visibleSize, rect.H())
+	rect = nk.NkRect(rect.X()+visibleSize, rect.Y(), rect.W()-visibleSize, rect.H())
+	if l.Clipping {
+		drawTextMiddle(canvas, rect, symbolClippingArrow, symbolsFont, fg)
+		rect = nk.NkRect(rect.X()+visibleSize, rect.Y(), rect.W()-visibleSize, rect.H())
+	}
 	drawTextMiddle(canvas, rect, l.Name, sansFont, fg)
 	return clicked, ctrl
 }
@@ -259,26 +266,23 @@ func (lv *LayerView) layoutLayer(ctx *nk.Context, img *img.Image, indent float32
 	return modified
 }
 
-func (lv *LayerView) layoutFavorites(ctx *nk.Context, img *img.Image, indent float32, n *img.Node) bool {
+func favoriteItem(ctx *nk.Context, indent float32, sansFont, symbolsFont *nk.UserFont, n *img.Node) bool {
 	modified := false
 	const (
 		visibleSize  = 24
 		collapseSize = 24
 		clippingSize = 16
 		marginSize   = 8
-		indentSize   = 16
 	)
-	nk.NkLayoutSpaceBegin(ctx, nk.Static, 28, 4)
 	bounds := nk.NkLayoutSpaceBounds(ctx)
 
-	nk.NkStylePushFont(ctx, lv.SymbolFontHandle)
-	nk.NkStylePushStyleItem(ctx, nkhelper.GetStyleButtonNormalPtr(ctx), nk.NkStyleItemColor(nk.Color{}))
-	nk.NkStylePushFloat(ctx, nkhelper.GetStyleButtonBorderPtr(ctx), 0)
-	nk.NkStylePushVec2(ctx, nkhelper.GetStyleButtonPaddingPtr(ctx), nk.NkVec2(0, 0))
-
-	left := float32(indent)
 	if n.Folder() || n.Filter() {
-		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, collapseSize, bounds.H()))
+		nk.NkStylePushFont(ctx, symbolsFont)
+		nk.NkStylePushStyleItem(ctx, nkhelper.GetStyleButtonNormalPtr(ctx), nk.NkStyleItemColor(nk.Color{}))
+		nk.NkStylePushFloat(ctx, nkhelper.GetStyleButtonBorderPtr(ctx), 0)
+		nk.NkStylePushVec2(ctx, nkhelper.GetStyleButtonPaddingPtr(ctx), nk.NkVec2(0, 0))
+
+		nk.NkLayoutSpacePush(ctx, nk.NkRect(indent, 0, collapseSize, bounds.H()))
 		symbol := symbolFolderClose
 		if n.Open {
 			symbol = symbolFolderOpen
@@ -286,26 +290,61 @@ func (lv *LayerView) layoutFavorites(ctx *nk.Context, img *img.Image, indent flo
 		if nk.NkButtonLabel(ctx, symbol) != 0 {
 			n.Open = !n.Open
 		}
-		left += collapseSize + marginSize
+		nk.NkStylePopVec2(ctx)
+		nk.NkStylePopFloat(ctx)
+		nk.NkStylePopStyleItem(ctx)
+		nk.NkStylePopFont(ctx)
 	}
+	indent += collapseSize + 1
+
+	w := float32(nkhelper.TextWidth(sansFont, n.Name) + marginSize*2)
+	if n.Filter() || n.Item() {
+		w += visibleSize
+	}
+	nk.NkLayoutSpacePush(ctx, nk.NkRect(indent, 0, w, bounds.H()))
+
+	var rect nk.Rect
+	state := nk.NkWidget(&rect, ctx)
+	if state == 0 {
+		return false
+	}
+
+	canvas := nk.NkWindowGetCanvas(ctx)
+	var bg nk.Color
+
+	if state != nk.WidgetRom {
+		if n.Item() && nk.NkWidgetIsHovered(ctx) != 0 {
+			bg.SetA(32)
+			modified = nk.NkInputIsMousePressed(ctx.Input(), nk.ButtonLeft) != 0
+		}
+	}
+	nk.NkFillRect(canvas, rect, 4, bg)
+
+	var fg nk.Color
+	c := nkhelper.GetStyleTextColorPtr(ctx)
+	fg.SetRGBA(c.R(), c.G(), c.B(), c.A())
+	rect = nk.NkRect(rect.X()+marginSize, rect.Y(), rect.W()-marginSize, rect.H())
 	if n.Filter() {
-		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, collapseSize, bounds.H()))
-		nk.NkLabel(ctx, symbolFilter, nk.TextLeft)
-		left += collapseSize
+		drawTextMiddle(canvas, rect, symbolFilter, symbolsFont, fg)
+		rect = nk.NkRect(rect.X()+visibleSize, rect.Y(), rect.W()-visibleSize, rect.H())
 	} else if n.Item() {
-		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, collapseSize, bounds.H()))
-		nk.NkLabel(ctx, symbolFile, nk.TextLeft)
-		left += collapseSize
+		drawTextMiddle(canvas, rect, symbolFile, symbolsFont, fg)
+		rect = nk.NkRect(rect.X()+visibleSize, rect.Y(), rect.W()-visibleSize, rect.H())
 	}
+	drawTextMiddle(canvas, rect, n.Name, sansFont, fg)
+	return modified
+}
 
-	nk.NkStylePopVec2(ctx)
-	nk.NkStylePopFloat(ctx)
-	nk.NkStylePopStyleItem(ctx)
-	nk.NkStylePopFont(ctx)
-
-	nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, bounds.W()-left, bounds.H()))
-	nk.NkLabel(ctx, n.Name, nk.TextLeft)
-
+func (lv *LayerView) layoutFavorites(ctx *nk.Context, img *img.Image, indent float32, n *img.Node) bool {
+	modified := false
+	const (
+		indentSize = 16
+	)
+	nk.NkLayoutSpaceBegin(ctx, nk.Static, 28, 4)
+	if favoriteItem(ctx, indent, lv.MainFontHandle, lv.SymbolFontHandle, n) {
+		img.Deserialize(n.State())
+		modified = true
+	}
 	nk.NkLayoutSpaceEnd(ctx)
 
 	if (n.Folder() || n.Filter()) && n.Open {
@@ -316,19 +355,14 @@ func (lv *LayerView) layoutFavorites(ctx *nk.Context, img *img.Image, indent flo
 	return modified
 }
 
-func applyFaview(himg *img.Image, n *img.FaviewNode, newSelectedIndex int) bool {
+func applyFaview(img *img.Image, n *img.FaviewNode, newSelectedIndex int) bool {
 	n.SelectedIndex = newSelectedIndex
 	n.LastModified = time.Now()
-	var froot *img.FaviewNode
-	if himg.PFV != nil {
-		froot = &himg.PFV.FaviewRoot
-	}
-	m, flip, err := himg.Layers.DeserializeVisibility(n.State(), himg.Flip, froot)
+	m, err := img.Deserialize(n.SelectedState())
 	if err != nil {
 		ods.ODS("cannot apply serialized data: %v", err)
 		return false
 	}
-	himg.Flip = flip
 	return m
 }
 
@@ -393,7 +427,7 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 
 		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, buttonSize, bounds.H()))
 		if nk.NkButtonLabel(ctx, symbolClipboard) != 0 {
-			lv.CopyToClipboard(n.FullName(), n.Items[n.SelectedIndex].Name, n.State())
+			lv.CopyToClipboard(n.FullName(), n.SelectedName(), n.SelectedState())
 		}
 		left += buttonSize
 

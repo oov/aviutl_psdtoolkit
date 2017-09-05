@@ -31,7 +31,7 @@ type sourceImage struct {
 	PSD *composite.Tree
 	PFV *img.PFV
 
-	InitialVisibility *string
+	InitialLayerState *string
 	ForceChecked      map[int]struct{} // map[SeqID]
 	Group             map[int][]int    // map[SeqID][]SeqID
 }
@@ -184,7 +184,7 @@ func (ipc *IPC) getSourceImage(filePath string) (*sourceImage, error) {
 	}
 
 	lm.Normalize(img.FlipNone)
-	state := lm.SerializeVisibility(img.FlipNone)
+	state := lm.Serialize()
 	srcImage := &sourceImage{
 		FilePath:   &filePath,
 		FileHash:   hash.Sum32(),
@@ -193,7 +193,7 @@ func (ipc *IPC) getSourceImage(filePath string) (*sourceImage, error) {
 		PSD: root,
 		PFV: pf,
 
-		InitialVisibility: &state,
+		InitialLayerState: &state,
 	}
 	ipc.sourceImages[filePath] = srcImage
 	debug.FreeOSMemory()
@@ -221,7 +221,7 @@ func (ipc *IPC) load(id int, filePath string) (*img.Image, error) {
 		PSD:    psd,
 		Layers: img.NewLayerManager(psd),
 
-		InitialVisibility: r.InitialVisibility,
+		InitialLayerState: r.InitialLayerState,
 
 		Scale: 1,
 
@@ -270,19 +270,14 @@ func (ipc *IPC) setProps(id int, filePath string, layer *string, scale *float32,
 	modified := himg.Modified
 	if layer != nil {
 		if *layer == "" {
-			layer = himg.InitialVisibility
+			layer = himg.InitialLayerState
 		}
-		var froot *img.FaviewNode
-		if himg.PFV != nil {
-			froot = &himg.PFV.FaviewRoot
-		}
-		b, flip, err := himg.Layers.DeserializeVisibility(*layer, himg.Flip, froot)
+		b, err := himg.Deserialize(*layer)
 		if err != nil {
 			return false, 0, 0, errors.Wrap(err, "ipc: deserialize failed")
 		}
 		if b {
 			modified = true
-			himg.Flip = flip
 		}
 	}
 	if scale != nil {

@@ -347,7 +347,7 @@ func enumChildren(m *LayerManager, l *composite.Layer, sib []composite.Layer, di
 	}
 }
 
-func (m *LayerManager) DeserializeVisibility(s string, flip Flip, faviewRoot *FaviewNode) (bool, Flip, error) {
+func (m *LayerManager) Deserialize(s string, flip Flip, faviewRoot *FaviewNode) (bool, Flip, error) {
 	layers := make(map[int]*bool, len(m.Flat))
 	n := make([]bool, len(m.Flat))
 	for index, seqID := range m.Flat {
@@ -356,23 +356,34 @@ func (m *LayerManager) DeserializeVisibility(s string, flip Flip, faviewRoot *Fa
 	}
 
 	var items []*FaviewNode
+	newFlip := flip
 	for _, line := range strings.Split(s, " ") {
 		if len(line) < 2 {
 			continue
 		}
 		switch line[:2] {
+		case "L.":
+			if len(line) != 3 {
+				return false, FlipNone, errors.New("img: unknown flip parameter")
+			}
+			fl := int(line[2] - '0')
+			if 0 <= fl && fl <= 3 {
+				newFlip = Flip(fl)
+			}
 		case "V.":
 			buf, err := base64.RawURLEncoding.DecodeString(line[2:])
 			if err != nil {
-				return false, flip, err
+				return false, FlipNone, err
+			}
+			if buf, err = decodePackBits(buf); err != nil {
+				return false, FlipNone, err
 			}
 			if len(n) != int(binary.LittleEndian.Uint16(buf)) {
-				return false, flip, errors.New("img: number of layers mismatch")
+				return false, FlipNone, errors.New("img: number of layers mismatch")
 			}
 			i := 0
-			flip = Flip(buf[2])
-			for _, v := range buf[3:] {
-				if i+7 < len(layers) {
+			for _, v := range buf[2:] {
+				if i+7 < len(n) {
 					n[i+0] = v&0x80 != 0
 					n[i+1] = v&0x40 != 0
 					n[i+2] = v&0x20 != 0
@@ -384,8 +395,8 @@ func (m *LayerManager) DeserializeVisibility(s string, flip Flip, faviewRoot *Fa
 					i += 8
 					continue
 				}
-				v <<= 8 - uint(len(layers)-i)
-				for i < len(layers) {
+				v <<= 8 - uint(len(n)-i)
+				for i < len(n) {
 					n[i] = v&0x80 != 0
 					v <<= 1
 					i++
@@ -394,17 +405,17 @@ func (m *LayerManager) DeserializeVisibility(s string, flip Flip, faviewRoot *Fa
 		case "F.":
 			buf, err := base64.RawURLEncoding.DecodeString(line[2:])
 			if err != nil {
-				return false, flip, err
+				return false, FlipNone, err
 			}
 			if buf, err = decodePackBits(buf); err != nil {
-				return false, flip, err
+				return false, FlipNone, err
 			}
 			if len(n) != int(binary.LittleEndian.Uint16(buf)) {
-				return false, flip, errors.New("img: number of layers mismatch")
+				return false, FlipNone, errors.New("img: number of layers mismatch")
 			}
 			i := 0
 			for _, v := range buf[2:] {
-				if i+3 < len(layers) {
+				if i+3 < len(n) {
 					if v&0x80 != 0 {
 						n[i+0] = v&0x40 != 0
 					}
@@ -420,8 +431,8 @@ func (m *LayerManager) DeserializeVisibility(s string, flip Flip, faviewRoot *Fa
 					i += 4
 					continue
 				}
-				v <<= (4 - uint(len(layers)-i)) * 2
-				for i < len(layers) {
+				v <<= (4 - uint(len(n)-i)) * 2
+				for i < len(n) {
 					if v&0x80 != 0 {
 						n[i] = v&0x40 != 0
 					}
@@ -451,7 +462,7 @@ func (m *LayerManager) DeserializeVisibility(s string, flip Flip, faviewRoot *Fa
 					ods.ODS("index %d is out of range. skipped.", index)
 					continue
 				}
-				f, v := items[i].RawState(index)
+				f, v := items[i].Items[index].RawState()
 				for i, pass := range f {
 					if !pass {
 						continue
@@ -462,8 +473,8 @@ func (m *LayerManager) DeserializeVisibility(s string, flip Flip, faviewRoot *Fa
 		}
 	}
 
-	m.NormalizeMap(layers, flip)
-	modified := false
+	m.NormalizeMap(layers, newFlip)
+	modified := flip != newFlip
 	r := m.Renderer
 	for seqID, visible := range layers {
 		l := m.Mapped[seqID]
@@ -473,29 +484,13 @@ func (m *LayerManager) DeserializeVisibility(s string, flip Flip, faviewRoot *Fa
 			modified = true
 		}
 	}
-	return modified, flip, nil
+	return modified, newFlip, nil
 }
 
-func (m *LayerManager) SerializeVisibility(flip Flip) string {
-	buf := make([]byte, 3+(len(m.Flat)+7)/8)
-	binary.LittleEndian.PutUint16(buf, uint16(len(m.Flat)))
-	buf[2] = byte(flip)
-	var v byte
-	d := 3
-	for i, l := range m.Flat {
-		l := m.Mapped[l]
-		v <<= 1
-		if l.Visible {
-			v++
-		}
-		if i&0x7 == 0x7 {
-			buf[d] = v
-			v = 0
-			d++
-		}
+func (m *LayerManager) Serialize() string {
+	v := make([]bool, len(m.Flat))
+	for i, seqID := range m.Flat {
+		v[i] = m.Mapped[seqID].Visible
 	}
-	if d < len(buf) {
-		buf[d] = v
-	}
-	return "V." + base64.RawURLEncoding.EncodeToString(buf)
+	return serialize(nil, v)
 }
