@@ -14,7 +14,6 @@ import (
 
 	// _ "net/http/pprof"
 
-	"github.com/atotto/clipboard"
 	"github.com/go-gl/gl/v3.2-core/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/golang-ui/nuklear/nk"
@@ -138,9 +137,14 @@ func main() {
 		})
 		return uintptr(unsafe.Pointer(g.Window.GetWin32Window())), nil
 	}
-	g.LayerView.CopyToClipboard = func(s string) {
-		if err := clipboard.WriteAll(s); err != nil {
+	g.LayerView.CopyToClipboard = func(sliderName, name, value string) {
+		if err := g.IPC.CopyFaviewValue(sliderName, name, value); err != nil {
 			ods.ODS("cannot copy to the clipboard: %v", err)
+		}
+	}
+	g.LayerView.ExportFaviewSlider = func(sliderName string, names, values []string) {
+		if err := g.IPC.ExportFaviewSlider(sliderName, names, values); err != nil {
+			ods.ODS("cannot export faview slider: %v", err)
 		}
 	}
 

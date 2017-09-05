@@ -13,15 +13,19 @@ PSDToolKit は AviUtl の拡張編集プラグイン上で PSD ファイルを�
     - オーディオエフェクター（イコライザー、コンプレッサー）機能を追加
 - script/PSDToolKit/PSDToolKit.dll - AviUtl 用の Lua プラグイン
   - PSDToolKit.exe を使用した PSD ファイルの描画
+  - PSDToolKit.exe からの要求に応じたクリップボード操作、エクスポートなど
   - 画像キャッシュ機構
 - script/PSDToolKit/PSDToolKit.exe - PSD ファイル処理用プログラム
   - PSDToolKit.dll が使用します
   - 手動で起動しても基本的にはなにもできません
-- script/PSDToolKit/@PSDToolKit.anm - AviUtl 用の Lua スクリプトセット
-  - Assign / Render
-  - SimpleView
+- script/PSDToolKit/@PSDToolKit.anm - AviUtl 用のアニメーション効果スクリプトセット
+  - Assign
+  - オブジェクト描画
+  - パーツ差し替え
   - 口パク
   - 目パチ
+- script/PSDToolKit/@PSDToolKit.obj - AviUtl 用のカスタムオブジェクトスクリプトセット
+  - 口パク準備
 - script/PSDToolKit/PSDToolKitLib.lua - Lua で行うメイン処理が書かれたファイル
   - PSDToolKit.dll を使用した PSD ファイルの描画
   - 周波数帯域を指定したトーク中判定
@@ -153,38 +157,6 @@ AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
 LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
-
-### Clipboard for Go
-
-https://github.com/atotto/clipboard
-
-Copyright (c) 2013 Ato Araki. All rights reserved.
-
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are
-met:
-
-   * Redistributions of source code must retain the above copyright
-notice, this list of conditions and the following disclaimer.
-   * Redistributions in binary form must reproduce the above
-copyright notice, this list of conditions and the following disclaimer
-in the documentation and/or other materials provided with the
-distribution.
-   * Neither the name of @atotto. nor the names of its
-contributors may be used to endorse or promote products derived from
-this software without specific prior written permission.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-"AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-(INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 ### errors
 

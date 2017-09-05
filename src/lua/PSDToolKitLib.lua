@@ -9,16 +9,18 @@ PSDToolKitLib.psd = {
   offsetx = 0,
   offsety = 0,
   rendered = false,
-  init = function(self, id, file, layer, scale, offsetx, offsety)
+  init = function(self, id, file, scale, offsetx, offsety)
     self.id = id
     self.file = file
     self.layer = {}
-    table.insert(self.layer, layer)
     self.faview = {}
     self.scale = scale
     self.offsetx = offsetx
     self.offsety = offsety
     self.rendered = false
+  end,
+  addstate = function(self, layer)
+    table.insert(self.layer, layer)
   end,
   render = function(self)
     if self.rendered then
@@ -41,7 +43,7 @@ PSDToolKitLib.psd = {
         end
       end
       if not empty then
-        table.insert(self.layer, "S." .. table.concat(self.faview, "_"))
+        self:addstate("S." .. table.concat(self.faview, "_"))
       end
     end
     if #self.layer > 0 then

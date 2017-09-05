@@ -18,11 +18,15 @@ type
     FReceiver: TReceiver;
     FCS: TRTLCriticalSection;
     FEditingImageState: WideString;
+    FSliderName, FSliderItemNames, FSliderItemValues: UTF8String;
     FPSDToolWindow: THandle;
     procedure SendEditingImageStateToExEdit;
+    procedure ExportFaviewSlider;
     procedure PrepareIPC();
     procedure OnRequest(Sender: TObject; const Command: UTF8String);
     procedure OnReceiveEditingImageState();
+    procedure OnReceiveCopyFaviewValue();
+    procedure OnReceiveExportFaviewSlider();
     procedure EnterCS(CommandName: string);
     procedure LeaveCS(CommandName: string);
   public
@@ -247,6 +251,88 @@ begin
   MessageBoxW(h, 'Target not found.', 'PSDToolKit', MB_ICONERROR);
 end;
 
+procedure TPSDToolKit.ExportFaviewSlider;
+var
+  h: THandle;
+  N: integer;
+  SliderName, Names, Values, S: UTF8String;
+  SS: ShiftJISString;
+  FileName: WideString;
+  f: TFileStreamW;
+begin
+  EnterCriticalSection(FCS);
+  try
+    SliderName := FSliderName;
+    Names := FSliderItemNames;
+    Values := FSliderItemValues;
+    h := FPSDToolWindow;
+  finally
+    LeaveCriticalSection(FCS);
+  end;
+  FileName := SaveDialog(h, 'Save SimpleView slider as file',
+    'AviUtl animation effect script(*.anm)'#0'*.anm'#0'CSV file(*.csv)'#0'*.csv'#0#0,
+    1, WideString(SliderName)+'.anm', 'anm', ExtractFilePath(GetDLLName())+'..');
+  case LowerCase(ExtractFileExt(FileName)) of
+    '.anm':
+    begin
+      f := TFileStreamW.Create(FileName);
+      try
+        N := 0;
+        S := Values;
+        while True do
+        begin
+          Token(#0, S);
+          Inc(N);
+          if S = '' then
+            break;
+        end;
+        SS := SliderName;
+        WriteRawString(f, Format('--track0:%s,1,%d,1,1'#13#10, [SS, N]));
+        WriteRawString(f, 'local names = {');
+        while True do
+        begin
+          S := StringifyForLua(Token(#0, Names)) + ', ';
+          SS := S;
+          WriteRawString(f, SS);
+          if Names = '' then
+            break;
+        end;
+        WriteRawString(f, 'nil}'#13#10);
+        WriteRawString(f, 'local values = {');
+        while True do
+        begin
+          S := StringifyForLua(Token(#0, Values)) + ', ';
+          SS := S;
+          WriteRawString(f, SS);
+          if Values = '' then
+            break;
+        end;
+        WriteRawString(f, 'nil}'#13#10);
+        WriteRawString(f, 'PSDToolKitLib.psd:addstate(values[obj.track0])'#13#10);
+      finally
+        f.Free;
+      end;
+    end;
+    '.csv':
+    begin
+      f := TFileStreamW.Create(FileName);
+      try
+        while True do
+        begin
+          WriteRawString(f, StringifyForCSV(Token(#0, Names)));
+          WriteRawString(f, ',');
+          WriteRawString(f, StringifyForCSV(Token(#0, Values)));
+          WriteRawString(f, #13#10);
+          if (Names = '')and(Values = '') then
+            break;
+        end;
+      finally
+        f.Free;
+      end;
+    end;
+  end;
+end;
+
 procedure TPSDToolKit.PrepareIPC;
 var
   s: UTF8String;
@@ -271,9 +357,18 @@ begin
 end;
 
 procedure TPSDToolKit.OnRequest(Sender: TObject; const Command: UTF8String);
+const
+  UnknownCommandErr = 'Unknown Command';
 begin
   case Command of
     'EDIS': OnReceiveEditingImageState();
+    'CPFV': OnReceiveCopyFaviewValue();
+    'EXFS': OnReceiveExportFaviewSlider();
+    else
+    begin
+      WriteUInt32(FRemoteProcess.Input, Length(UnknownCommandErr) or $80000000);
+      WriteString(FRemoteProcess.Input, UnknownCommandErr);
+    end;
   end;
 end;
 
@@ -294,14 +389,52 @@ begin
     [FilePath, FileHash, Scale, OffsetX, OffsetY, State]);
   EnterCS('EDIS');
   try
-    FRemoteProcess.Input.WriteDWord($80000000);
+    WriteUInt32(FRemoteProcess.Input, $80000000);
     FEditingImageState :=
-      WideString(UTF8String(Format('f="%s";l="%s";',
-      [StringifyForLua(FilePath), State])));
+      WideString(UTF8String(Format('f=%s;l=%s;',
+      [StringifyForLua(FilePath), StringifyForLua(State)])));
   finally
     LeaveCS('EDIS');
   end;
   TThread.ExecuteInThread(@SendEditingImageStateToExEdit).FreeOnTerminate := True;
+end;
+
+procedure TPSDToolKit.OnReceiveCopyFaviewValue;
+var
+  SliderName, Name, Value: UTF8String;
+begin
+  SliderName := FReceiver.ReadString();
+  Name := FReceiver.ReadString();
+  Value := FReceiver.ReadString();
+  ODS('  -> SliderName: %s / Name: %s / Value: %s', [SliderName, Name, Value]);
+  EnterCS('CPFV');
+  try
+    WriteUInt32(FRemoteProcess.Input, $80000000);
+  finally
+    LeaveCS('CPFV');
+  end;
+  if not CopyToClipboard(FPSDToolWindow, Value) then
+    MessageBox(FPSDToolWindow, 'could not open clipboard', 'PSDToolKit', MB_ICONERROR);
+end;
+
+procedure TPSDToolKit.OnReceiveExportFaviewSlider;
+var
+  SliderName, Names, Values: UTF8String;
+begin
+  SliderName := FReceiver.ReadString();
+  Names := FReceiver.ReadString();
+  Values := FReceiver.ReadString();
+  ODS('  -> SliderName: %s / Names: %s / Values: %s', [SliderName, Names, Values]);
+  EnterCS('EXFS');
+  try
+    WriteUInt32(FRemoteProcess.Input, $80000000);
+    FSliderName := SliderName;
+    FSliderItemNames := Names;
+    FSliderItemValues := Values;
+  finally
+    LeaveCS('EXFS');
+  end;
+  TThread.ExecuteInThread(@ExportFaviewSlider).FreeOnTerminate := True;
 end;
 
 procedure TPSDToolKit.EnterCS(CommandName: string);

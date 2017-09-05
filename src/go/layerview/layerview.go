@@ -27,6 +27,7 @@ const (
 	symbolLeftArrow     = "\u002a"
 	symbolRightArrow    = "\u002b"
 	symbolClipboard     = "\u002c"
+	symbolExport        = "\u002e"
 )
 
 type LayerView struct {
@@ -39,7 +40,8 @@ type LayerView struct {
 
 	LayerFavSelectedIndex int32
 
-	CopyToClipboard func(s string)
+	CopyToClipboard    func(sliderName, name, value string)
+	ExportFaviewSlider func(sliderName string, names, values []string)
 }
 
 func (lv *LayerView) Init() {
@@ -347,7 +349,7 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 	nk.NkLayoutSpaceEnd(ctx)
 
 	if len(n.Items) > 0 {
-		nk.NkLayoutSpaceBegin(ctx, nk.Static, 28, 4)
+		nk.NkLayoutSpaceBegin(ctx, nk.Static, 28, 5)
 		bounds := nk.NkLayoutSpaceBounds(ctx)
 
 		left = indent + marginSize
@@ -368,11 +370,11 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 		nk.NkStylePopStyleItem(ctx)
 		nk.NkStylePopFont(ctx)
 
-		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, bounds.W()-left-buttonSize*2-marginSize, bounds.H()))
+		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, bounds.W()-left-buttonSize*3-marginSize, bounds.H()))
 		if idx := int(nk.NkComboString(ctx, n.ItemNameList, int32(n.SelectedIndex), int32(len(n.Items)), 28, nk.NkVec2(bounds.W(), 400))); idx != n.SelectedIndex {
 			modified = applyFaview(img, n, idx) || modified
 		}
-		left += bounds.W() - left - buttonSize*2 - marginSize
+		left += bounds.W() - left - buttonSize*3 - marginSize
 
 		nk.NkStylePushFont(ctx, lv.SymbolFontHandle)
 		nk.NkStylePushStyleItem(ctx, nkhelper.GetStyleButtonNormalPtr(ctx), nk.NkStyleItemColor(nk.Color{}))
@@ -391,7 +393,13 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 
 		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, buttonSize, bounds.H()))
 		if nk.NkButtonLabel(ctx, symbolClipboard) != 0 {
-			lv.CopyToClipboard(n.State())
+			lv.CopyToClipboard(n.NameNode.Name, n.Items[n.SelectedIndex].Name, n.State())
+		}
+		left += buttonSize
+
+		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, buttonSize, bounds.H()))
+		if nk.NkButtonLabel(ctx, symbolExport) != 0 {
+			lv.ExportFaviewSlider(n.NameNode.Name, n.AllName(), n.AllState())
 		}
 		left += buttonSize
 

@@ -337,6 +337,25 @@ func (fn *FaviewNode) State() string {
 	return "F." + base64.RawURLEncoding.EncodeToString(encodePackBits(buf))
 }
 
+func (fn *FaviewNode) AllState() []string {
+	org := fn.SelectedIndex
+	r := make([]string, len(fn.Items))
+	for i := range fn.Items {
+		fn.SelectedIndex = i
+		r[i] = fn.State()
+	}
+	fn.SelectedIndex = org
+	return r
+}
+
+func (fn *FaviewNode) AllName() []string {
+	r := make([]string, len(fn.Items))
+	for i := range fn.Items {
+		r[i] = fn.Items[i].Name
+	}
+	return r
+}
+
 func makeFilter(f []bool, n *Node) {
 	if n.Filter() {
 		for i, v := range n.FilterSetting {

@@ -1,0 +1,13 @@
+[vo]
+length=256
+[vo.0]
+_name=アニメーション効果
+track0=0.00
+track1=0.00
+track2=0.00
+track3=0.00
+check0=0
+type=0
+filter=2
+name=パーツ差し替え@PSDToolKit
+param=p0=nil;p1=nil;p2=nil;p3=nil;p4=nil;p5=nil;p6=nil;p7=nil;p8=nil;p9=nil;p10=nil;p11=nil;p12=nil;p13=nil;p14=nil;p15=nil;

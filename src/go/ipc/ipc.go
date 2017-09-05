@@ -355,6 +355,56 @@ func (ipc *IPC) SendEditingImageState(s *img.ImageState) error {
 	return err
 }
 
+func (ipc *IPC) CopyFaviewValue(sliderName, name, value string) error {
+	var err error
+	ipc.do(func() {
+		fmt.Print("CPFV")
+		ods.ODS("  sliderName: %s / name: %s / value: %s", sliderName, name, value)
+		if err = writeString(sliderName); err != nil {
+			return
+		}
+		if err = writeString(name); err != nil {
+			return
+		}
+		if err = writeString(value); err != nil {
+			return
+		}
+	})
+	if err != nil {
+		return err
+	}
+	ods.ODS("wait CPFV reply...")
+	err = <-ipc.reply
+	ods.ODS("wait CPFV reply ok")
+	ipc.replyDone <- struct{}{}
+	return err
+}
+
+func (ipc *IPC) ExportFaviewSlider(sliderName string, names, values []string) error {
+	var err error
+	ipc.do(func() {
+		fmt.Print("EXFS")
+		ods.ODS("  sliderName: %s / names: %v / values: %v", sliderName, names, values)
+		if err = writeString(sliderName); err != nil {
+			return
+		}
+		if err = writeString(strings.Join(names, "\x00")); err != nil {
+			return
+		}
+		if err = writeString(strings.Join(values, "\x00")); err != nil {
+			return
+		}
+	})
+	if err != nil {
+		return err
+	}
+	ods.ODS("wait EXFS reply...")
+	err = <-ipc.reply
+	ods.ODS("wait EXFS reply ok")
+	ipc.replyDone <- struct{}{}
+	return err
+}
+
 func (ipc *IPC) dispatch(cmd string) error {
 	switch cmd {
 	case "HELO":

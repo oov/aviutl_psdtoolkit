@@ -10,11 +10,13 @@ require("PSDToolKitLib")
 PSDToolKitLib.psd:init(
   obj.track0*1000 + obj.layer,
   f ~= nil and f or "",
-  l ~= nil and l or "",
   obj.track1/100,
   obj.track2,
   obj.track3
 )
+if l ~= nil then
+  PSDToolKitLib.psd:addstate(l)
+end
 f = nil
 l = nil
 if obj.check0 then
@@ -23,6 +25,43 @@ end
 
 @オブジェクト描画
 PSDToolKitLib.psd:render()
+
+@パーツ差し替え
+--track0:パーツ,0,15,0,1
+--dialog:0,p0=nil;1,p1=nil;2,p2=nil;3,p3=nil;4,p4=nil;5,p5=nil;6,p6=nil;7,p7=nil;8,p8=nil;9,p9=nil;10,p10=nil;11,p11=nil;12,p12=nil;13,p13=nil;14,p14=nil;15,p15=nil;
+if obj.track0 == 0 and p0 ~= nil and p0 ~= "" then
+  PSDToolKitLib.psd:addstate(p0)
+elseif obj.track0 == 1 and p1 ~= nil and p1 ~= "" then
+  PSDToolKitLib.psd:addstate(p1)
+elseif obj.track0 == 2 and p2 ~= nil and p2 ~= "" then
+  PSDToolKitLib.psd:addstate(p2)
+elseif obj.track0 == 3 and p3 ~= nil and p3 ~= "" then
+  PSDToolKitLib.psd:addstate(p3)
+elseif obj.track0 == 4 and p4 ~= nil and p4 ~= "" then
+  PSDToolKitLib.psd:addstate(p4)
+elseif obj.track0 == 5 and p5 ~= nil and p5 ~= "" then
+  PSDToolKitLib.psd:addstate(p5)
+elseif obj.track0 == 6 and p6 ~= nil and p6 ~= "" then
+  PSDToolKitLib.psd:addstate(p6)
+elseif obj.track0 == 7 and p7 ~= nil and p7 ~= "" then
+  PSDToolKitLib.psd:addstate(p7)
+elseif obj.track0 == 8 and p8 ~= nil and p8 ~= "" then
+  PSDToolKitLib.psd:addstate(p8)
+elseif obj.track0 == 9 and p9 ~= nil and p9 ~= "" then
+  PSDToolKitLib.psd:addstate(p9)
+elseif obj.track0 == 10 and p10 ~= nil and p10 ~= "" then
+  PSDToolKitLib.psd:addstate(p10)
+elseif obj.track0 == 11 and p11 ~= nil and p11 ~= "" then
+  PSDToolKitLib.psd:addstate(p11)
+elseif obj.track0 == 12 and p12 ~= nil and p12 ~= "" then
+  PSDToolKitLib.psd:addstate(p12)
+elseif obj.track0 == 13 and p13 ~= nil and p13 ~= "" then
+  PSDToolKitLib.psd:addstate(p13)
+elseif obj.track0 == 14 and p14 ~= nil and p14 ~= "" then
+  PSDToolKitLib.psd:addstate(p14)
+elseif obj.track0 == 15 and p15 ~= nil and p15 ~= "" then
+  PSDToolKitLib.psd:addstate(p15)
+end
 
 @口パク あいうえお
 --dialog:あ,a="";い,i="";う,u="";え,e="";お,o="";ん,n="";
@@ -42,7 +81,7 @@ else
 end
 PSDToolKitLib.phoneme = ""
 if v ~= "" then
-  table.insert(PSDToolKitLib.psd.layer, v)
+  PSDToolKitLib.psd:addstate(v)
 end
 
 @口パク 開閉のみ
@@ -85,7 +124,7 @@ if #m > 0 then
   end
   stat.frame = obj.frame
   stat.p = p
-  table.insert(PSDToolKitLib.psd.layer, m[math.floor(stat.n / speed) + 1])
+  PSDToolKitLib.psd:addstate(m[math.floor(stat.n / speed) + 1])
   PSDToolKitLib.talkstat[id] = stat
   PSDToolKitLib.phoneme = ""
 end
@@ -125,12 +164,12 @@ if #m > 0 then
     local l = speed*i
     local r = l + speed
     if (l <= blink and blink < r)or(l <= blink2 and blink2 < r) then
-      table.insert(PSDToolKitLib.psd.layer, v)
+      PSDToolKitLib.psd:addstate(v)
       applied = true
       break;
     end
   end
   if not applied then
-    table.insert(PSDToolKitLib.psd.layer, m[#m])
+    PSDToolKitLib.psd:addstate(m[#m])
   end
 end
