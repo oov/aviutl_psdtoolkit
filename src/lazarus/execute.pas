@@ -87,12 +87,14 @@ end;
 procedure TExportFaviewSlider.Execute;
 var
   N: integer;
+  PC: PChar;
   S: UTF8String;
   SS: ShiftJISString;
   FileName: WideString;
   f: TFileStreamW;
 begin
-  S := StringReplace(Sanitize(ChangeFileExt(ExtractFileName(Token('|', FFilePath)), '') + '-' + FSliderName + '.anm'), '\', '_', [rfReplaceAll]);
+  S := StringReplace(Sanitize(ChangeFileExt(ExtractFileName(Token('|', FFilePath)), '') +
+    '-' + FSliderName + '.anm'), '\', '_', [rfReplaceAll]);
   FileName := SaveDialog(FWindow, 'Save SimpleView slider as file',
     'AviUtl animation effect script(*.anm)'#0'*.anm'#0'CSV file(*.csv)'#0'*.csv'#0#0,
     1, WideString(S), 'anm', ExtractFilePath(GetDLLName()) + '..');
@@ -110,7 +112,15 @@ begin
           if S = '' then
             break;
         end;
-        SS := FSliderName;
+        PC := StrRScan(PChar(FSliderName), '\');
+        if PC <> nil then
+        begin
+          Inc(PC);
+          S := PC;
+          SS := S;
+        end
+        else
+          SS := FSliderName;
         WriteRawString(f, Format('--track0:%s,1,%d,1,1'#13#10, [SS, N]));
         WriteRawString(f, 'local names = {');
         while True do
