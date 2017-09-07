@@ -49,7 +49,7 @@ PSDToolKit を使用したこと及び使用しなかったことによるいか
 
 ## インストール／アンインストール
 
-README.md 以外を exedit.auf がある場所と同じ場所にコピーすればインストール完了です。
+README 以外を exedit.auf がある場所と同じ場所にコピーすればインストール完了です。
 
 アンインストールは exedit.auf がある場所にある PSDToolKit.auf と、同じ場所にある script フォルダー内の PSDToolKit フォルダーを削除すれば完了です。
 
