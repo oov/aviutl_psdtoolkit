@@ -463,9 +463,9 @@ begin
   inherited Create();
   FillChar(FEffectEntry, SizeOf(FEffectEntry), 0);
   FEffectEntry.Flag := FILTER_FLAG_PRIORITY_LOWEST or FILTER_FLAG_ALWAYS_ACTIVE or
-    FILTER_FLAG_AUDIO_FILTER or FILTER_FLAG_WINDOW_SIZE or FILTER_WINDOW_SIZE_CLIENT;
-  FEffectEntry.X := 240;
-  FEffectEntry.Y := 500;
+    FILTER_FLAG_AUDIO_FILTER or FILTER_FLAG_WINDOW_SIZE;
+  FEffectEntry.X := 240 or FILTER_WINDOW_SIZE_CLIENT;
+  FEffectEntry.Y := 500 or FILTER_WINDOW_SIZE_CLIENT;
   FEffectEntry.Name := EffectPluginName;
   FEffectEntry.TrackN := EffectTrackN;
   FEffectEntry.TrackName := @EffectTrackName[0];
