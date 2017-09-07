@@ -261,7 +261,8 @@ var
   Duration, SampleRate, Gain, v: single;
   finfo: TFileInfo;
   IT: TChannelStripMap.TIterator;
-  AB: TChannelStrip;
+  Strip: TChannelStrip;
+  Processed: boolean;
 begin
   Result := True;
 
@@ -284,14 +285,14 @@ begin
     begin
       try
         repeat
-          AB := IT.Value;
-          v := AB.CalcDependentDuration();
+          Strip := IT.Value;
+          v := Strip.CalcDependentDuration();
           if Duration < v then
             Duration := v;
-          AB.Buffer.Clear();
-          AB.ClearEffects();
-          AB.Fresh := False;
-          FStrips[IT.Key] := AB;
+          Strip.Buffer.Clear();
+          Strip.ClearEffects();
+          Strip.Fresh := False;
+          FStrips[IT.Key] := Strip;
         until not IT.Next;
       finally
         IT.Free;
@@ -317,6 +318,8 @@ begin
     Exit;
   end;
 
+  FLastFrame := fpip^.Frame;
+
   // for mix
   // 1. write to the mix buffer from the original stream
   if len > Length(FMixBuf) then
@@ -334,31 +337,33 @@ begin
   end;
 
   // 2. mix all track buffers
+  Processed := False;
   IT := FStrips.Iterator();
   if IT <> nil then
   begin
     try
       repeat
-        AB := IT.Value;
+        Strip := IT.Value;
         p := fpip^.AudioP;
-        j := AB.Buffer.Read(p^, SizeOf(smallint) * len);
-        if (not AB.Fresh) and (j = 0) then
+        j := Strip.Buffer.Read(p^, SizeOf(smallint) * len);
+        if (not Strip.Fresh) and (j = 0) then
         begin
-          AB.Free;
+          Strip.Free;
           FStrips.erase(IT);
           continue;
         end;
-        AB.Fresh := False;
+        Processed := True;
+        Strip.Fresh := False;
         if j < SizeOf(smallint) * len then
           FillChar(PByte(fpip^.AudioP)[j], SizeOf(smallint) * len - j, 0);
 
-        if AB.UpdateEffects(SampleRate, fpip^.AudioCh) and
+        if Strip.UpdateEffects(SampleRate, fpip^.AudioCh) and
           (IT.Key = FSelectedID) then
         begin
           FChanged := True;
         end;
 
-        Gain := Power(10, AB.CurrentPreGain / 20);
+        Gain := Power(10, Strip.CurrentPreGain / 20);
         pTempBuf := @FTempBuf[0];
         j := j shr 1;
         for i := 0 to j - 1 do
@@ -370,20 +375,21 @@ begin
 
         pMixBuf := @FMixBuf[0];
         pTempBuf := @FTempBuf[0];
-        AB.ProcessEffects(pTempBuf, fpip^.AudioN);
-        Gain := Power(10, AB.CurrentPostGain / 20);
+        Strip.ProcessEffects(pTempBuf, fpip^.AudioN);
+        Gain := Power(10, Strip.CurrentPostGain / 20);
         for i := 0 to j - 1 do
         begin
           pMixBuf^ := pMixBuf^ + pTempBuf^ * Gain;
           Inc(pMixBuf);
           Inc(pTempBuf);
         end;
-        FStrips.Items[IT.Data.Key] := AB;
+        FStrips.Items[IT.Data.Key] := Strip;
       until not IT.Next;
     finally
       IT.Free;
     end;
   end;
+  if not Processed then Exit;
 
   // 3. apply limitter
   if (fpip^.AudioCh <> FLimiter.Channels) or (SampleRate <> FLimiter.SampleRate) then
@@ -403,24 +409,22 @@ begin
     Inc(p);
     Inc(pMixBuf);
   end;
-
-  FLastFrame := fpip^.Frame;
 end;
 
 procedure TAudioMixer.UpdateParamsView;
 var
-  AB: TChannelStrip;
+  Strip: TChannelStrip;
 begin
   if (not FChanged)or FSaving then
     Exit;
 
   FChanged := False;
-  if not FStrips.GetValue(FSelectedID, AB) then
+  if not FStrips.GetValue(FSelectedID, Strip) then
   begin
     SetWindowText(FParamsLabel, nil);
     Exit;
   end;
-  SetWindowText(FParamsLabel, PChar(ParamsToString(AB)));
+  SetWindowText(FParamsLabel, PChar(ParamsToString(Strip)));
 end;
 
 function TAudioMixer.GetChannelStripEntry: PFilterDLL;
