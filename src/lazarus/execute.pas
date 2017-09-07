@@ -93,8 +93,10 @@ var
   FileName: WideString;
   f: TFileStreamW;
 begin
-  S := StringReplace(Sanitize(ChangeFileExt(ExtractFileName(Token('|', FFilePath)), '') +
-    '-' + FSliderName + '.anm'), '\', '_', [rfReplaceAll]);
+  S := Sanitize(ChangeFileExt(ExtractFileName(Token('|', FFilePath)), '') +
+    '-' + FSliderName + '.anm');
+  S := StringReplace(S, '\', '_', [rfReplaceAll]);
+  S := StringReplace(S, '@', '_', [rfReplaceAll]);
   FileName := SaveDialog(FWindow, 'Save SimpleView slider as file',
     'AviUtl animation effect script(*.anm)'#0'*.anm'#0'CSV file(*.csv)'#0'*.csv'#0#0,
     1, WideString(S), 'anm', ExtractFilePath(GetDLLName()) + '..');
