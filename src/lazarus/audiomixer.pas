@@ -1,4 +1,4 @@
-unit AudioEffector;
+unit AudioMixer;
 
 {$mode objfpc}{$H+}
 {$CODEPAGE UTF-8}
@@ -6,17 +6,17 @@ unit AudioEffector;
 interface
 
 uses
-  Windows, AviUtl, AudioBuf, MDADynamics;
+  Windows, AviUtl, ChannelStrip, MDADynamics;
 
 type
 
-  { TAudioEffector }
+  { TAudioMixer }
 
-  TAudioEffector = class
+  TAudioMixer = class
   private
-    FEffectEntry, FMasterEntry: TFilterDLL;
+    FChannelStripEntry, FMasterChannelStripEntry: TFilterDLL;
     FLastFrame: integer;
-    FABM: TAudioBufferMap;
+    FStrips: TChannelStripMap;
     FLimiter: TMDADynamics;
     FMixBuf: array of single;
     FTempBuf: array of single;
@@ -27,18 +27,18 @@ type
     FSaving, FChanged: boolean;
     FSelectedID: integer;
 
-    function GetEffectEntry: PFilterDLL;
-    function GetMasterEntry: PFilterDLL;
+    function GetChannelStripEntry: PFilterDLL;
+    function GetMasterChannelStripEntry: PFilterDLL;
   public
     constructor Create();
     destructor Destroy(); override;
-    function EffectWndProc(Window: HWND; Message: UINT; WP: WPARAM;
+    function ChannelStripWndProc(Window: HWND; Message: UINT; WP: WPARAM;
       {%H-}LP: LPARAM; {%H-}Edit: Pointer; Filter: PFilter): integer;
-    function EffectProc(fp: PFilter; fpip: PFilterProcInfo): boolean;
-    function MasterProc(fp: PFilter; fpip: PFilterProcInfo): boolean;
+    function ChannelStripProc(fp: PFilter; fpip: PFilterProcInfo): boolean;
+    function MasterChannelStripProc(fp: PFilter; fpip: PFilterProcInfo): boolean;
     procedure UpdateParamsView();
-    property EffectEntry: PFilterDLL read GetEffectEntry;
-    property MasterEntry: PFilterDLL read GetMasterEntry;
+    property ChannelStripEntry: PFilterDLL read GetChannelStripEntry;
+    property MasterChannelStripEntry: PFilterDLL read GetMasterChannelStripEntry;
   end;
 
 implementation
@@ -93,36 +93,36 @@ begin
   Result.DynAttack := single(values[9]) / 10000.0;
   Result.DynRelease := single(values[10]) / 10000.0 * 0.82;
 
-  Result.PostGain := sliderToDB(values[11] / 10000.0);
+  Result.PostGain := sliderToDB(values[12] / 10000.0);
 end;
 
-function ParamsToString(const AB: TAudioBuffer): string;
+function ParamsToString(const Strip: TChannelStrip): string;
 begin
   Result := '';
   Result := Result + '[Pre Gain]'#13#10;
-  Result := Result + Format('  Gain      %0.2f dB'#13#10, [AB.CurrentPreGain]);
+  Result := Result + Format('  Gain      %0.2f dB'#13#10, [Strip.CurrentPreGain]);
   Result := Result + #13#10;
   Result := Result + '[Lag]'#13#10;
-  Result := Result + Format('  Duration  %s ms'#13#10, [AB.Lag.DurationDisp]);
+  Result := Result + Format('  Duration  %s ms'#13#10, [Strip.Lag.DurationDisp]);
   Result := Result + #13#10;
   Result := Result + '[Low-Shelf EQ]'#13#10;
-  Result := Result + Format('  Frequency %0.0f Hz'#13#10, [AB.LoShelf.Freq]);
-  Result := Result + Format('  Gain      %0.2f dB'#13#10, [AB.LoShelf.DBGain]);
-  //Result := Result + Format('    Q:         %0.2f'#13#10, [AB.LoShelf.Q]);
+  Result := Result + Format('  Frequency %0.0f Hz'#13#10, [Strip.LoShelf.Freq]);
+  Result := Result + Format('  Gain      %0.2f dB'#13#10, [Strip.LoShelf.DBGain]);
+  //Result := Result + Format('    Q:         %0.2f'#13#10, [Strip.LoShelf.Q]);
   Result := Result + #13#10;
   Result := Result + '[High-Shelf EQ]'#13#10;
-  Result := Result + Format('  Frequency %0.0f Hz'#13#10, [AB.HiShelf.Freq]);
-  Result := Result + Format('  Gain      %0.2f dB'#13#10, [AB.HiShelf.DBGain]);
-  //Result := Result + Format('    Q:         %0.2f'#13#10, [AB.HiShelf.Q]);
+  Result := Result + Format('  Frequency %0.0f Hz'#13#10, [Strip.HiShelf.Freq]);
+  Result := Result + Format('  Gain      %0.2f dB'#13#10, [Strip.HiShelf.DBGain]);
+  //Result := Result + Format('    Q:         %0.2f'#13#10, [Strip.HiShelf.Q]);
   Result := Result + #13#10;
   Result := Result + '[Compressor]'#13#10;
-  Result := Result + Format('  Threshold %s dB'#13#10, [AB.Dynamics.ThresholdDisp]);
-  Result := Result + Format('  Ratio     %s:1'#13#10, [AB.Dynamics.RatioDisp]);
-  Result := Result + Format('  Attack    %s μs'#13#10, [AB.Dynamics.AttackDisp]);
-  Result := Result + Format('  Release   %s ms'#13#10, [AB.Dynamics.ReleaseDisp]);
+  Result := Result + Format('  Threshold %s dB'#13#10, [Strip.Dynamics.ThresholdDisp]);
+  Result := Result + Format('  Ratio     %s:1'#13#10, [Strip.Dynamics.RatioDisp]);
+  Result := Result + Format('  Attack    %s μs'#13#10, [Strip.Dynamics.AttackDisp]);
+  Result := Result + Format('  Release   %s ms'#13#10, [Strip.Dynamics.ReleaseDisp]);
   Result := Result + #13#10;
   Result := Result + '[Post Gain]'#13#10;
-  Result := Result + Format('  Gain      %0.2f dB'#13#10, [AB.CurrentPostGain]);
+  Result := Result + Format('  Gain      %0.2f dB'#13#10, [Strip.CurrentPostGain]);
   Result := Result + #13#10;
 end;
 
@@ -145,9 +145,9 @@ begin
   end;
 end;
 
-{ TAudioEffector }
+{ TAudioMixer }
 
-function TAudioEffector.EffectWndProc(Window: HWND; Message: UINT;
+function TAudioMixer.ChannelStripWndProc(Window: HWND; Message: UINT;
   WP: WPARAM; LP: LPARAM; Edit: Pointer; Filter: PFilter): integer;
 var
   r: TRect;
@@ -208,10 +208,10 @@ begin
   end;
 end;
 
-function TAudioEffector.EffectProc(fp: PFilter; fpip: PFilterProcInfo): boolean;
+function TAudioMixer.ChannelStripProc(fp: PFilter; fpip: PFilterProcInfo): boolean;
 var
   len, ID: integer;
-  AB: TAudioBuffer;
+  Strip: TChannelStrip;
   prms: TParams;
 begin
   Result := True;
@@ -220,37 +220,37 @@ begin
     Exit;
 
   len := fpip^.AudioCh * fpip^.AudioN;
-  if FABM.GetValue(ID, AB) then
+  if FStrips.GetValue(ID, Strip) then
   begin
     // is ID used duplicately?
-    if AB.Fresh then
+    if Strip.Fresh then
     begin
       FillChar(fpip^.AudioP^, len * SizeOf(smallint), 0);
       Exit;
     end;
   end
   else
-    AB := TAudioBuffer.Create();
+    Strip := TChannelStrip.Create();
 
   prms := Params(fp^.Track);
-  AB.PreGain := prms.PreGain;
-  AB.LagDuration := prms.LagDuration;
-  AB.LoShelfFreq := prms.LoShelfFreq;
-  AB.LoShelfGain := prms.LoShelfGain;
-  AB.HiShelfFreq := prms.HiShelfFreq;
-  AB.HiShelfGain := prms.HiShelfGain;
-  AB.DynThreshold := prms.DynThreshold;
-  AB.DynRatio := prms.DynRatio;
-  AB.DynAttack := prms.DynAttack;
-  AB.DynRelease := prms.DynRelease;
-  AB.PostGain := prms.PostGain;
-  AB.Fresh := True;
-  AB.Buffer.Write(fpip^.AudioP^, len * SizeOf(smallint));
+  Strip.PreGain := prms.PreGain;
+  Strip.LagDuration := prms.LagDuration;
+  Strip.LoShelfFreq := prms.LoShelfFreq;
+  Strip.LoShelfGain := prms.LoShelfGain;
+  Strip.HiShelfFreq := prms.HiShelfFreq;
+  Strip.HiShelfGain := prms.HiShelfGain;
+  Strip.DynThreshold := prms.DynThreshold;
+  Strip.DynRatio := prms.DynRatio;
+  Strip.DynAttack := prms.DynAttack;
+  Strip.DynRelease := prms.DynRelease;
+  Strip.PostGain := prms.PostGain;
+  Strip.Fresh := True;
+  Strip.Buffer.Write(fpip^.AudioP^, len * SizeOf(smallint));
   FillChar(fpip^.AudioP^, len * SizeOf(smallint), 0);
-  FABM.Items[ID] := AB;
+  FStrips.Items[ID] := Strip;
 end;
 
-function TAudioEffector.MasterProc(fp: PFilter; fpip: PFilterProcInfo): boolean;
+function TAudioMixer.MasterChannelStripProc(fp: PFilter; fpip: PFilterProcInfo): boolean;
 const
   ToSingle = 1.0 / 32768.0;
   ToInt = 32768.0;
@@ -260,8 +260,8 @@ var
   pMixBuf, pTempBuf: PSingle;
   Duration, SampleRate, Gain, v: single;
   finfo: TFileInfo;
-  IT: TAudioBufferMap.TIterator;
-  AB: TAudioBuffer;
+  IT: TChannelStripMap.TIterator;
+  AB: TChannelStrip;
 begin
   Result := True;
 
@@ -279,7 +279,7 @@ begin
     // 1. discard current state and find longest lag duration
     FLimiter.Clear();
     Duration := FLimiter.AttackDuration + FLimiter.ReleaseDuration;
-    IT := FABM.Iterator();
+    IT := FStrips.Iterator();
     if IT <> nil then
     begin
       try
@@ -291,7 +291,7 @@ begin
           AB.Buffer.Clear();
           AB.ClearEffects();
           AB.Fresh := False;
-          FABM[IT.Key] := AB;
+          FStrips[IT.Key] := AB;
         until not IT.Next;
       finally
         IT.Free;
@@ -334,7 +334,7 @@ begin
   end;
 
   // 2. mix all track buffers
-  IT := FABM.Iterator();
+  IT := FStrips.Iterator();
   if IT <> nil then
   begin
     try
@@ -345,7 +345,7 @@ begin
         if (not AB.Fresh) and (j = 0) then
         begin
           AB.Free;
-          FABM.erase(IT);
+          FStrips.erase(IT);
           continue;
         end;
         AB.Fresh := False;
@@ -378,7 +378,7 @@ begin
           Inc(pMixBuf);
           Inc(pTempBuf);
         end;
-        FABM.Items[IT.Data.Key] := AB;
+        FStrips.Items[IT.Data.Key] := AB;
       until not IT.Next;
     finally
       IT.Free;
@@ -407,15 +407,15 @@ begin
   FLastFrame := fpip^.Frame;
 end;
 
-procedure TAudioEffector.UpdateParamsView;
+procedure TAudioMixer.UpdateParamsView;
 var
-  AB: TAudioBuffer;
+  AB: TChannelStrip;
 begin
   if (not FChanged)or FSaving then
     Exit;
 
   FChanged := False;
-  if not FABM.GetValue(FSelectedID, AB) then
+  if not FStrips.GetValue(FSelectedID, AB) then
   begin
     SetWindowText(FParamsLabel, nil);
     Exit;
@@ -423,25 +423,25 @@ begin
   SetWindowText(FParamsLabel, PChar(ParamsToString(AB)));
 end;
 
-function TAudioEffector.GetEffectEntry: PFilterDLL;
+function TAudioMixer.GetChannelStripEntry: PFilterDLL;
 begin
-  Result := @FEffectEntry;
+  Result := @FChannelStripEntry;
 end;
 
-function TAudioEffector.GetMasterEntry: PFilterDLL;
+function TAudioMixer.GetMasterChannelStripEntry: PFilterDLL;
 begin
-  Result := @FMasterEntry;
+  Result := @FMasterChannelStripEntry;
 end;
 
-constructor TAudioEffector.Create;
+constructor TAudioMixer.Create;
 const
-  EffectPluginName = 'AudioEffect';
-  EffectTrackN = 12;
-  EffectTrackName: array[0..EffectTrackN - 1] of PChar =
+  ChannelStripPluginName = #$83#$60#$83#$83#$83#$93#$83#$6C#$83#$8B#$83#$58#$83#$67#$83#$8A#$83#$62#$83#$76; // チャンネルストリップ
+  ChannelStripTrackN = 13;
+  ChannelStripTrackName: array[0..ChannelStripTrackN - 1] of PChar =
     (
     'ID',
-    'Pre Gain',
-    'Lag',
+    #$93#$FC#$97#$CD#$89#$B9#$97#$CA, // 入力音量
+    #$92#$78#$89#$84, // 遅延
     'Lo Freq',
     'Lo Gain',
     'Hi Freq',
@@ -450,43 +450,43 @@ const
     'Ratio',
     'Attack',
     'Release',
-    'Post Gain'
+    nil,
+    #$8F#$6F#$97#$CD#$89#$B9#$97#$CA // 出力音量
     );
-  EffectTrackDefault: array[0..EffectTrackN - 1] of integer =
-    (-1, 0, 0, 200, 0, 3000, 0, 6000, 0, 1800, 5500, 0);
-  EffectTrackS: array[0..EffectTrackN - 1] of integer =
-    (-1, -10000, 0, 1, -10000, 1, -10000, 0, 0, 0, 0, -10000);
-  EffectTrackE: array[0..EffectTrackN - 1] of integer =
-    (100, 10000, 500, 24000, 10000, 24000, 10000, 10000, 10000, 10000, 10000, 10000);
-  MasterPluginName = 'AudioMaster';
+  ChannelStripTrackDefault: array[0..ChannelStripTrackN - 1] of integer =
+    (-1, 0, 0, 200, 0, 3000, 0, 6000, 0, 1800, 5500, 0, 0);
+  ChannelStripTrackS: array[0..ChannelStripTrackN - 1] of integer =
+    (-1, -10000, 0, 1, -10000, 1, -10000, 0, 0, 0, 0, 0, -10000);
+  ChannelStripTrackE: array[0..ChannelStripTrackN - 1] of integer =
+    (100, 10000, 500, 24000, 10000, 24000, 10000, 10000, 10000, 10000, 10000, 0, 10000);
+  MasterChannelStripPluginName = #$83#$7D#$83#$58#$83#$5E#$81#$5B#$83#$60#$83#$83#$83#$93#$83#$6C#$83#$8B#$83#$58#$83#$67#$83#$8A#$83#$62#$83#$76; // マスターチャンネルストリップ
 begin
   inherited Create();
-  FillChar(FEffectEntry, SizeOf(FEffectEntry), 0);
-  FEffectEntry.Flag := FILTER_FLAG_PRIORITY_LOWEST or FILTER_FLAG_ALWAYS_ACTIVE or
+  FillChar(FChannelStripEntry, SizeOf(FChannelStripEntry), 0);
+  FChannelStripEntry.Flag := FILTER_FLAG_PRIORITY_LOWEST or FILTER_FLAG_ALWAYS_ACTIVE or
     FILTER_FLAG_AUDIO_FILTER or FILTER_FLAG_WINDOW_SIZE;
-  FEffectEntry.X := 240 or FILTER_WINDOW_SIZE_CLIENT;
-  FEffectEntry.Y := 500 or FILTER_WINDOW_SIZE_CLIENT;
-  FEffectEntry.Name := EffectPluginName;
-  FEffectEntry.TrackN := EffectTrackN;
-  FEffectEntry.TrackName := @EffectTrackName[0];
-  FEffectEntry.TrackDefault := @EffectTrackDefault[0];
-  FEffectEntry.TrackS := @EffectTrackS[0];
-  FEffectEntry.TrackE := @EffectTrackE[0];
+  FChannelStripEntry.X := 240 or FILTER_WINDOW_SIZE_CLIENT;
+  FChannelStripEntry.Y := 500 or FILTER_WINDOW_SIZE_CLIENT;
+  FChannelStripEntry.Name := ChannelStripPluginName;
+  FChannelStripEntry.TrackN := ChannelStripTrackN;
+  FChannelStripEntry.TrackName := @ChannelStripTrackName[0];
+  FChannelStripEntry.TrackDefault := @ChannelStripTrackDefault[0];
+  FChannelStripEntry.TrackS := @ChannelStripTrackS[0];
+  FChannelStripEntry.TrackE := @ChannelStripTrackE[0];
 
-  FillChar(FMasterEntry, SizeOf(FMasterEntry), 0);
+  FillChar(FMasterChannelStripEntry, SizeOf(FMasterChannelStripEntry), 0);
   // FILTER_FLAG_RADIO_BUTTON is not necessary for the operation,
   // but it is necessary to hide the item from ExEdit's menu.
-  FMasterEntry.Flag := FILTER_FLAG_PRIORITY_LOWEST or FILTER_FLAG_ALWAYS_ACTIVE or
+  FMasterChannelStripEntry.Flag := FILTER_FLAG_PRIORITY_LOWEST or FILTER_FLAG_ALWAYS_ACTIVE or
     FILTER_FLAG_AUDIO_FILTER or FILTER_FLAG_WINDOW_SIZE or FILTER_FLAG_NO_CONFIG or
     FILTER_FLAG_RADIO_BUTTON;
-
-  FMasterEntry.Name := MasterPluginName;
+  FMasterChannelStripEntry.Name := MasterChannelStripPluginName;
 
   FLastFrame := 0;
   FSaving := False;
   FChanged := False;
   FSelectedID := 0;
-  FABM := TAudioBufferMap.Create();
+  FStrips := TChannelStripMap.Create();
   SetLength(FMixBuf, 0);
   SetLength(FTempBuf, 0);
   SetLength(FRepairBuf, 0);
@@ -509,11 +509,11 @@ begin
 }
 end;
 
-destructor TAudioEffector.Destroy;
+destructor TAudioMixer.Destroy;
 var
-  IT: TAudioBufferMap.TIterator;
+  IT: TChannelStripMap.TIterator;
 begin
-  IT := FABM.Iterator();
+  IT := FStrips.Iterator();
   if IT <> nil then
   begin
     try
@@ -524,7 +524,7 @@ begin
       IT.Free;
     end;
   end;
-  FreeAndNil(FABM);
+  FreeAndNil(FStrips);
   FreeAndNil(FLimiter);
   inherited Destroy;
 end;

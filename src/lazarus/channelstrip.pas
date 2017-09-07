@@ -1,4 +1,4 @@
-unit AudioBuf;
+unit ChannelStrip;
 
 {$mode objfpc}{$H+}
 {$CODEPAGE UTF-8}
@@ -6,12 +6,12 @@ unit AudioBuf;
 interface
 
 uses
-  GHashMap, CircularBuffer, Lag, RbgEQFilter, MDADynamics;
+  GHashMap, CircularBuffer, Lag, RbjEQFilter, MDADynamics;
 
 type
-  { TAudioBuffer }
+  { TChannelStrip }
 
-  TAudioBuffer = class
+  TChannelStrip = class
   private
     FBuffer: TCircularBuffer;
     FFresh: boolean;
@@ -79,13 +79,13 @@ type
     class function equal(a: integer; b: integer): boolean;
   end;
 
-  TAudioBufferMap = specialize THashmap<integer, TAudioBuffer, TIntegerHash>;
+  TChannelStripMap = specialize THashmap<integer, TChannelStrip, TIntegerHash>;
 
 implementation
 
-{ TAudioBuffer }
+{ TChannelStrip }
 
-constructor TAudioBuffer.Create;
+constructor TChannelStrip.Create;
 const
   r2 = 1.4142135623730951;
 begin
@@ -121,7 +121,7 @@ begin
   FCurrentPostGain := 0;
 end;
 
-destructor TAudioBuffer.Destroy;
+destructor TChannelStrip.Destroy;
 begin
   FBuffer.Free;
   FDynamics.Free;
@@ -131,7 +131,7 @@ begin
   inherited Destroy;
 end;
 
-function TAudioBuffer.UpdateEffects(SampleRate: single; Channels: integer): boolean;
+function TChannelStrip.UpdateEffects(SampleRate: single; Channels: integer): boolean;
 begin
   Result := False;
   if FCurrentPreGain <> FPreGain then
@@ -193,7 +193,7 @@ begin
   end;
 end;
 
-procedure TAudioBuffer.ProcessEffects(Buffer: PSingle; Len: integer);
+procedure TChannelStrip.ProcessEffects(Buffer: PSingle; Len: integer);
 begin
   if FLagDuration > 0 then
     FLag.ProcessReplacing(Buffer, Len);
@@ -205,7 +205,7 @@ begin
     FDynamics.ProcessReplacing(Buffer, Len);
 end;
 
-procedure TAudioBuffer.ClearEffects;
+procedure TChannelStrip.ClearEffects;
 begin
   FLag.Clear();
   FLoShelf.Clear();
@@ -213,7 +213,7 @@ begin
   FDynamics.Clear();
 end;
 
-function TAudioBuffer.CalcDependentDuration: single;
+function TChannelStrip.CalcDependentDuration: single;
 var
   v: single;
 begin

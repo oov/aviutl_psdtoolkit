@@ -18,7 +18,7 @@ Filter Types
 7-LowShelf
 8-HiShelf
 }
-unit RbgEQFilter;
+unit RbjEQFilter;
 
 {$mode objfpc}{$H+}
 {$CODEPAGE UTF-8}

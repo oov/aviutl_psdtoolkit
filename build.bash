@@ -30,7 +30,9 @@ go.exe build -ldflags="-s" -o ../../bin/script/PSDToolKit/PSDToolKit.exe
 popd
 
 # build lazarus projects
-cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/auf.lpi src/lazarus/luadll.lpi
+cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/luadll.lpi
+cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/AssistPlugin.lpi
+cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/AudioMixerPlugin.lpi
 
 # install
 # mkdir aviutl/PSDToolKit aviutl/script aviutl/script/PSDToolKit
