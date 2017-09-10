@@ -6,7 +6,6 @@ import (
 	"flag"
 	"image"
 	"image/png"
-	"log"
 	"runtime"
 	"runtime/debug"
 	"time"
@@ -17,6 +16,7 @@ import (
 	"github.com/go-gl/gl/v3.2-core/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/golang-ui/nuklear/nk"
+	"github.com/pkg/errors"
 
 	"github.com/oov/aviutl_psdtoolkit/src/go/assets"
 	"github.com/oov/aviutl_psdtoolkit/src/go/img"
@@ -154,7 +154,7 @@ func main() {
 
 	// psd.Debug = log.New(os.Stdout, "psd: ", log.Lshortfile)
 	if err := glfw.Init(); err != nil {
-		log.Fatalln(err)
+		ipc.Fatal(errors.Wrap(err, "glfw.Init failed"))
 	}
 	glfw.WindowHint(glfw.ContextVersionMajor, 3)
 	glfw.WindowHint(glfw.ContextVersionMinor, 2)
@@ -163,13 +163,13 @@ func main() {
 	glfw.WindowHint(glfw.Visible, glfw.False)
 	win, err := glfw.CreateWindow(winWidth, winHeight, "PSDToolKit", nil, nil)
 	if err != nil {
-		log.Fatalln(err)
+		ipc.Fatal(errors.Wrap(err, "glfw.CreateWindow failed"))
 	}
 	g.Window = win
 
 	win.MakeContextCurrent()
 	if err := gl.Init(); err != nil {
-		log.Fatalln("opengl: init failed:", err)
+		ipc.Fatal(errors.Wrap(err, "gl.Init failed"))
 	}
 	width, height := win.GetSize()
 	gl.Viewport(0, 0, int32(width), int32(height))
@@ -191,7 +191,7 @@ func main() {
 
 	bg, err := png.Decode(bytes.NewReader(assets.MustAsset("bg.png")))
 	if err != nil {
-		log.Fatalln("could not decode bg.png:", err)
+		ipc.Fatal(errors.Wrap(err, "could not decode bg.png"))
 	}
 	g.MainView.Init(bg)
 	// g.Window.Show()

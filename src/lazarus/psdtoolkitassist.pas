@@ -47,8 +47,29 @@ begin
     Result := GetMem(nsize);
 end;
 
+function FindExEditWindow(): THandle;
+var
+  h: THandle;
+  pid, mypid: DWORD;
+begin
+  Result := 0;
+  mypid := GetCurrentProcessId();
+  h := 0;
+  while Result = 0 do
+  begin
+    h := FindWindowExA(0, h, 'ExtendedFilterClass', nil);
+    if h = 0 then
+      Exit;
+    GetWindowThreadProcessId(h, @pid);
+    if pid = mypid then
+       Result := h;
+  end;
+end;
+
 procedure ShowGUI();
 var
+  h: THandle;
+  s: WideString;
   L: Plua_state;
   Proc: lua_CFunction;
   n: integer;
@@ -69,7 +90,12 @@ begin
     lua_getfield(L, 2, 'showgui');
     if not lua_iscfunction(L, 3) then
       Exit;
-    lua_call(L, 0, 0);
+    lua_call(L, 0, 2);
+    if not lua_toboolean(L, -2) then begin
+      h := FindExEditWindow();
+      s := 'ウィンドウの表示中にエラーが発生しました。'#13#10#13#10+WideString(string(lua_tostring(L, -1)));
+      MessageBoxW(h, PWideChar(s), 'PSDToolKit', MB_ICONERROR);
+    end;
   finally
     lua_close(L);
   end;

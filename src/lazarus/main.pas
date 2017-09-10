@@ -209,26 +209,19 @@ begin
 end;
 
 procedure TPSDToolKit.PrepareIPC;
-var
-  s: UTF8String;
 begin
   if FRemoteProcess.Running then
     Exit;
-  SetLength(s, 4);
   FRemoteProcess.Execute;
   FRemoteProcess.CloseStderr;
   FRemoteProcess.Input.WriteBuffer('HELO', 4);
-  FRemoteProcess.Output.ReadBuffer(s[1], 4);
-  if s <> 'HELO' then
-  begin
-    FRemoteProcess.Terminate(1);
-    raise Exception.Create('unexpected reply: ' + s);
-  end;
 
   if FReceiver <> nil then
     FreeAndNil(FReceiver);
   FReceiver := TReceiver.Create(FRemoteProcess.Output);
   FReceiver.OnRequest := @OnRequest;
+  FReceiver.WaitResult();
+  FReceiver.Done();
 end;
 
 procedure TPSDToolKit.OnRequest(Sender: TObject; const Command: UTF8String);

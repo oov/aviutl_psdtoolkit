@@ -400,8 +400,7 @@ func (ipc *IPC) ExportFaviewSlider(filePath, sliderName string, names, values []
 func (ipc *IPC) dispatch(cmd string) error {
 	switch cmd {
 	case "HELO":
-		fmt.Print("HELO")
-		return nil
+		return writeUint32(0x80000000)
 
 	case "DRAW":
 		id, filePath, err := readIDAndFilePath()

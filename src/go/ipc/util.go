@@ -130,6 +130,11 @@ func writeReply(err error) error {
 	return nil
 }
 
+func Fatal(err error) {
+	writeReply(err)
+	os.Exit(1)
+}
+
 func writeBinary(b []byte) error {
 	if err := writeInt32(int32(len(b))); err != nil {
 		return err
