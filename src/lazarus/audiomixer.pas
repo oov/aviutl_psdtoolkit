@@ -440,6 +440,7 @@ end;
 constructor TAudioMixer.Create;
 const
   ChannelStripPluginName = #$83#$60#$83#$83#$83#$93#$83#$6C#$83#$8B#$83#$58#$83#$67#$83#$8A#$83#$62#$83#$76; // チャンネルストリップ
+  ChannelStripPluginInfo = ChannelStripPluginName+' v0.1';
   ChannelStripTrackN = 13;
   ChannelStripTrackName: array[0..ChannelStripTrackN - 1] of PChar =
     (
@@ -464,14 +465,16 @@ const
   ChannelStripTrackE: array[0..ChannelStripTrackN - 1] of integer =
     (100, 10000, 500, 24000, 10000, 24000, 10000, 10000, 10000, 10000, 10000, 0, 10000);
   MasterChannelStripPluginName = #$83#$7D#$83#$58#$83#$5E#$81#$5B#$83#$60#$83#$83#$83#$93#$83#$6C#$83#$8B#$83#$58#$83#$67#$83#$8A#$83#$62#$83#$76; // マスターチャンネルストリップ
+  MasterChannelStripPluginInfo = MasterChannelStripPluginName + ' v0.1';
 begin
   inherited Create();
   FillChar(FChannelStripEntry, SizeOf(FChannelStripEntry), 0);
   FChannelStripEntry.Flag := FILTER_FLAG_PRIORITY_LOWEST or FILTER_FLAG_ALWAYS_ACTIVE or
-    FILTER_FLAG_AUDIO_FILTER or FILTER_FLAG_WINDOW_SIZE;
+    FILTER_FLAG_AUDIO_FILTER or FILTER_FLAG_WINDOW_SIZE or FILTER_FLAG_EX_INFORMATION;
   FChannelStripEntry.X := 240 or FILTER_WINDOW_SIZE_CLIENT;
   FChannelStripEntry.Y := 500 or FILTER_WINDOW_SIZE_CLIENT;
   FChannelStripEntry.Name := ChannelStripPluginName;
+  FChannelStripEntry.Information:= ChannelStripPluginInfo;
   FChannelStripEntry.TrackN := ChannelStripTrackN;
   FChannelStripEntry.TrackName := @ChannelStripTrackName[0];
   FChannelStripEntry.TrackDefault := @ChannelStripTrackDefault[0];
@@ -483,8 +486,9 @@ begin
   // but it is necessary to hide the item from ExEdit's menu.
   FMasterChannelStripEntry.Flag := FILTER_FLAG_PRIORITY_LOWEST or FILTER_FLAG_ALWAYS_ACTIVE or
     FILTER_FLAG_AUDIO_FILTER or FILTER_FLAG_WINDOW_SIZE or FILTER_FLAG_NO_CONFIG or
-    FILTER_FLAG_RADIO_BUTTON;
+    FILTER_FLAG_RADIO_BUTTON or FILTER_FLAG_EX_INFORMATION;
   FMasterChannelStripEntry.Name := MasterChannelStripPluginName;
+  FMasterChannelStripEntry.Information := MasterChannelStripPluginInfo;
 
   FLastFrame := 0;
   FSaving := False;
