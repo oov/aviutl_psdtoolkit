@@ -137,6 +137,7 @@ type
   ShiftJISString = type ansistring(932);
 const
   ShowGUICaption: WideString = 'ウィンドウを表示';
+  HWND_MESSAGE = HWND(-3);
 var
   wc: WNDCLASS;
 begin
@@ -155,7 +156,7 @@ begin
   wc.lpszMenuName := nil;
   wc.lpszClassName := 'PSDToolKitAssist';
   RegisterClass(wc);
-  FWindow := CreateWindow('PSDToolKitAssist', nil, 0, 0, 0, 0, 0, 0,
+  FWindow := CreateWindow('PSDToolKitAssist', nil, WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, HWND_MESSAGE,
     0, fp^.DLLHInst, nil);
   fp^.ExFunc^.AddMenuItem(fp, PChar(ShiftJISString(ShowGUICaption)),
     FWindow, 1, VK_W, ADD_MENU_ITEM_FLAG_KEY_CTRL);
