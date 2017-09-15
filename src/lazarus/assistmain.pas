@@ -44,7 +44,7 @@ initialization
 
   SetLength(FilterDLLList, 2);
   FilterDLLList[0] := Assist.Entry;
-  FilterDLLList[3] := nil;
+  FilterDLLList[1] := nil;
 
 finalization
   Assist.Free();
