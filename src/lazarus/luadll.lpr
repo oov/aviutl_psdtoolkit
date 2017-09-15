@@ -4,6 +4,8 @@ library luadll;
 {$CODEPAGE UTF-8}
 
 uses
+  Windows,
+  SysUtils,
   Main,
   Find,
   Remote,
@@ -28,7 +30,20 @@ uses
     Result := 1;
   end;
 
+function GetLuaDLLName(): WideString;
+begin
+  SetLength(Result, MAX_PATH);
+  GetModuleFileNameW(hInstance, @Result[1], MAX_PATH);
+  Result := ExtractFileDir(PWideChar(Result)) + '\..\..\lua51.dll';
+end;
+
 exports
   luaopen_PSDToolKit;
+
+initialization
+  LoadLua(GetLuaDLLName());
+
+finalization
+  FreeLua();
 
 end.

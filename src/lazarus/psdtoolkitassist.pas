@@ -142,7 +142,7 @@ var
   wc: WNDCLASS;
 begin
   Result := True;
-  if MainDLLInstance = 0 then
+  if (MainDLLInstance = 0) or not LuaLoaded() then
     Exit;
 
   wc.style := 0;
@@ -170,11 +170,28 @@ begin
   DestroyWindow(FWindow);
 end;
 
+function GetMainDLLName(): WideString;
+begin
+  SetLength(Result, MAX_PATH);
+  GetModuleFileNameW(hInstance, @Result[1], MAX_PATH);
+  Result := ExtractFileDir(PWideChar(Result)) + '\script\PSDToolKit\PSDToolKit.dll';
+end;
+
+function GetLuaDLLName(): WideString;
+begin
+  SetLength(Result, MAX_PATH);
+  GetModuleFileNameW(hInstance, @Result[1], MAX_PATH);
+  Result := ExtractFileDir(PWideChar(Result)) + '\lua51.dll';
+end;
+
 initialization
-  MainDLLInstance := LoadLibrary('script\PSDToolKit\PSDToolKit.dll');
+  MainDLLInstance := LoadLibraryW(PWideChar(GetMainDLLName()));
+  LoadLua(GetLuaDLLName());
 
 finalization
   if MainDLLInstance <> 0 then
     FreeLibrary(MainDLLInstance);
+  if LuaLoaded() then
+    FreeLua();
 
 end.
