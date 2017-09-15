@@ -118,7 +118,7 @@ end;
 constructor TPSDToolKitAssist.Create;
 const
   PluginName = 'PSDToolKit';
-  PluginInfo = 'PSDToolKitAssist v0.1';
+  PluginInfo = 'PSDToolKitAssist v0.1.1beta';
 begin
   inherited Create();
   FillChar(FEntry, SizeOf(FEntry), 0);

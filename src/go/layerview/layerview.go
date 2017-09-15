@@ -4,9 +4,7 @@ import (
 	"context"
 	"image"
 	"time"
-	"unsafe"
 
-	"github.com/go-gl/gl/v3.2-core/gl"
 	"github.com/golang-ui/nuklear/nk"
 
 	"github.com/oov/aviutl_psdtoolkit/src/go/img"
@@ -34,8 +32,7 @@ type LayerView struct {
 	MainFontHandle   *nk.UserFont
 	SymbolFontHandle *nk.UserFont
 
-	Thumbnail     nk.Image
-	ThumbnailTex  uint32
+	Thumbnail     *nkhelper.Texture
 	ThumbnailChip map[int]nk.Image
 
 	LayerFavSelectedIndex int32
@@ -45,7 +42,11 @@ type LayerView struct {
 }
 
 func (lv *LayerView) Init() {
-	lv.ThumbnailTex, lv.Thumbnail = createTexture(image.NewNRGBA(image.Rect(0, 0, 1, 1)))
+	var err error
+	lv.Thumbnail, err = nkhelper.NewTexture(image.NewNRGBA(image.Rect(0, 0, 1, 1)))
+	if err != nil {
+		panic(err)
+	}
 	lv.ThumbnailChip = map[int]nk.Image{}
 }
 
@@ -61,19 +62,14 @@ func (lv *LayerView) UpdateThumbnails(tree *composite.Tree, size int, doMain fun
 		nrgba := rgbaToNRGBA(rgba)
 		ods.ODS("thumbnail: %dms", (time.Now().UnixNano()-s)/1e6)
 		doMain(func() {
-			lv.ThumbnailTex, lv.Thumbnail = updateTexture(lv.ThumbnailTex, nrgba)
+			lv.Thumbnail.Update(nrgba)
 			for i, rect := range ptMap {
-				lv.ThumbnailChip[i] = nk.NkSubimageId(
-					int32(lv.ThumbnailTex),
-					uint16(nrgba.Rect.Dx()),
-					uint16(nrgba.Rect.Dy()),
-					nk.NkRect(
-						float32(rect.Min.X),
-						float32(rect.Min.Y),
-						float32(rect.Dx()),
-						float32(rect.Dy()),
-					),
-				)
+				lv.ThumbnailChip[i] = lv.Thumbnail.SubImage(nk.NkRect(
+					float32(rect.Min.X),
+					float32(rect.Min.Y),
+					float32(rect.Dx()),
+					float32(rect.Dy()),
+				))
 			}
 		})
 	}()
@@ -223,7 +219,9 @@ func layerTreeItem(ctx *nk.Context, indent float32, sansFont, symbolsFont *nk.Us
 	c := nkhelper.GetStyleTextColorPtr(ctx)
 	fg.SetRGBA(c.R(), c.G(), c.B(), c.A())
 	if !visible {
-		fg.SetA(fg.A() / 4)
+		fg.SetR(fg.R() / 2)
+		fg.SetG(fg.G() / 2)
+		fg.SetB(fg.B() / 2)
 	}
 	rect = nk.NkRect(rect.X()+marginSize, rect.Y(), rect.W()-marginSize, rect.H())
 	drawTextMiddle(canvas, rect, visibleSymbol, symbolsFont, fg)
@@ -474,30 +472,4 @@ func rgbaToNRGBA(rgba *image.RGBA) *image.NRGBA {
 		}
 	}
 	return nrgba
-}
-
-func createTexture(nrgba *image.NRGBA) (uint32, nk.Image) {
-	var tex uint32
-	gl.GenTextures(1, &tex)
-	gl.BindTexture(gl.TEXTURE_2D, tex)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.LINEAR)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, int32(nrgba.Rect.Dx()), int32(nrgba.Rect.Dy()),
-		0, gl.RGBA, gl.UNSIGNED_BYTE, unsafe.Pointer(&nrgba.Pix[0]))
-	return tex, nk.NkImageId(int32(tex))
-}
-
-func updateTexture(tex uint32, nrgba *image.NRGBA) (uint32, nk.Image) {
-	gl.DeleteTextures(1, &tex)
-	gl.GenTextures(1, &tex)
-	gl.BindTexture(gl.TEXTURE_2D, tex)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, int32(nrgba.Rect.Dx()), int32(nrgba.Rect.Dy()),
-		0, gl.RGBA, gl.UNSIGNED_BYTE, unsafe.Pointer(&nrgba.Pix[0]))
-	return tex, nk.NkImageId(int32(tex))
 }

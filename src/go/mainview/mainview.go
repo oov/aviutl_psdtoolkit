@@ -3,9 +3,7 @@ package mainview
 import (
 	"image"
 	"math"
-	"unsafe"
 
-	"github.com/go-gl/gl/v3.2-core/gl"
 	"github.com/golang-ui/nuklear/nk"
 	"golang.org/x/image/draw"
 
@@ -16,16 +14,14 @@ import (
 type MainView struct {
 	ResizedImage *image.NRGBA
 
-	VisibleAreaImage    *image.NRGBA
-	VisibleAreaImageTex uint32
-	VisibleArea         nk.Image
+	VisibleAreaImage *image.NRGBA
+	VisibleArea      *nkhelper.Texture
 
 	LatestImageRect     image.Rectangle
 	LatestActiveRect    image.Rectangle
 	LatestWorkspaceSize image.Point
 
-	BGTex    uint32
-	BG       nk.Image
+	BG       *nkhelper.Texture
 	BGScroll float32
 
 	ForceUpdate         bool
@@ -35,16 +31,23 @@ type MainView struct {
 func (mv *MainView) Init(bg image.Image) {
 	nrgba := image.NewNRGBA(bg.Bounds())
 	draw.Draw(nrgba, nrgba.Rect, bg, image.Point{}, draw.Src)
-	mv.BGTex, mv.BG = createTexture(nrgba)
+	var err error
+	mv.BG, err = nkhelper.NewTexture(nrgba)
+	if err != nil {
+		panic(err)
+	}
 
 	mv.VisibleAreaImage = image.NewNRGBA(image.Rect(0, 0, 1, 1))
-	mv.VisibleAreaImageTex, mv.VisibleArea = createTexture(mv.VisibleAreaImage)
+	mv.VisibleArea, err = nkhelper.NewTexture(mv.VisibleAreaImage)
+	if err != nil {
+		panic(err)
+	}
 }
 
 func (mv *MainView) Clear() {
 	mv.ResizedImage = nil
 	mv.VisibleAreaImage = image.NewNRGBA(image.Rect(0, 0, 1, 1))
-	mv.VisibleAreaImageTex, mv.VisibleArea = updateTexture(mv.VisibleAreaImageTex, mv.VisibleAreaImage)
+	mv.VisibleArea.Update(mv.VisibleAreaImage)
 }
 
 func (mv *MainView) Render(ctx *nk.Context, winRect nk.Rect, zoom float64) {
@@ -123,7 +126,7 @@ func (mv *MainView) Render(ctx *nk.Context, winRect nk.Rect, zoom float64) {
 					draw.Src,
 					nil,
 				)
-				mv.VisibleAreaImageTex, mv.VisibleArea = updateTexture(mv.VisibleAreaImageTex, mv.VisibleAreaImage)
+				mv.VisibleArea.Update(mv.VisibleAreaImage)
 				mv.ForceUpdate = false
 			}
 
@@ -150,27 +153,17 @@ func (mv *MainView) Render(ctx *nk.Context, winRect nk.Rect, zoom float64) {
 						if x+w > xEnd {
 							w = xEnd - x
 						}
-						img := nk.NkSubimageId(
-							int32(mv.BGTex),
-							uint16(256),
-							uint16(256),
-							nk.NkRect(16-mv.BGScroll, 16-mv.BGScroll, w, h),
-						)
+						img := mv.BG.SubImage(nk.NkRect(16-mv.BGScroll, 16-mv.BGScroll, w, h))
 						nk.NkDrawImage(cmdbuf, nk.NkRect(x, y, w, h), &img, col)
 					}
 				}
 			}
-			mv.BGScroll += 0.25
+			mv.BGScroll += 0.5
 			if mv.BGScroll > 8 {
 				mv.BGScroll -= 8
 			}
 
-			img := nk.NkSubimageId(
-				int32(mv.VisibleAreaImageTex),
-				uint16(mv.VisibleAreaImage.Rect.Dx()),
-				uint16(mv.VisibleAreaImage.Rect.Dy()),
-				nk.NkRect(0, 0, rgn.W(), rgn.H()),
-			)
+			img := mv.VisibleArea.SubImage(nk.NkRect(0, 0, rgn.W(), rgn.H()))
 			nk.NkLayoutSpacePush(ctx, nk.NkRect(ofs.X(), ofs.Y(), rgn.W(), rgn.H()))
 			nk.NkImage(ctx, img)
 		}
@@ -181,30 +174,4 @@ func (mv *MainView) Render(ctx *nk.Context, winRect nk.Rect, zoom float64) {
 
 	}
 	nk.NkEnd(ctx)
-}
-
-func createTexture(nrgba *image.NRGBA) (uint32, nk.Image) {
-	var tex uint32
-	gl.GenTextures(1, &tex)
-	gl.BindTexture(gl.TEXTURE_2D, tex)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, int32(nrgba.Rect.Dx()), int32(nrgba.Rect.Dy()),
-		0, gl.RGBA, gl.UNSIGNED_BYTE, unsafe.Pointer(&nrgba.Pix[0]))
-	return tex, nk.NkImageId(int32(tex))
-}
-
-func updateTexture(tex uint32, nrgba *image.NRGBA) (uint32, nk.Image) {
-	gl.DeleteTextures(1, &tex)
-	gl.GenTextures(1, &tex)
-	gl.BindTexture(gl.TEXTURE_2D, tex)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE)
-	gl.TexParameterf(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE)
-	gl.TexImage2D(gl.TEXTURE_2D, 0, gl.RGBA8, int32(nrgba.Rect.Dx()), int32(nrgba.Rect.Dy()),
-		0, gl.RGBA, gl.UNSIGNED_BYTE, unsafe.Pointer(&nrgba.Pix[0]))
-	return tex, nk.NkImageId(int32(tex))
 }

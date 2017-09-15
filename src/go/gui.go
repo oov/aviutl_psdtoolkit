@@ -5,38 +5,11 @@ import (
 	"strings"
 	"time"
 
-	"github.com/go-gl/gl/v3.2-core/gl"
-	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/golang-ui/nuklear/nk"
 
-	"github.com/oov/aviutl_psdtoolkit/src/go/assets"
 	"github.com/oov/aviutl_psdtoolkit/src/go/img"
-	"github.com/oov/aviutl_psdtoolkit/src/go/nkhelper"
 	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
 )
-
-func (g *gui) initFont() {
-	atlas := nk.NewFontAtlas()
-	nk.NkFontStashBegin(&atlas)
-	fc := nk.NkFontConfig(15)
-	nkhelper.SetJapaneseGlyphRanges(&fc)
-	g.Font.Sans = nk.NkFontAtlasAddFromBytes(atlas, assets.MustAsset("Ohruri-Regular.ttf"), 20, &fc)
-	g.Font.Symbol = nk.NkFontAtlasAddFromBytes(atlas, assets.MustAsset("symbols.ttf"), 14, nil)
-	nk.NkFontStashEnd()
-	g.Font.SansHandle = g.Font.Sans.Handle()
-	g.Font.SymbolHandle = g.Font.Symbol.Handle()
-
-	nk.NkStyleSetFont(g.Context, g.Font.SansHandle)
-	g.LayerView.MainFontHandle = g.Font.SansHandle
-	g.LayerView.SymbolFontHandle = g.Font.SymbolHandle
-}
-
-func (g *gui) freeFont() {
-	g.Font.SymbolHandle.Free()
-	g.Font.Symbol.Free()
-	g.Font.SansHandle.Free()
-	g.Font.Sans.Free()
-}
 
 func (g *gui) MainLoop(exitCh <-chan struct{}) {
 	defer func() {
@@ -45,9 +18,9 @@ func (g *gui) MainLoop(exitCh <-chan struct{}) {
 		}
 		g.freeFont()
 		nk.NkPlatformShutdown()
-		glfw.Terminate()
+		g.terminate()
 	}()
-	fpsTicker := time.NewTicker(time.Second / 60)
+	fpsTicker := time.NewTicker(time.Second / 30)
 	for {
 		select {
 		case f := <-mainfunc:
@@ -58,11 +31,11 @@ func (g *gui) MainLoop(exitCh <-chan struct{}) {
 			return
 
 		case <-fpsTicker.C:
+			g.pollEvents()
 			if g.Window.ShouldClose() {
 				g.Window.Hide()
 				g.Window.SetShouldClose(false)
 			}
-			glfw.PollEvents()
 			g.update()
 		}
 	}
@@ -169,11 +142,7 @@ func (g *gui) update() {
 	g.MainView.Render(ctx, nk.NkRect(layerPaneWidth, topPaneHeight, float32(width-layerPaneWidth), float32(height-bottomPaneHeight-topPaneHeight)), g.zoom)
 
 	// Render
-	gl.Viewport(0, 0, int32(width), int32(height))
-	gl.Clear(gl.COLOR_BUFFER_BIT)
-	gl.ClearColor(0, 0, 0, 1)
-	nk.NkPlatformRender(nk.AntiAliasingOn, maxVertexBuffer, maxElementBuffer)
-	g.Window.SwapBuffers()
+	g.Window.Render()
 }
 
 func (g *gui) intializeView(img *img.Image) {

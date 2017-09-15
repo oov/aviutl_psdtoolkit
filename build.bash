@@ -26,7 +26,7 @@ popd
 
 # build PSDToolKit.exe
 pushd src/go
-go.exe build -ldflags="-s" -o ../../bin/script/PSDToolKit/PSDToolKit.exe
+go.exe build -x -tags gdip -ldflags="-s" -o ../../bin/script/PSDToolKit/PSDToolKit.exe
 popd
 
 # build lazarus projects

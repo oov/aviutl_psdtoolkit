@@ -9,12 +9,9 @@ import (
 	"runtime"
 	"runtime/debug"
 	"time"
-	"unsafe"
 
 	// _ "net/http/pprof"
 
-	"github.com/go-gl/gl/v3.2-core/gl"
-	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/golang-ui/nuklear/nk"
 	"github.com/pkg/errors"
 
@@ -35,9 +32,6 @@ const (
 	layerPaneHeight  = winHeight - bottomPaneHeight - topPaneHeight
 	mainViewWidth    = winWidth - layerPaneWidth
 	mainViewHeight   = layerPaneHeight
-
-	maxVertexBuffer  = 512 * 1024
-	maxElementBuffer = 128 * 1024
 )
 
 func init() {
@@ -54,7 +48,7 @@ const (
 
 type gui struct {
 	IPC     ipc.IPC
-	Window  *glfw.Window
+	Window  *window
 	Context *nk.Context
 
 	cancelRender        context.CancelFunc
@@ -80,10 +74,10 @@ type gui struct {
 	MainView  mainview.MainView
 
 	Font struct {
-		Sans       *nk.Font
+		Sans       *font
 		SansHandle *nk.UserFont
 
-		Symbol       *nk.Font
+		Symbol       *font
 		SymbolHandle *nk.UserFont
 	}
 }
@@ -135,7 +129,7 @@ func main() {
 		do(func() {
 			g.Window.Show()
 		})
-		return uintptr(unsafe.Pointer(g.Window.GetWin32Window())), nil
+		return g.Window.NativeWindow(), nil
 	}
 	g.LayerView.CopyToClipboard = func(sliderName, name, value string) {
 		if err := g.IPC.CopyFaviewValue(*g.img.FilePath, sliderName, name, value); err != nil {
@@ -153,28 +147,12 @@ func main() {
 	go freeMemory(time.Second, exitCh)
 
 	// psd.Debug = log.New(os.Stdout, "psd: ", log.Lshortfile)
-	if err := glfw.Init(); err != nil {
-		ipc.Fatal(errors.Wrap(err, "glfw.Init failed"))
+	var err error
+	if g.Window, g.Context, err = newWindow(winWidth, winHeight, "PSDToolKit"); err != nil {
+		ipc.Fatal(err)
 	}
-	glfw.WindowHint(glfw.ContextVersionMajor, 3)
-	glfw.WindowHint(glfw.ContextVersionMinor, 2)
-	glfw.WindowHint(glfw.OpenGLProfile, glfw.OpenGLCoreProfile)
-	glfw.WindowHint(glfw.OpenGLForwardCompatible, glfw.True)
-	glfw.WindowHint(glfw.Visible, glfw.False)
-	win, err := glfw.CreateWindow(winWidth, winHeight, "PSDToolKit", nil, nil)
-	if err != nil {
-		ipc.Fatal(errors.Wrap(err, "glfw.CreateWindow failed"))
-	}
-	g.Window = win
 
-	win.MakeContextCurrent()
-	if err := gl.Init(); err != nil {
-		ipc.Fatal(errors.Wrap(err, "gl.Init failed"))
-	}
-	width, height := win.GetSize()
-	gl.Viewport(0, 0, int32(width), int32(height))
-
-	win.SetDropCallback(func(w *glfw.Window, filenames []string) {
+	dropCB := func(w *window, filenames []string) {
 		img, idx, stateKey, err := g.IPC.Image(0, extractPSDAndPFV(filenames))
 		if err != nil {
 			ods.ODS("error: %v", err)
@@ -183,10 +161,12 @@ func main() {
 		g.ImageListSelectedIndex = idx
 		g.ImageListSelected = stateKey.String()
 		g.intializeView(img)
-	})
+	}
+	g.Window.SetDropCallback(dropCB)
 
-	g.Context = nk.NkPlatformInit(win, nk.PlatformInstallCallbacks)
-	g.initFont()
+	if err = g.initFont(); err != nil {
+		ipc.Fatal(errors.Wrap(err, "gui.initFont failed"))
+	}
 	g.LayerView.Init()
 
 	bg, err := png.Decode(bytes.NewReader(assets.MustAsset("bg.png")))

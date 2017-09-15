@@ -30,6 +30,6 @@ func Recover(err interface{}) {
 		if !ok {
 			break
 		}
-		ODS("  [%d] %s: %s(%d)\n", i, pc, src, line)
+		ODS("  [%d] %s: %s(%d)\n", i, runtime.FuncForPC(pc).Name(), src, line)
 	}
 }

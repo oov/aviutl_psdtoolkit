@@ -59,6 +59,7 @@ Bash on Ubuntu on Windows 上で `./build.bash` を行うと必要なファイ�
 
 ソースコードのコンパイルには Go 1.9 windows/amd64、Lazarus 1.6.4 for Windows 32bit が必要です。  
 Lazarus は C:\lazarus にインストールされているのを想定しています。
+Go から利用している Nuklear は現状 fork 版 ( https://github.com/oov/nuklear/tree/forme ) が必要です。
 
 ## Credits
 
