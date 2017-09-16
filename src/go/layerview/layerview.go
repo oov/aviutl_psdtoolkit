@@ -31,9 +31,10 @@ const (
 type LayerView struct {
 	MainFontHandle   *nk.UserFont
 	SymbolFontHandle *nk.UserFont
+	ThumbnailSize    int
 
 	Thumbnail     *nkhelper.Texture
-	ThumbnailChip map[int]nk.Image
+	ThumbnailChip map[int]*nk.Image
 
 	LayerFavSelectedIndex int32
 
@@ -47,11 +48,12 @@ func (lv *LayerView) Init() {
 	if err != nil {
 		panic(err)
 	}
-	lv.ThumbnailChip = map[int]nk.Image{}
+	lv.ThumbnailChip = map[int]*nk.Image{}
 }
 
 func (lv *LayerView) UpdateThumbnails(tree *composite.Tree, size int, doMain func(func())) {
-	lv.ThumbnailChip = map[int]nk.Image{}
+	lv.ThumbnailChip = map[int]*nk.Image{}
+	lv.ThumbnailSize = size
 	go func() {
 		s := time.Now().UnixNano()
 		rgba, ptMap, err := tree.ThumbnailSheet(context.Background(), size)
@@ -64,12 +66,13 @@ func (lv *LayerView) UpdateThumbnails(tree *composite.Tree, size int, doMain fun
 		doMain(func() {
 			lv.Thumbnail.Update(nrgba)
 			for i, rect := range ptMap {
-				lv.ThumbnailChip[i] = lv.Thumbnail.SubImage(nk.NkRect(
+				img := lv.Thumbnail.SubImage(nk.NkRect(
 					float32(rect.Min.X),
 					float32(rect.Min.Y),
 					float32(rect.Dx()),
 					float32(rect.Dy()),
 				))
+				lv.ThumbnailChip[i] = &img
 			}
 		})
 	}()
@@ -149,7 +152,7 @@ func drawTextMiddle(canvas *nk.CommandBuffer, rect nk.Rect, s string, font *nk.U
 	nk.NkDrawText(canvas, r, s, int32(len(s)), font, nk.Color{}, col)
 }
 
-func layerTreeItem(ctx *nk.Context, indent float32, sansFont, symbolsFont *nk.UserFont, thumb nk.Image, visible, forceVisible bool, l *composite.Layer) (clicked bool, ctrl bool) {
+func layerTreeItem(ctx *nk.Context, indent, thumbSize float32, sansFont, symbolsFont *nk.UserFont, thumb *nk.Image, visible, forceVisible bool, l *composite.Layer) (clicked bool, ctrl bool) {
 	clicked = false
 	ctrl = false
 	const (
@@ -181,7 +184,7 @@ func layerTreeItem(ctx *nk.Context, indent float32, sansFont, symbolsFont *nk.Us
 	}
 	indent += collapseSize + 1
 
-	w := float32(nkhelper.TextWidth(sansFont, l.Name) + marginSize*2 + visibleSize)
+	w := float32(nkhelper.TextWidth(sansFont, l.Name) + marginSize*2 + visibleSize + thumbSize)
 	if l.Clipping {
 		w += visibleSize
 	}
@@ -226,6 +229,14 @@ func layerTreeItem(ctx *nk.Context, indent float32, sansFont, symbolsFont *nk.Us
 	rect = nk.NkRect(rect.X()+marginSize, rect.Y(), rect.W()-marginSize, rect.H())
 	drawTextMiddle(canvas, rect, visibleSymbol, symbolsFont, fg)
 	rect = nk.NkRect(rect.X()+visibleSize, rect.Y(), rect.W()-visibleSize, rect.H())
+
+	if thumb != nil {
+		var white nk.Color
+		white.SetRGBA(255, 255, 255, 255)
+		nk.NkDrawImage(canvas, nk.NkRect(rect.X(), rect.Y()+rect.H()/2-thumbSize/2, thumbSize, thumbSize), thumb, white)
+		rect = nk.NkRect(rect.X()+thumbSize, rect.Y(), rect.W()-thumbSize, rect.H())
+	}
+
 	if l.Clipping {
 		drawTextMiddle(canvas, rect, symbolClippingArrow, symbolsFont, fg)
 		rect = nk.NkRect(rect.X()+visibleSize, rect.Y(), rect.W()-visibleSize, rect.H())
@@ -247,7 +258,7 @@ func (lv *LayerView) layoutLayer(ctx *nk.Context, img *img.Image, indent float32
 	_, forceVisible := img.Layers.ForceVisible[l.SeqID]
 	thumb, _ := lv.ThumbnailChip[l.SeqID]
 	nk.NkLayoutSpaceBegin(ctx, nk.Static, 28, 3)
-	if clicked, ctrl := layerTreeItem(ctx, indent, lv.MainFontHandle, lv.SymbolFontHandle, thumb, visible, forceVisible, l); clicked {
+	if clicked, ctrl := layerTreeItem(ctx, indent, float32(lv.ThumbnailSize), lv.MainFontHandle, lv.SymbolFontHandle, thumb, visible, forceVisible, l); clicked {
 		if ctrl {
 			modified = img.Layers.SetVisibleExclusive(l.SeqID, !l.Visible, img.Flip) || modified
 		} else {

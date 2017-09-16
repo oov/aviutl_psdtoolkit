@@ -164,5 +164,5 @@ func (g *gui) intializeView(img *img.Image) {
 	g.MainView.ForceScrollToCenter = true
 
 	updateRenderedImage(g, g.img)
-	g.LayerView.UpdateThumbnails(img.PSD, 64, do)
+	g.LayerView.UpdateThumbnails(img.PSD, 24, do)
 }
