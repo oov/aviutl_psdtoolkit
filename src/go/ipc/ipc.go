@@ -196,6 +196,7 @@ func (ipc *IPC) getSourceImage(filePath string) (*sourceImage, error) {
 		InitialLayerState: &state,
 	}
 	ipc.sourceImages[filePath] = srcImage
+	debug.FreeOSMemory()
 	return srcImage, nil
 }
 
