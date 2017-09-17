@@ -157,11 +157,9 @@ var
   lua_tonumber: function(L: Plua_State; idx: integer): lua_Number; cdecl;
   lua_tointeger: function(L: Plua_State; idx: integer): lua_Integer; cdecl;
   lua_toboolean: function(L: Plua_State; idx: integer): longbool; cdecl;
-  lua_tolstring: function(L: Plua_State; idx: integer;
-  len: Psize_t): PChar; cdecl;
+  lua_tolstring: function(L: Plua_State; idx: integer; len: Psize_t): PChar; cdecl;
   lua_objlen: function(L: Plua_State; idx: integer): size_t; cdecl;
-  lua_tocfunction: function(L: Plua_State;
-  idx: integer): lua_CFunction; cdecl;
+  lua_tocfunction: function(L: Plua_State; idx: integer): lua_CFunction; cdecl;
   lua_touserdata: function(L: Plua_State; idx: integer): Pointer; cdecl;
   lua_tothread: function(L: Plua_State; idx: integer): Plua_State; cdecl;
   lua_topointer: function(L: Plua_State; idx: integer): Pointer; cdecl;
@@ -178,8 +176,7 @@ var
   argp: Pointer): PChar; cdecl;
   lua_pushfstring: function(L: Plua_State; const fmt: PChar): PChar;
   cdecl; varargs;
-  lua_pushcclosure: procedure(L: Plua_State; fn: lua_CFunction;
-  n: integer); cdecl;
+  lua_pushcclosure: procedure(L: Plua_State; fn: lua_CFunction; n: integer); cdecl;
   lua_pushboolean: procedure(L: Plua_State; b: longbool); cdecl;
   lua_pushlightuserdata: procedure(L: Plua_State; p: Pointer); cdecl;
   lua_pushthread: procedure(L: Plua_State); cdecl;
@@ -193,8 +190,7 @@ var
   lua_rawgeti: procedure(L: Plua_State; idx, n: integer); cdecl;
   lua_createtable: procedure(L: Plua_State; narr, nrec: integer); cdecl;
   lua_newuserdata: function(L: Plua_State; sz: size_t): Pointer; cdecl;
-  lua_getmetatable: function(L: Plua_State;
-  objindex: integer): integer; cdecl;
+  lua_getmetatable: function(L: Plua_State; objindex: integer): integer; cdecl;
   lua_getfenv: procedure(L: Plua_State; idx: integer); cdecl;
 
 (*
@@ -204,23 +200,19 @@ var
   lua_setfield: procedure(L: Plua_State; idx: integer; k: PChar); cdecl;
   lua_rawset: procedure(L: Plua_State; idx: integer); cdecl;
   lua_rawseti: procedure(L: Plua_State; idx, n: integer); cdecl;
-  lua_setmetatable: function(L: Plua_State;
-  objindex: integer): integer; cdecl;
+  lua_setmetatable: function(L: Plua_State; objindex: integer): integer; cdecl;
   lua_setfenv: function(L: Plua_State; idx: integer): integer; cdecl;
 
 (*
 ** `load' and `call' functions (load and run Lua code)
 *)
   lua_call: procedure(L: Plua_State; nargs, nresults: integer); cdecl;
-  lua_pcall: function(L: Plua_State;
-  nargs, nresults, errf: integer): integer; cdecl;
-  lua_cpcall: function(L: Plua_State; func: lua_CFunction;
-  ud: Pointer): integer; cdecl;
-  lua_load: function(L: Plua_State; reader: lua_Reader;
-  dt: Pointer; const chunkname: PChar): integer; cdecl;
+  lua_pcall: function(L: Plua_State; nargs, nresults, errf: integer): integer; cdecl;
+  lua_cpcall: function(L: Plua_State; func: lua_CFunction; ud: Pointer): integer; cdecl;
+  lua_load: function(L: Plua_State; reader: lua_Reader; dt: Pointer;
+  const chunkname: PChar): integer; cdecl;
 
-  lua_dump: function(L: Plua_State; writer: lua_Writer;
-  Data: Pointer): integer; cdecl;
+  lua_dump: function(L: Plua_State; writer: lua_Writer; Data: Pointer): integer; cdecl;
 
 (*
 ** coroutine functions
@@ -256,6 +248,29 @@ var
 
   lua_getallocf: function(L: Plua_State; ud: PPointer): lua_Alloc; cdecl;
   lua_setallocf: procedure(L: Plua_State; f: lua_Alloc; ud: Pointer); cdecl;
+
+  (*
+  ** std libs
+  *)
+const
+  LUA_COLIBNAME = 'coroutine';
+  LUA_TABLIBNAME = 'table';
+  LUA_IOLIBNAME = 'io';
+  LUA_OSLIBNAME = 'os';
+  LUA_STRLINAME = 'string';
+  LUA_MATHLIBNAME = 'math';
+  LUA_DBLIBNAME = 'debug';
+  LUA_LOADLIBNAME = 'package';
+
+var
+  luaopen_base: function(L: Plua_State): longbool; cdecl;
+  luaopen_table: function(L: Plua_State): longbool; cdecl;
+  luaopen_io: function(L: Plua_State): longbool; cdecl;
+  luaopen_string: function(L: Plua_State): longbool; cdecl;
+  luaopen_math: function(L: Plua_State): longbool; cdecl;
+  luaopen_debug: function(L: Plua_State): longbool; cdecl;
+  luaopen_package: function(L: Plua_State): longbool; cdecl;
+  luaL_openlibs: procedure(L: Plua_State); cdecl;
 
 (*
 ** ===============================================================
@@ -342,18 +357,13 @@ type
   lua_Hook = procedure(L: Plua_State; ar: Plua_Debug); cdecl;
 
 var
-  lua_getstack: function(L: Plua_State; level: integer;
-  ar: Plua_Debug): integer; cdecl;
+  lua_getstack: function(L: Plua_State; level: integer; ar: Plua_Debug): integer; cdecl;
   lua_getinfo: function(L: Plua_State; const what: PChar;
   ar: Plua_Debug): integer; cdecl;
-  lua_getlocal: function(L: Plua_State; const ar: Plua_Debug;
-  n: integer): PChar; cdecl;
-  lua_setlocal: function(L: Plua_State; const ar: Plua_Debug;
-  n: integer): PChar; cdecl;
-  lua_getupvalue: function(L: Plua_State; funcindex: integer;
-  n: integer): PChar; cdecl;
-  lua_setupvalue: function(L: Plua_State; funcindex: integer;
-  n: integer): PChar; cdecl;
+  lua_getlocal: function(L: Plua_State; const ar: Plua_Debug; n: integer): PChar; cdecl;
+  lua_setlocal: function(L: Plua_State; const ar: Plua_Debug; n: integer): PChar; cdecl;
+  lua_getupvalue: function(L: Plua_State; funcindex: integer; n: integer): PChar; cdecl;
+  lua_setupvalue: function(L: Plua_State; funcindex: integer; n: integer): PChar; cdecl;
 
   lua_sethook: function(L: Plua_State; func: lua_Hook; mask: integer;
   Count: integer): integer; cdecl;
@@ -569,6 +579,15 @@ begin
   Pointer(lua_getallocf) := GetProcAddress(h, 'lua_getallocf');
   Pointer(lua_setallocf) := GetProcAddress(h, 'lua_setallocf');
 
+  Pointer(luaopen_base) := GetProcAddress(h, 'luaopen_base');
+  Pointer(luaopen_table) := GetProcAddress(h, 'luaopen_table');
+  Pointer(luaopen_io) := GetProcAddress(h, 'luaopen_io');
+  Pointer(luaopen_string) := GetProcAddress(h, 'luaopen_string');
+  Pointer(luaopen_math) := GetProcAddress(h, 'luaopen_math');
+  Pointer(luaopen_debug) := GetProcAddress(h, 'luaopen_debug');
+  Pointer(luaopen_package) := GetProcAddress(h, 'luaopen_package');
+  Pointer(luaL_openlibs) := GetProcAddress(h, 'luaL_openlibs');
+
   Pointer(lua_getstack) := GetProcAddress(h, 'lua_getstack');
   Pointer(lua_getinfo) := GetProcAddress(h, 'lua_getinfo');
   Pointer(lua_getlocal) := GetProcAddress(h, 'lua_getlocal');
@@ -673,6 +692,15 @@ begin
 
   lua_getallocf := nil;
   lua_setallocf := nil;
+
+  luaopen_base := nil;
+  luaopen_table := nil;
+  luaopen_io := nil;
+  luaopen_string := nil;
+  luaopen_math := nil;
+  luaopen_debug := nil;
+  luaopen_package := nil;
+  luaL_openlibs := nil;
 
   lua_getstack := nil;
   lua_getinfo := nil;
