@@ -272,6 +272,16 @@ var
   luaopen_package: function(L: Plua_State): longbool; cdecl;
   luaL_openlibs: procedure(L: Plua_State); cdecl;
 
+  (*
+  ** load string
+  *)
+  luaL_loadstring: function (L: Plua_State; const s: PChar): Integer; cdecl;
+
+  (*
+  ** error handler
+  *)
+  luaL_error: function (L: Plua_State; const fmt: PChar): Integer; cdecl; varargs;
+
 (*
 ** ===============================================================
 ** some useful macros
@@ -588,6 +598,10 @@ begin
   Pointer(luaopen_package) := GetProcAddress(h, 'luaopen_package');
   Pointer(luaL_openlibs) := GetProcAddress(h, 'luaL_openlibs');
 
+  Pointer(luaL_loadstring) := GetProcAddress(h, 'luaL_loadstring');
+
+  Pointer(luaL_error) := GetProcAddress(h, 'luaL_error');
+
   Pointer(lua_getstack) := GetProcAddress(h, 'lua_getstack');
   Pointer(lua_getinfo) := GetProcAddress(h, 'lua_getinfo');
   Pointer(lua_getlocal) := GetProcAddress(h, 'lua_getlocal');
@@ -701,6 +715,10 @@ begin
   luaopen_debug := nil;
   luaopen_package := nil;
   luaL_openlibs := nil;
+
+  luaL_loadstring := nil;
+
+  luaL_error := nil;
 
   lua_getstack := nil;
   lua_getinfo := nil;

@@ -77,6 +77,7 @@ type
   PFilter = ^TFilter;
   PFilterProcInfo = ^TFilterProcInfo;
   PFileInfo = ^TFileInfo;
+  PSysInfo = ^TSysInfo;
   PExFunc = ^TExFunc;
 
   // BOOL    (*func_proc)( FILTER *fp,FILTER_PROC_INFO *fpip );
@@ -100,10 +101,14 @@ type
 
   TGetFrameFunc = function(edit: Pointer): integer; cdecl;
   TGetFrameNFunc = function(edit: Pointer): integer; cdecl;
+  TGetSysInfo = function(edit: Pointer; sip: PSysInfo): AviUtlBool; cdecl;
   TGetFileInfoFunc = function(edit: Pointer; fip: PFileInfo): AviUtlBool; cdecl;
   TGetAudioFilteredFunc = function(edit: Pointer; N: integer;
     Buf: Pointer): integer; cdecl;
-  TAddMenuItem = function(fp: PFilter; Name: PChar; h: THandle;
+  TGetFilterPFunc = function(filterId: integer): PFilter; cdecl;
+  TIniLoadIntFunc = function(fp: PFilter; key: PChar; default: integer): integer; cdecl;
+  TIniLoadStrFunc = function(fp: PFilter; key: PChar; str: PChar; default: PChar): AviUtlBool; cdecl;
+  TAddMenuItemFunc = function(fp: PFilter; Name: PChar; h: THandle;
     id: integer; def_key: integer; flag: integer): integer; cdecl;
 
   TExFunc = record
@@ -141,14 +146,14 @@ type
     YC2RGB: Pointer;
     DlgGetLoadName: Pointer;
     DlgGetSaveName: Pointer;
-    IniLoadInt: Pointer;
+    IniLoadInt: TIniLoadIntFunc;
     IniSaveInt: Pointer;
-    IniLoadStr: Pointer;
+    IniLoadStr: TIniLoadStrFunc;
     IniSaveStr: Pointer;
     GetSourceFileInfo: Pointer;
     GetSourceVideoNumber: Pointer;
-    GetSysInfo: Pointer;
-    GetFilterP: Pointer;
+    GetSysInfo: TGetSysInfo;
+    GetFilterP: TGetFilterPFunc;
     GetYCPFiltering: Pointer;
     GetAudioFiltering: Pointer;
     SetYCPFilteringCacheSize: Pointer;
@@ -175,7 +180,7 @@ type
     AVIFileSetAudioSampleRate: Pointer;
     GetFrameStatusTable: Pointer;
     SetUndo: Pointer;
-    AddMenuItem: TAddMenuItem;
+    AddMenuItem: TAddMenuItemFunc;
     EditOpen: Pointer;
     EditClose: Pointer;
     EditOutput: Pointer;
@@ -195,6 +200,24 @@ type
     VideoDecodeBit: integer;
     AudioN: integer;
     Reserved: array[0..3] of integer;
+  end;
+
+  TSysInfo = record
+    Flag: integer;
+    Info: PChar;
+    FilterN: integer;
+    MinW, MinH: integer;
+    MaxW, MaxH: integer;
+    MaxFrame: integer;
+    EditName: PChar;
+    ProjectName: PChar;
+    OutputName: PChar;
+    VRamW, VRamH: integer;
+    VRamYCSize: integer;
+    VRamLineSize: integer;
+    Font: THandle;
+    Build: integer;
+    Reserved: array[0..1] of integer;
   end;
 
   TFilterProcInfo = record
@@ -311,7 +334,7 @@ type
     // BOOL    (*func_save_end)( FILTER *fp,void *editp );
     FuncSaveEnd: Pointer;
     // EXFUNC    *exfunc;
-    ExFunc: Pointer;
+    ExFunc: PExFunc;
     // HWND    hwnd;
     HWND: THandle;
     // HINSTANCE  dll_hinst;
