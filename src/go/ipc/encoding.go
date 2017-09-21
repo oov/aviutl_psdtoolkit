@@ -112,14 +112,14 @@ func autoDetect(bs []byte) encoding.Encoding {
 			}
 
 			suspiciousBytes++
-			if i >= 32 && (suspiciousBytes*100)/length > 10 {
+			if suspiciousBytes*2 > length {
 				return encoding.Nop // Binary
 			}
 
 		}
 	}
 
-	if (suspiciousBytes*100)/length > 10 {
+	if suspiciousBytes*2 > length {
 		return encoding.Nop // Binary
 	}
 
