@@ -9,7 +9,7 @@ func extractPSDAndPFV(filenames []string) string {
 	var psd, pfv string
 	for _, s := range filenames {
 		switch strings.ToLower(filepath.Ext(s)) {
-		case ".psd":
+		case ".psd", ".psb":
 			psd = s
 		case ".pfv":
 			pfv = s
