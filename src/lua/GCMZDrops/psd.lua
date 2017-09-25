@@ -93,7 +93,7 @@ check0=100
 type=0
 filter=2
 name=Assign@PSDToolKit
-param=]] .. "f=" .. GCMZDrops.encodeluastring(filepath) .. ";" .. "\r\n" .. [[
+param=]] .. "f=" .. GCMZDrops.encodeluastring(filepath) .. ';l="L.0";' .. "\r\n" .. [[
 [0.2]
 _name=ïWèÄï`âÊ
 X=0.0

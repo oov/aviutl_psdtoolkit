@@ -269,7 +269,10 @@ func (ipc *IPC) setProps(id int, filePath string, layer *string, scale *float32,
 	}
 	modified := himg.Modified
 	if layer != nil {
-		if *layer == "" {
+		if *layer != "" {
+			l := *himg.InitialLayerState + " " + *layer
+			layer = &l
+		} else {
 			layer = himg.InitialLayerState
 		}
 		b, err := himg.Deserialize(*layer)
