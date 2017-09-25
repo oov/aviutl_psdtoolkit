@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mkdir bin bin/PSDToolKit bin/script bin/script/PSDToolKit
+mkdir bin bin/PSDToolKit bin/script bin/script/PSDToolKit bin/GCMZDrops
 
 # copy readme
 sed 's/\r$//' README.md | sed 's/$/\r/' > bin/README.txt
@@ -19,6 +19,10 @@ sed 's/\r$//' 'src/lua/PSDToolKitLib.lua' | sed 's/$/\r/' > 'bin/script/PSDToolK
 sed 's/\r$//' 'src/lua/@PSDToolKit.anm' | sed 's/$/\r/' > 'bin/script/PSDToolKit/@PSDToolKit.anm'
 sed 's/\r$//' 'src/lua/@PSDToolKit.obj' | sed 's/$/\r/' > 'bin/script/PSDToolKit/@PSDToolKit.obj'
 
+# copy GCMZDrops script files
+sed 's/\r$//' 'src/lua/GCMZDrops/psd.lua' | sed 's/$/\r/' > 'bin/GCMZDrops/psdtoolkit_psd.lua'
+sed 's/\r$//' 'src/lua/GCMZDrops/wav.lua' | sed 's/$/\r/' > 'bin/GCMZDrops/psdtoolkit_wav.lua'
+
 # build src/go/assets/bindata.go
 pushd src/go/assets
 go.exe generate
@@ -34,8 +38,13 @@ cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/luadll.lpi
 cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/AssistPlugin.lpi
 cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/AudioMixerPlugin.lpi
 
+# copy GCMZDrops release version
+# cp ../aviutl_gcmzdrops/bin/*.auf bin/
+# cp ../aviutl_gcmzdrops/bin/GCMZDrops/*.lua bin/GCMZDrops/
+
 # install
-# mkdir aviutl/PSDToolKit aviutl/script aviutl/script/PSDToolKit
+# mkdir aviutl/PSDToolKit aviutl/script aviutl/script/PSDToolKit aviutl/GCMZDrops
 # cp bin/*.auf aviutl/
 # cp bin/PSDToolKit/* aviutl/PSDToolKit/
 # cp bin/script/PSDToolKit/* aviutl/script/PSDToolKit/
+# cp bin/GCMZDrops/* aviutl/GCMZDrops/

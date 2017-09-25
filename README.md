@@ -12,6 +12,9 @@ PSDToolKit は AviUtl の拡張編集プラグイン上で PSD ファイルを�
 - AudioMixer.auf - AviUtl 用のプラグイン
   - 拡張編集で使える「チャンネルストリップ」オーディオフィルタを追加
   - 内部的に使用する「マスターチャンネルストリップ」を追加（常時有効）
+- GCMZDrops.auf - AviUtl 用のプラグイン
+  - 拡張編集ウィンドウにファイルを投げつけた時の挙動を拡張するためのプラグイン
+  - [別の場所で単独配布しているもの](https://github.com/oov/aviutl_GCMZDrops)を同梱しています
 - script/PSDToolKit/PSDToolKit.dll - AviUtl 用の Lua プラグイン
   - PSDToolKit.exe を使用した PSD ファイルの描画
   - PSDToolKit.exe からの要求に応じたクリップボード操作、エクスポートなど
@@ -39,6 +42,8 @@ PSDToolKit は AviUtl の拡張編集プラグイン上で PSD ファイルを�
   - 口パク　開閉のみ
   - 口パク準備
   - 目パチ
+- GCMZDrops/*.lua - ごちゃまぜドロップス用スクリプトファイル
+  - ごちゃまぜドロップスに同梱されているファイルの他に、PSDToolKit 用のスクリプトファイルが追加されています
 
 ## 注意事項
 
@@ -49,7 +54,7 @@ PSDToolKit を使用したこと及び使用しなかったことによるいか
 
 ## インストール／アンインストール
 
-README 以外を exedit.auf がある場所と同じ場所にコピーすればインストール完了です。
+README.txt 以外を exedit.auf がある場所と同じ場所にコピーすればインストール完了です。
 
 アンインストールは exedit.auf がある場所にある PSDToolKit.auf と、同じ場所にある script フォルダー内の PSDToolKit フォルダーを削除すれば完了です。
 
