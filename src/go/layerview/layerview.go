@@ -264,6 +264,9 @@ func (lv *LayerView) layoutLayer(ctx *nk.Context, img *img.Image, indent float32
 		} else {
 			modified = img.Layers.SetVisible(l.SeqID, !l.Visible, img.Flip) || modified
 		}
+		for r := l.Parent; r.SeqID != composite.SeqIDRoot; r = r.Parent {
+			modified = img.Layers.SetVisible(r.SeqID, true, img.Flip) || modified
+		}
 	}
 	nk.NkLayoutSpaceEnd(ctx)
 
