@@ -22,6 +22,13 @@ end
 function P.ondragleave()
 end
 
+function P.encodelua(s)
+  s = GCMZDrops.convertencoding(s, "sjis", "utf8")
+  s = GCMZDrops.encodeluastring(s)
+  s = GCMZDrops.convertencoding(s, "utf8", "sjis")
+  return s
+end
+
 function P.ondrop(files, state)
   for i, v in ipairs(files) do
     -- ファイルの拡張子が psd だったら
@@ -93,7 +100,7 @@ check0=100
 type=0
 filter=2
 name=Assign@PSDToolKit
-param=]] .. "f=" .. GCMZDrops.encodeluastring(filepath) .. ';l="L.0";' .. "\r\n" .. [[
+param=]] .. "f=" .. P.encodelua(filepath) .. ';l="L.0";' .. "\r\n" .. [[
 [0.2]
 _name=標準描画
 X=0.0

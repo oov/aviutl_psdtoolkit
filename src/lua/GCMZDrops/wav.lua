@@ -88,6 +88,13 @@ function fire(state, v)
   return false
 end
 
+function P.encodelua(s)
+  s = GCMZDrops.convertencoding(s, "sjis", "utf8")
+  s = GCMZDrops.encodeluastring(s)
+  s = GCMZDrops.convertencoding(s, "utf8", "sjis")
+  return s
+end
+
 function P.ondrop(files, state)
   for i, v in ipairs(files) do
     -- ファイルの拡張子が wav で発動モードの条件を満たしていたら
@@ -185,7 +192,7 @@ check0=0
 type=0
 filter=2
 name=口パク準備@PSDToolKit
-param=]] .. "file=" .. GCMZDrops.encodeluastring(lipsync) .. "\r\n" .. [[
+param=]] .. "file=" .. P.encodelua(lipsync) .. "\r\n" .. [[
 [1.1]
 _name=標準描画
 X=0.0
@@ -286,7 +293,7 @@ check0=0
 type=0
 filter=2
 name=口パク準備@PSDToolKit
-param=]] .. "file=" .. GCMZDrops.encodeluastring(lipsync) .. "\r\n" .. [[
+param=]] .. "file=" .. P.encodelua(lipsync) .. "\r\n" .. [[
 [2.1]
 _name=標準描画
 X=0.0
