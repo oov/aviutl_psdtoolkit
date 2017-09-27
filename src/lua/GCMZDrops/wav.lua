@@ -154,12 +154,12 @@ width=]] .. proj.width .. "\r\n" .. [[
 height=]] .. proj.height .. "\r\n" .. [[
 rate=]] .. proj.rate .. "\r\n" .. [[
 scale=]] .. proj.scale .. "\r\n" .. [[
-length=]] .. len .. "\r\n" .. [[
+length=]] .. (len - 1) .. "\r\n" .. [[
 audio_rate=]] .. proj.audio_rate .. "\r\n" .. [[
 audio_ch=]] .. proj.audio_ch .. "\r\n" .. [[
 [0]
 start=1
-end=]] .. len .. "\r\n" .. [[
+end=]] .. (len - 1) .. "\r\n" .. [[
 layer=1
 group=1
 overlay=1
@@ -177,7 +177,7 @@ _name=標準再生
 左右=0.0
 [1]
 start=1
-end=]] .. len .. "\r\n" .. [[
+end=]] .. (len - 1) .. "\r\n" .. [[
 layer=2
 group=1
 overlay=1
@@ -218,12 +218,12 @@ width=]] .. proj.width .. "\r\n" .. [[
 height=]] .. proj.height .. "\r\n" .. [[
 rate=]] .. proj.rate .. "\r\n" .. [[
 scale=]] .. proj.scale .. "\r\n" .. [[
-length=]] .. (len + P.text_margin) .. "\r\n" .. [[
+length=]] .. (len - 1 + P.text_margin) .. "\r\n" .. [[
 audio_rate=]] .. proj.audio_rate .. "\r\n" .. [[
 audio_ch=]] .. proj.audio_ch .. "\r\n" .. [[
 [0]
 start=1
-end=]] .. (len + P.text_margin) .. "\r\n" .. [[
+end=]] .. (len - 1 + P.text_margin) .. "\r\n" .. [[
 layer=1
 group=]] .. textgroup .. "\r\n" .. [[
 overlay=1
@@ -260,7 +260,7 @@ Z=0.0
 blend=0
 [1]
 start=1
-end=]] .. len .. "\r\n" .. [[
+end=]] .. (len - 1) .. "\r\n" .. [[
 layer=2
 group=1
 overlay=1
@@ -278,7 +278,7 @@ _name=標準再生
 左右=0.0
 [2]
 start=1
-end=]] .. len .. "\r\n" .. [[
+end=]] .. (len - 1) .. "\r\n" .. [[
 layer=3
 group=1
 overlay=1
