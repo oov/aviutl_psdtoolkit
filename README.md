@@ -44,7 +44,16 @@ PSDToolKit は AviUtl の拡張編集プラグイン上で PSD ファイルを�
   - 口パク準備
   - 目パチ
 - GCMZDrops/*.lua - ごちゃまぜドロップス用スクリプトファイル
-  - ごちゃまぜドロップスに同梱されているファイルの他に、PSDToolKit 用のスクリプトファイルが追加されています
+  - ごちゃまぜドロップスに同梱されているファイル
+    - _entrypoint.lua
+    - avoiddup.lua
+    - example.lua
+    - generic.lua
+    - textsjis.lua
+  - PSDToolKit 用のスクリプトファイル
+    - psdtoolkit_psd.lua - 拡張編集ウィンドウに PSD ファイルをドロップ可能にする
+    - psdtoolkit_wav.lua - シフトキーを押しながら *.wav ファイルをドロップで口パク準備なども自動生成
+    - psdtoolkit_srt.lua - 字幕ファイル(*.srt) をドロップでテキストオブジェクトを自動生成
 
 ## 注意事項
 
