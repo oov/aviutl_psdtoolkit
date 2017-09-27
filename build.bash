@@ -23,6 +23,7 @@ sed 's/\r$//' 'src/lua/@PSDToolKit.obj' | sed 's/$/\r/' > 'bin/script/PSDToolKit
 # copy GCMZDrops script files
 sed 's/\r$//' 'src/lua/GCMZDrops/psd.lua' | sed 's/$/\r/' > 'bin/GCMZDrops/psdtoolkit_psd.lua'
 sed 's/\r$//' 'src/lua/GCMZDrops/wav.lua' | sed 's/$/\r/' > 'bin/GCMZDrops/psdtoolkit_wav.lua'
+sed 's/\r$//' 'src/lua/GCMZDrops/srt.lua' | sed 's/$/\r/' > 'bin/GCMZDrops/psdtoolkit_srt.lua'
 
 # build src/go/assets/bindata.go
 pushd src/go/assets
