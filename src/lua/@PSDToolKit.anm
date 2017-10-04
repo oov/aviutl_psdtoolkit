@@ -173,3 +173,27 @@ if #m > 0 then
     PSDToolKitLib.psd:addstate(m[#m])
   end
 end
+
+@口パク準備
+--track0:ローカット,1,16000,100,1
+--track1:ハイカット,1,16000,1000,1
+--track2:しきい値,1,2000,20,1
+--check0:編集全体の音声を元にする,0
+--file:
+tonumber(nil)
+require("PSDToolKitLib")
+if obj.check0 then
+  local n, rate, buf = obj.getaudio(nil, "audiobuffer", "spectrum", 32)
+  local v = PSDToolKitLib.talking(buf, rate, obj.track0, obj.track1, obj.track2)
+  PSDToolKitLib.phoneme = v and "a" or ""
+elseif file ~= nil then
+  local ext = string.lower(string.sub(file, -4))
+  if ext == ".lab" then
+    PSDToolKitLib.phoneme = PSDToolKitLib.talkingphoneme(file, obj.time)
+  elseif ext == ".wav" then
+    local n, rate, buf = obj.getaudio(nil, file, "spectrum", 32)
+    local v = PSDToolKitLib.talking(buf, rate, obj.track0, obj.track1, obj.track2)
+    PSDToolKitLib.phoneme = v and "a" or ""
+  end
+  file = nil
+end
