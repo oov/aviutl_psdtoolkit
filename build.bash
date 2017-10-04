@@ -14,6 +14,7 @@ sed 's/\r$//' 'src/exa/TalkDetector.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/口�
 sed 's/\r$//' 'src/exa/LipSync.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/口パク　開閉のみ.exa'
 sed 's/\r$//' 'src/exa/LipSyncVowels.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/口パク　あいうえお.exa'
 sed 's/\r$//' 'src/exa/Subtitle.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/テキスト　字幕表示用.exa'
+sed 's/\r$//' 'src/exa/SubtitleStep.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/テキスト　字幕表示用・文字送り.exa'
 
 # copy script files
 sed 's/\r$//' 'src/lua/PSDToolKitLib.lua' | sed 's/$/\r/' > 'bin/script/PSDToolKit/PSDToolKitLib.lua'

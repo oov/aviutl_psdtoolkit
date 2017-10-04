@@ -1,0 +1,23 @@
+[vo]
+length=256
+camera=0
+[vo.0]
+_name=カスタムオブジェクト
+track0=0.00
+track1=34.00
+track2=15.00
+track3=0.00
+check0=0
+type=0
+filter=2
+name=テキスト 字幕用・文字送り@PSDToolKit
+param=local name="MS UI Gothic";local c1=0xffffff;local c2=0x000000;local ha=0;local va=0;
+[vo.1]
+_name=標準描画
+X=0.0
+Y=0.0
+Z=0.0
+拡大率=100.00
+透明度=0.0
+回転=0.00
+blend=0

@@ -30,6 +30,10 @@ P.encoding = "utf8"
 -- 秒で指定
 P.margin = 0
 
+-- スクリプトが分かる人用
+P.text_prefix = '<?s=[==['
+P.text_postfix = ']==];require("PSDToolKit\\\\PSDToolKitLib").settext(s, obj, true);s=nil?>'
+
 -- ===========================================================
 -- 設定　ここまで
 -- ===========================================================
@@ -55,11 +59,11 @@ end
 function texobj(n, layer, startf, endf, group, text)
   if P.insertmode == 1 then
     text = text:gsub("]==]", ']==].."]==]"..[==[')
-    text = "<?_s=[==[\r\n" .. text
+    text = P.text_prefix .. "\r\n" .. text
     if text:sub(-2) ~= "\r\n" then
       text = text .. "\r\n"
     end
-    text = text .. "]==]?>"
+    text = text .. P.text_postfix
   end
   return [[
 []] .. n .. [[]

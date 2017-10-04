@@ -43,6 +43,10 @@ P.text_margin = 0
 -- ※ただしどちらにしても挿入前に一旦 Shift_JIS に変換されます
 P.text_encoding = "sjis"
 
+-- スクリプトが分かる人用
+P.text_prefix = '<?s=[==['
+P.text_postfix = ']==];require("PSDToolKit\\\\PSDToolKitLib").settext(s, obj, true);s=nil?>'
+
 -- ===========================================================
 -- 設定　ここまで
 -- ===========================================================
@@ -206,11 +210,11 @@ blend=0
       elseif (P.insertmode == 1) or (P.insertmode == 2) then
         if P.insertmode == 2 then
           text = text:gsub("]==]", ']==].."]==]"..[==[')
-          text = "<?_s=[==[\r\n" .. text
+          text = P.text_prefix .. "\r\n" .. text
           if text:sub(-2) ~= "\r\n" then
             text = text .. "\r\n"
           end
-          text = text .. "]==]?>"
+          text = text .. P.text_postfix
         end
         exo = [[
 [exedit]

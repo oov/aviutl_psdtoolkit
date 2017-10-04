@@ -140,4 +140,45 @@ PSDToolKitLib.phoneme = PSDToolKitLib.phoneme or ""
 
 PSDToolKitLib.talkstat = PSDToolKitLib.talkstat or {}
 
+PSDToolKitLib.text = PSDToolKitLib.text or {}
+
+PSDToolKitLib.settext = function(text, obj, unescape)
+  if unescape then
+    text = text:gsub("([\128-\160\224-\255]\092)\092", "%1")
+  end
+  local o = {
+    s = text,
+    f = obj.frame,
+    t = obj.time,
+    tf = obj.totalframe,
+    tt = obj.totaltime
+  }
+  PSDToolKitLib.text["latest"] = o
+  PSDToolKitLib.text[obj.layer] = o
+end
+
+PSDToolKitLib.gettext = function(index)
+  local s = ''
+  if index == 0 then
+    index = "latest"
+  end
+  if PSDToolKitLib.text[index] ~= nil then
+    s = PSDToolKitLib.text[index].s
+    PSDToolKitLib.text[index] = nil
+  end
+  return s
+end
+
+PSDToolKitLib.gettextdata = function(index)
+  local o = nil
+  if index == 0 then
+    index = "latest"
+  end
+  if PSDToolKitLib.text[index] ~= nil then
+    o = PSDToolKitLib.text[index]
+    PSDToolKitLib.text[index] = nil
+  end
+  return o
+end
+
 return PSDToolKitLib
