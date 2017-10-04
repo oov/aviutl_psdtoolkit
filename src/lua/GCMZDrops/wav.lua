@@ -31,6 +31,17 @@ P.insertmode = 2
 -- 口パク準備で *.lab を優先的に使うかを true か false で指定
 P.use_lab = true
 
+-- レイヤー節約モードを有効にするかを true か false で指定
+-- レイヤー節約モードでは「口パク準備」をテキストオブジェクトの
+-- アニメーション効果として挿入することで、レイヤーを１つ分節約します。
+-- テキストオブジェクトを音声より短くすると、当然正しく動かなくなります。
+P.save_layer = false
+
+-- 口パク準備のパラメータの初期値
+P.wave_locut = 100
+P.wave_hicut = 1000
+P.wave_threshold = 20
+
 -- テキストオブジェクトも一緒にグループ化するかを true か false で指定
 P.text_group = true
 
@@ -188,9 +199,9 @@ overlay=1
 camera=0
 [1.0]
 _name=カスタムオブジェクト
-track0=100.00
-track1=1000.00
-track2=20.00
+track0=]] .. P.wave_locut .. "\r\n" .. [[
+track1=]] .. P.wave_hicut .. "\r\n" .. [[
+track2=]] .. P.wave_threshold .. "\r\n" .. [[
 track3=0.00
 check0=0
 type=0
@@ -216,7 +227,85 @@ blend=0
           end
           text = text .. P.text_postfix
         end
-        exo = [[
+        if P.save_layer then
+          exo = [[
+[exedit]
+width=]] .. proj.width .. "\r\n" .. [[
+height=]] .. proj.height .. "\r\n" .. [[
+rate=]] .. proj.rate .. "\r\n" .. [[
+scale=]] .. proj.scale .. "\r\n" .. [[
+length=]] .. (len - 1 + P.text_margin) .. "\r\n" .. [[
+audio_rate=]] .. proj.audio_rate .. "\r\n" .. [[
+audio_ch=]] .. proj.audio_ch .. "\r\n" .. [[
+[0]
+start=1
+end=]] .. (len - 1 + P.text_margin) .. "\r\n" .. [[
+layer=1
+group=]] .. textgroup .. "\r\n" .. [[
+overlay=1
+camera=0
+[0.0]
+_name=テキスト
+サイズ=34
+表示速度=0.0
+文字毎に個別オブジェクト=0
+移動座標上に表示する=0
+自動スクロール=0
+B=0
+I=0
+type=0
+autoadjust=0
+soft=1
+monospace=0
+align=0
+spacing_x=0
+spacing_y=0
+precision=1
+color=ffffff
+color2=000000
+font=MS UI Gothic
+text=]] .. GCMZDrops.encodeexotext(text) .. "\r\n" .. [[
+[0.1]
+_name=アニメーション効果
+track0=]] .. P.wave_locut .. "\r\n" .. [[
+track1=]] .. P.wave_hicut .. "\r\n" .. [[
+track2=]] .. P.wave_threshold .. "\r\n" .. [[
+track3=0.00
+check0=0
+type=0
+filter=2
+name=口パク準備@PSDToolKit
+param=]] .. "file=" .. P.encodelua(lipsync) .. "\r\n" .. [[
+[0.2]
+_name=標準描画
+X=0.0
+Y=0.0
+Z=0.0
+拡大率=100.00
+透明度=0.0
+回転=0.00
+blend=0
+[1]
+start=1
+end=]] .. (len - 1) .. "\r\n" .. [[
+layer=2
+group=1
+overlay=1
+audio=1
+[1.0]
+_name=音声ファイル
+再生位置=0.00
+再生速度=100.0
+ループ再生=0
+動画ファイルと連携=0
+file=]] .. v.filepath .. "\r\n" .. [[
+[1.1]
+_name=標準再生
+音量=100.0
+左右=0.0
+]]
+        else
+          exo = [[
 [exedit]
 width=]] .. proj.width .. "\r\n" .. [[
 height=]] .. proj.height .. "\r\n" .. [[
@@ -289,9 +378,9 @@ overlay=1
 camera=0
 [2.0]
 _name=カスタムオブジェクト
-track0=100.00
-track1=1000.00
-track2=20.00
+track0=]] .. P.wave_locut .. "\r\n" .. [[
+track1=]] .. P.wave_hicut .. "\r\n" .. [[
+track2=]] .. P.wave_threshold .. "\r\n" .. [[
 track3=0.00
 check0=0
 type=0
@@ -308,6 +397,7 @@ Z=0.0
 回転=0.00
 blend=0
 ]]
+        end
       end
       local filepath = GCMZDrops.createtempfile("psd", ".exo")
       f, err = io.open(filepath, "wb")
