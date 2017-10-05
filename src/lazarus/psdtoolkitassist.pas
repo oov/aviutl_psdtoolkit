@@ -27,7 +27,7 @@ type
 implementation
 
 uses
-  lua, SysUtils;
+  lua, SysUtils, Ver;
 
 var
   MainDLLInstance: THandle;
@@ -118,7 +118,7 @@ end;
 constructor TPSDToolKitAssist.Create;
 const
   PluginName = 'PSDToolKit';
-  PluginInfo = 'PSDToolKitAssist v0.1.2rc3';
+  PluginInfo = 'PSDToolKitAssist '+Version;
 begin
   inherited Create();
   FillChar(FEntry, SizeOf(FEntry), 0);

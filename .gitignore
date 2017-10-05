@@ -1,4 +1,6 @@
 bin
 aviutl
+src/lazarus/ver.pas
 src/lazarus/lib
+src/go/ver.go
 src/go/assets/bindata.go

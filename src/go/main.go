@@ -148,7 +148,7 @@ func main() {
 
 	// psd.Debug = log.New(os.Stdout, "psd: ", log.Lshortfile)
 	var err error
-	if g.Window, g.Context, err = newWindow(winWidth, winHeight, "PSDToolKit"); err != nil {
+	if g.Window, g.Context, err = newWindow(winWidth, winHeight, "PSDToolKit "+version); err != nil {
 		ipc.Fatal(err)
 	}
 

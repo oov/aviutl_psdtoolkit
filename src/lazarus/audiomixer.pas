@@ -44,7 +44,7 @@ type
 implementation
 
 uses
-  SysUtils, Classes, Math;
+  SysUtils, Classes, Math, Ver;
 
 type
   { TParams }
@@ -440,7 +440,7 @@ end;
 constructor TAudioMixer.Create;
 const
   ChannelStripPluginName = #$83#$60#$83#$83#$83#$93#$83#$6C#$83#$8B#$83#$58#$83#$67#$83#$8A#$83#$62#$83#$76; // チャンネルストリップ
-  ChannelStripPluginInfo = ChannelStripPluginName+' v0.1';
+  ChannelStripPluginInfo = ChannelStripPluginName + ' ' + Version;
   ChannelStripTrackN = 13;
   ChannelStripTrackName: array[0..ChannelStripTrackN - 1] of PChar =
     (
@@ -464,8 +464,9 @@ const
     (-1, -10000, 0, 1, -10000, 1, -10000, 0, 0, 0, 0, 0, -10000);
   ChannelStripTrackE: array[0..ChannelStripTrackN - 1] of integer =
     (100, 10000, 500, 24000, 10000, 24000, 10000, 10000, 10000, 10000, 10000, 0, 10000);
-  MasterChannelStripPluginName = #$83#$7D#$83#$58#$83#$5E#$81#$5B#$83#$60#$83#$83#$83#$93#$83#$6C#$83#$8B#$83#$58#$83#$67#$83#$8A#$83#$62#$83#$76; // マスターチャンネルストリップ
-  MasterChannelStripPluginInfo = MasterChannelStripPluginName + ' v0.1';
+  MasterChannelStripPluginName =
+    #$83#$7D#$83#$58#$83#$5E#$81#$5B#$83#$60#$83#$83#$83#$93#$83#$6C#$83#$8B#$83#$58#$83#$67#$83#$8A#$83#$62#$83#$76; // マスターチャンネルストリップ
+  MasterChannelStripPluginInfo = MasterChannelStripPluginName + ' ' + Version;
 begin
   inherited Create();
   FillChar(FChannelStripEntry, SizeOf(FChannelStripEntry), 0);

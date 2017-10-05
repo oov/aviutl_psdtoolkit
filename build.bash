@@ -5,6 +5,30 @@ mkdir bin bin/PSDToolKit bin/script bin/script/PSDToolKit bin/GCMZDrops
 # copy readme
 sed 's/\r$//' README.md | sed 's/$/\r/' > bin/README.txt
 
+# update version string
+VERSION='v0.1.2rc3'
+GITHASH=`git rev-parse --short HEAD`
+cat << EOS | sed 's/\r$//' | sed 's/$/\r/' > 'src/lazarus/ver.pas'
+unit Ver;
+
+{\$mode objfpc}{\$H+}
+{\$CODEPAGE UTF-8}
+
+interface
+
+const
+  Version = '$VERSION ( $GITHASH )';
+
+implementation
+
+end.
+EOS
+cat << EOS | sed 's/\r$//' | sed 's/$/\r/' > 'src/go/ver.go'
+package main
+
+const version = "$VERSION ( $GITHASH )"
+EOS
+
 # copy alias files
 sed 's/\r$//' 'src/exa/NewObject.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/PSDToolKitオブジェクト.exa'
 sed 's/\r$//' 'src/exa/Render.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/オブジェクト描画.exa'
