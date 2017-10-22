@@ -34,7 +34,7 @@
         <FormatVersion Value="1"/>
       </local>
     </RunParams>
-    <Units Count="9">
+    <Units Count="16">
       <Unit0>
         <Filename Value="AudioMixerPlugin.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -79,6 +79,41 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="AudioMixerMain"/>
       </Unit8>
+      <Unit9>
+        <Filename Value="onepole.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="OnePole"/>
+      </Unit9>
+      <Unit10>
+        <Filename Value="fixedcircularbuffer.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="FixedCircularBuffer"/>
+      </Unit10>
+      <Unit11>
+        <Filename Value="reverb.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Reverb"/>
+      </Unit11>
+      <Unit12>
+        <Filename Value="multitapdelay.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="MultiTapDelay"/>
+      </Unit12>
+      <Unit13>
+        <Filename Value="vibrato.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Vibrato"/>
+      </Unit13>
+      <Unit14>
+        <Filename Value="allpass.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="AllPass"/>
+      </Unit14>
+      <Unit15>
+        <Filename Value="auxchannelstrip.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="AuxChannelStrip"/>
+      </Unit15>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

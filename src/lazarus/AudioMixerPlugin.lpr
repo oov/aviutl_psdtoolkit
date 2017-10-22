@@ -11,7 +11,14 @@ uses
   MDADynamics,
   ChannelStrip,
   AudioMixer,
-  AudioMixerMain;
+  AudioMixerMain,
+  OnePole,
+  FixedCircularBuffer,
+  Reverb,
+  MultiTapDelay,
+  Vibrato,
+  AllPass,
+  AuxChannelStrip;
 
 exports
   GetFilterTableList;

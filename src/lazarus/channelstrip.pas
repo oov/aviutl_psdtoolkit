@@ -36,6 +36,9 @@ type
     FDynAttack: single;
     FDynRelease: single;
 
+    FCurrentAux1Send: single;
+    FAux1Send: single;
+
     FCurrentPostGain: single;
     FPostGain: single;
   public
@@ -67,6 +70,9 @@ type
     property DynRatio: single read FDynRatio write FDynRatio;
     property DynAttack: single read FDynAttack write FDynAttack;
     property DynRelease: single read FDynRelease write FDynRelease;
+
+    property CurrentAux1Send: single read FCurrentAux1Send write FCurrentAux1Send;
+    property Aux1Send: single read FAux1Send write FAux1Send;
 
     property CurrentPostGain: single read FCurrentPostGain write FCurrentPostGain;
     property PostGain: single read FPostGain write FPostGain;
@@ -101,13 +107,13 @@ begin
   FLoShelfFreq := 200;
   FLoShelfGain := 0;
   FLoShelf := TRbjEQFilter.Create();
-  FLoShelf.FilterType := 7;
+  FLoShelf.FilterType := ftLowShelf;
   FLoShelf.Q := 1.0 / r2;
 
   FHiShelfFreq := 3000;
   FHiShelfGain := 0;
   FHiShelf := TRbjEQFilter.Create();
-  FHiShelf.FilterType := 8;
+  FHiShelf.FilterType := ftHiShelf;
   FHiShelf.Q := 1.0 / r2;
 
   FDynamics := TMDADynamics.Create();
@@ -183,6 +189,12 @@ begin
     FDynamics.Attack := FDynAttack;
     FDynamics.Release := FDynRelease;
     FDynamics.UpdateParameter();
+    Result := True;
+  end;
+
+  if FCurrentAux1Send <> FAux1Send then
+  begin
+    FCurrentAux1Send := FAux1Send;
     Result := True;
   end;
 

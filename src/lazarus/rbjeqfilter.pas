@@ -41,7 +41,7 @@ type
     b0a0, b1a0, b2a0, a1a0, a2a0: single;
     FBuf: array of TBuffer;
     FSampleRate: single;
-    FFilterType: integer;
+    FFilterType: TRbjEqFilterType;
     FFreq, FQ, FDBGain: single;
     FQIsBandWidth: boolean;
     function GetChannels: integer;
@@ -51,7 +51,7 @@ type
     procedure UpdateParameter();
     procedure Clear();
     procedure ProcessReplacing(Input: psingle; sampleframes: integer);
-    property FilterType: integer read FFilterType write FFilterType;
+    property FilterType: TRbjEqFilterType read FFilterType write FFilterType;
     property SampleRate: single read FSampleRate write FSampleRate;
     property Freq: single read FFreq write FFreq;
     property Q: single read FQ write FQ;
@@ -65,7 +65,7 @@ implementation
 constructor TRbjEQFilter.Create();
 begin
   FSampleRate := 0;
-  FFilterType := 0;
+  FFilterType := ftLowPass;
   FFreq := 500;
   FQ := 0.3;
   FDBGain := 0;
@@ -88,8 +88,7 @@ var
   A, beta, omega, tsin, tcos: single;
 begin
   q_ := (1 - FQ) * 0.98;
-  //peaking, LowShelf or HiShelf
-  if FFilterType >= 6 then
+  if FFilterType in [ftPeaking, ftLowShelf, ftHiShelf] then
   begin
     A := power(10.0, (DBGain / 40.0));
     omega := 2 * pi * FFreq / FSampleRate;
@@ -103,36 +102,31 @@ begin
 
     beta := sqrt(A) / q_;
 
-    // peaking
-    if FFilterType = 6 then
-    begin
-      b0 := 1.0 + alpha * A;
-      b1 := -2.0 * tcos;
-      b2 := 1.0 - alpha * A;
-      a0 := 1.0 + alpha / A;
-      a1 := -2.0 * tcos;
-      a2 := 1.0 - alpha / A;
-    end
-    else
-    // lowshelf
-    if FFilterType = 7 then
-    begin
-      b0 := (A * ((A + 1.0) - (A - 1.0) * tcos + beta * tsin));
-      b1 := (2.0 * A * ((A - 1.0) - (A + 1.0) * tcos));
-      b2 := (A * ((A + 1.0) - (A - 1.0) * tcos - beta * tsin));
-      a0 := ((A + 1.0) + (A - 1.0) * tcos + beta * tsin);
-      a1 := (-2.0 * ((A - 1.0) + (A + 1.0) * tcos));
-      a2 := ((A + 1.0) + (A - 1.0) * tcos - beta * tsin);
-    end;
-    // hishelf
-    if FFilterType = 8 then
-    begin
-      b0 := (A * ((A + 1.0) + (A - 1.0) * tcos + beta * tsin));
-      b1 := (-2.0 * A * ((A - 1.0) + (A + 1.0) * tcos));
-      b2 := (A * ((A + 1.0) + (A - 1.0) * tcos - beta * tsin));
-      a0 := ((A + 1.0) - (A - 1.0) * tcos + beta * tsin);
-      a1 := (2.0 * ((A - 1.0) - (A + 1.0) * tcos));
-      a2 := ((A + 1.0) - (A - 1.0) * tcos - beta * tsin);
+    case FFilterType of
+      ftPeaking: begin
+        b0 := 1.0 + alpha * A;
+        b1 := -2.0 * tcos;
+        b2 := 1.0 - alpha * A;
+        a0 := 1.0 + alpha / A;
+        a1 := -2.0 * tcos;
+        a2 := 1.0 - alpha / A;
+      end;
+      ftLowShelf: begin
+        b0 := (A * ((A + 1.0) - (A - 1.0) * tcos + beta * tsin));
+        b1 := (2.0 * A * ((A - 1.0) - (A + 1.0) * tcos));
+        b2 := (A * ((A + 1.0) - (A - 1.0) * tcos - beta * tsin));
+        a0 := ((A + 1.0) + (A - 1.0) * tcos + beta * tsin);
+        a1 := (-2.0 * ((A - 1.0) + (A + 1.0) * tcos));
+        a2 := ((A + 1.0) + (A - 1.0) * tcos - beta * tsin);
+      end;
+      ftHiShelf: begin
+        b0 := (A * ((A + 1.0) + (A - 1.0) * tcos + beta * tsin));
+        b1 := (-2.0 * A * ((A - 1.0) + (A + 1.0) * tcos));
+        b2 := (A * ((A + 1.0) + (A - 1.0) * tcos - beta * tsin));
+        a0 := ((A + 1.0) - (A - 1.0) * tcos + beta * tsin);
+        a1 := (2.0 * ((A - 1.0) - (A + 1.0) * tcos));
+        a2 := ((A + 1.0) - (A - 1.0) * tcos - beta * tsin);
+      end;
     end;
   end
   else  //other filter types
@@ -144,65 +138,55 @@ begin
       alpha := tsin * sinh(log2(2) / 2 * q_ * omega / tsin)
     else
       alpha := tsin / (2 * q_);
-    //lowpass
-    if FFilterType = 0 then
-    begin
-      b0 := (1 - tcos) / 2;
-      b1 := 1 - tcos;
-      b2 := (1 - tcos) / 2;
-      a0 := 1 + alpha;
-      a1 := -2 * tcos;
-      a2 := 1 - alpha;
-    end
-    else //hipass
-    if FFilterType = 1 then
-    begin
-      b0 := (1 + tcos) / 2;
-      b1 := -(1 + tcos);
-      b2 := (1 + tcos) / 2;
-      a0 := 1 + alpha;
-      a1 := -2 * tcos;
-      a2 := 1 - alpha;
-    end
-    else //bandpass CSG
-    if FFilterType = 2 then
-    begin
-      b0 := tsin / 2;
-      b1 := 0;
-      b2 := -tsin / 2;
-      a0 := 1 + alpha;
-      a1 := -1 * tcos;
-      a2 := 1 - alpha;
-    end
-    else //bandpass CZPG
-    if FFilterType = 3 then
-    begin
-      b0 := alpha;
-      b1 := 0.0;
-      b2 := -alpha;
-      a0 := 1.0 + alpha;
-      a1 := -2.0 * tcos;
-      a2 := 1.0 - alpha;
-    end
-    else  //notch
-    if FFilterType = 4 then
-    begin
-      b0 := 1.0;
-      b1 := -2.0 * tcos;
-      b2 := 1.0;
-      a0 := 1.0 + alpha;
-      a1 := -2.0 * tcos;
-      a2 := 1.0 - alpha;
-    end
-    else   //allpass
-    if FFilterType = 5 then
-    begin
-      b0 := 1.0 - alpha;
-      b1 := -2.0 * tcos;
-      b2 := 1.0 + alpha;
-      a0 := 1.0 + alpha;
-      a1 := -2.0 * tcos;
-      a2 := 1.0 - alpha;
+    case FFilterType of
+      ftLowPass: begin
+        b0 := (1 - tcos) / 2;
+        b1 := 1 - tcos;
+        b2 := (1 - tcos) / 2;
+        a0 := 1 + alpha;
+        a1 := -2 * tcos;
+        a2 := 1 - alpha;
+      end;
+      ftHiPass: begin
+        b0 := (1 + tcos) / 2;
+        b1 := -(1 + tcos);
+        b2 := (1 + tcos) / 2;
+        a0 := 1 + alpha;
+        a1 := -2 * tcos;
+        a2 := 1 - alpha;
+      end;
+      ftBandPassCSG: begin
+        b0 := tsin / 2;
+        b1 := 0;
+        b2 := -tsin / 2;
+        a0 := 1 + alpha;
+        a1 := -1 * tcos;
+        a2 := 1 - alpha;
+      end;
+      ftBandPassCZPG: begin
+        b0 := alpha;
+        b1 := 0.0;
+        b2 := -alpha;
+        a0 := 1.0 + alpha;
+        a1 := -2.0 * tcos;
+        a2 := 1.0 - alpha;
+      end;
+      ftNotch: begin
+        b0 := 1.0;
+        b1 := -2.0 * tcos;
+        b2 := 1.0;
+        a0 := 1.0 + alpha;
+        a1 := -2.0 * tcos;
+        a2 := 1.0 - alpha;
+      end;
+      ftAllPass: begin
+        b0 := 1.0 - alpha;
+        b1 := -2.0 * tcos;
+        b2 := 1.0 + alpha;
+        a0 := 1.0 + alpha;
+        a1 := -2.0 * tcos;
+        a2 := 1.0 - alpha;
+      end;
     end;
   end;
 
@@ -215,49 +199,49 @@ end;
 
 procedure TRbjEQFilter.Clear();
 var
-  ch: integer;
-  p: PBuffer;
+  Ch: integer;
+  P: PBuffer;
 begin
-  for ch := Low(FBuf) to High(FBuf) do
+  for Ch := Low(FBuf) to High(FBuf) do
   begin
-    p := @FBuf[ch];
-    p^.in1 := 0;
-    p^.in2 := 0;
-    p^.out1 := 0;
-    p^.out2 := 0;
+    P := @FBuf[Ch];
+    P^.in1 := 0;
+    P^.in2 := 0;
+    P^.out1 := 0;
+    P^.out2 := 0;
   end;
 end;
 
 procedure TRbjEQFilter.ProcessReplacing(Input: psingle; sampleframes: integer);
 var
-  i, ch, stride: integer;
+  I, Ch, Stride: integer;
   LastOut, i1, i2, o1, o2: single;
-  inp: PSingle;
-  chBuf: PBuffer;
+  Inp: PSingle;
+  ChBuf: PBuffer;
 begin
-  stride := Length(FBuf);
-  for ch := Low(FBuf) to High(FBuf) do
+  Stride := Length(FBuf);
+  for Ch := Low(FBuf) to High(FBuf) do
   begin
-    inp := Input;
-    chBuf := @FBuf[ch];
-    i1 := chBuf^.in1;
-    i2 := chBuf^.in2;
-    o1 := chBuf^.out1;
-    o2 := chBuf^.out2;
-    for i := 0 to SampleFrames - 1 do
+    Inp := Input;
+    ChBuf := @FBuf[Ch];
+    i1 := ChBuf^.in1;
+    i2 := ChBuf^.in2;
+    o1 := ChBuf^.out1;
+    o2 := ChBuf^.out2;
+    for I := 0 to SampleFrames - 1 do
     begin
-      LastOut := b0a0 * (inp^) + b1a0 * i1 + b2a0 * i2 - a1a0 * o1 - a2a0 * o2;
+      LastOut := b0a0 * (Inp^) + b1a0 * i1 + b2a0 * i2 - a1a0 * o1 - a2a0 * o2;
       i2 := i1;
-      i1 := inp^;
+      i1 := Inp^;
       o2 := o1;
       o1 := LastOut;
-      inp^ := LastOut;
-      Inc(inp, stride);
+      Inp^ := LastOut;
+      Inc(Inp, Stride);
     end;
-    chBuf^.in1 := i1;
-    chBuf^.in2 := i2;
-    chBuf^.out1 := o1;
-    chBuf^.out2 := o2;
+    ChBuf^.in1 := i1;
+    ChBuf^.in2 := i2;
+    ChBuf^.out1 := o1;
+    ChBuf^.out2 := o2;
     Inc(Input);
   end;
 end;

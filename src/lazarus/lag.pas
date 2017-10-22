@@ -23,6 +23,7 @@ type
     destructor Destroy(); override;
     procedure UpdateParameter();
     procedure Clear();
+    procedure Process(Input: PSingle; Output: PSingle; sampleframes: integer);
     procedure ProcessReplacing(Input: PSingle; sampleframes: integer);
     property SampleRate: single read FSampleRate write FSampleRate;
     property Channels: integer read FChannels write FChannels;
@@ -73,13 +74,19 @@ begin
   FBuffer.Write(buf[0], l);
 end;
 
-procedure TLagFilter.ProcessReplacing(Input: PSingle; sampleframes: integer);
+procedure TLagFilter.Process(Input: PSingle; Output: PSingle;
+  sampleframes: integer);
 var
   l: integer;
 begin
   l := sampleframes * FChannels * SizeOf(Single);
   FBuffer.Write(Input^, l);
-  FBuffer.Read(Input^, l);
+  FBuffer.Read(Output^, l);
+end;
+
+procedure TLagFilter.ProcessReplacing(Input: PSingle; sampleframes: integer);
+begin
+  Process(Input, Input, sampleframes);
 end;
 
 end.
