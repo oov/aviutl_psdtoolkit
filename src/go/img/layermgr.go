@@ -12,6 +12,24 @@ import (
 	"github.com/oov/psd/composite"
 )
 
+type flipPair map[int]*[2]int
+
+func (fp flipPair) FindOriginal(seqID int) int {
+	p, ok := fp[seqID]
+	if !ok {
+		return -1
+	}
+	return p[0]
+}
+
+func (fp flipPair) FindMirror(seqID int) int {
+	p, ok := fp[seqID]
+	if !ok {
+		return -1
+	}
+	return p[1]
+}
+
 type LayerManager struct {
 	Renderer *composite.Renderer
 
@@ -21,9 +39,9 @@ type LayerManager struct {
 
 	ForceVisible map[int]struct{}
 	Group        map[int]*[]int
-	FlipXPair    map[int]*[2]int
-	FlipYPair    map[int]*[2]int
-	FlipXYPair   map[int]*[2]int
+	FlipXPair    flipPair
+	FlipYPair    flipPair
+	FlipXYPair   flipPair
 }
 
 func NewLayerManager(tree *composite.Tree) *LayerManager {
@@ -36,9 +54,9 @@ func NewLayerManager(tree *composite.Tree) *LayerManager {
 
 		ForceVisible: map[int]struct{}{},
 		Group:        map[int]*[]int{},
-		FlipXPair:    map[int]*[2]int{},
-		FlipYPair:    map[int]*[2]int{},
-		FlipXYPair:   map[int]*[2]int{},
+		FlipXPair:    flipPair{},
+		FlipYPair:    flipPair{},
+		FlipXYPair:   flipPair{},
 	}
 	dup := map[string]int{}
 	var g []int
@@ -160,58 +178,183 @@ func (m *LayerManager) normalizeGroupMap(seqID int, layers map[int]*bool) bool {
 	return modified
 }
 
-func (m *LayerManager) normalizeFlipOne(seqID int, Pair map[int]*[2]int, flipped bool) bool {
-	r := m.Renderer
-	pair, ok := Pair[seqID]
-	if !ok {
+func (m *LayerManager) normalizeFlipOne(seqID int, flip Flip) bool {
+	idOrg := m.FlipXPair.FindOriginal(seqID)
+	if idOrg == -1 {
+		idOrg = m.FlipYPair.FindOriginal(seqID)
+		if idOrg == -1 {
+			idOrg = m.FlipXYPair.FindOriginal(seqID)
+			if idOrg == -1 {
+				return false
+			}
+		}
+	}
+	org := m.Mapped[idOrg]
+
+	idX := m.FlipXPair.FindMirror(idOrg)
+	idY := m.FlipYPair.FindMirror(idOrg)
+	idXY := m.FlipXYPair.FindMirror(idOrg)
+	var mrrX, mrrY, mrrXY *composite.Layer
+	if idX != -1 {
+		mrrX = m.Mapped[idX]
+	}
+	if idY != -1 {
+		mrrY = m.Mapped[idY]
+	}
+	if idXY != -1 {
+		mrrXY = m.Mapped[idXY]
+	}
+	if !org.Visible &&
+		(mrrX == nil || !mrrX.Visible) &&
+		(mrrY == nil || !mrrY.Visible) &&
+		(mrrXY == nil || !mrrXY.Visible) {
 		return false
 	}
-	org, mrr := m.Mapped[pair[0]], m.Mapped[pair[1]]
-	if !org.Visible && !mrr.Visible {
-		return false
+
+	var modified bool
+	var active *composite.Layer
+	switch flip {
+	case FlipX:
+		active = mrrX
+		if mrrX != nil && !mrrX.Visible {
+			mrrX.Visible = true
+			modified = true
+		}
+	case FlipY:
+		active = mrrY
+		if mrrY != nil && !mrrY.Visible {
+			mrrY.Visible = true
+			modified = true
+		}
+	case FlipXY:
+		active = mrrXY
+		if mrrXY != nil && !mrrXY.Visible {
+			mrrXY.Visible = true
+			modified = true
+		}
 	}
-	modified := false
-	if org.Visible == flipped {
-		org.Visible = !flipped
-		r.SetDirtyByLayer(org)
+	if active == nil {
+		active = org
+		if !org.Visible {
+			org.Visible = true
+			modified = true
+		}
+	}
+	if org != active && org.Visible {
+		org.Visible = false
 		modified = true
 	}
-	if mrr.Visible != flipped {
-		mrr.Visible = flipped
-		r.SetDirtyByLayer(mrr)
+	if mrrX != nil && mrrX != active && mrrX.Visible {
+		mrrX.Visible = false
+		modified = true
+	}
+	if mrrY != nil && mrrY != active && mrrY.Visible {
+		mrrY.Visible = false
+		modified = true
+	}
+	if mrrXY != nil && mrrXY != active && mrrXY.Visible {
+		mrrXY.Visible = false
 		modified = true
 	}
 	return modified
 }
 
 func (m *LayerManager) NormalizeFlipOne(seqID int, flip Flip) bool {
-	modified := m.normalizeFlipOne(seqID, m.FlipXPair, flip == FlipX)
-	modified = m.normalizeFlipOne(seqID, m.FlipYPair, flip == FlipY) || modified
-	modified = m.normalizeFlipOne(seqID, m.FlipXYPair, flip == FlipXY) || modified
-	return modified
+	return m.normalizeFlipOne(seqID, flip)
 }
 
-func (m *LayerManager) normalizeFlipMap(Pair map[int]*[2]int, flipped bool, layers map[int]*bool) bool {
-	modified := false
-	processed := map[*[2]int]struct{}{}
-	for _, pair := range Pair {
-		if _, ok := processed[pair]; ok {
-			continue
-		}
-		org, mrr := layers[pair[0]], layers[pair[1]]
-		if !*org && !*mrr {
-			continue
-		}
-		if *org == flipped {
-			*org = !flipped
-			modified = true
-		}
-		if *mrr != flipped {
-			*mrr = flipped
-			modified = true
-		}
-		processed[pair] = struct{}{}
+func (m *LayerManager) normalizeFlipOneMap(seqID int, flip Flip, layers map[int]*bool, processed map[int]struct{}) bool {
+	if _, ok := processed[seqID]; ok {
+		return false
 	}
+
+	orgID := m.FlipXPair.FindOriginal(seqID)
+	if orgID == -1 {
+		orgID = m.FlipYPair.FindOriginal(seqID)
+		if orgID == -1 {
+			orgID = m.FlipXYPair.FindOriginal(seqID)
+			if orgID == -1 {
+				return false
+			}
+		}
+	}
+
+	if _, ok := processed[orgID]; ok {
+		return false
+	}
+	processed[orgID] = struct{}{}
+
+	org := layers[orgID]
+
+	xID := m.FlipXPair.FindMirror(orgID)
+	yID := m.FlipYPair.FindMirror(orgID)
+	xyID := m.FlipXYPair.FindMirror(orgID)
+	var mrrX, mrrY, mrrXY *bool
+	if xID != -1 {
+		mrrX = layers[xID]
+		processed[xID] = struct{}{}
+	}
+	if yID != -1 {
+		mrrY = layers[yID]
+		processed[yID] = struct{}{}
+	}
+	if xyID != -1 {
+		mrrXY = layers[xyID]
+		processed[xyID] = struct{}{}
+	}
+	if !*org &&
+		(mrrX == nil || !*mrrX) &&
+		(mrrY == nil || !*mrrY) &&
+		(mrrXY == nil || !*mrrXY) {
+		return false
+	}
+
+	var modified bool
+	var active *bool
+	switch flip {
+	case FlipX:
+		active = mrrX
+		if mrrX != nil && !*mrrX {
+			*mrrX = true
+			modified = true
+		}
+	case FlipY:
+		active = mrrY
+		if mrrY != nil && !*mrrY {
+			*mrrY = true
+			modified = true
+		}
+	case FlipXY:
+		active = mrrXY
+		if mrrXY != nil && !*mrrXY {
+			*mrrXY = true
+			modified = true
+		}
+	}
+	if active == nil {
+		active = org
+		if !*org {
+			*org = true
+			modified = true
+		}
+	}
+	if org != active && *org {
+		*org = false
+		modified = true
+	}
+	if mrrX != nil && mrrX != active && *mrrX {
+		*mrrX = false
+		modified = true
+	}
+	if mrrY != nil && mrrY != active && *mrrY {
+		*mrrY = false
+		modified = true
+	}
+	if mrrXY != nil && mrrXY != active && *mrrXY {
+		*mrrXY = false
+		modified = true
+	}
+
 	return modified
 }
 
@@ -244,18 +387,19 @@ func (m *LayerManager) NormalizeMap(layers map[int]*bool, flip Flip) bool {
 		modified = true
 	}
 
-	processed := map[*[]int]struct{}{}
+	processedGroup := map[*[]int]struct{}{}
 	for seqID, g := range m.Group {
-		if _, ok := processed[g]; ok {
+		if _, ok := processedGroup[g]; ok {
 			continue
 		}
 		modified = m.normalizeGroupMap(seqID, layers) || modified
-		processed[g] = struct{}{}
+		processedGroup[g] = struct{}{}
 	}
 
-	modified = m.normalizeFlipMap(m.FlipXPair, flip == FlipX, layers) || modified
-	modified = m.normalizeFlipMap(m.FlipYPair, flip == FlipY, layers) || modified
-	modified = m.normalizeFlipMap(m.FlipXYPair, flip == FlipXY, layers) || modified
+	processedFlip := map[int]struct{}{}
+	for seqID := range layers {
+		modified = m.normalizeFlipOneMap(seqID, flip, layers, processedFlip) || modified
+	}
 	return modified
 }
 

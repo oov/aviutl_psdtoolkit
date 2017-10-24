@@ -55,6 +55,9 @@ PSDToolKit は AviUtl の拡張編集プラグイン上で PSD ファイルを�
     - psdtoolkit_wav.lua - シフトキーを押しながら *.wav ファイルをドロップで口パク準備なども自動生成
     - psdtoolkit_srt.lua - 字幕ファイル(*.srt) をドロップでテキストオブジェクトを自動生成
 
+更新履歴は CHANGELOG などを参照してください。  
+https://github.com/oov/aviutl_psdtoolkit/blob/master/CHANGELOG.md
+
 ## 注意事項
 
 PSDToolKit は無保証で提供されます。  
@@ -70,7 +73,8 @@ README.txt 以外を exedit.auf がある場所と同じ場所にコピーすれ
 
 ## バイナリのビルドについて
 
-Bash on Ubuntu on Windows 上で `./build.bash` を行うと必要なファイルがビルドできます。
+Bash on Ubuntu on Windows 上で `./build.bash` を行うと必要なファイルがビルドできます。  
+なお、リポジトリは GOPATH 上にある前提でコードが書かれています。
 
 ソースコードのコンパイルには Go 1.9 windows/amd64、Lazarus 1.6.4 for Windows 32bit が必要です。  
 Lazarus は C:\lazarus にインストールされているのを想定しています。

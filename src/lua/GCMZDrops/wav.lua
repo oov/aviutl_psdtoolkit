@@ -399,7 +399,7 @@ blend=0
 ]]
         end
       end
-      local filepath = GCMZDrops.createtempfile("psd", ".exo")
+      local filepath = GCMZDrops.createtempfile("wav", ".exo")
       f, err = io.open(filepath, "wb")
       if f == nil then
         error(err)
