@@ -537,14 +537,14 @@ const
     'ID',
     #$93#$FC#$97#$CD#$89#$B9#$97#$CA, // 入力音量
     #$92#$78#$89#$84, // 遅延
-    'Lo Freq',
-    'Lo Gain',
-    'Hi Freq',
-    'Hi Gain',
-    'Threshold',
-    'Ratio',
-    'Attack',
-    'Release',
+    'EQ LoFreq',
+    'EQ LoGain',
+    'EQ HiFreq',
+    'EQ HiGain',
+    'C Thresh',
+    'C Ratio',
+    'C Attack',
+    'C Release',
     'Aux1Send',
     #$8F#$6F#$97#$CD#$89#$B9#$97#$CA // 出力音量
     );
