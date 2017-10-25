@@ -152,10 +152,12 @@ begin
   Result := Result + Format('  Gain      %0.2f dB'#13#10, [Strip.CurrentPostGain]);
 end;
 
+{
 procedure ODS(const Fmt: string; const Args: array of const);
 begin
   OutputDebugStringW(PWideChar(WideString(Format('psdtoolkit auf: ' + Fmt, Args))));
 end;
+}
 
 procedure HideAll(Parent: THandle);
 var
@@ -636,11 +638,13 @@ begin
   FLimiter.SampleRate := 48000;
   FLimiter.Channels := 2;
   FLimiter.UpdateParameter();
+  {
   ODS('    Threshold: %s dB', [FLimiter.ThresholdDisp]);
   ODS('    Ratio:     %s:1', [FLimiter.RatioDisp]);
   ODS('    Attack:    %s us', [FLimiter.AttackDisp]);
   ODS('    Release:   %s ms', [FLimiter.ReleaseDisp]);
   ODS('    Limiter:   %s dB', [FLimiter.LimiterDisp]);
+  }
 
   FAux1Strip := TAuxChannelStrip.Create();
 end;
