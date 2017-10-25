@@ -80,10 +80,10 @@ const
     );
   EarlyVibParams: array[0..3] of TVibParam =
     (
-    (Frequency: 5.0; Depth: 0.00012),
-    (Frequency: 3.9; Depth: 0.00019),
-    (Frequency: 3.3; Depth: 0.00013),
-    (Frequency: 4.1; Depth: 0.00011)
+    (Frequency: 3.3; Depth: 0.00042),
+    (Frequency: 3.9; Depth: 0.00049),
+    (Frequency: 2.3; Depth: 0.00033),
+    (Frequency: 2.7; Depth: 0.00031)
     );
   EarlyAPFParams: array[0..3] of TParam =
     (
