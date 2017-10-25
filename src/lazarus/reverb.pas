@@ -193,8 +193,9 @@ begin
   for I := Low(EarlyVibParams) to High(EarlyVibParams) do
   begin
     FEarlyVib[I].SampleRate := FSampleRate;
+    FEarlyVib[I].Channels := 1;
     FEarlyVib[I].Frequency := EarlyVibParams[I].Frequency;
-    FEarlyVib[I].Depth := EarlyVibParams[I].Depth;
+    FEarlyVib[I].MaxDepth := EarlyVibParams[I].Depth;
     FEarlyVib[I].UpdateParameter();
   end;
 
