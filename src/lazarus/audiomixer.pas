@@ -145,11 +145,11 @@ begin
   Result := Result + Format('  Attack    %s μs'#13#10, [Strip.Dynamics.AttackDisp]);
   Result := Result + Format('  Release   %s ms'#13#10, [Strip.Dynamics.ReleaseDisp]);
   Result := Result + #13#10;
-  Result := Result + '[Post Gain]'#13#10;
-  Result := Result + Format('  Gain      %0.2f dB'#13#10, [Strip.CurrentPostGain]);
-  Result := Result + #13#10;
   Result := Result + '[Aux1 Send]'#13#10;
   Result := Result + Format('  Gain      %0.2f dB'#13#10, [Strip.CurrentAux1Send]);
+  Result := Result + #13#10;
+  Result := Result + '[Post Gain]'#13#10;
+  Result := Result + Format('  Gain      %0.2f dB'#13#10, [Strip.CurrentPostGain]);
 end;
 
 procedure ODS(const Fmt: string; const Args: array of const);
