@@ -249,7 +249,7 @@ end;
 
 class function TIntegerHash.hash(k: integer; n: SizeUInt): SizeUInt;
 begin
-  Result := k {%H-}mod n;
+  Result := k {%H-} mod n;
 end;
 
 class function TIntegerHash.equal(a: integer; b: integer): boolean;
