@@ -37,10 +37,9 @@ P.use_lab = true
 -- テキストオブジェクトを音声より短くすると、当然正しく動かなくなります。
 P.save_layer = false
 
--- 口パク準備のパラメータの初期値
-P.wave_locut = 100
-P.wave_hicut = 1000
-P.wave_threshold = 20
+-- 口パク準備のパラメータ設定はここにはありません。
+-- exa フォルダにある lip.exa の中の track0, track1, track2 を書き換えてください。
+-- それぞれ LoCut, HiCut, Threshold に対応しています。
 
 -- テキストオブジェクトも一緒にグループ化するかを true か false で指定
 P.text_group = true
@@ -54,9 +53,72 @@ P.text_margin = 0
 -- ※ただしどちらにしても挿入前に一旦 Shift_JIS に変換されます
 P.text_encoding = "sjis"
 
--- スクリプトが分かる人用
+-- 字幕、音声、口パク準備用のエイリアスファイル(*.exa)をどのように参照するか
+-- この設定を使うと、ドロップされた *.wav ファイルの名前に応じて別のエイリアスファイルを使用できます。
+-- エイリアスファイルは exa フォルダーの中に配置して下さい。
+-- 該当するファイルが見つからない場合は exa\text.exa / exa\wav.exa / exa\lip.exa が代わりに使用されます。
+--   0 - 常に同じファイルを参照する
+--     ドロップされたファイルに関わらず以下のエイリアスファイルが使用されます。
+--       字幕: exa\text.exa
+--       音声: exa\wav.exa
+--       口パク準備: exa\lip.exa
+--   1 - ファイルが入っているフォルダ名を元にする
+--     例: ドロップされたファイルが C:\MyFolder\TKHS_Hello_World.wav の時
+--       字幕: exa\MyFolder_text.exa
+--       音声: exa\MyFolder_wav.exa
+--       口パク準備: exa\MyFolder_lip.exa
+--   2 - ファイル名を元にする
+--     例: ドロップされたファイルが C:\MyFolder\TKHS_Hello_World.wav の時
+--       字幕: exa\TKHS_Hello_World_text.exa
+--       音声: exa\TKHS_Hello_World_wav.exa
+--       口パク準備: exa\TKHS_Hello_World_lip.exa
+--   3 - ファイル名の中で _ で区切られた最初の部分を元にする
+--     例: ドロップされたファイルが C:\MyFolder\TKHS_Hello_World.wav の時
+--       字幕: exa\TKHS_text.exa
+--       音声: exa\TKHS_wav.exa
+--       口パク準備: exa\TKHS_lip.exa
+--   4 - ファイル名の中で _ で区切られた2つめの部分を元にする
+--     例: ドロップされたファイルが C:\MyFolder\TKHS_Hello_World.wav の時
+--       字幕: exa\Hello_text.exa
+--       音声: exa\Hello_wav.exa
+--       口パク準備: exa\Hello_lip.exa
+--   5 - ファイル名の中で _ で区切られた3つめの部分を元にする
+--     例: ドロップされたファイルが C:\MyFolder\TKHS_Hello_World.wav の時
+--       字幕: exa\World_text.exa
+--       音声: exa\World_wav.exa
+--       口パク準備: exa\World_lip.exa
+P.exa_finder = 0
+
+-- エイリアスファイルの改変処理
+-- 一般的な用途では変更する必要はありません。
+P.exa_modifler_text = function(exa, values, modifiers)
+  exa:set("vo", "start", 1)
+  exa:set("vo", "end", values.TEXT_LEN)
+  exa:delete("vo", "length")
+  exa:set("vo", "group", P.text_group and 1 or 0)
+  exa:set("vo.0", "text", modifiers.ENCODE_TEXT(values.TEXT))
+end
+P.exa_modifler_wav = function(exa, values, modifiers)
+  exa:set("ao", "start", 1)
+  exa:set("ao", "end", values.WAV_LEN)
+  exa:delete("ao", "length")
+  exa:set("ao", "group", 1)
+  exa:set("ao.0", "file", values.WAV_PATH)
+end
+P.exa_modifler_lip = function(exa, values, modifiers)
+  exa:set("vo", "start", 1)
+  exa:set("vo", "end", values.WAV_LEN)
+  exa:delete("vo", "length")
+  exa:set("vo", "group", 1)
+  exa:set("vo.0", "param", "file=" .. modifiers.ENCODE_LUA_STRING(values.LIP_PATH))
+end
+
+-- 挿入モード 2 の時に使用される接頭辞、接尾辞とエスケープ処理
 P.text_prefix = '<?s=[==['
 P.text_postfix = ']==];require("PSDToolKit\\\\PSDToolKitLib").settext(s, obj, true);s=nil?>'
+P.text_escape = function(s)
+  return s:gsub("]==]", ']==].."]==]"..[==[')
+end
 
 -- ===========================================================
 -- 設定　ここまで
@@ -80,7 +142,12 @@ end
 function P.ondragleave()
 end
 
-function fileexists(filepath)
+local function changefileext(filepath, ext)
+  local old = filepath:match("[^.]+$")
+  return filepath:sub(1, #filepath - #old) .. ext
+end
+
+local function fileexists(filepath)
   local f = io.open(filepath, "rb")
   if f ~= nil then
     f:close()
@@ -89,7 +156,76 @@ function fileexists(filepath)
   return false
 end
 
-function fire(state, v)
+local function fileread(filepath)
+  local f = io.open(filepath, "rb")
+  if f == nil then
+    return nil
+  end
+  local text = f:read("*all")
+  f:close()
+  return text
+end
+
+function P.exaread(filepath, postfix)
+  local inistr = nil
+  if filepath ~= nil then
+    filepath = GCMZDrops.scriptdir() .. "exa\\" .. filepath .. "_" .. postfix .. ".exa"
+    inistr = fileread(filepath)
+    if inistr == nil then
+      debug_print("読み込み失敗: " .. filepath)
+    end
+  end
+  if inistr == nil then
+    filepath = GCMZDrops.scriptdir() .. "exa\\" .. postfix .. ".exa"
+    inistr = fileread(filepath)
+  end
+  if inistr ~= nil then
+    debug_print("使用するエイリアスファイル: " .. filepath)
+  else
+    error("cannot read: " .. filepath)
+  end
+  return GCMZDrops.inistring(inistr)
+end
+
+function P.findexatype(ini)
+  if ini:sectionexists("vo") then
+    return "vo"
+  elseif ini:sectionexists("ao") then
+    return "ao"
+  end
+  error("unexpected alias file format")
+end
+
+function P.numitemsections(ini)
+  local prefix = P.findexatype(ini)  
+  local n = 0
+  while ini:sectionexists(prefix .. "." .. n) do
+    n = n + 1
+  end
+  return n
+end
+
+function P.insertexa(destini, srcini, index, layer)
+  local prefix = P.findexatype(srcini)
+  destini:set(index, "layer", layer)
+  destini:set(index, "overlay", 1)
+  for _, key in ipairs(srcini:keys(prefix)) do
+    destini:set(index, key, srcini:get(prefix, key, ""))
+  end
+  if prefix == "ao" then
+    destini:set(index, "audio", 1)
+  end
+
+  for i = 0, P.numitemsections(srcini) - 1 do
+    local exosection = index .. "." .. i
+    local section = prefix .. "." .. i
+    for _, key in ipairs(srcini:keys(section)) do
+      destini:set(exosection, key, srcini:get(section, key, ""))
+    end
+  end
+end
+
+local function fire(state, v)
   if P.firemode == 0 then
     return state.shift
   elseif P.firemode == 1 then
@@ -103,11 +239,21 @@ function fire(state, v)
   return false
 end
 
-function P.encodelua(s)
-  s = GCMZDrops.convertencoding(s, "sjis", "utf8")
-  s = GCMZDrops.encodeluastring(s)
-  s = GCMZDrops.convertencoding(s, "utf8", "sjis")
-  return s
+function P.resolvepath(filepath, finder)
+  if finder == 1 then
+    return filepath:match("([^\\]+)[\\][^\\]+$")
+  elseif finder == 2 then
+    return filepath:match("([^\\]+)%.[^.]+$")
+  elseif finder == 3 then
+    return filepath:match("([^\\]+)%.[^.]+$"):match("^[^_]+")
+  elseif finder == 4 then
+    return filepath:match("([^\\]+)%.[^.]+$"):match("^[^_]+_([^_]+)")
+  elseif finder == 5 then
+    return filepath:match("([^\\]+)%.[^.]+$"):match("^[^_]+_[^_]+_([^_]+)")
+  elseif type(finder) == "function" then
+    return finder(filepath)
+  end
+  return nil
 end
 
 function P.ondrop(files, state)
@@ -117,294 +263,132 @@ function P.ondrop(files, state)
       -- プロジェクトとファイルの情報を取得する
       local proj = GCMZDrops.getexeditfileinfo()
       local fi = GCMZDrops.getfileinfo(v.filepath)
-      -- 音声が現在のプロジェクトで何フレーム分あるのかを計算する
-      local len = math.ceil((fi.audio_samples / proj.audio_rate) * proj.rate / proj.scale)
 
-      local text = ""
+      -- テンプレート用変数を準備
+      local values = {
+        TEXT = "",
+        TEXT_LEN = 0,
+        WAV_LEN = 0,
+        WAV_PATH = v.filepath,
+        LIP_PATH = v.filepath
+      }
+      local modifiers = {
+        ENCODE_TEXT = function(v)
+          return GCMZDrops.encodeexotext(v)
+        end,
+        ENCODE_LUA_STRING = function(v)
+          v = GCMZDrops.convertencoding(v, "sjis", "utf8")
+          v = GCMZDrops.encodeluastring(v)
+          v = GCMZDrops.convertencoding(v, "utf8", "sjis")
+          return v
+        end
+      }
+
+      -- 音声が現在のプロジェクトで何フレーム分あるのかを計算する
+      values.WAV_LEN = math.ceil((fi.audio_samples / proj.audio_rate) * proj.rate / proj.scale)
+      values.TEXT_LEN = values.WAV_LEN + P.text_margin
+
       if P.insertmode > 0 then
         -- *.txt があるか探すために *.wav の拡張子部分を差し替える
         -- もし orgfilepath があるならそっちの名前を元に探さなければならない
-        local txtfilepath = v.orgfilepath or v.filepath
-        txtfilepath = txtfilepath:sub(1, #txtfilepath - 3) .. "txt"
-        local f = io.open(txtfilepath, "rb")
-        if f ~= nil then
-          text = f:read("*all")
-          f:close()
+        local txtfilepath = changefileext(v.orgfilepath or v.filepath, "txt")
+        local text = fileread(txtfilepath)
+        if text ~= nil then
           -- 文字エンコーディングが Shift_JIS 以外の時は Shift_JIS へ変換する
           -- TODO: GCMZDrops.encodeexotext で UTF-8 の受け入れを可能に
           if P.text_encoding ~= "sjis" then
             text = GCMZDrops.convertencoding(text, P.text_encoding, "sjis")
           end
+          -- 挿入モードが 2 の時はテキストをスクリプトとして整形する
+          if P.insertmode == 2 then
+            if text:sub(-2) ~= "\r\n" then
+              text = text .. "\r\n"
+            end
+            text = P.text_prefix .. "\r\n" .. P.text_escape(text) .. P.text_postfix
+          end
+          values.TEXT = text
         end
       end
-
-      local lipsync = v.filepath
+      
       if P.use_lab then
         -- *.lab があるか探すために *.wav の拡張子部分を差し替える
         -- もし orgfilepath があるならそっちの名前を元に探さなければならない
-        local labfilepath = v.orgfilepath or v.filepath
-        labfilepath = labfilepath:sub(1, #labfilepath - 3) .. "lab"
+        local labfilepath = changefileext(v.orgfilepath or v.filepath, "lab")
         if fileexists(labfilepath) then
           if GCMZDrops.needcopy(labfilepath) then
             -- もし見つかった場所が恒久的に利用できる場所ではない場合は
             -- avoiddup.lua の機能で安全地帯にファイルをコピーする
             local newlabfilepath, created = require("avoiddup").getfile(labfilepath)
-            lipsync = newlabfilepath
+            values.LIP_PATH = newlabfilepath
           else
-            lipsync = labfilepath
+            values.LIP_PATH = labfilepath
           end
         end
       end
 
-      -- ファイルを直接読み込む代わりに exo ファイルを組み立てる
-      local exo = ""
-      local textgroup = 0
-      if P.text_group then
-        textgroup = 1
-      end
-      if (P.insertmode == 0)or(text == "") then
-        exo = [[
-[exedit]
-width=]] .. proj.width .. "\r\n" .. [[
-height=]] .. proj.height .. "\r\n" .. [[
-rate=]] .. proj.rate .. "\r\n" .. [[
-scale=]] .. proj.scale .. "\r\n" .. [[
-length=]] .. (len - 1) .. "\r\n" .. [[
-audio_rate=]] .. proj.audio_rate .. "\r\n" .. [[
-audio_ch=]] .. proj.audio_ch .. "\r\n" .. [[
-[0]
-start=1
-end=]] .. (len - 1) .. "\r\n" .. [[
-layer=1
-group=1
-overlay=1
-audio=1
-[0.0]
-_name=音声ファイル
-再生位置=0.00
-再生速度=100.0
-ループ再生=0
-動画ファイルと連携=0
-file=]] .. v.filepath .. "\r\n" .. [[
-[0.1]
-_name=標準再生
-音量=100.0
-左右=0.0
-[1]
-start=1
-end=]] .. (len - 1) .. "\r\n" .. [[
-layer=2
-group=1
-overlay=1
-camera=0
-[1.0]
-_name=カスタムオブジェクト
-track0=]] .. P.wave_locut .. "\r\n" .. [[
-track1=]] .. P.wave_hicut .. "\r\n" .. [[
-track2=]] .. P.wave_threshold .. "\r\n" .. [[
-track3=0.00
-check0=0
-type=0
-filter=2
-name=口パク準備@PSDToolKit
-param=]] .. "file=" .. P.encodelua(lipsync) .. "\r\n" .. [[
-[1.1]
-_name=標準描画
-X=0.0
-Y=0.0
-Z=0.0
-拡大率=100.00
-透明度=0.0
-回転=0.00
-blend=0
-]]
-      elseif (P.insertmode == 1) or (P.insertmode == 2) then
-        if P.insertmode == 2 then
-          text = text:gsub("]==]", ']==].."]==]"..[==[')
-          text = P.text_prefix .. "\r\n" .. text
-          if text:sub(-2) ~= "\r\n" then
-            text = text .. "\r\n"
-          end
-          text = text .. P.text_postfix
-        end
+      -- exo ファイルのヘッダ部分を組み立て
+      local oini = GCMZDrops.inistring("")
+      oini:set("exedit", "width", proj.width)
+      oini:set("exedit", "height", proj.height)
+      oini:set("exedit", "rate", proj.rate)
+      oini:set("exedit", "scale", proj.scale)
+      oini:set("exedit", "length", (values.WAV_LEN < values.TEXT_LEN) and values.TEXT_LEN or values.WAV_LEN)
+      oini:set("exedit", "audio_rate", proj.audio_rate)
+      oini:set("exedit", "audio_ch", proj.audio_ch)
+
+      -- オブジェクトの挿入
+      local filepath = P.resolvepath(v.orgfilepath or v.filepath, P.exa_finder)
+      local index = 0
+      
+      -- 字幕用エイリアスを組み立て
+      if values.TEXT ~= "" then
+        local aini = P.exaread(filepath, "text")
+        P.exa_modifler_text(aini, values, modifiers)
         if P.save_layer then
-          exo = [[
-[exedit]
-width=]] .. proj.width .. "\r\n" .. [[
-height=]] .. proj.height .. "\r\n" .. [[
-rate=]] .. proj.rate .. "\r\n" .. [[
-scale=]] .. proj.scale .. "\r\n" .. [[
-length=]] .. (len - 1 + P.text_margin) .. "\r\n" .. [[
-audio_rate=]] .. proj.audio_rate .. "\r\n" .. [[
-audio_ch=]] .. proj.audio_ch .. "\r\n" .. [[
-[0]
-start=1
-end=]] .. (len - 1 + P.text_margin) .. "\r\n" .. [[
-layer=1
-group=]] .. textgroup .. "\r\n" .. [[
-overlay=1
-camera=0
-[0.0]
-_name=テキスト
-サイズ=34
-表示速度=0.0
-文字毎に個別オブジェクト=0
-移動座標上に表示する=0
-自動スクロール=0
-B=0
-I=0
-type=0
-autoadjust=0
-soft=1
-monospace=0
-align=0
-spacing_x=0
-spacing_y=0
-precision=1
-color=ffffff
-color2=000000
-font=MS UI Gothic
-text=]] .. GCMZDrops.encodeexotext(text) .. "\r\n" .. [[
-[0.1]
-_name=アニメーション効果
-track0=]] .. P.wave_locut .. "\r\n" .. [[
-track1=]] .. P.wave_hicut .. "\r\n" .. [[
-track2=]] .. P.wave_threshold .. "\r\n" .. [[
-track3=0.00
-check0=0
-type=0
-filter=2
-name=口パク準備@PSDToolKit
-param=]] .. "file=" .. P.encodelua(lipsync) .. "\r\n" .. [[
-[0.2]
-_name=標準描画
-X=0.0
-Y=0.0
-Z=0.0
-拡大率=100.00
-透明度=0.0
-回転=0.00
-blend=0
-[1]
-start=1
-end=]] .. (len - 1) .. "\r\n" .. [[
-layer=2
-group=1
-overlay=1
-audio=1
-[1.0]
-_name=音声ファイル
-再生位置=0.00
-再生速度=100.0
-ループ再生=0
-動画ファイルと連携=0
-file=]] .. v.filepath .. "\r\n" .. [[
-[1.1]
-_name=標準再生
-音量=100.0
-左右=0.0
-]]
-        else
-          exo = [[
-[exedit]
-width=]] .. proj.width .. "\r\n" .. [[
-height=]] .. proj.height .. "\r\n" .. [[
-rate=]] .. proj.rate .. "\r\n" .. [[
-scale=]] .. proj.scale .. "\r\n" .. [[
-length=]] .. (len - 1 + P.text_margin) .. "\r\n" .. [[
-audio_rate=]] .. proj.audio_rate .. "\r\n" .. [[
-audio_ch=]] .. proj.audio_ch .. "\r\n" .. [[
-[0]
-start=1
-end=]] .. (len - 1 + P.text_margin) .. "\r\n" .. [[
-layer=1
-group=]] .. textgroup .. "\r\n" .. [[
-overlay=1
-camera=0
-[0.0]
-_name=テキスト
-サイズ=34
-表示速度=0.0
-文字毎に個別オブジェクト=0
-移動座標上に表示する=0
-自動スクロール=0
-B=0
-I=0
-type=0
-autoadjust=0
-soft=1
-monospace=0
-align=0
-spacing_x=0
-spacing_y=0
-precision=1
-color=ffffff
-color2=000000
-font=MS UI Gothic
-text=]] .. GCMZDrops.encodeexotext(text) .. "\r\n" .. [[
-[0.1]
-_name=標準描画
-X=0.0
-Y=0.0
-Z=0.0
-拡大率=100.00
-透明度=0.0
-回転=0.00
-blend=0
-[1]
-start=1
-end=]] .. (len - 1) .. "\r\n" .. [[
-layer=2
-group=1
-overlay=1
-audio=1
-[1.0]
-_name=音声ファイル
-再生位置=0.00
-再生速度=100.0
-ループ再生=0
-動画ファイルと連携=0
-file=]] .. v.filepath .. "\r\n" .. [[
-[1.1]
-_name=標準再生
-音量=100.0
-左右=0.0
-[2]
-start=1
-end=]] .. (len - 1) .. "\r\n" .. [[
-layer=3
-group=1
-overlay=1
-camera=0
-[2.0]
-_name=カスタムオブジェクト
-track0=]] .. P.wave_locut .. "\r\n" .. [[
-track1=]] .. P.wave_hicut .. "\r\n" .. [[
-track2=]] .. P.wave_threshold .. "\r\n" .. [[
-track3=0.00
-check0=0
-type=0
-filter=2
-name=口パク準備@PSDToolKit
-param=]] .. "file=" .. P.encodelua(lipsync) .. "\r\n" .. [[
-[2.1]
-_name=標準描画
-X=0.0
-Y=0.0
-Z=0.0
-拡大率=100.00
-透明度=0.0
-回転=0.00
-blend=0
-]]
+          -- レイヤー節約モードの場合は最後に口パク準備のアニメーション効果を挿入
+          local prefix = P.findexatype(aini)
+          local n = P.numitemsections(aini)
+          local lastsection = prefix .. "." .. (n-1)
+          local newsection = prefix .. "." .. n
+          -- 一番最後の効果をひとつ後ろにずらし、コピー元は一旦削除
+          for _, key in ipairs(aini:keys(lastsection)) do
+            aini:set(newsection, key, aini:get(lastsection, key, ""))
+            aini:delete(lastsection, key)
+          end
+          -- 口パク準備のカスタムオブジェクトをエイリアスファイルから読み込んで
+          -- アニメーション効果に書き換えて挿入する
+          local lini = P.exaread(filepath, "lip")
+          P.exa_modifler_lip(lini, values, modifiers)
+          local lsection = P.findexatype(lini) .. ".0" -- TODO: 決め打ちじゃない方がいい？
+          for _, key in ipairs(lini:keys(lsection)) do
+            aini:set(lastsection, key, lini:get(lsection, key, ""))
+          end
+          aini:set(lastsection, "_name", "アニメーション効果")
         end
+        P.insertexa(oini, aini, index, index + 1)
+        index = index + 1
       end
+
+      -- 音声用エイリアスを組み立て
+      local aini = P.exaread(filepath, "wav")
+      P.exa_modifler_wav(aini, values, modifiers)
+      P.insertexa(oini, aini, index, index + 1)
+      index = index + 1
+
+      -- 口パク準備用エイリアスを組み立て
+      if not P.save_layer then
+        local aini = P.exaread(filepath, "lip")
+        P.exa_modifler_lip(aini, values, modifiers)
+        P.insertexa(oini, aini, index, index + 1)
+        index = index + 1
+      end
+
       local filepath = GCMZDrops.createtempfile("wav", ".exo")
       f, err = io.open(filepath, "wb")
       if f == nil then
         error(err)
       end
-      f:write(exo)
+      f:write(tostring(oini))
       f:close()
       debug_print("["..P.name.."] が " .. v.filepath .. " を exo ファイルに差し替えました。元のファイルは orgfilepath で取得できます。")
       files[i] = {filepath=filepath, orgfilepath=v.filepath}
