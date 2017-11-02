@@ -20,7 +20,6 @@ P.priority = 0
 --   装飾などの設定は全て表示用のテキストオブジェクト側で行います。
 P.insertmode = 1
 
-
 -- SRTファイルの文字エンコーディング
 -- "sjis" か "utf8" で指定
 -- ※ただしどちらにしても挿入前に一旦 Shift_JIS に変換されます
@@ -30,13 +29,52 @@ P.encoding = "utf8"
 -- 秒で指定
 P.margin = 0
 
--- スクリプトが分かる人用
+-- 字幕用のエイリアスファイル(*.exa)をどのように参照するか
+-- この設定を使うと、ドロップされた *.srt ファイルの名前に応じて別のエイリアスファイルを使用できます。
+-- エイリアスファイルは exa フォルダーの中に配置して下さい。
+-- 該当するファイルが見つからない場合は exa\srt.exa が代わりに使用されます。
+--   0 - 常に同じファイルを参照する
+--     ドロップされたファイルに関わらず以下のエイリアスファイルが使用されます。
+--       exa\srt.exa
+--   1 - ファイルが入っているフォルダ名を元にする
+--     例: ドロップされたファイルが C:\MyFolder\TKHS_Hello_World.srt の時
+--       exa\MyFolder_srt.exa
+--   2 - ファイル名を元にする
+--     例: ドロップされたファイルが C:\MyFolder\TKHS_Hello_World.srt の時
+--       exa\TKHS_Hello_World_srt.exa
+--   3 - ファイル名の中で _ で区切られた最初の部分を元にする
+--     例: ドロップされたファイルが C:\MyFolder\TKHS_Hello_World.srt の時
+--       exa\TKHS_srt.exa
+--   4 - ファイル名の中で _ で区切られた2つめの部分を元にする
+--     例: ドロップされたファイルが C:\MyFolder\TKHS_Hello_World.srt の時
+--       exa\Hello_srt.exa
+--   5 - ファイル名の中で _ で区切られた3つめの部分を元にする
+--     例: ドロップされたファイルが C:\MyFolder\TKHS_Hello_World.srt の時
+--       exa\World_srt.exa
+P.exa_finder = 0
+
+-- エイリアスファイルの改変処理
+-- 一般的な用途では変更する必要はありません。
+P.exa_modifler_srt = function(exa, values, modifiers)
+  exa:set("vo", "start", values.START + 1)
+  exa:set("vo", "end", values.END + 1)
+  exa:delete("vo", "length")
+  exa:set("vo", "group", 1)
+  exa:set("vo.0", "text", modifiers.ENCODE_TEXT(values.TEXT))
+end
+
+-- 挿入モード 1 の時に使用される接頭辞、接尾辞とエスケープ処理
 P.text_prefix = '<?s=[==['
 P.text_postfix = ']==];require("PSDToolKit\\\\PSDToolKitLib").settext(s, obj, true);s=nil?>'
+P.text_escape = function(s)
+  return s:gsub("]==]", ']==].."]==]"..[==[')
+end
 
 -- ===========================================================
 -- 設定　ここまで
 -- ===========================================================
+
+local wavP = require("psdtoolkit_wav")
 
 function P.ondragenter(files, state)
   for i, v in ipairs(files) do
@@ -56,57 +94,7 @@ end
 function P.ondragleave()
 end
 
-function texobj(n, layer, startf, endf, group, text)
-  if P.insertmode == 1 then
-    text = text:gsub("]==]", ']==].."]==]"..[==[')
-    text = P.text_prefix .. "\r\n" .. text
-    if text:sub(-2) ~= "\r\n" then
-      text = text .. "\r\n"
-    end
-    text = text .. P.text_postfix
-  end
-  return [[
-[]] .. n .. [[]
-start=]] .. (startf+1) .. "\r\n" .. [[
-end=]] .. (endf+1) .. "\r\n" .. [[
-layer=]] .. layer .. "\r\n" .. [[
-group=]] .. group .. "\r\n" .. [[
-overlay=1
-camera=0
-[]] .. n .. [[.0]
-_name=テキスト
-サイズ=34
-表示速度=0.0
-文字毎に個別オブジェクト=0
-移動座標上に表示する=0
-自動スクロール=0
-B=0
-I=0
-type=0
-autoadjust=0
-soft=1
-monospace=0
-align=0
-spacing_x=0
-spacing_y=0
-precision=1
-color=ffffff
-color2=000000
-font=MS UI Gothic
-text=]] .. GCMZDrops.encodeexotext(text) .. "\r\n" .. [[
-[]] .. n .. [[.1]
-_name=標準描画
-X=0.0
-Y=0.0
-Z=0.0
-拡大率=100.00
-透明度=0.0
-回転=0.00
-blend=0
-]]
-end
-
-function parse(filepath)
+function P.parse(filepath)
   local f, err = io.open(filepath, "rb")
   if f == nil then
     error(err)
@@ -176,54 +164,72 @@ function P.ondrop(files, state)
       -- プロジェクトの情報を取得する
       local proj = GCMZDrops.getexeditfileinfo()
       -- SRT ファイルを解析
-      local srt, len = parse(v.filepath)
-      -- 時間を秒からフレームに書き換え
-      len = math.floor(len * proj.rate / proj.scale)
-      -- exo ファイルを組み立てる
-      local exo = ""
-      exo = [[
-[exedit]
-width=]] .. proj.width .. "\r\n" .. [[
-height=]] .. proj.height .. "\r\n" .. [[
-rate=]] .. proj.rate .. "\r\n" .. [[
-scale=]] .. proj.scale .. "\r\n" .. [[
-length=]] .. len .. "\r\n" .. [[
-audio_rate=]] .. proj.audio_rate .. "\r\n" .. [[
-audio_ch=]] .. proj.audio_ch .. "\r\n" .. [[
-]]
-      local filepath = GCMZDrops.createtempfile("srt", ".exo")
-      f, err = io.open(filepath, "wb")
-      if f == nil then
-        error(err)
-      end
-      f:write(exo)
+      local srt, len = P.parse(v.filepath)
 
+      local oini = GCMZDrops.inistring("")
+      oini:set("exedit", "width", proj.width)
+      oini:set("exedit", "height", proj.height)
+      oini:set("exedit", "rate", proj.rate)
+      oini:set("exedit", "scale", proj.scale)
+      oini:set("exedit", "length", math.floor(len * proj.rate / proj.scale))
+      oini:set("exedit", "audio_rate", proj.audio_rate)
+      oini:set("exedit", "audio_ch", proj.audio_ch)
+      
       -- SRT の内容に従ってテキストオブジェクトを挿入していく
       -- もし表示が被る場合は表示先のレイヤーも変える
       -- ただ、挿入モード1だと結局正しく扱えないのであまり意味はないかも
+      local textbase = tostring(wavP.exaread(wavP.resolvepath(v.filepath, P.exa_finder), "srt"))
+      local values = {
+        START = 0,
+        END = 0,
+        TEXT = ""
+      }
+      local modifiers = {
+        ENCODE_TEXT = function(v)
+          return GCMZDrops.encodeexotext(v)
+        end
+      }
       local layers = {}
       local n = 0
       for i, t in ipairs(srt) do
-        t.s = math.floor(t.s * proj.rate / proj.scale)
-        t.e = math.floor(t.e * proj.rate / proj.scale)
+        local text = t.text
+        -- 挿入モードが 1 の時はテキストをスクリプトとして整形する
+        if P.insertmode == 1 then
+          if text:sub(-2) ~= "\r\n" then
+            text = text .. "\r\n"
+          end
+          text = P.text_prefix .. "\r\n" .. P.text_escape(text) .. P.text_postfix
+        end
+        values.TEXT = text
+        values.START = math.floor(t.s * proj.rate / proj.scale)
+        values.END = math.floor(t.e * proj.rate / proj.scale)
         local found = nil
         for li, le in ipairs(layers) do
-          if le < t.s then
+          if le < values.START then
             found = li
             break
           end
         end
         if found ~= nil then
-          layers[found] = t.e
+          layers[found] = values.END
         else
-          table.insert(layers, t.e)
+          table.insert(layers, values.END)
           found = #layers
         end
-        f:write(texobj(n, found, t.s, t.e, 1, t.text))
+
+        local aini = GCMZDrops.inistring(textbase)
+        P.exa_modifler_srt(aini, values, modifiers)
+        wavP.insertexa(oini, aini, n, found)
         n = n + 1
       end
 
-      f:close()
+      local filepath = GCMZDrops.createtempfile("srt", ".exo")
+      local exo, err = io.open(filepath, "wb")
+      if exo == nil then
+        error(err)
+      end
+      exo:write(tostring(oini))
+      exo:close()
       debug_print("["..P.name.."] が " .. v.filepath .. " を exo ファイルに差し替えました。元のファイルは orgfilepath で取得できます。")
       files[i] = {filepath=filepath, orgfilepath=v.filepath}
     end

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mkdir bin bin/PSDToolKit bin/script bin/script/PSDToolKit bin/GCMZDrops
+mkdir bin bin/PSDToolKit bin/script bin/script/PSDToolKit bin/GCMZDrops bin/GCMZDrops/exa
 
 # copy readme
 sed 's/\r$//' README.md | sed 's/$/\r/' > bin/README.txt
@@ -49,6 +49,10 @@ sed 's/\r$//' 'src/lua/@PSDToolKit.obj' | sed 's/$/\r/' > 'bin/script/PSDToolKit
 sed 's/\r$//' 'src/lua/GCMZDrops/psd.lua' | sed 's/$/\r/' > 'bin/GCMZDrops/psdtoolkit_psd.lua'
 sed 's/\r$//' 'src/lua/GCMZDrops/wav.lua' | sed 's/$/\r/' > 'bin/GCMZDrops/psdtoolkit_wav.lua'
 sed 's/\r$//' 'src/lua/GCMZDrops/srt.lua' | sed 's/$/\r/' > 'bin/GCMZDrops/psdtoolkit_srt.lua'
+sed 's/\r$//' 'src/lua/GCMZDrops/exa/lip.exa' | sed 's/$/\r/' > 'bin/GCMZDrops/exa/lip.exa'
+sed 's/\r$//' 'src/lua/GCMZDrops/exa/text.exa' | sed 's/$/\r/' > 'bin/GCMZDrops/exa/text.exa'
+sed 's/\r$//' 'src/lua/GCMZDrops/exa/wav.exa' | sed 's/$/\r/' > 'bin/GCMZDrops/exa/wav.exa'
+sed 's/\r$//' 'src/lua/GCMZDrops/exa/srt.exa' | sed 's/$/\r/' > 'bin/GCMZDrops/exa/srt.exa'
 
 # build src/go/assets/bindata.go
 pushd src/go/assets
@@ -70,8 +74,9 @@ cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/AudioMixerPlugin.lpi
 # cp ../aviutl_gcmzdrops/bin/GCMZDrops/*.lua bin/GCMZDrops/
 
 # install
-# mkdir aviutl/PSDToolKit aviutl/script aviutl/script/PSDToolKit aviutl/GCMZDrops
+# mkdir aviutl/PSDToolKit aviutl/script aviutl/script/PSDToolKit aviutl/GCMZDrops aviutl/GCMZDrops/exa
 # cp bin/*.auf aviutl/
 # cp bin/PSDToolKit/* aviutl/PSDToolKit/
 # cp bin/script/PSDToolKit/* aviutl/script/PSDToolKit/
 # cp bin/GCMZDrops/* aviutl/GCMZDrops/
+# cp bin/GCMZDrops/exa/* aviutl/GCMZDrops/exa/
