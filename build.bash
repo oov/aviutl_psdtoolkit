@@ -6,7 +6,7 @@ mkdir bin bin/PSDToolKit bin/script bin/script/PSDToolKit bin/GCMZDrops bin/GCMZ
 sed 's/\r$//' README.md | sed 's/$/\r/' > bin/README.txt
 
 # update version string
-VERSION='v0.1.2'
+VERSION='v0.1.3beta'
 GITHASH=`git rev-parse --short HEAD`
 cat << EOS | sed 's/\r$//' | sed 's/$/\r/' > 'src/lazarus/ver.pas'
 unit Ver;
