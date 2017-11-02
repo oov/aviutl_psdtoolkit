@@ -73,10 +73,10 @@ README.txt 以外を exedit.auf がある場所と同じ場所にコピーすれ
 
 ## バイナリのビルドについて
 
-Bash on Ubuntu on Windows 上で `./build.bash` を行うと必要なファイルがビルドできます。  
+Windows Subsystem for Linux 上で `./build.bash` を行うと必要なファイルがビルドできます。
 なお、リポジトリは GOPATH 上にある前提でコードが書かれています。
 
-ソースコードのコンパイルには Go 1.9 windows/amd64、Lazarus 1.6.4 for Windows 32bit が必要です。  
+ソースコードのコンパイルには Go 1.9.2 windows/amd64、Lazarus 1.6.4 for Windows 32bit が必要です。  
 Lazarus は C:\lazarus にインストールされているのを想定しています。
 Go から利用している Nuklear は現状 fork 版 ( https://github.com/oov/nuklear/tree/forme ) が必要です。
 

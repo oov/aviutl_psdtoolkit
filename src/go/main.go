@@ -7,8 +7,6 @@ import (
 	"image"
 	"image/png"
 	"runtime"
-	"runtime/debug"
-	"time"
 
 	// _ "net/http/pprof"
 
@@ -16,6 +14,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/oov/aviutl_psdtoolkit/src/go/assets"
+	"github.com/oov/aviutl_psdtoolkit/src/go/gc"
 	"github.com/oov/aviutl_psdtoolkit/src/go/img"
 	"github.com/oov/aviutl_psdtoolkit/src/go/ipc"
 	"github.com/oov/aviutl_psdtoolkit/src/go/layerview"
@@ -93,19 +92,6 @@ func do(f func()) {
 	<-done
 }
 
-func freeMemory(d time.Duration, exitCh <-chan struct{}) {
-	fpsTicker := time.NewTicker(d)
-	for {
-		select {
-		case <-exitCh:
-			fpsTicker.Stop()
-			return
-		case <-fpsTicker.C:
-			debug.FreeOSMemory()
-		}
-	}
-}
-
 func main() {
 	// go http.ListenAndServe(":6060", nil)
 
@@ -144,7 +130,7 @@ func main() {
 
 	exitCh := make(chan struct{})
 	go g.IPC.Main(exitCh)
-	go freeMemory(time.Second, exitCh)
+	gcDone := gc.Start(exitCh)
 
 	// psd.Debug = log.New(os.Stdout, "psd: ", log.Lshortfile)
 	var err error
@@ -153,6 +139,8 @@ func main() {
 	}
 
 	dropCB := func(w *window, filenames []string) {
+		gc.EnterCS()
+		go do(gc.LeaveCS)
 		img, idx, stateKey, err := g.IPC.Image(0, extractPSDAndPFV(filenames))
 		if err != nil {
 			ods.ODS("error: %v", err)
@@ -176,4 +164,5 @@ func main() {
 	g.MainView.Init(bg)
 	// g.Window.Show()
 	g.MainLoop(exitCh)
+	<-gcDone
 }

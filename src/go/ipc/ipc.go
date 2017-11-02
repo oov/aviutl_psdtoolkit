@@ -9,7 +9,6 @@ import (
 	"io"
 	"os"
 	"path/filepath"
-	"runtime/debug"
 	"sort"
 	"strings"
 	"sync"
@@ -196,7 +195,6 @@ func (ipc *IPC) getSourceImage(filePath string) (*sourceImage, error) {
 		InitialLayerState: &state,
 	}
 	ipc.sourceImages[filePath] = srcImage
-	debug.FreeOSMemory()
 	return srcImage, nil
 }
 
@@ -245,7 +243,6 @@ func (ipc *IPC) draw(id int, filePath string, width, height int) ([]byte, error)
 	ret := image.NewRGBA(image.Rect(0, 0, width, height))
 	blend.Copy.Draw(ret, ret.Rect, rgba, image.Pt(int(float32(-himg.OffsetX)*himg.Scale), int(float32(-himg.OffsetY)*himg.Scale)))
 	rgbaToNBGRA(ret.Pix)
-	debug.FreeOSMemory()
 	ods.ODS("render: %dms", (time.Now().UnixNano()-s)/1e6)
 	return ret.Pix, nil
 }
