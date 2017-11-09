@@ -12,6 +12,8 @@ function LuaDraw(L: Plua_State): integer; cdecl;
 function LuaGetLayerNames(L: Plua_State): integer; cdecl;
 function LuaSetProperties(L: Plua_State): integer; cdecl;
 function LuaShowGUI(L: Plua_State): integer; cdecl;
+function LuaSerialize(L: Plua_State): integer; cdecl;
+function LuaDeserialize(L: Plua_State): integer; cdecl;
 
 function LuaPutCache(L: Plua_State): integer; cdecl;
 function LuaGetCache(L: Plua_State): integer; cdecl;
@@ -23,11 +25,13 @@ type
   end;
 
 const
-  Functions: array[0..5] of TEntry = (
+  Functions: array[0..7] of TEntry = (
     (Name: 'draw'; Func: @LuaDraw),
     (Name: 'getlayernames'; Func: @LuaGetLayerNames),
     (Name: 'setprops'; Func: @LuaSetProperties),
     (Name: 'showgui'; Func: @LuaShowGUI),
+    (Name: 'serialize'; Func: @LuaSerialize),
+    (Name: 'deserialize'; Func: @LuaDeserialize),
     (Name: 'putcache'; Func: @LuaPutCache),
     (Name: 'getcache'; Func: @LuaGetCache));
 
@@ -191,6 +195,44 @@ begin
   end;
   lua_pushboolean(L, True);
   Result := 1;
+end;
+
+function LuaSerialize(L: Plua_State): integer; cdecl;
+var
+  S: string;
+begin
+  try
+    S := psdtool.Serialize();
+  except
+    on e: Exception do
+    begin
+      lua_pushboolean(L, False);
+      lua_pushstring(L, PChar(e.Message));
+      Result := 2;
+      Exit;
+    end;
+  end;
+  lua_pushboolean(L, True);
+  lua_pushlstring(L, @S[1], Length(S));
+  Result := 2;
+end;
+
+function LuaDeserialize(L: Plua_State): integer; cdecl;
+begin
+  try
+    psdtool.Deserialize(lua_tostring(L, 1));
+  except
+    on e: Exception do
+    begin
+      lua_pushboolean(L, False);
+      lua_pushstring(L, PChar(e.Message));
+      Result := 2;
+      Exit;
+    end;
+  end;
+  lua_pushboolean(L, True);
+  lua_pushboolean(L, True);
+  Result := 2;
 end;
 
 function LuaPutCache(L: Plua_State): integer; cdecl;

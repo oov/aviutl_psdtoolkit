@@ -36,6 +36,8 @@ type
       OffsetY: System.PInteger; out Modified: boolean; out Width: integer;
       out Height: integer);
     procedure ShowGUI();
+    function Serialize(): string;
+    procedure Deserialize(s: string);
   end;
 
 implementation
@@ -205,6 +207,45 @@ begin
   begin
     FPSDToolWindow := h;
     SetForegroundWindow(h);
+  end;
+end;
+
+function TPSDToolKit.Serialize(): string;
+begin
+  EnterCS('SRLZ');
+  try
+    PrepareIPC();
+    FRemoteProcess.Input.WriteBuffer('SRLZ', 4);
+  finally
+    LeaveCS('SRLZ');
+  end;
+  FReceiver.WaitResult();
+  try
+    Result := FReceiver.ReadString();
+    ODS('  -> String(Len: %d)', [Length(Result)]);
+  finally
+    FReceiver.Done();
+  end;
+end;
+
+procedure TPSDToolKit.Deserialize(s: string);
+var
+  r: boolean;
+begin
+  EnterCS('DSLZ');
+  try
+    PrepareIPC();
+    FRemoteProcess.Input.WriteBuffer('DSLZ', 4);
+    WriteString(FRemoteProcess.Input, s);
+  finally
+    LeaveCS('DSLZ');
+  end;
+  FReceiver.WaitResult();
+  try
+    r := FReceiver.ReadInt32() <> 0;
+    ODS('  -> Result:%d', [Ord(r)]);
+  finally
+    FReceiver.Done();
   end;
 end;
 
