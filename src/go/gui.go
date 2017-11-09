@@ -82,10 +82,10 @@ func (g *gui) update() {
 
 		if g.img != nil {
 			fx, fy := g.img.FlipX(), g.img.FlipY()
-			if (nk.NkSelectLabel(ctx, "左右反転", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(fx)) != 0) != fx {
+			if (nk.NkSelectLabel(ctx, "⇆", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(fx)) != 0) != fx {
 				modified = g.img.SetFlipX(!fx) || modified
 			}
-			if (nk.NkSelectLabel(ctx, "上下反転", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(fy)) != 0) != fy {
+			if (nk.NkSelectLabel(ctx, "⇅", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(fy)) != 0) != fy {
 				modified = g.img.SetFlipY(!fy) || modified
 			}
 			if nk.NkButtonLabel(ctx, "送る") != 0 {
