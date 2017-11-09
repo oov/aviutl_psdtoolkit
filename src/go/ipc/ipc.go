@@ -1,8 +1,10 @@
 package ipc
 
 import (
+	"bytes"
 	"context"
 	"encoding/binary"
+	"encoding/json"
 	"fmt"
 	"hash/fnv"
 	"image"
@@ -11,7 +13,6 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/pkg/errors"
@@ -36,30 +37,27 @@ type sourceImage struct {
 }
 
 type IPC struct {
-	ShowGUI func() (uintptr, error)
+	ShowGUI           func() (uintptr, error)
+	OpenImagesChanged func()
 
 	sourceImages map[string]*sourceImage
+	fileSeqID    int
 
-	hotImages  map[StateKey]*img.Image
-	usingInGUI StateKey
+	hotImages map[StateKey]*img.Image
 
 	queue     chan func()
 	reply     chan error
 	replyDone chan struct{}
-
-	// these are accessed from another goroutine
-	hotImageList []string
-	hotImageKeys StateKeys
-	m            sync.RWMutex
 }
 
 type StateKey struct {
-	ID       int
-	FilePath string
+	ID2         int
+	AddedByUser bool
+	FilePath    string
 }
 
 func (k *StateKey) String() string {
-	return fmt.Sprintf("ID: %06d / %s", k.ID, filepath.Base(k.FilePath))
+	return fmt.Sprintf("ID: %06d / %s", k.ID2, filepath.Base(k.FilePath))
 }
 
 type StateKeys []StateKey
@@ -67,10 +65,10 @@ type StateKeys []StateKey
 func (a StateKeys) Len() int      { return len(a) }
 func (a StateKeys) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
 func (a StateKeys) Less(i, j int) bool {
-	if a[i].FilePath == a[j].FilePath {
-		return a[i].ID < a[j].ID
+	if a[i].ID2 == a[j].ID2 {
+		return filepath.Base(a[i].FilePath) < filepath.Base(a[j].FilePath)
 	}
-	return filepath.Base(a[i].FilePath) < filepath.Base(a[j].FilePath)
+	return a[i].ID2 < a[j].ID2
 }
 
 func (ipc *IPC) do(f func()) {
@@ -82,58 +80,34 @@ func (ipc *IPC) do(f func()) {
 	<-done
 }
 
-func (ipc *IPC) ImageList() ([]string, StateKeys) {
-	ipc.m.RLock()
-	il := ipc.hotImageList
-	k := ipc.hotImageKeys
-	ipc.m.RUnlock()
-	return il, k
-}
-
-func (ipc *IPC) Image(id int, filePath string) (*img.Image, int, StateKey, error) {
+func (ipc *IPC) Image(id int, filePath string) (*img.Image, error) {
 	var r *img.Image
-	idx := -1
 	var err error
 	ipc.do(func() {
-		var ro *img.Image
-		ro, err = ipc.load(id, filePath)
-		if err == nil {
-			r = ro.Clone()
-			r.PSD = ro.PSD.Clone()
-			r.Layers = img.NewLayerManager(r.PSD)
-			r.Scale = 1
-			ipc.usingInGUI = StateKey{id, filePath}
-
-			_, ks := ipc.ImageList()
-			for i, k := range ks {
-				if k.FilePath == filePath && k.ID == id {
-					idx = i
-					break
-				}
+		if id == -1 {
+			r, err = ipc.load(ipc.fileSeqID, true, filePath)
+			if err == nil {
+				ipc.fileSeqID++
 			}
-
+		} else {
+			r, err = ipc.load(id, true, filePath)
 		}
 	})
 	if err != nil {
-		return nil, 0, StateKey{}, err
+		return nil, err
 	}
-	return r, idx, StateKey{ID: id, FilePath: filePath}, nil
+	return r, nil
 }
 
-func (ipc *IPC) updateImageList() {
+func (ipc *IPC) BuildImageList() StateKeys {
 	var keys StateKeys
 	for k := range ipc.hotImages {
-		keys = append(keys, k)
+		if k.AddedByUser {
+			keys = append(keys, k)
+		}
 	}
 	sort.Sort(keys)
-	s := make([]string, len(keys))
-	for i, key := range keys {
-		s[i] = key.String()
-	}
-	ipc.m.Lock()
-	ipc.hotImageList = s
-	ipc.hotImageKeys = keys
-	ipc.m.Unlock()
+	return keys
 }
 
 func (ipc *IPC) getSourceImage(filePath string) (*sourceImage, error) {
@@ -198,8 +172,8 @@ func (ipc *IPC) getSourceImage(filePath string) (*sourceImage, error) {
 	return srcImage, nil
 }
 
-func (ipc *IPC) load(id int, filePath string) (*img.Image, error) {
-	if himg, ok := ipc.hotImages[StateKey{id, filePath}]; ok {
+func (ipc *IPC) load(id int, addedByUser bool, filePath string) (*img.Image, error) {
+	if himg, ok := ipc.hotImages[StateKey{id, addedByUser, filePath}]; ok {
 		n := time.Now()
 		ipc.sourceImages[filePath].LastAccess = n
 		himg.LastAccess = n
@@ -225,13 +199,12 @@ func (ipc *IPC) load(id int, filePath string) (*img.Image, error) {
 
 		PFV: r.PFV,
 	}
-	ipc.hotImages[StateKey{id, filePath}] = himg
-	ipc.updateImageList()
+	ipc.hotImages[StateKey{id, addedByUser, filePath}] = himg
 	return himg, nil
 }
 
-func (ipc *IPC) draw(id int, filePath string, width, height int) ([]byte, error) {
-	himg, err := ipc.load(id, filePath)
+func (ipc *IPC) draw(id int, addedByUser bool, filePath string, width, height int) ([]byte, error) {
+	himg, err := ipc.load(id, addedByUser, filePath)
 	if err != nil {
 		return nil, errors.Wrap(err, "ipc: could not load")
 	}
@@ -247,8 +220,8 @@ func (ipc *IPC) draw(id int, filePath string, width, height int) ([]byte, error)
 	return ret.Pix, nil
 }
 
-func (ipc *IPC) getLayerNames(id int, filePath string) (string, error) {
-	img, err := ipc.load(id, filePath)
+func (ipc *IPC) getLayerNames(id int, addedByUser bool, filePath string) (string, error) {
+	img, err := ipc.load(id, addedByUser, filePath)
 	if err != nil {
 		return "", errors.Wrap(err, "ipc: could not load")
 	}
@@ -259,8 +232,8 @@ func (ipc *IPC) getLayerNames(id int, filePath string) (string, error) {
 	return strings.Join(s, "\n"), nil
 }
 
-func (ipc *IPC) setProps(id int, filePath string, layer *string, scale *float32, offsetX, offsetY *int) (bool, int, int, error) {
-	himg, err := ipc.load(id, filePath)
+func (ipc *IPC) setProps(id int, addedByUser bool, filePath string, layer *string, scale *float32, offsetX, offsetY *int) (bool, int, int, error) {
+	himg, err := ipc.load(id, addedByUser, filePath)
 	if err != nil {
 		return false, 0, 0, errors.Wrap(err, "ipc: could not load")
 	}
@@ -314,6 +287,61 @@ func (ipc *IPC) showGUI() (uintptr, error) {
 		return 0, errors.Wrap(err, "ipc: cannot show the gui")
 	}
 	return h, nil
+}
+
+type serializedImage struct {
+	FilePath string
+	State    string
+}
+
+type serializeData struct {
+	Images []serializedImage
+}
+
+func (ipc *IPC) serialize() (string, error) {
+	var keys StateKeys
+	for k := range ipc.hotImages {
+		if k.AddedByUser {
+			keys = append(keys, k)
+		}
+	}
+	sort.Sort(keys)
+	// TODO: layer open/close state, fav open/close state, faview selected item state
+	var srz serializeData
+	for _, k := range keys {
+		srz.Images = append(srz.Images, serializedImage{
+			FilePath: k.FilePath,
+			State:    ipc.hotImages[k].Serialize(),
+		})
+	}
+	b := bytes.NewBufferString("")
+	if err := json.NewEncoder(b).Encode(srz); err != nil {
+		return "", err
+	}
+	return b.String(), nil
+}
+
+func (ipc *IPC) deserialize(s string) error {
+	// TODO: close editing images
+	if s == "" {
+		return nil
+	}
+	var srz serializeData
+	if err := json.NewDecoder(bytes.NewReader([]byte(s))).Decode(&srz); err != nil {
+		return err
+	}
+	for index, simg := range srz.Images {
+		img, err := ipc.load(index, true, simg.FilePath)
+		if err != nil {
+			return err
+		}
+		if _, err = img.Deserialize(simg.State); err != nil {
+			return err
+		}
+	}
+	ipc.fileSeqID = len(srz.Images)
+	ipc.OpenImagesChanged()
+	return nil
 }
 
 func (ipc *IPC) SendEditingImageState(filePath, state string) error {
@@ -416,7 +444,7 @@ func (ipc *IPC) dispatch(cmd string) error {
 			return err
 		}
 		ods.ODS("  Width: %d / Height: %d", width, height)
-		b, err := ipc.draw(id, filePath, width, height)
+		b, err := ipc.draw(id, false, filePath, width, height)
 		if err != nil {
 			return err
 		}
@@ -430,7 +458,7 @@ func (ipc *IPC) dispatch(cmd string) error {
 		if err != nil {
 			return err
 		}
-		s, err := ipc.getLayerNames(id, filePath)
+		s, err := ipc.getLayerNames(id, false, filePath)
 		if err != nil {
 			return err
 		}
@@ -493,7 +521,7 @@ func (ipc *IPC) dispatch(cmd string) error {
 				ods.ODS("  OffsetY: %d", i)
 			}
 		}
-		modified, width, height, err := ipc.setProps(id, filePath, layer, scale, offsetX, offsetY)
+		modified, width, height, err := ipc.setProps(id, false, filePath, layer, scale, offsetX, offsetY)
 		if err != nil {
 			return err
 		}
@@ -518,6 +546,30 @@ func (ipc *IPC) dispatch(cmd string) error {
 			return err
 		}
 		return writeUint64(uint64(h))
+
+	case "SRLZ":
+		s, err := ipc.serialize()
+		if err != nil {
+			return err
+		}
+		if err = writeUint32(0x80000000); err != nil {
+			return err
+		}
+		return writeString(s)
+
+	case "DSLZ":
+		s, err := readString()
+		if err != nil {
+			return err
+		}
+		err = ipc.deserialize(s)
+		if err != nil {
+			return err
+		}
+		if err = writeUint32(0x80000000); err != nil {
+			return err
+		}
+		return writeBool(true)
 	}
 	return errors.New("unknown command")
 }
@@ -526,12 +578,11 @@ func (ipc *IPC) gc() {
 	const deadline = 10 * time.Minute
 	now := time.Now()
 
-	if using, ok := ipc.hotImages[ipc.usingInGUI]; ok {
-		using.LastAccess = now
-	}
-
 	used := make(map[string]struct{})
 	for k, v := range ipc.hotImages {
+		if k.AddedByUser {
+			continue
+		}
 		if now.Sub(v.LastAccess) > deadline {
 			delete(ipc.hotImages, k)
 		} else {
@@ -546,7 +597,6 @@ func (ipc *IPC) gc() {
 			delete(ipc.sourceImages, k)
 		}
 	}
-	ipc.updateImageList()
 }
 
 func (ipc *IPC) Init() {

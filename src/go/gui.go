@@ -2,7 +2,6 @@ package main
 
 import (
 	"math"
-	"strings"
 	"time"
 
 	"github.com/golang-ui/nuklear/nk"
@@ -55,29 +54,13 @@ func (g *gui) update() {
 
 	modified := false
 	rootChanged := false
-	imageList, keys := g.IPC.ImageList()
-	g.ImageList = imageList
 	if nk.NkBegin(ctx, "TopPane", nk.NkRect(0, 0, float32(width), topPaneHeight), 0) != 0 {
 		nk.NkLayoutRowDynamic(ctx, 28, 4)
-		n0 := g.ImageListSelectedIndex
-		if n0 != -1 && (len(g.ImageList) <= n0 || g.ImageList[n0] != g.ImageListSelected) {
-			n0 = -1
-			for i, v := range g.ImageList {
-				if g.ImageListSelected == v {
-					n0 = i
-					break
-				}
-			}
-		}
-		n1 := int(nk.NkComboString(ctx, "<Select>\x00"+strings.Join(g.ImageList, "\x00"), int32(n0+1), int32(len(g.ImageList)+1), 28, nk.NkVec2(600, float32(height)))) - 1
-		if g.ImageListSelectedIndex != n1 {
-			g.ImageListSelectedIndex = n1
+		n0 := g.ImageList.SelectedIndex
+		n1 := int(nk.NkComboString(ctx, g.ImageList.List(), int32(n0), int32(g.ImageList.Len()), 28, nk.NkVec2(600, float32(height))))
+		if n0 != n1 {
 			rootChanged = true
-			if n1 != -1 {
-				g.ImageListSelected = g.ImageList[n1]
-			} else {
-				g.ImageListSelected = ""
-			}
+			g.ImageList.SelectedIndex = n1
 		}
 
 		if g.img != nil {
@@ -99,20 +82,18 @@ func (g *gui) update() {
 
 	modifiedLayer := g.LayerView.Render(ctx, nk.NkRect(0, topPaneHeight, layerPaneWidth, float32(height-topPaneHeight)), g.img)
 	if rootChanged {
-		if g.ImageListSelectedIndex != -1 {
-			key := keys[g.ImageListSelectedIndex]
-			img, idx, _, err := g.IPC.Image(key.ID, key.FilePath)
-			if err != nil {
-				ods.ODS("error: %v", err)
-			} else {
-				g.ImageListSelectedIndex = idx
-				g.ImageListSelected = key.String()
-				g.intializeView(img)
-			}
-		} else {
+		if g.ImageList.Empty() {
 			g.img = nil
 			g.renderedImage = nil
 			g.MainView.Clear()
+		} else {
+			key := g.ImageList.SelectedKey()
+			img, err := g.IPC.Image(key.ID2, key.FilePath)
+			if err != nil {
+				ods.ODS("error: %v", err)
+			} else {
+				g.intializeView(img)
+			}
 		}
 	} else if modified || modifiedLayer {
 		g.img.Modified = true

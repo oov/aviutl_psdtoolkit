@@ -15,6 +15,7 @@ import (
 
 	"github.com/oov/aviutl_psdtoolkit/src/go/assets"
 	"github.com/oov/aviutl_psdtoolkit/src/go/gc"
+	"github.com/oov/aviutl_psdtoolkit/src/go/gui/imagelist"
 	"github.com/oov/aviutl_psdtoolkit/src/go/img"
 	"github.com/oov/aviutl_psdtoolkit/src/go/ipc"
 	"github.com/oov/aviutl_psdtoolkit/src/go/layerview"
@@ -65,9 +66,7 @@ type gui struct {
 	zoom     float64
 	zooming  bool
 
-	ImageList              []string
-	ImageListSelected      string
-	ImageListSelectedIndex int
+	ImageList imagelist.ImageList
 
 	LayerView layerview.LayerView
 	MainView  mainview.MainView
@@ -107,8 +106,6 @@ func main() {
 		minZoom:  -5,
 		maxZoom:  0,
 		stepZoom: 0.001,
-
-		ImageListSelectedIndex: -1,
 	}
 	g.IPC.Init()
 	g.IPC.ShowGUI = func() (uintptr, error) {
@@ -116,6 +113,11 @@ func main() {
 			g.Window.Show()
 		})
 		return g.Window.NativeWindow(), nil
+	}
+	g.IPC.OpenImagesChanged = func() {
+		do(func() {
+			g.ImageList.UpdateKeys(g.IPC.BuildImageList())
+		})
 	}
 	g.LayerView.CopyToClipboard = func(sliderName, name, value string) {
 		if err := g.IPC.CopyFaviewValue(*g.img.FilePath, sliderName, name, value); err != nil {
@@ -141,13 +143,13 @@ func main() {
 	dropCB := func(w *window, filenames []string) {
 		gc.EnterCS()
 		go do(gc.LeaveCS)
-		img, idx, stateKey, err := g.IPC.Image(0, extractPSDAndPFV(filenames))
+		img, err := g.IPC.Image(-1, extractPSDAndPFV(filenames))
 		if err != nil {
 			ods.ODS("error: %v", err)
 			return
 		}
-		g.ImageListSelectedIndex = idx
-		g.ImageListSelected = stateKey.String()
+		g.ImageList.UpdateKeys(g.IPC.BuildImageList())
+		g.ImageList.SelectedIndex = g.ImageList.Len() - 1
 		g.intializeView(img)
 	}
 	g.Window.SetDropCallback(dropCB)
