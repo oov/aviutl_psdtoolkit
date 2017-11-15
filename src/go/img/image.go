@@ -129,8 +129,12 @@ func (img *Image) Render(ctx context.Context) (*image.RGBA, error) {
 	return rgba, nil
 }
 
-func (img *Image) Serialize() string {
-	return "L." + itoa(int(img.Flip)) + " " + img.Layers.Serialize()
+func (img *Image) Serialize() (string, error) {
+	s, err := img.Layers.Serialize()
+	if err != nil {
+		return "", errors.Wrap(err, "Image.Serialize: failed to serialize")
+	}
+	return "L." + itoa(int(img.Flip)) + " " + s, nil
 }
 
 func (img *Image) Deserialize(s string) (bool, error) {
@@ -144,4 +148,48 @@ func (img *Image) Deserialize(s string) (bool, error) {
 	}
 	img.Flip = f
 	return m, nil
+}
+
+// TODO: faview selected item state
+type ProjectState struct {
+	Version  int
+	FilePath string
+	Flip     Flip
+	Layer    string
+	Folder   string
+}
+
+func (img *Image) SerializeProject() (*ProjectState, error) {
+	layer, err := img.Layers.Serialize()
+	if err != nil {
+		return nil, errors.Wrap(err, "img: failed to serialize layer state")
+	}
+	folder, err := img.Layers.SerializeFolderState()
+	if err != nil {
+		return nil, errors.Wrap(err, "img: failed to serialize folder state")
+	}
+	return &ProjectState{
+		Version:  1,
+		FilePath: *img.FilePath,
+		Flip:     img.Flip,
+		Layer:    layer,
+		Folder:   folder,
+	}, nil
+}
+
+func (img *Image) DeserializeProject(state *ProjectState) error {
+	var froot *FaviewNode
+	if img.PFV != nil {
+		froot = &img.PFV.FaviewRoot
+	}
+	_, _, err := img.Layers.Deserialize(state.Layer, state.Flip, froot)
+	if err != nil {
+		return errors.Wrap(err, "img: failed to deserialize layer state")
+	}
+	err = img.Layers.DeserializeFolderState(state.Folder)
+	if err != nil {
+		return errors.Wrap(err, "img: failed to deserialize folder state")
+	}
+	img.Flip = state.Flip
+	return nil
 }

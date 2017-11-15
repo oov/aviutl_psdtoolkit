@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/golang-ui/nuklear/nk"
+	"github.com/pkg/errors"
 
 	"github.com/oov/aviutl_psdtoolkit/src/go/img"
 	"github.com/oov/aviutl_psdtoolkit/src/go/nkhelper"
@@ -58,7 +59,9 @@ func (lv *LayerView) UpdateThumbnails(tree *composite.Tree, size int, doMain fun
 		s := time.Now().UnixNano()
 		rgba, ptMap, err := tree.ThumbnailSheet(context.Background(), size)
 		if err != nil {
-			ods.ODS("thumbnail: %v", err)
+			doMain(func() {
+				lv.reportError(errors.Wrap(err, "layerview: failed to create thumbnail sheet"))
+			})
 			return
 		}
 		nrgba := rgbaToNRGBA(rgba)
@@ -354,8 +357,7 @@ func (lv *LayerView) layoutFavorites(ctx *nk.Context, img *img.Image, indent flo
 	)
 	nk.NkLayoutSpaceBegin(ctx, nk.Static, 28, 4)
 	if favoriteItem(ctx, indent, lv.MainFontHandle, lv.SymbolFontHandle, n) {
-		img.Deserialize(n.State())
-		modified = true
+		modified = lv.selectFavoriteNode(img, n) || modified
 	}
 	nk.NkLayoutSpaceEnd(ctx)
 
@@ -365,17 +367,6 @@ func (lv *LayerView) layoutFavorites(ctx *nk.Context, img *img.Image, indent flo
 		}
 	}
 	return modified
-}
-
-func applyFaview(img *img.Image, n *img.FaviewNode, newSelectedIndex int) bool {
-	n.SelectedIndex = newSelectedIndex
-	n.LastModified = time.Now()
-	m, err := img.Deserialize(n.SelectedState())
-	if err != nil {
-		ods.ODS("cannot apply serialized data: %v", err)
-		return false
-	}
-	return m
 }
 
 func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float32, n *img.FaviewNode) bool {
@@ -407,7 +398,7 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 
 		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, buttonSize, bounds.H()))
 		if nk.NkButtonLabel(ctx, symbolLeftArrow) != 0 {
-			modified = applyFaview(img, n, (len(n.Items)+n.SelectedIndex-1)%len(n.Items)) || modified
+			modified = lv.selectFaviewNode(img, n, (len(n.Items)+n.SelectedIndex-1)%len(n.Items)) || modified
 		}
 		left += buttonSize
 
@@ -418,7 +409,7 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 
 		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, bounds.W()-left-buttonSize*3-marginSize, bounds.H()))
 		if idx := int(nk.NkComboString(ctx, n.ItemNameList, int32(n.SelectedIndex), int32(len(n.Items)), 28, nk.NkVec2(bounds.W(), 400))); idx != n.SelectedIndex {
-			modified = applyFaview(img, n, idx) || modified
+			modified = lv.selectFaviewNode(img, n, idx) || modified
 		}
 		left += bounds.W() - left - buttonSize*3 - marginSize
 
@@ -429,7 +420,7 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 
 		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, buttonSize, bounds.H()))
 		if nk.NkButtonLabel(ctx, symbolRightArrow) != 0 {
-			modified = applyFaview(img, n, (n.SelectedIndex+1)%len(n.Items)) || modified
+			modified = lv.selectFaviewNode(img, n, (n.SelectedIndex+1)%len(n.Items)) || modified
 		}
 		left += buttonSize
 
@@ -439,13 +430,13 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 
 		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, buttonSize, bounds.H()))
 		if nk.NkButtonLabel(ctx, symbolClipboard) != 0 {
-			lv.CopyToClipboard(n.FullName(), n.SelectedName(), n.SelectedState())
+			lv.copyFaviewNode(n)
 		}
 		left += buttonSize
 
 		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, buttonSize, bounds.H()))
 		if nk.NkButtonLabel(ctx, symbolExport) != 0 {
-			lv.ExportFaviewSlider(n.FullName(), n.AllName(), n.AllState())
+			lv.exportFaviewNode(n)
 		}
 		left += buttonSize
 
@@ -454,7 +445,7 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 		left = indent + marginSize
 		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, bounds.W()-left, bounds.H()))
 		if idx := int(nk.NkSlideInt(ctx, 0, int32(n.SelectedIndex), int32(len(n.Items)-1), 1)); idx != n.SelectedIndex {
-			modified = applyFaview(img, n, idx) || modified
+			modified = lv.selectFaviewNode(img, n, idx) || modified
 		}
 		nk.NkLayoutSpaceEnd(ctx)
 	}
@@ -486,4 +477,57 @@ func rgbaToNRGBA(rgba *image.RGBA) *image.NRGBA {
 		}
 	}
 	return nrgba
+}
+
+func (lv *LayerView) selectFavoriteNode(img *img.Image, n *img.Node) bool {
+	state, err := n.State()
+	if err != nil {
+		lv.reportError(errors.Wrap(err, "layerview: cannot serialize"))
+		return false
+	}
+	m, err := img.Deserialize(state)
+	if err != nil {
+		lv.reportError(errors.Wrap(err, "layerview: cannot deserialize"))
+		return false
+	}
+	return m
+}
+
+func (lv *LayerView) selectFaviewNode(img *img.Image, n *img.FaviewNode, newSelectedIndex int) bool {
+	state, err := n.SelectedState()
+	if err != nil {
+		lv.reportError(errors.Wrap(err, "layerview: cannot serialize"))
+		return false
+	}
+	m, err := img.Deserialize(state)
+	if err != nil {
+		lv.reportError(errors.Wrap(err, "layerview: cannot deserialize"))
+		return false
+	}
+	n.SelectedIndex = newSelectedIndex
+	n.LastModified = time.Now()
+	return m
+}
+
+func (lv *LayerView) copyFaviewNode(n *img.FaviewNode) {
+	state, err := n.SelectedState()
+	if err != nil {
+		lv.reportError(errors.Wrap(err, "layerview: cannot copy"))
+		return
+	}
+	lv.CopyToClipboard(n.FullName(), n.SelectedName(), state)
+}
+
+func (lv *LayerView) exportFaviewNode(n *img.FaviewNode) {
+	state, err := n.AllState()
+	if err != nil {
+		lv.reportError(errors.Wrap(err, "layerview: cannot export"))
+		return
+	}
+	lv.ExportFaviewSlider(n.FullName(), n.AllName(), state)
+}
+
+func (lv *LayerView) reportError(err error) {
+	//TODO: improve error handling
+	ods.ODS("error: %v", err)
 }

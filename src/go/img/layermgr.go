@@ -1,7 +1,6 @@
 package img
 
 import (
-	"encoding/base64"
 	"encoding/binary"
 	"strconv"
 	"strings"
@@ -515,12 +514,9 @@ func (m *LayerManager) Deserialize(s string, flip Flip, faviewRoot *FaviewNode) 
 				newFlip = Flip(fl)
 			}
 		case "V.":
-			buf, err := base64.RawURLEncoding.DecodeString(line[2:])
+			buf, err := deserializeBits(line[2:])
 			if err != nil {
-				return false, FlipNone, err
-			}
-			if buf, err = decodePackBits(buf); err != nil {
-				return false, FlipNone, err
+				return false, FlipNone, errors.Wrap(err, "img: cannot deserialize")
 			}
 			if len(n) != int(binary.LittleEndian.Uint16(buf)) {
 				return false, FlipNone, errors.New("img: number of layers mismatch")
@@ -547,14 +543,11 @@ func (m *LayerManager) Deserialize(s string, flip Flip, faviewRoot *FaviewNode) 
 				}
 			}
 		case "F.":
-			buf, err := base64.RawURLEncoding.DecodeString(line[2:])
+			buf, err := deserializeBits(line[2:])
 			if err != nil {
-				return false, FlipNone, err
+				return false, FlipNone, errors.Wrap(err, "img: cannot deserialize")
 			}
-			if buf, err = decodePackBits(buf); err != nil {
-				return false, FlipNone, err
-			}
-			if len(n) != int(binary.LittleEndian.Uint16(buf)) {
+			if len(n)*2 != int(binary.LittleEndian.Uint16(buf)) {
 				return false, FlipNone, errors.New("img: number of layers mismatch")
 			}
 			i := 0
@@ -631,10 +624,41 @@ func (m *LayerManager) Deserialize(s string, flip Flip, faviewRoot *FaviewNode) 
 	return modified, newFlip, nil
 }
 
-func (m *LayerManager) Serialize() string {
+func (m *LayerManager) Serialize() (string, error) {
 	v := make([]bool, len(m.Flat))
 	for i, seqID := range m.Flat {
 		v[i] = m.Mapped[seqID].Visible
 	}
-	return serialize(nil, v)
+	s, err := serializeBits(v)
+	if err != nil {
+		return "", errors.Wrap(err, "LayerManager.Serialize: failed to serialize")
+	}
+	return "V." + s, nil
+}
+
+func (m *LayerManager) SerializeFolderState() (string, error) {
+	v := make([]bool, len(m.Flat))
+	for i, seqID := range m.Flat {
+		l := m.Mapped[seqID]
+		v[i] = l.Folder && l.FolderOpen
+	}
+	s, err := serializeBits(v)
+	if err != nil {
+		return "", errors.Wrap(err, "LayerManager.SerializeFolderState: failed to serialize")
+	}
+	return s, err
+}
+
+func (m *LayerManager) DeserializeFolderState(state string) error {
+	b, err := deserializeBitsAsBool(state)
+	if err != nil {
+		return err
+	}
+	for i, seqID := range m.Flat {
+		l := m.Mapped[seqID]
+		if l.Folder {
+			l.FolderOpen = b[i]
+		}
+	}
+	return nil
 }

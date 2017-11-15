@@ -43,9 +43,20 @@ func (n *Node) RawState() (filter, visibility []bool) {
 	return nil, n.Setting
 }
 
-func (n *Node) State() string {
+func (n *Node) State() (string, error) {
 	f, v := n.RawState()
-	return serialize(f, v)
+	bits := make([]bool, len(v)*2)
+	for i, pass := range f {
+		if pass {
+			bits[i*2] = true
+			bits[i*2+1] = v[i]
+		}
+	}
+	s, err := serializeBits(bits)
+	if err != nil {
+		return "", errors.Wrap(err, "pfv.State: cannot serialize")
+	}
+	return "F." + s, nil
 }
 
 func NewPFV(r io.Reader, mgr *LayerManager) (*PFV, error) {
@@ -337,7 +348,7 @@ func enumItemNode(n *FaviewNode, a *[]*FaviewNode) {
 	}
 }
 
-func (fn *FaviewNode) SelectedState() string {
+func (fn *FaviewNode) SelectedState() (string, error) {
 	return fn.Items[fn.SelectedIndex].State()
 }
 
@@ -345,12 +356,15 @@ func (fn *FaviewNode) SelectedName() string {
 	return fn.Items[fn.SelectedIndex].Name
 }
 
-func (fn *FaviewNode) AllState() []string {
+func (fn *FaviewNode) AllState() ([]string, error) {
 	r := make([]string, len(fn.Items))
+	var err error
 	for i := range fn.Items {
-		r[i] = fn.Items[i].State()
+		if r[i], err = fn.Items[i].State(); err != nil {
+			return nil, err
+		}
 	}
-	return r
+	return r, nil
 }
 
 func (fn *FaviewNode) AllName() []string {

@@ -13,11 +13,7 @@ type ImageList struct {
 }
 
 func (skl *ImageList) UpdateKeys(keys ipc.StateKeys) {
-	var oldKey ipc.StateKey
-	if !skl.Empty() {
-		oldKey = skl.keys[skl.SelectedIndex]
-	}
-
+	oldKey := skl.SelectedKey()
 	skl.keys = keys
 	if skl.Empty() {
 		skl.s = "<NO ITEMS>\x00"
@@ -55,9 +51,13 @@ func (skl *ImageList) Empty() bool {
 	return len(skl.keys) == 0
 }
 
-func (skl *ImageList) SelectedKey() ipc.StateKey {
-	if skl.Empty() {
+func (skl *ImageList) Key(index int) ipc.StateKey {
+	if index < 0 || index >= len(skl.keys) {
 		return ipc.StateKey{}
 	}
-	return skl.keys[skl.SelectedIndex]
+	return skl.keys[index]
+}
+
+func (skl *ImageList) SelectedKey() ipc.StateKey {
+	return skl.Key(skl.SelectedIndex)
 }

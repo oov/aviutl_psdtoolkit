@@ -143,14 +143,13 @@ func main() {
 	dropCB := func(w *window, filenames []string) {
 		gc.EnterCS()
 		go do(gc.LeaveCS)
-		img, err := g.IPC.Image(-1, extractPSDAndPFV(filenames))
-		if err != nil {
-			ods.ODS("error: %v", err)
+		path := extractPSDAndPFV(filenames)
+		if _, err := g.IPC.Image(-1, path); err != nil {
+			g.reportError(errors.Wrapf(err, "main: failed to load image %q", path))
 			return
 		}
 		g.ImageList.UpdateKeys(g.IPC.BuildImageList())
-		g.ImageList.SelectedIndex = g.ImageList.Len() - 1
-		g.intializeView(img)
+		g.selectImage(g.ImageList.Len() - 1)
 	}
 	g.Window.SetDropCallback(dropCB)
 

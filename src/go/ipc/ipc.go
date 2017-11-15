@@ -157,7 +157,11 @@ func (ipc *IPC) getSourceImage(filePath string) (*sourceImage, error) {
 	}
 
 	lm.Normalize(img.FlipNone)
-	state := lm.Serialize()
+	state, err := lm.Serialize()
+	if err != nil {
+		return nil, errors.Wrap(err, "ipc: cannot serialize")
+	}
+
 	srcImage := &sourceImage{
 		FilePath:   &filePath,
 		FileHash:   hash.Sum32(),
@@ -289,13 +293,8 @@ func (ipc *IPC) showGUI() (uintptr, error) {
 	return h, nil
 }
 
-type serializedImage struct {
-	FilePath string
-	State    string
-}
-
 type serializeData struct {
-	Images []serializedImage
+	Images []*img.ProjectState
 }
 
 func (ipc *IPC) serialize() (string, error) {
@@ -306,13 +305,14 @@ func (ipc *IPC) serialize() (string, error) {
 		}
 	}
 	sort.Sort(keys)
-	// TODO: layer open/close state, fav open/close state, faview selected item state
 	var srz serializeData
 	for _, k := range keys {
-		srz.Images = append(srz.Images, serializedImage{
-			FilePath: k.FilePath,
-			State:    ipc.hotImages[k].Serialize(),
-		})
+		himg := ipc.hotImages[k]
+		ps, err := himg.SerializeProject()
+		if err != nil {
+			return "", errors.Wrapf(err, "ipc: cannot serialize %q", k.FilePath)
+		}
+		srz.Images = append(srz.Images, ps)
 	}
 	b := bytes.NewBufferString("")
 	if err := json.NewEncoder(b).Encode(srz); err != nil {
@@ -330,12 +330,12 @@ func (ipc *IPC) deserialize(s string) error {
 	if err := json.NewDecoder(bytes.NewReader([]byte(s))).Decode(&srz); err != nil {
 		return err
 	}
-	for index, simg := range srz.Images {
-		img, err := ipc.load(index, true, simg.FilePath)
+	for index, ps := range srz.Images {
+		img, err := ipc.load(index, true, ps.FilePath)
 		if err != nil {
 			return err
 		}
-		if _, err = img.Deserialize(simg.State); err != nil {
+		if err = img.DeserializeProject(ps); err != nil {
 			return err
 		}
 	}
