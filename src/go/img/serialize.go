@@ -5,6 +5,8 @@ import (
 	"encoding/binary"
 
 	"github.com/pkg/errors"
+
+	"github.com/oov/aviutl_psdtoolkit/src/go/img/internal/packbits"
 )
 
 // serializeBits maps the bool value of the array to each bit and compresses the result with PackBits.
@@ -30,7 +32,7 @@ func serializeBits(bits []bool) (string, error) {
 	if d < len(buf) {
 		buf[d] = v
 	}
-	return base64.RawURLEncoding.EncodeToString(encodePackBits(buf)), nil
+	return base64.RawURLEncoding.EncodeToString(packbits.Encode(buf)), nil
 }
 
 func deserializeBits(s string) ([]byte, error) {
@@ -38,7 +40,7 @@ func deserializeBits(s string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return decodePackBits(buf)
+	return packbits.Decode(buf)
 }
 
 func deserializeBitsAsBool(s string) ([]bool, error) {

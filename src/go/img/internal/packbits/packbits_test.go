@@ -1,4 +1,4 @@
-package img
+package packbits
 
 import (
 	"bytes"
@@ -32,7 +32,7 @@ var packBitsTestData = [][2][]byte{
 
 func TestEncodePackBits(t *testing.T) {
 	for _, testData := range packBitsTestData {
-		got := encodePackBits(testData[0])
+		got := Encode(testData[0])
 		if !bytes.Equal(got, testData[1]) {
 			t.Errorf("encodePackBits(%q) == %q, want %q", testData[0], got, testData[1])
 		}
@@ -41,7 +41,7 @@ func TestEncodePackBits(t *testing.T) {
 
 func TestDecodePackBits(t *testing.T) {
 	for _, testData := range packBitsTestData {
-		got, err := decodePackBits(testData[1])
+		got, err := Decode(testData[1])
 		if err != nil {
 			t.Fatal(err)
 		}

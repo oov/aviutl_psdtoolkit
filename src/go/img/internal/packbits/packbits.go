@@ -1,8 +1,8 @@
-package img
+package packbits
 
 import "errors"
 
-func decodePackBits(b []byte) ([]byte, error) {
+func Decode(b []byte) ([]byte, error) {
 	lenb := len(b)
 	r := make([]byte, 0, lenb)
 	i := 0
@@ -32,7 +32,7 @@ func decodePackBits(b []byte) ([]byte, error) {
 	return r, nil
 }
 
-func encodePackBits(b []byte) []byte {
+func Encode(b []byte) []byte {
 	switch len(b) {
 	case 0:
 		return []byte{}
