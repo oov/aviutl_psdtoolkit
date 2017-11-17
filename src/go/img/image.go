@@ -21,10 +21,15 @@ const (
 	FlipXY
 )
 
+type Toucher interface {
+	Touch()
+	LastAccess() time.Time
+}
+
 type Image struct {
-	FilePath   *string
-	FileHash   uint32
-	LastAccess time.Time
+	FilePath *string
+	FileHash uint32
+	Toucher  Toucher
 
 	PSD    *composite.Tree
 	image  *image.RGBA
@@ -40,6 +45,14 @@ type Image struct {
 	OffsetY int
 
 	PFV *PFV
+}
+
+func (img *Image) Touch() {
+	img.Toucher.Touch()
+}
+
+func (img *Image) LastAccess() time.Time {
+	return img.Toucher.LastAccess()
 }
 
 func (img *Image) Clone() *Image {

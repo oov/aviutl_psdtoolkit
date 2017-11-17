@@ -1,74 +1,36 @@
 package ipc
 
 import (
-	"bytes"
 	"context"
 	"encoding/binary"
-	"encoding/json"
 	"fmt"
-	"hash/fnv"
 	"image"
 	"io"
 	"os"
-	"path/filepath"
-	"sort"
 	"strings"
 	"time"
 
 	"github.com/pkg/errors"
 
 	"github.com/oov/aviutl_psdtoolkit/src/go/img"
+	"github.com/oov/aviutl_psdtoolkit/src/go/imgmgr/editing"
+	"github.com/oov/aviutl_psdtoolkit/src/go/imgmgr/source"
+	"github.com/oov/aviutl_psdtoolkit/src/go/imgmgr/temporary"
 	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
 	"github.com/oov/psd/blend"
-	"github.com/oov/psd/composite"
 )
 
-type sourceImage struct {
-	FilePath   *string
-	FileHash   uint32
-	LastAccess time.Time
-
-	PSD *composite.Tree
-	PFV *img.PFV
-
-	InitialLayerState *string
-	ForceChecked      map[int]struct{} // map[SeqID]
-	Group             map[int][]int    // map[SeqID][]SeqID
-}
-
 type IPC struct {
-	ShowGUI           func() (uintptr, error)
-	OpenImagesChanged func()
+	ShowGUI      func() (uintptr, error)
+	Deserialized func()
 
-	sourceImages map[string]*sourceImage
-	fileSeqID    int
-
-	hotImages map[StateKey]*img.Image
+	ImageSrcs    source.Sources
+	EditingImg   editing.Editing
+	TemporaryImg temporary.Temporary
 
 	queue     chan func()
 	reply     chan error
 	replyDone chan struct{}
-}
-
-type StateKey struct {
-	ID2         int
-	AddedByUser bool
-	FilePath    string
-}
-
-func (k *StateKey) String() string {
-	return fmt.Sprintf("ID: %06d / %s", k.ID2, filepath.Base(k.FilePath))
-}
-
-type StateKeys []StateKey
-
-func (a StateKeys) Len() int      { return len(a) }
-func (a StateKeys) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
-func (a StateKeys) Less(i, j int) bool {
-	if a[i].ID2 == a[j].ID2 {
-		return filepath.Base(a[i].FilePath) < filepath.Base(a[j].FilePath)
-	}
-	return a[i].ID2 < a[j].ID2
 }
 
 func (ipc *IPC) do(f func()) {
@@ -80,152 +42,29 @@ func (ipc *IPC) do(f func()) {
 	<-done
 }
 
-func (ipc *IPC) Image(id int, filePath string) (*img.Image, error) {
-	var r *img.Image
-	var err error
-	ipc.do(func() {
-		if id == -1 {
-			r, err = ipc.load(ipc.fileSeqID, true, filePath)
-			if err == nil {
-				ipc.fileSeqID++
-			}
-		} else {
-			r, err = ipc.load(id, true, filePath)
-		}
-	})
-	if err != nil {
-		return nil, err
-	}
-	return r, nil
+func (ipc *IPC) load(id int, filePath string) (*img.Image, error) {
+	return ipc.TemporaryImg.Load(id, filePath)
 }
 
-func (ipc *IPC) BuildImageList() StateKeys {
-	var keys StateKeys
-	for k := range ipc.hotImages {
-		if k.AddedByUser {
-			keys = append(keys, k)
-		}
-	}
-	sort.Sort(keys)
-	return keys
-}
-
-func (ipc *IPC) getSourceImage(filePath string) (*sourceImage, error) {
-	if r, ok := ipc.sourceImages[filePath]; ok {
-		r.LastAccess = time.Now()
-		return r, nil
-	}
-
-	files := strings.SplitN(filePath, "|", 2)
-	ods.ODS("psd loading: %s", files[0])
-	s := time.Now().UnixNano()
-	f, err := os.Open(files[0])
-	if err != nil {
-		return nil, errors.Wrap(err, "ipc: cannot open the image file")
-	}
-	defer f.Close()
-
-	hash := fnv.New32a()
-	if _, err = io.Copy(hash, f); err != nil {
-		return nil, errors.Wrap(err, "ipc: hash calculation failed")
-	}
-	if _, err = f.Seek(0, os.SEEK_SET); err != nil {
-		return nil, errors.Wrap(err, "ipc: cannot seek")
-	}
-
-	root, err := composite.New(context.Background(), f, &composite.Options{
-		LayerNameEncodingDetector: autoDetect,
-	})
-	if err != nil {
-		return nil, errors.Wrap(err, "ipc: could not build the layer tree.")
-	}
-	ods.ODS("psd loading: %dms", (time.Now().UnixNano()-s)/1e6)
-
-	lm := img.NewLayerManager(root)
-
-	var pf *img.PFV
-	if len(files) > 1 {
-		f2, err := os.Open(filepath.Join(filepath.Dir(files[0]), files[1]))
-		if err != nil {
-			return nil, errors.Wrap(err, "ipc: cannot open the pfv file")
-		}
-		defer f2.Close()
-		pf, err = img.NewPFV(f2, lm)
-		if err != nil {
-			return nil, errors.Wrap(err, "ipc: cannot parse the pfv file")
-		}
-	}
-
-	lm.Normalize(img.FlipNone)
-	state, err := lm.Serialize()
-	if err != nil {
-		return nil, errors.Wrap(err, "ipc: cannot serialize")
-	}
-
-	srcImage := &sourceImage{
-		FilePath:   &filePath,
-		FileHash:   hash.Sum32(),
-		LastAccess: time.Now(),
-
-		PSD: root,
-		PFV: pf,
-
-		InitialLayerState: &state,
-	}
-	ipc.sourceImages[filePath] = srcImage
-	return srcImage, nil
-}
-
-func (ipc *IPC) load(id int, addedByUser bool, filePath string) (*img.Image, error) {
-	if himg, ok := ipc.hotImages[StateKey{id, addedByUser, filePath}]; ok {
-		n := time.Now()
-		ipc.sourceImages[filePath].LastAccess = n
-		himg.LastAccess = n
-		return himg, nil
-	}
-
-	r, err := ipc.getSourceImage(filePath)
-	if err != nil {
-		return nil, err
-	}
-	psd := r.PSD.Clone()
-	himg := &img.Image{
-		FilePath:   r.FilePath,
-		FileHash:   r.FileHash,
-		LastAccess: time.Now(),
-
-		PSD:    psd,
-		Layers: img.NewLayerManager(psd),
-
-		InitialLayerState: r.InitialLayerState,
-
-		Scale: 1,
-
-		PFV: r.PFV,
-	}
-	ipc.hotImages[StateKey{id, addedByUser, filePath}] = himg
-	return himg, nil
-}
-
-func (ipc *IPC) draw(id int, addedByUser bool, filePath string, width, height int) ([]byte, error) {
-	himg, err := ipc.load(id, addedByUser, filePath)
+func (ipc *IPC) draw(id int, filePath string, width, height int) ([]byte, error) {
+	img, err := ipc.TemporaryImg.Load(id, filePath)
 	if err != nil {
 		return nil, errors.Wrap(err, "ipc: could not load")
 	}
-	s := time.Now().UnixNano()
-	rgba, err := himg.Render(context.Background())
+	startAt := time.Now().UnixNano()
+	rgba, err := img.Render(context.Background())
 	if err != nil {
 		return nil, errors.Wrap(err, "ipc: could not render")
 	}
 	ret := image.NewRGBA(image.Rect(0, 0, width, height))
-	blend.Copy.Draw(ret, ret.Rect, rgba, image.Pt(int(float32(-himg.OffsetX)*himg.Scale), int(float32(-himg.OffsetY)*himg.Scale)))
+	blend.Copy.Draw(ret, ret.Rect, rgba, image.Pt(int(float32(-img.OffsetX)*img.Scale), int(float32(-img.OffsetY)*img.Scale)))
 	rgbaToNBGRA(ret.Pix)
-	ods.ODS("render: %dms", (time.Now().UnixNano()-s)/1e6)
+	ipc.ImageSrcs.Logger.Println(fmt.Sprintf("render: %dms", (time.Now().UnixNano()-startAt)/1e6))
 	return ret.Pix, nil
 }
 
-func (ipc *IPC) getLayerNames(id int, addedByUser bool, filePath string) (string, error) {
-	img, err := ipc.load(id, addedByUser, filePath)
+func (ipc *IPC) getLayerNames(id int, filePath string) (string, error) {
+	img, err := ipc.TemporaryImg.Load(id, filePath)
 	if err != nil {
 		return "", errors.Wrap(err, "ipc: could not load")
 	}
@@ -236,20 +75,20 @@ func (ipc *IPC) getLayerNames(id int, addedByUser bool, filePath string) (string
 	return strings.Join(s, "\n"), nil
 }
 
-func (ipc *IPC) setProps(id int, addedByUser bool, filePath string, layer *string, scale *float32, offsetX, offsetY *int) (bool, int, int, error) {
-	himg, err := ipc.load(id, addedByUser, filePath)
+func (ipc *IPC) setProps(id int, filePath string, layer *string, scale *float32, offsetX, offsetY *int) (bool, int, int, error) {
+	img, err := ipc.TemporaryImg.Load(id, filePath)
 	if err != nil {
 		return false, 0, 0, errors.Wrap(err, "ipc: could not load")
 	}
-	modified := himg.Modified
+	modified := img.Modified
 	if layer != nil {
 		if *layer != "" {
-			l := *himg.InitialLayerState + " " + *layer
+			l := *img.InitialLayerState + " " + *layer
 			layer = &l
 		} else {
-			layer = himg.InitialLayerState
+			layer = img.InitialLayerState
 		}
-		b, err := himg.Deserialize(*layer)
+		b, err := img.Deserialize(*layer)
 		if err != nil {
 			return false, 0, 0, errors.Wrap(err, "ipc: deserialize failed")
 		}
@@ -263,25 +102,25 @@ func (ipc *IPC) setProps(id int, addedByUser bool, filePath string, layer *strin
 		} else if *scale < 0.00001 {
 			*scale = 0.00001
 		}
-		if *scale != himg.Scale {
-			himg.Scale = *scale
+		if *scale != img.Scale {
+			img.Scale = *scale
 			modified = true
 		}
 	}
 	if offsetX != nil {
-		if *offsetX != himg.OffsetX {
-			himg.OffsetX = *offsetX
+		if *offsetX != img.OffsetX {
+			img.OffsetX = *offsetX
 			modified = true
 		}
 	}
 	if offsetY != nil {
-		if *offsetY != himg.OffsetY {
-			himg.OffsetY = *offsetY
+		if *offsetY != img.OffsetY {
+			img.OffsetY = *offsetY
 			modified = true
 		}
 	}
-	r := himg.ScaledCanvasRect()
-	himg.Modified = modified
+	r := img.ScaledCanvasRect()
+	img.Modified = modified
 	return modified, r.Dx(), r.Dy(), nil
 }
 
@@ -293,54 +132,15 @@ func (ipc *IPC) showGUI() (uintptr, error) {
 	return h, nil
 }
 
-type serializeData struct {
-	Images []*img.ProjectState
-}
-
 func (ipc *IPC) serialize() (string, error) {
-	var keys StateKeys
-	for k := range ipc.hotImages {
-		if k.AddedByUser {
-			keys = append(keys, k)
-		}
-	}
-	sort.Sort(keys)
-	var srz serializeData
-	for _, k := range keys {
-		himg := ipc.hotImages[k]
-		ps, err := himg.SerializeProject()
-		if err != nil {
-			return "", errors.Wrapf(err, "ipc: cannot serialize %q", k.FilePath)
-		}
-		srz.Images = append(srz.Images, ps)
-	}
-	b := bytes.NewBufferString("")
-	if err := json.NewEncoder(b).Encode(srz); err != nil {
-		return "", err
-	}
-	return b.String(), nil
+	return ipc.EditingImg.Serialize()
 }
 
-func (ipc *IPC) deserialize(s string) error {
-	// TODO: close editing images
-	if s == "" {
-		return nil
-	}
-	var srz serializeData
-	if err := json.NewDecoder(bytes.NewReader([]byte(s))).Decode(&srz); err != nil {
+func (ipc *IPC) deserialize(state string) error {
+	if err := ipc.EditingImg.Deserialize(state); err != nil {
 		return err
 	}
-	for index, ps := range srz.Images {
-		img, err := ipc.load(index, true, ps.FilePath)
-		if err != nil {
-			return err
-		}
-		if err = img.DeserializeProject(ps); err != nil {
-			return err
-		}
-	}
-	ipc.fileSeqID = len(srz.Images)
-	ipc.OpenImagesChanged()
+	ipc.Deserialized()
 	return nil
 }
 
@@ -444,7 +244,7 @@ func (ipc *IPC) dispatch(cmd string) error {
 			return err
 		}
 		ods.ODS("  Width: %d / Height: %d", width, height)
-		b, err := ipc.draw(id, false, filePath, width, height)
+		b, err := ipc.draw(id, filePath, width, height)
 		if err != nil {
 			return err
 		}
@@ -458,7 +258,7 @@ func (ipc *IPC) dispatch(cmd string) error {
 		if err != nil {
 			return err
 		}
-		s, err := ipc.getLayerNames(id, false, filePath)
+		s, err := ipc.getLayerNames(id, filePath)
 		if err != nil {
 			return err
 		}
@@ -521,7 +321,7 @@ func (ipc *IPC) dispatch(cmd string) error {
 				ods.ODS("  OffsetY: %d", i)
 			}
 		}
-		modified, width, height, err := ipc.setProps(id, false, filePath, layer, scale, offsetX, offsetY)
+		modified, width, height, err := ipc.setProps(id, filePath, layer, scale, offsetX, offsetY)
 		if err != nil {
 			return err
 		}
@@ -574,34 +374,17 @@ func (ipc *IPC) dispatch(cmd string) error {
 	return errors.New("unknown command")
 }
 
-func (ipc *IPC) gc() {
-	const deadline = 10 * time.Minute
-	now := time.Now()
+type odsLogger struct{}
 
-	used := make(map[string]struct{})
-	for k, v := range ipc.hotImages {
-		if k.AddedByUser {
-			continue
-		}
-		if now.Sub(v.LastAccess) > deadline {
-			delete(ipc.hotImages, k)
-		} else {
-			used[k.FilePath] = struct{}{}
-		}
-	}
-	for k, v := range ipc.sourceImages {
-		if _, ok := used[k]; ok {
-			continue
-		}
-		if now.Sub(v.LastAccess) > deadline {
-			delete(ipc.sourceImages, k)
-		}
-	}
+func (odsLogger) Println(v ...interface{}) {
+	ods.ODS(fmt.Sprintln(v...))
 }
 
 func (ipc *IPC) Init() {
-	ipc.sourceImages = map[string]*sourceImage{}
-	ipc.hotImages = map[StateKey]*img.Image{}
+	ipc.ImageSrcs.Logger = odsLogger{}
+	ipc.EditingImg.Srcs = &ipc.ImageSrcs
+	ipc.TemporaryImg.Srcs = &ipc.ImageSrcs
+
 	ipc.queue = make(chan func())
 	ipc.reply = make(chan error)
 	ipc.replyDone = make(chan struct{})
@@ -658,7 +441,9 @@ func (ipc *IPC) Main(exitCh chan<- struct{}) {
 	for {
 		select {
 		case <-gcTicker.C:
-			ipc.gc()
+			ipc.EditingImg.Touch()
+			ipc.TemporaryImg.GC()
+			ipc.ImageSrcs.GC()
 		case f := <-ipc.queue:
 			f()
 		case cmd := <-cmdCh:

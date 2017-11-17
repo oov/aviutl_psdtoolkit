@@ -47,25 +47,14 @@ func b2i(b bool) int32 {
 	return 0
 }
 
-func (g *gui) selectImage(index int) {
-	key := g.ImageList.Key(index)
-	if key.FilePath == "" {
-		g.img = nil
-		g.renderedImage = nil
-		g.MainView.Clear()
-		return
-	}
-
-	img, err := g.IPC.Image(key.ID2, key.FilePath)
-	if err != nil {
-		g.reportError(errors.Wrap(err, "gui: cannot load image"))
-		return
-	}
-
+func (g *gui) changeSelectedImage() {
+	img := g.IPC.EditingImg.SelectedImage()
 	g.img = img
 	g.renderedImage = nil
 	g.MainView.Clear()
-	g.ImageList.SelectedIndex = index
+	if img == nil {
+		return
+	}
 
 	// makes fit to the main view at initial look
 	targetRect := g.MainView.LatestActiveRect
@@ -92,10 +81,11 @@ func (g *gui) update() {
 	modified := false
 	if nk.NkBegin(ctx, "TopPane", nk.NkRect(0, 0, float32(width), topPaneHeight), 0) != 0 {
 		nk.NkLayoutRowDynamic(ctx, 28, 4)
-		n0 := g.ImageList.SelectedIndex
-		n1 := int(nk.NkComboString(ctx, g.ImageList.List(), int32(n0), int32(g.ImageList.Len()), 28, nk.NkVec2(600, float32(height))))
+		n0 := g.IPC.EditingImg.SelectedIndex
+		n1 := int(nk.NkComboString(ctx, g.IPC.EditingImg.StringList(), int32(n0), int32(g.IPC.EditingImg.Len()), 28, nk.NkVec2(600, float32(height))))
 		if n0 != n1 {
-			g.selectImage(n1)
+			g.IPC.EditingImg.SelectedIndex = n1
+			g.changeSelectedImage()
 		}
 
 		if g.img != nil {

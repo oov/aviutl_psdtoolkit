@@ -15,7 +15,6 @@ import (
 
 	"github.com/oov/aviutl_psdtoolkit/src/go/assets"
 	"github.com/oov/aviutl_psdtoolkit/src/go/gc"
-	"github.com/oov/aviutl_psdtoolkit/src/go/gui/imagelist"
 	"github.com/oov/aviutl_psdtoolkit/src/go/img"
 	"github.com/oov/aviutl_psdtoolkit/src/go/ipc"
 	"github.com/oov/aviutl_psdtoolkit/src/go/layerview"
@@ -66,8 +65,6 @@ type gui struct {
 	zoom     float64
 	zooming  bool
 
-	ImageList imagelist.ImageList
-
 	LayerView layerview.LayerView
 	MainView  mainview.MainView
 
@@ -114,9 +111,9 @@ func main() {
 		})
 		return g.Window.NativeWindow(), nil
 	}
-	g.IPC.OpenImagesChanged = func() {
+	g.IPC.Deserialized = func() {
 		do(func() {
-			g.ImageList.UpdateKeys(g.IPC.BuildImageList())
+			g.changeSelectedImage()
 		})
 	}
 	g.LayerView.CopyToClipboard = func(sliderName, name, value string) {
@@ -144,12 +141,11 @@ func main() {
 		gc.EnterCS()
 		go do(gc.LeaveCS)
 		path := extractPSDAndPFV(filenames)
-		if _, err := g.IPC.Image(-1, path); err != nil {
+		if _, err := g.IPC.EditingImg.Add(path); err != nil {
 			g.reportError(errors.Wrapf(err, "main: failed to load image %q", path))
 			return
 		}
-		g.ImageList.UpdateKeys(g.IPC.BuildImageList())
-		g.selectImage(g.ImageList.Len() - 1)
+		g.changeSelectedImage()
 	}
 	g.Window.SetDropCallback(dropCB)
 
