@@ -494,7 +494,7 @@ func (lv *LayerView) selectFavoriteNode(img *img.Image, n *img.Node) bool {
 }
 
 func (lv *LayerView) selectFaviewNode(img *img.Image, n *img.FaviewNode, newSelectedIndex int) bool {
-	state, err := n.SelectedState()
+	state, err := n.Items[newSelectedIndex].State()
 	if err != nil {
 		lv.reportError(errors.Wrap(err, "layerview: cannot serialize"))
 		return false
