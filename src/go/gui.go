@@ -103,8 +103,8 @@ func (g *gui) update() {
 	}
 	nk.NkEnd(ctx)
 
-	modifiedLayer := g.LayerView.Render(ctx, nk.NkRect(0, topPaneHeight, layerPaneWidth, float32(height-topPaneHeight)), g.img)
-	if modified || modifiedLayer {
+	modified = g.LayerView.Render(ctx, nk.NkRect(0, topPaneHeight, layerPaneWidth, float32(height-topPaneHeight)), g.img) || modified
+	if modified {
 		g.img.Modified = true
 		g.img.Layers.Normalize(g.img.Flip)
 		updateRenderedImage(g, g.img)
