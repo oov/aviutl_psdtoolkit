@@ -63,23 +63,23 @@ func (s *Sources) load(filePath string) (*Source, error) {
 	startAt := time.Now().UnixNano()
 	f, err := os.Open(files[0])
 	if err != nil {
-		return nil, errors.Wrap(err, "imgmgr: cannot open the image file")
+		return nil, errors.Wrap(err, "source: cannot open the image file")
 	}
 	defer f.Close()
 
 	hash := fnv.New32a()
 	if _, err = io.Copy(hash, f); err != nil {
-		return nil, errors.Wrap(err, "imgmgr: hash calculation failed")
+		return nil, errors.Wrap(err, "source: hash calculation failed")
 	}
 	if _, err = f.Seek(0, os.SEEK_SET); err != nil {
-		return nil, errors.Wrap(err, "imgmgr: cannot seek")
+		return nil, errors.Wrap(err, "source: cannot seek")
 	}
 
 	root, err := composite.New(context.Background(), f, &composite.Options{
 		LayerNameEncodingDetector: autoDetect,
 	})
 	if err != nil {
-		return nil, errors.Wrap(err, "imgmgr: could not build the layer tree.")
+		return nil, errors.Wrap(err, "source: could not build the layer tree.")
 	}
 	if s.Logger != nil {
 		s.Logger.Println(fmt.Sprintf("psd loading: %dms %q", (time.Now().UnixNano()-startAt)/1e6, files[0]))
@@ -91,19 +91,19 @@ func (s *Sources) load(filePath string) (*Source, error) {
 	if len(files) > 1 {
 		f2, err := os.Open(filepath.Join(filepath.Dir(files[0]), files[1]))
 		if err != nil {
-			return nil, errors.Wrap(err, "imgmgr: cannot open the pfv file")
+			return nil, errors.Wrap(err, "source: cannot open the pfv file")
 		}
 		defer f2.Close()
 		pf, err = img.NewPFV(f2, lm)
 		if err != nil {
-			return nil, errors.Wrap(err, "imgmgr: cannot parse the pfv file")
+			return nil, errors.Wrap(err, "source: cannot parse the pfv file")
 		}
 	}
 
 	lm.Normalize(img.FlipNone)
 	state, err := lm.Serialize()
 	if err != nil {
-		return nil, errors.Wrap(err, "imgmgr: cannot serialize")
+		return nil, errors.Wrap(err, "source: cannot serialize")
 	}
 
 	return &Source{
@@ -129,7 +129,7 @@ func (s *Sources) get(filePath string) (*Source, error) {
 	}
 	src, err := s.load(filePath)
 	if err != nil {
-		return nil, errors.Wrapf(err, "Source: failed to load %q", filePath)
+		return nil, errors.Wrapf(err, "source: failed to load %q", filePath)
 	}
 	if s.srcs == nil {
 		s.srcs = make(map[string]*Source)
