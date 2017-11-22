@@ -93,12 +93,11 @@ func updateViewImage(g *GUI, img *image.RGBA, fast bool) {
 			return
 		}
 		g.do(func() {
-			g.mainView.ResizedImage = resizedImage
+			g.mainView.UpdateImage(resizedImage)
 			if g.cancelViewResize != nil {
 				g.cancelViewResize()
 				g.cancelViewResize = nil
 			}
-			g.mainView.ForceUpdate = true
 
 			q := g.viewResizeQueued
 			g.viewResizeRunning = vrmNone

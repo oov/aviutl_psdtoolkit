@@ -64,7 +64,7 @@ type GUI struct {
 	zooming  bool
 
 	layerView *layerview.LayerView
-	mainView  mainview.MainView
+	mainView  *mainview.MainView
 
 	font struct {
 		Main       *font
@@ -136,7 +136,10 @@ func (g *GUI) Init(caption string, bgImg, mainFont, symbolFont []byte) error {
 	if err != nil {
 		return errors.Wrap(err, "gui: could not decode bg.png")
 	}
-	g.mainView.Init(bg)
+	g.mainView, err = mainview.New(bg)
+	if err != nil {
+		return errors.Wrap(err, "gui: failed to initialize mainview")
+	}
 	return nil
 }
 
@@ -196,7 +199,7 @@ func (g *GUI) changeSelectedImage() {
 	}
 
 	// makes fit to the main view at initial look
-	targetRect := g.mainView.LatestActiveRect
+	targetRect := g.mainView.LatestActiveRect()
 	if targetRect.Empty() {
 		targetRect.Max.X += winWidth - layerPaneWidth
 		targetRect.Max.Y += winHeight - bottomPaneHeight
@@ -206,7 +209,7 @@ func (g *GUI) changeSelectedImage() {
 		z = float64(targetRect.Dy()) / float64(img.PSD.CanvasRect.Dy())
 	}
 	g.zoom = math.Log(z) / math.Ln2
-	g.mainView.ForceScrollToCenter = true
+	g.mainView.ScrollToCenter()
 
 	updateRenderedImage(g, g.img)
 	g.layerView.UpdateThumbnails(img.PSD, 24, g.do)
