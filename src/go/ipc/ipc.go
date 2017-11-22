@@ -204,7 +204,7 @@ func (ipc *IPC) ExportFaviewSlider(filePath, sliderName string, names, values []
 	return err
 }
 
-func (ipc *IPC) Fatal(err error) {
+func (ipc *IPC) Abort(err error) {
 	ipc.queue <- nil
 	writeReply(err)
 }

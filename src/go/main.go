@@ -64,7 +64,9 @@ func main() {
 		assets.MustAsset("Ohruri-Regular.ttf"),
 		assets.MustAsset("symbols.ttf"),
 	); err != nil {
-		ipcm.Fatal(err)
+		ipcm.Abort(err)
+		<-gcDone
+		return
 	}
 
 	g.Main(exitCh)
