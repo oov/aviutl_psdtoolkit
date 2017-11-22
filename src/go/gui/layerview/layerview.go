@@ -30,52 +30,59 @@ const (
 )
 
 type LayerView struct {
-	MainFontHandle   *nk.UserFont
-	SymbolFontHandle *nk.UserFont
-	ThumbnailSize    int
+	mainFontHandle   *nk.UserFont
+	symbolFontHandle *nk.UserFont
 
-	Thumbnail     *nkhelper.Texture
-	ThumbnailChip map[int]*nk.Image
+	thumbnailSize int
+	thumbnail     *nkhelper.Texture
+	thumbnailChip map[int]*nk.Image
 
-	LayerFavSelectedIndex int32
+	layerFavSelectedIndex int32
 
-	CopyFaviewValue    func(sliderName, name, value string)
-	ExportFaviewSlider func(sliderName string, names, values []string)
+	ReportError        func(error)
+	CopyFaviewValue    func(path, sliderName, name, value string)
+	ExportFaviewSlider func(path, sliderName string, names, values []string)
 }
 
-func (lv *LayerView) Init() {
-	var err error
-	lv.Thumbnail, err = nkhelper.NewTexture(image.NewNRGBA(image.Rect(0, 0, 1, 1)))
-	if err != nil {
-		panic(err)
+func New(mainFontHandle, symbolFontHandle *nk.UserFont) (*LayerView, error) {
+	lv := &LayerView{
+		mainFontHandle:   mainFontHandle,
+		symbolFontHandle: symbolFontHandle,
+
+		thumbnailChip: map[int]*nk.Image{},
 	}
-	lv.ThumbnailChip = map[int]*nk.Image{}
+	var err error
+	lv.thumbnail, err = nkhelper.NewTexture(image.NewNRGBA(image.Rect(0, 0, 1, 1)))
+	if err != nil {
+		return nil, err
+	}
+	return lv, nil
 }
 
 func (lv *LayerView) UpdateThumbnails(tree *composite.Tree, size int, doMain func(func())) {
-	lv.ThumbnailChip = map[int]*nk.Image{}
-	lv.ThumbnailSize = size
+	lv.thumbnailChip = map[int]*nk.Image{}
+	lv.thumbnailSize = size
 	go func() {
 		s := time.Now().UnixNano()
 		rgba, ptMap, err := tree.ThumbnailSheet(context.Background(), size)
 		if err != nil {
 			doMain(func() {
-				lv.reportError(errors.Wrap(err, "layerview: failed to create thumbnail sheet"))
+				lv.ReportError(errors.Wrap(err, "layerview: failed to create thumbnail sheet"))
 			})
 			return
 		}
 		nrgba := rgbaToNRGBA(rgba)
 		ods.ODS("thumbnail: %dms", (time.Now().UnixNano()-s)/1e6)
 		doMain(func() {
-			lv.Thumbnail.Update(nrgba)
+			lv.thumbnail.Update(nrgba)
 			for i, rect := range ptMap {
-				img := lv.Thumbnail.SubImage(nk.NkRect(
+				img := lv.thumbnail.SubImage(nk.NkRect(
 					float32(rect.Min.X),
 					float32(rect.Min.Y),
 					float32(rect.Dx()),
 					float32(rect.Dy()),
 				))
-				lv.ThumbnailChip[i] = &img
+				lv.thumbnailChip[i] = &img
 			}
 		})
 	}()
@@ -95,29 +102,29 @@ func (lv *LayerView) Render(ctx *nk.Context, winRect nk.Rect, img *img.Image) bo
 			if img.PFV != nil {
 				if len(img.PFV.FaviewRoot.Children) > 0 {
 					nk.NkLayoutRowDynamic(ctx, 28, 3)
-					if nk.NkSelectLabel(ctx, "レイヤー", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.LayerFavSelectedIndex == 0)) != b2i(lv.LayerFavSelectedIndex == 0) {
-						lv.LayerFavSelectedIndex = 0
+					if nk.NkSelectLabel(ctx, "レイヤー", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.layerFavSelectedIndex == 0)) != b2i(lv.layerFavSelectedIndex == 0) {
+						lv.layerFavSelectedIndex = 0
 					}
-					if nk.NkSelectLabel(ctx, "シンプルV", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.LayerFavSelectedIndex == 1)) != b2i(lv.LayerFavSelectedIndex == 1) {
-						lv.LayerFavSelectedIndex = 1
+					if nk.NkSelectLabel(ctx, "シンプルV", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.layerFavSelectedIndex == 1)) != b2i(lv.layerFavSelectedIndex == 1) {
+						lv.layerFavSelectedIndex = 1
 					}
-					if nk.NkSelectLabel(ctx, "お気に入り", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.LayerFavSelectedIndex == 2)) != b2i(lv.LayerFavSelectedIndex == 2) {
-						lv.LayerFavSelectedIndex = 2
+					if nk.NkSelectLabel(ctx, "お気に入り", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.layerFavSelectedIndex == 2)) != b2i(lv.layerFavSelectedIndex == 2) {
+						lv.layerFavSelectedIndex = 2
 					}
 				} else {
 					nk.NkLayoutRowDynamic(ctx, 28, 2)
-					if nk.NkSelectLabel(ctx, "レイヤー", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.LayerFavSelectedIndex == 0)) != b2i(lv.LayerFavSelectedIndex == 0) {
-						lv.LayerFavSelectedIndex = 0
+					if nk.NkSelectLabel(ctx, "レイヤー", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.layerFavSelectedIndex == 0)) != b2i(lv.layerFavSelectedIndex == 0) {
+						lv.layerFavSelectedIndex = 0
 					}
-					if nk.NkSelectLabel(ctx, "お気に入り", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.LayerFavSelectedIndex == 2)) != b2i(lv.LayerFavSelectedIndex == 2) {
-						lv.LayerFavSelectedIndex = 2
+					if nk.NkSelectLabel(ctx, "お気に入り", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.layerFavSelectedIndex == 2)) != b2i(lv.layerFavSelectedIndex == 2) {
+						lv.layerFavSelectedIndex = 2
 					}
 				}
 			} else {
-				lv.LayerFavSelectedIndex = 0
+				lv.layerFavSelectedIndex = 0
 			}
 
-			switch lv.LayerFavSelectedIndex {
+			switch lv.layerFavSelectedIndex {
 			case 0:
 				for i := len(img.PSD.Root.Children) - 1; i >= 0; i-- {
 					modified = lv.layoutLayer(ctx, img, 0, &img.PSD.Root.Children[i], true) || modified
@@ -155,7 +162,7 @@ func drawTextMiddle(canvas *nk.CommandBuffer, rect nk.Rect, s string, font *nk.U
 	nk.NkDrawText(canvas, r, s, int32(len(s)), font, nk.Color{}, col)
 }
 
-func layerTreeItem(ctx *nk.Context, indent, thumbSize float32, sansFont, symbolsFont *nk.UserFont, thumb *nk.Image, visible, forceVisible bool, l *composite.Layer) (clicked bool, ctrl bool) {
+func (lv *LayerView) layerTreeItem(ctx *nk.Context, indent, thumbSize float32, thumb *nk.Image, visible, forceVisible bool, l *composite.Layer) (clicked bool, ctrl bool) {
 	clicked = false
 	ctrl = false
 	const (
@@ -167,7 +174,7 @@ func layerTreeItem(ctx *nk.Context, indent, thumbSize float32, sansFont, symbols
 	bounds := nk.NkLayoutSpaceBounds(ctx)
 
 	if l.Folder {
-		nk.NkStylePushFont(ctx, symbolsFont)
+		nk.NkStylePushFont(ctx, lv.symbolFontHandle)
 		nk.NkStylePushStyleItem(ctx, nkhelper.GetStyleButtonNormalPtr(ctx), nk.NkStyleItemColor(nk.Color{}))
 		nk.NkStylePushFloat(ctx, nkhelper.GetStyleButtonBorderPtr(ctx), 0)
 		nk.NkStylePushVec2(ctx, nkhelper.GetStyleButtonPaddingPtr(ctx), nk.NkVec2(0, 0))
@@ -187,7 +194,7 @@ func layerTreeItem(ctx *nk.Context, indent, thumbSize float32, sansFont, symbols
 	}
 	indent += collapseSize + 1
 
-	w := float32(nkhelper.TextWidth(sansFont, l.Name) + marginSize*2 + visibleSize + thumbSize)
+	w := float32(nkhelper.TextWidth(lv.mainFontHandle, l.Name) + marginSize*2 + visibleSize + thumbSize)
 	if l.Clipping {
 		w += visibleSize
 	}
@@ -230,7 +237,7 @@ func layerTreeItem(ctx *nk.Context, indent, thumbSize float32, sansFont, symbols
 		fg.SetB(fg.B() / 2)
 	}
 	rect = nk.NkRect(rect.X()+marginSize, rect.Y(), rect.W()-marginSize, rect.H())
-	drawTextMiddle(canvas, rect, visibleSymbol, symbolsFont, fg)
+	drawTextMiddle(canvas, rect, visibleSymbol, lv.symbolFontHandle, fg)
 	rect = nk.NkRect(rect.X()+visibleSize, rect.Y(), rect.W()-visibleSize, rect.H())
 
 	if thumb != nil {
@@ -241,10 +248,10 @@ func layerTreeItem(ctx *nk.Context, indent, thumbSize float32, sansFont, symbols
 	}
 
 	if l.Clipping {
-		drawTextMiddle(canvas, rect, symbolClippingArrow, symbolsFont, fg)
+		drawTextMiddle(canvas, rect, symbolClippingArrow, lv.symbolFontHandle, fg)
 		rect = nk.NkRect(rect.X()+visibleSize, rect.Y(), rect.W()-visibleSize, rect.H())
 	}
-	drawTextMiddle(canvas, rect, l.Name, sansFont, fg)
+	drawTextMiddle(canvas, rect, l.Name, lv.mainFontHandle, fg)
 	return clicked, ctrl
 }
 
@@ -259,9 +266,9 @@ func (lv *LayerView) layoutLayer(ctx *nk.Context, img *img.Image, indent float32
 		visible = visible && l.ClippedBy.Visible
 	}
 	_, forceVisible := img.Layers.ForceVisible[l.SeqID]
-	thumb, _ := lv.ThumbnailChip[l.SeqID]
+	thumb, _ := lv.thumbnailChip[l.SeqID]
 	nk.NkLayoutSpaceBegin(ctx, nk.Static, 28, 3)
-	if clicked, ctrl := layerTreeItem(ctx, indent, float32(lv.ThumbnailSize), lv.MainFontHandle, lv.SymbolFontHandle, thumb, visible, forceVisible, l); clicked {
+	if clicked, ctrl := lv.layerTreeItem(ctx, indent, float32(lv.thumbnailSize), thumb, visible, forceVisible, l); clicked {
 		if ctrl {
 			modified = img.Layers.SetVisibleExclusive(l.SeqID, !l.Visible, img.Flip) || modified
 		} else {
@@ -281,7 +288,7 @@ func (lv *LayerView) layoutLayer(ctx *nk.Context, img *img.Image, indent float32
 	return modified
 }
 
-func favoriteItem(ctx *nk.Context, indent float32, sansFont, symbolsFont *nk.UserFont, n *img.Node) bool {
+func (lv *LayerView) layoutFavoriteItem(ctx *nk.Context, indent float32, n *img.Node) bool {
 	modified := false
 	const (
 		visibleSize  = 24
@@ -292,7 +299,7 @@ func favoriteItem(ctx *nk.Context, indent float32, sansFont, symbolsFont *nk.Use
 	bounds := nk.NkLayoutSpaceBounds(ctx)
 
 	if n.Folder() || n.Filter() {
-		nk.NkStylePushFont(ctx, symbolsFont)
+		nk.NkStylePushFont(ctx, lv.symbolFontHandle)
 		nk.NkStylePushStyleItem(ctx, nkhelper.GetStyleButtonNormalPtr(ctx), nk.NkStyleItemColor(nk.Color{}))
 		nk.NkStylePushFloat(ctx, nkhelper.GetStyleButtonBorderPtr(ctx), 0)
 		nk.NkStylePushVec2(ctx, nkhelper.GetStyleButtonPaddingPtr(ctx), nk.NkVec2(0, 0))
@@ -312,7 +319,7 @@ func favoriteItem(ctx *nk.Context, indent float32, sansFont, symbolsFont *nk.Use
 	}
 	indent += collapseSize + 1
 
-	w := float32(nkhelper.TextWidth(sansFont, n.Name) + marginSize*2)
+	w := float32(nkhelper.TextWidth(lv.mainFontHandle, n.Name) + marginSize*2)
 	if n.Filter() || n.Item() {
 		w += visibleSize
 	}
@@ -340,13 +347,13 @@ func favoriteItem(ctx *nk.Context, indent float32, sansFont, symbolsFont *nk.Use
 	fg.SetRGBA(c.R(), c.G(), c.B(), c.A())
 	rect = nk.NkRect(rect.X()+marginSize, rect.Y(), rect.W()-marginSize, rect.H())
 	if n.Filter() {
-		drawTextMiddle(canvas, rect, symbolFilter, symbolsFont, fg)
+		drawTextMiddle(canvas, rect, symbolFilter, lv.symbolFontHandle, fg)
 		rect = nk.NkRect(rect.X()+visibleSize, rect.Y(), rect.W()-visibleSize, rect.H())
 	} else if n.Item() {
-		drawTextMiddle(canvas, rect, symbolFile, symbolsFont, fg)
+		drawTextMiddle(canvas, rect, symbolFile, lv.symbolFontHandle, fg)
 		rect = nk.NkRect(rect.X()+visibleSize, rect.Y(), rect.W()-visibleSize, rect.H())
 	}
-	drawTextMiddle(canvas, rect, n.Name, sansFont, fg)
+	drawTextMiddle(canvas, rect, n.Name, lv.mainFontHandle, fg)
 	return modified
 }
 
@@ -356,7 +363,7 @@ func (lv *LayerView) layoutFavorites(ctx *nk.Context, img *img.Image, indent flo
 		indentSize = 16
 	)
 	nk.NkLayoutSpaceBegin(ctx, nk.Static, 28, 4)
-	if favoriteItem(ctx, indent, lv.MainFontHandle, lv.SymbolFontHandle, n) {
+	if lv.layoutFavoriteItem(ctx, indent, n) {
 		modified = lv.selectFavoriteNode(img, n) || modified
 	}
 	nk.NkLayoutSpaceEnd(ctx)
@@ -391,7 +398,7 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 
 		left = indent + marginSize
 
-		nk.NkStylePushFont(ctx, lv.SymbolFontHandle)
+		nk.NkStylePushFont(ctx, lv.symbolFontHandle)
 		nk.NkStylePushStyleItem(ctx, nkhelper.GetStyleButtonNormalPtr(ctx), nk.NkStyleItemColor(nk.Color{}))
 		nk.NkStylePushFloat(ctx, nkhelper.GetStyleButtonBorderPtr(ctx), 0)
 		nk.NkStylePushVec2(ctx, nkhelper.GetStyleButtonPaddingPtr(ctx), nk.NkVec2(0, 0))
@@ -413,7 +420,7 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 		}
 		left += bounds.W() - left - buttonSize*3 - marginSize
 
-		nk.NkStylePushFont(ctx, lv.SymbolFontHandle)
+		nk.NkStylePushFont(ctx, lv.symbolFontHandle)
 		nk.NkStylePushStyleItem(ctx, nkhelper.GetStyleButtonNormalPtr(ctx), nk.NkStyleItemColor(nk.Color{}))
 		nk.NkStylePushFloat(ctx, nkhelper.GetStyleButtonBorderPtr(ctx), 0)
 		nk.NkStylePushVec2(ctx, nkhelper.GetStyleButtonPaddingPtr(ctx), nk.NkVec2(0, 0))
@@ -430,13 +437,13 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 
 		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, buttonSize, bounds.H()))
 		if nk.NkButtonLabel(ctx, symbolClipboard) != 0 {
-			lv.copyFaviewNode(n)
+			lv.copyFaviewNode(img, n)
 		}
 		left += buttonSize
 
 		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, buttonSize, bounds.H()))
 		if nk.NkButtonLabel(ctx, symbolExport) != 0 {
-			lv.exportFaviewNode(n)
+			lv.exportFaviewNode(img, n)
 		}
 		left += buttonSize
 
@@ -482,12 +489,12 @@ func rgbaToNRGBA(rgba *image.RGBA) *image.NRGBA {
 func (lv *LayerView) selectFavoriteNode(img *img.Image, n *img.Node) bool {
 	state, err := n.State()
 	if err != nil {
-		lv.reportError(errors.Wrap(err, "layerview: cannot serialize"))
+		lv.ReportError(errors.Wrap(err, "layerview: cannot serialize"))
 		return false
 	}
 	m, err := img.Deserialize(state)
 	if err != nil {
-		lv.reportError(errors.Wrap(err, "layerview: cannot deserialize"))
+		lv.ReportError(errors.Wrap(err, "layerview: cannot deserialize"))
 		return false
 	}
 	return m
@@ -496,12 +503,12 @@ func (lv *LayerView) selectFavoriteNode(img *img.Image, n *img.Node) bool {
 func (lv *LayerView) selectFaviewNode(img *img.Image, n *img.FaviewNode, newSelectedIndex int) bool {
 	state, err := n.Items[newSelectedIndex].State()
 	if err != nil {
-		lv.reportError(errors.Wrap(err, "layerview: cannot serialize"))
+		lv.ReportError(errors.Wrap(err, "layerview: cannot serialize"))
 		return false
 	}
 	m, err := img.Deserialize(state)
 	if err != nil {
-		lv.reportError(errors.Wrap(err, "layerview: cannot deserialize"))
+		lv.ReportError(errors.Wrap(err, "layerview: cannot deserialize"))
 		return false
 	}
 	n.SelectedIndex = newSelectedIndex
@@ -509,25 +516,20 @@ func (lv *LayerView) selectFaviewNode(img *img.Image, n *img.FaviewNode, newSele
 	return m
 }
 
-func (lv *LayerView) copyFaviewNode(n *img.FaviewNode) {
+func (lv *LayerView) copyFaviewNode(img *img.Image, n *img.FaviewNode) {
 	state, err := n.SelectedState()
 	if err != nil {
-		lv.reportError(errors.Wrap(err, "layerview: cannot copy"))
+		lv.ReportError(errors.Wrap(err, "layerview: cannot copy"))
 		return
 	}
-	lv.CopyFaviewValue(n.FullName(), n.SelectedName(), state)
+	lv.CopyFaviewValue(*img.FilePath, n.FullName(), n.SelectedName(), state)
 }
 
-func (lv *LayerView) exportFaviewNode(n *img.FaviewNode) {
+func (lv *LayerView) exportFaviewNode(img *img.Image, n *img.FaviewNode) {
 	state, err := n.AllState()
 	if err != nil {
-		lv.reportError(errors.Wrap(err, "layerview: cannot export"))
+		lv.ReportError(errors.Wrap(err, "layerview: cannot export"))
 		return
 	}
-	lv.ExportFaviewSlider(n.FullName(), n.AllName(), state)
-}
-
-func (lv *LayerView) reportError(err error) {
-	//TODO: improve error handling
-	ods.ODS("error: %v", err)
+	lv.ExportFaviewSlider(*img.FilePath, n.FullName(), n.AllName(), state)
 }

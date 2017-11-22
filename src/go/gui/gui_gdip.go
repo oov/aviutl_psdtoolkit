@@ -11,32 +11,30 @@ type font struct {
 	f *nk.GdipFont
 }
 
-func (g *GUI) initFont(textFont, symbolFont []byte) error {
-	sans, err := nk.NkCreateFontFromBytes(textFont, 20)
+func (g *GUI) initFont(mainFont, symbolFont []byte) error {
+	main, err := nk.NkCreateFontFromBytes(mainFont, 20)
 	if err != nil {
 		return err
 	}
 	symbol, err := nk.NkCreateFontFromBytes(symbolFont, 14)
 	if err != nil {
-		sans.Close()
+		main.Close()
 		return err
 	}
-	g.font.Sans = &font{sans}
+	g.font.Main = &font{main}
 	g.font.Symbol = &font{symbol}
 
-	g.font.SansHandle = g.font.Sans.f.Handle()
+	g.font.MainHandle = g.font.Main.f.Handle()
 	g.font.SymbolHandle = g.font.Symbol.f.Handle()
-	nk.NkStyleSetFont(g.context, g.font.SansHandle)
-	g.layerView.MainFontHandle = g.font.SansHandle
-	g.layerView.SymbolFontHandle = g.font.SymbolHandle
+	nk.NkStyleSetFont(g.context, g.font.MainHandle)
 	return nil
 }
 
 func (g *GUI) freeFont() {
 	g.font.SymbolHandle.Free()
 	g.font.Symbol.f.Close()
-	g.font.SansHandle.Free()
-	g.font.Sans.f.Close()
+	g.font.MainHandle.Free()
+	g.font.Main.f.Close()
 }
 
 func (g *GUI) pollEvents() {

@@ -63,12 +63,12 @@ type GUI struct {
 	zoom     float64
 	zooming  bool
 
-	layerView layerview.LayerView
+	layerView *layerview.LayerView
 	mainView  mainview.MainView
 
 	font struct {
-		Sans       *font
-		SansHandle *nk.UserFont
+		Main       *font
+		MainHandle *nk.UserFont
 
 		Symbol       *font
 		SymbolHandle *nk.UserFont
@@ -104,7 +104,7 @@ func (g *GUI) AddFile(path string) error {
 	return nil
 }
 
-func (g *GUI) Init(caption string, bgImg, textFont, symbolFont []byte) error {
+func (g *GUI) Init(caption string, bgImg, mainFont, symbolFont []byte) error {
 	var err error
 	if g.window, g.context, err = newWindow(winWidth, winHeight, caption); err != nil {
 		return errors.Wrap(err, "gui: failed to create a new window")
@@ -113,18 +113,21 @@ func (g *GUI) Init(caption string, bgImg, textFont, symbolFont []byte) error {
 		g.DropFiles(filenames)
 	})
 
-	if err = g.initFont(textFont, symbolFont); err != nil {
+	if err = g.initFont(mainFont, symbolFont); err != nil {
 		return errors.Wrap(err, "gui: failed to load a font")
 	}
-
-	g.layerView.Init()
-	g.layerView.CopyFaviewValue = func(sliderName, name, value string) {
-		if err := g.CopyFaviewValue(*g.img.FilePath, sliderName, name, value); err != nil {
+	g.layerView, err = layerview.New(g.font.MainHandle, g.font.SymbolHandle)
+	if err != nil {
+		return errors.Wrap(err, "gui: failed to initialize layerview")
+	}
+	g.layerView.ReportError = g.ReportError
+	g.layerView.CopyFaviewValue = func(path, sliderName, name, value string) {
+		if err := g.CopyFaviewValue(path, sliderName, name, value); err != nil {
 			g.ReportError(errors.Wrap(err, "gui: cannot copy to the clipboard"))
 		}
 	}
-	g.layerView.ExportFaviewSlider = func(sliderName string, names, values []string) {
-		if err := g.ExportFaviewSlider(*g.img.FilePath, sliderName, names, values); err != nil {
+	g.layerView.ExportFaviewSlider = func(path, sliderName string, names, values []string) {
+		if err := g.ExportFaviewSlider(path, sliderName, names, values); err != nil {
 			g.ReportError(errors.Wrap(err, "gui: cannot export faview slider"))
 		}
 	}

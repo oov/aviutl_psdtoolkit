@@ -16,28 +16,26 @@ type font struct {
 	f *nk.Font
 }
 
-func (g *GUI) initFont(textFont, symbolFont []byte) error {
+func (g *GUI) initFont(mainFont, symbolFont []byte) error {
 	atlas := nk.NewFontAtlas()
 	nk.NkFontStashBegin(&atlas)
 	fc := nk.NkFontConfig(15)
 	nkhelper.SetJapaneseGlyphRanges(&fc)
-	g.font.Sans = &font{nk.NkFontAtlasAddFromBytes(atlas, textFont, 20, &fc)}
+	g.font.Main = &font{nk.NkFontAtlasAddFromBytes(atlas, mainFont, 20, &fc)}
 	g.font.Symbol = &font{nk.NkFontAtlasAddFromBytes(atlas, symbolFont, 14, nil)}
 	nk.NkFontStashEnd()
-	g.font.SansHandle = g.font.Sans.f.Handle()
+	g.font.MainHandle = g.font.Main.f.Handle()
 	g.font.SymbolHandle = g.font.Symbol.f.Handle()
 
-	nk.NkStyleSetFont(g.context, g.font.SansHandle)
-	g.layerView.MainFontHandle = g.font.SansHandle
-	g.layerView.SymbolFontHandle = g.font.SymbolHandle
+	nk.NkStyleSetFont(g.context, g.font.MainHandle)
 	return nil
 }
 
 func (g *GUI) freeFont() {
 	g.font.SymbolHandle.Free()
 	g.font.Symbol.f.Free()
-	g.font.SansHandle.Free()
-	g.font.Sans.f.Free()
+	g.font.MainHandle.Free()
+	g.font.Main.f.Free()
 }
 
 func (g *GUI) pollEvents() {
