@@ -1,50 +1,49 @@
 // +build gdip
 
-package main
+package gui
 
 import (
 	"github.com/golang-ui/nuklear/nk"
 	"github.com/golang-ui/nuklear/nk/w32"
-	"github.com/oov/aviutl_psdtoolkit/src/go/assets"
 )
 
 type font struct {
 	f *nk.GdipFont
 }
 
-func (g *gui) initFont() error {
-	sans, err := nk.NkCreateFontFromBytes(assets.MustAsset("Ohruri-Regular.ttf"), 20)
+func (g *GUI) initFont(textFont, symbolFont []byte) error {
+	sans, err := nk.NkCreateFontFromBytes(textFont, 20)
 	if err != nil {
 		return err
 	}
-	symbol, err := nk.NkCreateFontFromBytes(assets.MustAsset("symbols.ttf"), 14)
+	symbol, err := nk.NkCreateFontFromBytes(symbolFont, 14)
 	if err != nil {
 		sans.Close()
 		return err
 	}
-	g.Font.Sans = &font{sans}
-	g.Font.Symbol = &font{symbol}
+	g.font.Sans = &font{sans}
+	g.font.Symbol = &font{symbol}
 
-	g.Font.SansHandle = g.Font.Sans.f.Handle()
-	g.Font.SymbolHandle = g.Font.Symbol.f.Handle()
-	nk.NkStyleSetFont(g.Context, g.Font.SansHandle)
-	g.LayerView.MainFontHandle = g.Font.SansHandle
-	g.LayerView.SymbolFontHandle = g.Font.SymbolHandle
+	g.font.SansHandle = g.font.Sans.f.Handle()
+	g.font.SymbolHandle = g.font.Symbol.f.Handle()
+	nk.NkStyleSetFont(g.context, g.font.SansHandle)
+	g.layerView.MainFontHandle = g.font.SansHandle
+	g.layerView.SymbolFontHandle = g.font.SymbolHandle
 	return nil
 }
 
-func (g *gui) freeFont() {
-	g.Font.SymbolHandle.Free()
-	g.Font.Symbol.f.Close()
-	g.Font.SansHandle.Free()
-	g.Font.Sans.f.Close()
+func (g *GUI) freeFont() {
+	g.font.SymbolHandle.Free()
+	g.font.Symbol.f.Close()
+	g.font.SansHandle.Free()
+	g.font.Sans.f.Close()
 }
 
-func (g *gui) pollEvents() {
+func (g *GUI) pollEvents() {
 	w32.PollEvents()
 }
 
-func (g *gui) terminate() {
+func (g *GUI) terminate() {
 	w32.Terminate()
 }
 

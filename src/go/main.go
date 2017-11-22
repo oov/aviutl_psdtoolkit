@@ -1,95 +1,33 @@
 package main
 
 import (
-	"bytes"
-	"context"
 	"flag"
-	"image"
-	"image/png"
+	"fmt"
 	"runtime"
 
 	// _ "net/http/pprof"
 
-	"github.com/golang-ui/nuklear/nk"
-	"github.com/pkg/errors"
-
 	"github.com/oov/aviutl_psdtoolkit/src/go/assets"
 	"github.com/oov/aviutl_psdtoolkit/src/go/gc"
-	"github.com/oov/aviutl_psdtoolkit/src/go/img"
+	"github.com/oov/aviutl_psdtoolkit/src/go/gui"
+	"github.com/oov/aviutl_psdtoolkit/src/go/imgmgr/source"
 	"github.com/oov/aviutl_psdtoolkit/src/go/ipc"
-	"github.com/oov/aviutl_psdtoolkit/src/go/layerview"
-	"github.com/oov/aviutl_psdtoolkit/src/go/mainview"
 	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
-)
-
-const (
-	winWidth         = 1024
-	winHeight        = 768
-	topPaneHeight    = 48
-	bottomPaneHeight = 56
-	layerPaneWidth   = 320
-	layerPaneHeight  = winHeight - bottomPaneHeight - topPaneHeight
-	mainViewWidth    = winWidth - layerPaneWidth
-	mainViewHeight   = layerPaneHeight
 )
 
 func init() {
 	runtime.LockOSThread()
 }
 
-type viewResizeMode int
+type odsLogger struct{}
 
-const (
-	vrmNone viewResizeMode = iota
-	vrmFast
-	vrmBeautiful
-)
-
-type gui struct {
-	IPC     ipc.IPC
-	Window  *window
-	Context *nk.Context
-
-	cancelRender        context.CancelFunc
-	cancelUpdateResized context.CancelFunc
-	cancelViewResize    context.CancelFunc
-	viewResizeRunning   viewResizeMode
-	viewResizeQueued    viewResizeMode
-
-	img           *img.Image
-	renderedImage *image.RGBA
-
-	minZoom  float32
-	maxZoom  float32
-	stepZoom float32
-	zoom     float64
-	zooming  bool
-
-	LayerView layerview.LayerView
-	MainView  mainview.MainView
-
-	Font struct {
-		Sans       *font
-		SansHandle *nk.UserFont
-
-		Symbol       *font
-		SymbolHandle *nk.UserFont
-	}
-}
-
-var mainfunc = make(chan func())
-
-func do(f func()) {
-	done := make(chan struct{})
-	mainfunc <- func() {
-		f()
-		done <- struct{}{}
-	}
-	<-done
+func (odsLogger) Println(v ...interface{}) {
+	ods.ODS(fmt.Sprintln(v...))
 }
 
 func main() {
 	// go http.ListenAndServe(":6060", nil)
+	// psd.Debug = log.New(os.Stdout, "psd: ", log.Lshortfile)
 
 	defer func() {
 		if err := recover(); err != nil {
@@ -99,67 +37,36 @@ func main() {
 
 	flag.Parse()
 
-	g := &gui{
-		minZoom:  -5,
-		maxZoom:  0,
-		stepZoom: 0.001,
-	}
-	g.IPC.Init()
-	g.IPC.ShowGUI = func() (uintptr, error) {
-		do(func() {
-			g.Window.Show()
-		})
-		return g.Window.NativeWindow(), nil
-	}
-	g.IPC.Deserialized = func() {
-		do(func() {
-			g.changeSelectedImage()
-		})
-	}
-	g.LayerView.CopyToClipboard = func(sliderName, name, value string) {
-		if err := g.IPC.CopyFaviewValue(*g.img.FilePath, sliderName, name, value); err != nil {
-			ods.ODS("cannot copy to the clipboard: %v", err)
-		}
-	}
-	g.LayerView.ExportFaviewSlider = func(sliderName string, names, values []string) {
-		if err := g.IPC.ExportFaviewSlider(*g.img.FilePath, sliderName, names, values); err != nil {
-			ods.ODS("cannot export faview slider: %v", err)
+	srcs := &source.Sources{Logger: odsLogger{}}
+	ipcm := ipc.New(srcs)
+	g := gui.New(srcs)
+
+	ipcm.ShowGUI = g.ShowWindow
+	ipcm.Serialize = g.Serialize
+	ipcm.Deserialize = g.Deserialize
+	ipcm.GCing = g.Touch
+	g.SendEditingImageState = ipcm.SendEditingImageState
+	g.CopyFaviewValue = ipcm.CopyFaviewValue
+	g.ExportFaviewSlider = ipcm.ExportFaviewSlider
+	g.DropFiles = func(filenames []string) {
+		if err := g.AddFile(extractPSDAndPFV(filenames)); err != nil {
+			g.ReportError(err)
 		}
 	}
 
 	exitCh := make(chan struct{})
-	go g.IPC.Main(exitCh)
+	go ipcm.Main(exitCh)
 	gcDone := gc.Start(exitCh)
 
-	// psd.Debug = log.New(os.Stdout, "psd: ", log.Lshortfile)
-	var err error
-	if g.Window, g.Context, err = newWindow(winWidth, winHeight, "PSDToolKit "+version); err != nil {
-		ipc.Fatal(err)
+	if err := g.Init(
+		"PSDToolKit "+version,
+		assets.MustAsset("bg.png"),
+		assets.MustAsset("Ohruri-Regular.ttf"),
+		assets.MustAsset("symbols.ttf"),
+	); err != nil {
+		ipcm.Fatal(err)
 	}
 
-	dropCB := func(w *window, filenames []string) {
-		gc.EnterCS()
-		go do(gc.LeaveCS)
-		path := extractPSDAndPFV(filenames)
-		if _, err := g.IPC.EditingImg.Add(path); err != nil {
-			g.reportError(errors.Wrapf(err, "main: failed to load image %q", path))
-			return
-		}
-		g.changeSelectedImage()
-	}
-	g.Window.SetDropCallback(dropCB)
-
-	if err = g.initFont(); err != nil {
-		ipc.Fatal(errors.Wrap(err, "gui.initFont failed"))
-	}
-	g.LayerView.Init()
-
-	bg, err := png.Decode(bytes.NewReader(assets.MustAsset("bg.png")))
-	if err != nil {
-		ipc.Fatal(errors.Wrap(err, "could not decode bg.png"))
-	}
-	g.MainView.Init(bg)
-	// g.Window.Show()
-	g.MainLoop(exitCh)
+	g.Main(exitCh)
 	<-gcDone
 }

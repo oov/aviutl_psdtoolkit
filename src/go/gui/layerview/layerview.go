@@ -39,7 +39,7 @@ type LayerView struct {
 
 	LayerFavSelectedIndex int32
 
-	CopyToClipboard    func(sliderName, name, value string)
+	CopyFaviewValue    func(sliderName, name, value string)
 	ExportFaviewSlider func(sliderName string, names, values []string)
 }
 
@@ -515,7 +515,7 @@ func (lv *LayerView) copyFaviewNode(n *img.FaviewNode) {
 		lv.reportError(errors.Wrap(err, "layerview: cannot copy"))
 		return
 	}
-	lv.CopyToClipboard(n.FullName(), n.SelectedName(), state)
+	lv.CopyFaviewValue(n.FullName(), n.SelectedName(), state)
 }
 
 func (lv *LayerView) exportFaviewNode(n *img.FaviewNode) {

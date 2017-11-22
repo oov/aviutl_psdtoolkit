@@ -1,6 +1,6 @@
 // +build !gdip
 
-package main
+package gui
 
 import (
 	"unsafe"
@@ -8,7 +8,6 @@ import (
 	"github.com/go-gl/gl/v3.2-core/gl"
 	"github.com/go-gl/glfw/v3.2/glfw"
 	"github.com/golang-ui/nuklear/nk"
-	"github.com/oov/aviutl_psdtoolkit/src/go/assets"
 	"github.com/oov/aviutl_psdtoolkit/src/go/nkhelper"
 	"github.com/pkg/errors"
 )
@@ -17,35 +16,35 @@ type font struct {
 	f *nk.Font
 }
 
-func (g *gui) initFont() error {
+func (g *GUI) initFont(textFont, symbolFont []byte) error {
 	atlas := nk.NewFontAtlas()
 	nk.NkFontStashBegin(&atlas)
 	fc := nk.NkFontConfig(15)
 	nkhelper.SetJapaneseGlyphRanges(&fc)
-	g.Font.Sans = &font{nk.NkFontAtlasAddFromBytes(atlas, assets.MustAsset("Ohruri-Regular.ttf"), 20, &fc)}
-	g.Font.Symbol = &font{nk.NkFontAtlasAddFromBytes(atlas, assets.MustAsset("symbols.ttf"), 14, nil)}
+	g.font.Sans = &font{nk.NkFontAtlasAddFromBytes(atlas, textFont, 20, &fc)}
+	g.font.Symbol = &font{nk.NkFontAtlasAddFromBytes(atlas, symbolFont, 14, nil)}
 	nk.NkFontStashEnd()
-	g.Font.SansHandle = g.Font.Sans.f.Handle()
-	g.Font.SymbolHandle = g.Font.Symbol.f.Handle()
+	g.font.SansHandle = g.font.Sans.f.Handle()
+	g.font.SymbolHandle = g.font.Symbol.f.Handle()
 
-	nk.NkStyleSetFont(g.Context, g.Font.SansHandle)
-	g.LayerView.MainFontHandle = g.Font.SansHandle
-	g.LayerView.SymbolFontHandle = g.Font.SymbolHandle
+	nk.NkStyleSetFont(g.context, g.font.SansHandle)
+	g.layerView.MainFontHandle = g.font.SansHandle
+	g.layerView.SymbolFontHandle = g.font.SymbolHandle
 	return nil
 }
 
-func (g *gui) freeFont() {
-	g.Font.SymbolHandle.Free()
-	g.Font.Symbol.f.Free()
-	g.Font.SansHandle.Free()
-	g.Font.Sans.f.Free()
+func (g *GUI) freeFont() {
+	g.font.SymbolHandle.Free()
+	g.font.Symbol.f.Free()
+	g.font.SansHandle.Free()
+	g.font.Sans.f.Free()
 }
 
-func (g *gui) pollEvents() {
+func (g *GUI) pollEvents() {
 	glfw.PollEvents()
 }
 
-func (g *gui) terminate() {
+func (g *GUI) terminate() {
 	glfw.Terminate()
 }
 

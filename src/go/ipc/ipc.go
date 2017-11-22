@@ -13,7 +13,6 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/oov/aviutl_psdtoolkit/src/go/img"
-	"github.com/oov/aviutl_psdtoolkit/src/go/imgmgr/editing"
 	"github.com/oov/aviutl_psdtoolkit/src/go/imgmgr/source"
 	"github.com/oov/aviutl_psdtoolkit/src/go/imgmgr/temporary"
 	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
@@ -21,12 +20,12 @@ import (
 )
 
 type IPC struct {
-	ShowGUI      func() (uintptr, error)
-	Deserialized func()
+	ShowGUI     func() (uintptr, error)
+	Serialize   func() (string, error)
+	Deserialize func(state string) error
+	GCing       func()
 
-	ImageSrcs    source.Sources
-	EditingImg   editing.Editing
-	TemporaryImg temporary.Temporary
+	tmpImg temporary.Temporary
 
 	queue     chan func()
 	reply     chan error
@@ -43,11 +42,11 @@ func (ipc *IPC) do(f func()) {
 }
 
 func (ipc *IPC) load(id int, filePath string) (*img.Image, error) {
-	return ipc.TemporaryImg.Load(id, filePath)
+	return ipc.tmpImg.Load(id, filePath)
 }
 
 func (ipc *IPC) draw(id int, filePath string, width, height int) ([]byte, error) {
-	img, err := ipc.TemporaryImg.Load(id, filePath)
+	img, err := ipc.tmpImg.Load(id, filePath)
 	if err != nil {
 		return nil, errors.Wrap(err, "ipc: could not load")
 	}
@@ -59,12 +58,12 @@ func (ipc *IPC) draw(id int, filePath string, width, height int) ([]byte, error)
 	ret := image.NewRGBA(image.Rect(0, 0, width, height))
 	blend.Copy.Draw(ret, ret.Rect, rgba, image.Pt(int(float32(-img.OffsetX)*img.Scale), int(float32(-img.OffsetY)*img.Scale)))
 	rgbaToNBGRA(ret.Pix)
-	ipc.ImageSrcs.Logger.Println(fmt.Sprintf("render: %dms", (time.Now().UnixNano()-startAt)/1e6))
+	ipc.tmpImg.Srcs.Logger.Println(fmt.Sprintf("render: %dms", (time.Now().UnixNano()-startAt)/1e6))
 	return ret.Pix, nil
 }
 
 func (ipc *IPC) getLayerNames(id int, filePath string) (string, error) {
-	img, err := ipc.TemporaryImg.Load(id, filePath)
+	img, err := ipc.tmpImg.Load(id, filePath)
 	if err != nil {
 		return "", errors.Wrap(err, "ipc: could not load")
 	}
@@ -76,7 +75,7 @@ func (ipc *IPC) getLayerNames(id int, filePath string) (string, error) {
 }
 
 func (ipc *IPC) setProps(id int, filePath string, layer *string, scale *float32, offsetX, offsetY *int) (bool, int, int, error) {
-	img, err := ipc.TemporaryImg.Load(id, filePath)
+	img, err := ipc.tmpImg.Load(id, filePath)
 	if err != nil {
 		return false, 0, 0, errors.Wrap(err, "ipc: could not load")
 	}
@@ -122,26 +121,6 @@ func (ipc *IPC) setProps(id int, filePath string, layer *string, scale *float32,
 	r := img.ScaledCanvasRect()
 	img.Modified = modified
 	return modified, r.Dx(), r.Dy(), nil
-}
-
-func (ipc *IPC) showGUI() (uintptr, error) {
-	h, err := ipc.ShowGUI()
-	if err != nil {
-		return 0, errors.Wrap(err, "ipc: cannot show the gui")
-	}
-	return h, nil
-}
-
-func (ipc *IPC) serialize() (string, error) {
-	return ipc.EditingImg.Serialize()
-}
-
-func (ipc *IPC) deserialize(state string) error {
-	if err := ipc.EditingImg.Deserialize(state); err != nil {
-		return err
-	}
-	ipc.Deserialized()
-	return nil
 }
 
 func (ipc *IPC) SendEditingImageState(filePath, state string) error {
@@ -223,6 +202,11 @@ func (ipc *IPC) ExportFaviewSlider(filePath, sliderName string, names, values []
 	ods.ODS("wait EXFS reply ok")
 	ipc.replyDone <- struct{}{}
 	return err
+}
+
+func (ipc *IPC) Fatal(err error) {
+	ipc.queue <- nil
+	writeReply(err)
 }
 
 func (ipc *IPC) dispatch(cmd string) error {
@@ -338,9 +322,9 @@ func (ipc *IPC) dispatch(cmd string) error {
 		return writeUint32(uint32(height))
 
 	case "SGUI":
-		h, err := ipc.showGUI()
+		h, err := ipc.ShowGUI()
 		if err != nil {
-			return err
+			return errors.Wrap(err, "ipc: cannot show the gui")
 		}
 		if err = writeUint32(0x80000000); err != nil {
 			return err
@@ -348,9 +332,9 @@ func (ipc *IPC) dispatch(cmd string) error {
 		return writeUint64(uint64(h))
 
 	case "SRLZ":
-		s, err := ipc.serialize()
+		s, err := ipc.Serialize()
 		if err != nil {
-			return err
+			return errors.Wrap(err, "ipc: cannot serialize")
 		}
 		if err = writeUint32(0x80000000); err != nil {
 			return err
@@ -362,9 +346,9 @@ func (ipc *IPC) dispatch(cmd string) error {
 		if err != nil {
 			return err
 		}
-		err = ipc.deserialize(s)
+		err = ipc.Deserialize(s)
 		if err != nil {
-			return err
+			return errors.Wrap(err, "ipc: cannot deserialize")
 		}
 		if err = writeUint32(0x80000000); err != nil {
 			return err
@@ -372,22 +356,6 @@ func (ipc *IPC) dispatch(cmd string) error {
 		return writeBool(true)
 	}
 	return errors.New("unknown command")
-}
-
-type odsLogger struct{}
-
-func (odsLogger) Println(v ...interface{}) {
-	ods.ODS(fmt.Sprintln(v...))
-}
-
-func (ipc *IPC) Init() {
-	ipc.ImageSrcs.Logger = odsLogger{}
-	ipc.EditingImg.Srcs = &ipc.ImageSrcs
-	ipc.TemporaryImg.Srcs = &ipc.ImageSrcs
-
-	ipc.queue = make(chan func())
-	ipc.reply = make(chan error)
-	ipc.replyDone = make(chan struct{})
 }
 
 func (ipc *IPC) readCommand(r chan string) {
@@ -441,10 +409,13 @@ func (ipc *IPC) Main(exitCh chan<- struct{}) {
 	for {
 		select {
 		case <-gcTicker.C:
-			ipc.EditingImg.Touch()
-			ipc.TemporaryImg.GC()
-			ipc.ImageSrcs.GC()
+			ipc.GCing()
+			ipc.tmpImg.GC()
+			ipc.tmpImg.Srcs.GC()
 		case f := <-ipc.queue:
+			if f == nil {
+				return
+			}
 			f()
 		case cmd := <-cmdCh:
 			if len(cmd) != 4 {
@@ -462,4 +433,15 @@ func (ipc *IPC) Main(exitCh chan<- struct{}) {
 			go ipc.readCommand(cmdCh)
 		}
 	}
+}
+
+func New(srcs *source.Sources) *IPC {
+	r := &IPC{
+		tmpImg: temporary.Temporary{Srcs: srcs},
+
+		queue:     make(chan func()),
+		reply:     make(chan error),
+		replyDone: make(chan struct{}),
+	}
+	return r
 }

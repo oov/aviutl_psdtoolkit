@@ -1,4 +1,4 @@
-package main
+package gui
 
 import (
 	"context"
@@ -32,7 +32,7 @@ func rgbaToNRGBA(rgba *image.RGBA) *image.NRGBA {
 	return nrgba
 }
 
-func updateRenderedImage(g *gui, img *img.Image) {
+func updateRenderedImage(g *GUI, img *img.Image) {
 	if g.cancelRender != nil {
 		g.cancelRender()
 	}
@@ -47,7 +47,7 @@ func updateRenderedImage(g *gui, img *img.Image) {
 			return
 		}
 		ods.ODS("rendering: %dms", (time.Now().UnixNano()-s)/1e6)
-		do(func() {
+		g.do(func() {
 			g.renderedImage = rgba
 			cancel()
 			updateViewImage(g, rgba, true)
@@ -56,7 +56,7 @@ func updateRenderedImage(g *gui, img *img.Image) {
 	}()
 }
 
-func updateViewImage(g *gui, img *image.RGBA, fast bool) {
+func updateViewImage(g *GUI, img *image.RGBA, fast bool) {
 	if g.viewResizeRunning == vrmBeautiful && fast {
 		g.cancelViewResize()
 		g.cancelViewResize = nil
@@ -92,13 +92,13 @@ func updateViewImage(g *gui, img *image.RGBA, fast bool) {
 		if resizedImage == nil {
 			return
 		}
-		do(func() {
-			g.MainView.ResizedImage = resizedImage
+		g.do(func() {
+			g.mainView.ResizedImage = resizedImage
 			if g.cancelViewResize != nil {
 				g.cancelViewResize()
 				g.cancelViewResize = nil
 			}
-			g.MainView.ForceUpdate = true
+			g.mainView.ForceUpdate = true
 
 			q := g.viewResizeQueued
 			g.viewResizeRunning = vrmNone
