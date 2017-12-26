@@ -99,6 +99,9 @@ PSDToolKitLib.psd = {
 }
 
 PSDToolKitLib.talking = function(buf, rate, lo, hi, thr)
+  if thr == 0 then
+    return 0
+  end
   local n = #buf
   local hzstep = rate / 2 / 1024
   local v, d, hz = 0, 0, 0
@@ -115,7 +118,7 @@ PSDToolKitLib.talking = function(buf, rate, lo, hi, thr)
   if d > 0 then
     v = v / d
   end
-  return v > thr
+  return v / thr
 end
 
 PSDToolKitLib.talkingphoneme = function(labfile, time)
