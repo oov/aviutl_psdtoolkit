@@ -139,6 +139,28 @@ PSDToolKitLib.talkingphoneme = function(labfile, time)
   return ""
 end
 
+PSDToolKitLib.settalking = function(obj, src, locut, hicut, threshold)
+  if src == nil then
+    local n, rate, buf = obj.getaudio(nil, "audiobuffer", "spectrum", 32)
+    local v = PSDToolKitLib.talking(buf, rate, locut, hicut, threshold) >= 1.0
+    PSDToolKitLib.phoneme = v and "a" or ""
+    return
+  end
+
+  local ext = string.lower(string.sub(src, -4))
+  if ext == ".lab" then
+    PSDToolKitLib.phoneme = PSDToolKitLib.talkingphoneme(src, obj.time)
+    return
+  end
+  if ext == ".wav" then
+    local n, rate, buf = obj.getaudio(nil, src, "spectrum", 32)
+    local v = PSDToolKitLib.talking(buf, rate, locut, hicut, threshold) >= 1.0
+    PSDToolKitLib.phoneme = v and "a" or ""
+    return
+  end
+  PSDToolKitLib.phoneme = ""
+end
+
 PSDToolKitLib.phoneme = PSDToolKitLib.phoneme or ""
 
 PSDToolKitLib.talkstat = PSDToolKitLib.talkstat or {}

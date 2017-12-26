@@ -183,17 +183,8 @@ end
 tonumber(nil)
 require("PSDToolKitLib")
 if obj.check0 then
-  local n, rate, buf = obj.getaudio(nil, "audiobuffer", "spectrum", 32)
-  local v = PSDToolKitLib.talking(buf, rate, obj.track0, obj.track1, obj.track2) >= 1.0
-  PSDToolKitLib.phoneme = v and "a" or ""
-elseif file ~= nil then
-  local ext = string.lower(string.sub(file, -4))
-  if ext == ".lab" then
-    PSDToolKitLib.phoneme = PSDToolKitLib.talkingphoneme(file, obj.time)
-  elseif ext == ".wav" then
-    local n, rate, buf = obj.getaudio(nil, file, "spectrum", 32)
-    local v = PSDToolKitLib.talking(buf, rate, obj.track0, obj.track1, obj.track2) >= 1.0
-    PSDToolKitLib.phoneme = v and "a" or ""
-  end
-  file = nil
+  PSDToolKitLib.settalking(obj, nil, obj.track0, obj.track1, obj.track2)
+else
+  PSDToolKitLib.settalking(obj, file, obj.track0, obj.track1, obj.track2)
 end
+file = nil
