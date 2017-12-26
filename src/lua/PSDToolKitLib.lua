@@ -118,7 +118,8 @@ PSDToolKitLib.talking = function(buf, rate, lo, hi, thr)
   if d > 0 then
     v = v / d
   end
-  return v / thr
+  local r = v / thr
+  return r, (r >= 1.0) and "a" or ""
 end
 
 PSDToolKitLib.talkingphoneme = function(labfile, time)
@@ -128,34 +129,35 @@ PSDToolKitLib.talkingphoneme = function(labfile, time)
   for line in f:lines() do
     local st, ed, p = string.match(line, "(%d+) (%d+) (%a+)")
     if st == nil then
-      return "" -- unexpected format
+      return 0, "" -- unexpected format
     end
     if st+0 < time and time < ed+0 then
       f:close()
-      return p
+      return 1, p
     end
   end
   f:close()
-  return ""
+  return 0, ""
 end
 
 PSDToolKitLib.settalking = function(obj, src, locut, hicut, threshold)
   if src == nil then
     local n, rate, buf = obj.getaudio(nil, "audiobuffer", "spectrum", 32)
-    local v = PSDToolKitLib.talking(buf, rate, locut, hicut, threshold) >= 1.0
-    PSDToolKitLib.phoneme = v and "a" or ""
+    local v, p = PSDToolKitLib.talking(buf, rate, locut, hicut, threshold)
+    PSDToolKitLib.phoneme = p
     return
   end
 
   local ext = string.lower(string.sub(src, -4))
   if ext == ".lab" then
-    PSDToolKitLib.phoneme = PSDToolKitLib.talkingphoneme(src, obj.time)
+    local v, p = PSDToolKitLib.talkingphoneme(src, obj.time)
+    PSDToolKitLib.phoneme = p
     return
   end
   if ext == ".wav" then
     local n, rate, buf = obj.getaudio(nil, src, "spectrum", 32)
-    local v = PSDToolKitLib.talking(buf, rate, locut, hicut, threshold) >= 1.0
-    PSDToolKitLib.phoneme = v and "a" or ""
+    local v, p = PSDToolKitLib.talking(buf, rate, locut, hicut, threshold)
+    PSDToolKitLib.phoneme = p
     return
   end
   PSDToolKitLib.phoneme = ""
