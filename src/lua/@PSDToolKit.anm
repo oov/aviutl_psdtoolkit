@@ -181,10 +181,8 @@ end
 --check0:•ÒW‘S‘Ì‚Ì‰¹º‚ğŒ³‚É‚·‚é,0
 --file:
 tonumber(nil)
-require("PSDToolKitLib")
 if obj.check0 then
-  PSDToolKitLib.settalking(obj, nil, obj.track0, obj.track1, obj.track2)
-else
-  PSDToolKitLib.settalking(obj, file, obj.track0, obj.track1, obj.track2)
+  file = nil
 end
+require("PSDToolKitLib").settalking(obj, file, obj.track0, obj.track1, obj.track2)
 file = nil
