@@ -64,28 +64,30 @@ elseif obj.track0 == 15 and p15 ~= nil and p15 ~= "" then
 end
 
 @口パク あいうえお
+--track3:準備レイヤ,0,100,0,1
 --dialog:あ,a="";い,i="";う,u="";え,e="";お,o="";ん,n="";
+local volume, phoneme = PSDToolKitLib.gettalking(obj.track3)
 local v = "";
-if PSDToolKitLib.phoneme == "a" then
+if phoneme == "a" or phoneme == "_vol" then
   v = a ~= nil and a or ""
-elseif PSDToolKitLib.phoneme == "i" then
+elseif phoneme == "i" then
   v = i ~= nil and i or ""
-elseif PSDToolKitLib.phoneme == "u" then
+elseif phoneme == "u" then
   v = u ~= nil and u or ""
-elseif PSDToolKitLib.phoneme == "e" then
+elseif phoneme == "e" then
   v = e ~= nil and e or ""
-elseif PSDToolKitLib.phoneme == "o" then
+elseif phoneme == "o" then
   v = o ~= nil and o or ""
 else
   v = n ~= nil and n or ""
 end
-PSDToolKitLib.phoneme = ""
 if v ~= "" then
   PSDToolKitLib.psd:addstate(v)
 end
 
 @口パク 開閉のみ
 --track0:速さ,1,100,1,1
+--track3:準備レイヤ,0,100,0,1
 --dialog:開き,m0="";ほぼ開き,m1="";半開き,m2="";ほぼ閉じ,m3="";閉じ,m4="";
 local m = {}
 if m4 ~= nil and m4 ~= "" then
@@ -110,8 +112,8 @@ if #m > 0 then
   if stat.frame ~= obj.frame-1 then
     stat.n = 0
   end
-  local p = PSDToolKitLib.phoneme
-  if p == "a" or p == "i" or p == "u" or p == "e" or p == "o" then
+  local volume, phoneme = PSDToolKitLib.gettalking(obj.track3)
+  if phoneme == "_vol" or phoneme == "a" or phoneme == "i" or phoneme == "u" or phoneme == "e" or phoneme == "o" then
     stat.n = stat.n + 1
     if stat.n > #m*speed - 1 then
       stat.n = #m*speed - 1
@@ -123,10 +125,9 @@ if #m > 0 then
     end
   end
   stat.frame = obj.frame
-  stat.p = p
+  stat.p = phoneme
   PSDToolKitLib.psd:addstate(m[math.floor(stat.n / speed) + 1])
   PSDToolKitLib.talkstat[id] = stat
-  PSDToolKitLib.phoneme = ""
 end
 
 @目パチ
