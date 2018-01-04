@@ -125,18 +125,58 @@ PSDToolKitLib.talkingphoneme = function(labfile, time)
   time = time * 10000000
   local line
   local f = io.open(labfile, "r")
+  local r = {
+    progress = 0,
+    cur = "",
+    cur_start = 0,
+    cur_end = 0,
+    prev = "",
+    prev_start = 0,
+    prev_end = 0,
+    next = "",
+    next_start = 0,
+    next_end = 0
+  }
   for line in f:lines() do
     local st, ed, p = string.match(line, "(%d+) (%d+) (%a+)")
     if st == nil then
-      return "" -- unexpected format
+      return nil -- unexpected format
     end
-    if st+0 < time and time < ed+0 then
+    st = st + 0
+    ed = ed + 0
+    if st <= time then
+      if time < ed then
+        if r.cur == "" then
+          r.progress = (time - st)/(ed - st)
+          r.cur = p
+          r.cur_start = st
+          r.cur_end = ed
+        end
+      else
+        r.prev = p
+        r.prev_start = st
+        r.prev_end = ed
+      end
+    else
+      r.next = p
+      r.next_start = st
+      r.next_end = ed
       f:close()
-      return p
+      return r
     end
   end
   f:close()
-  return ""
+  return r
+end
+
+PSDToolKitLib.isvowel = function(p)
+  if p == "a" or p == "e" or p == "i" or p == "o" or p == "u" then
+    return 1
+  end
+  if p == "A" or p == "E" or p == "I" or p == "O" or p == "U" then
+    return -1
+  end
+  return 0
 end
 
 local function fileexists(filepath)
@@ -151,12 +191,11 @@ end
 PSDToolKitLib.settalking = function(obj, src, locut, hicut, threshold)
   local o = {
     v = 0,
-    p = ""
+    p = nil
   }
   if src == nil then
     local n, rate, buf = obj.getaudio(nil, "audiobuffer", "spectrum", 32)
     o.v = PSDToolKitLib.talking(buf, rate, locut, hicut, threshold)
-    o.p = (o.v >= 1.0) and "_vol" or ""
     PSDToolKitLib.phoneme["latest"] = o
     PSDToolKitLib.phoneme[obj.layer] = o
     return
@@ -179,7 +218,6 @@ PSDToolKitLib.settalking = function(obj, src, locut, hicut, threshold)
   if ext == ".wav" then
     local n, rate, buf = obj.getaudio(nil, src, "spectrum", 32)
     o.v = PSDToolKitLib.talking(buf, rate, locut, hicut, threshold)
-    o.p = (o.v >= 1.0) and "a" or ""
     PSDToolKitLib.phoneme["latest"] = o
     PSDToolKitLib.phoneme[obj.layer] = o
     return
@@ -194,9 +232,20 @@ PSDToolKitLib.gettalking = function(index)
   end
   local o = PSDToolKitLib.phoneme[index]
   if o == nil then
-    return "", 0
+    return 0, nil
   end
   PSDToolKitLib.phoneme[index] = nil
+  return o.v, o.p
+end
+
+PSDToolKitLib.peektalking = function(index)
+  if index == 0 then
+    index = "latest"
+  end
+  local o = PSDToolKitLib.phoneme[index]
+  if o == nil then
+    return 0, nil
+  end
   return o.v, o.p
 end
 

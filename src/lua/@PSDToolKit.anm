@@ -64,22 +64,111 @@ elseif obj.track0 == 15 and p15 ~= nil and p15 ~= "" then
 end
 
 @口パク あいうえお
+--track2:子音処理,0,2,0,1
 --track3:準備レイヤ,0,100,0,1
 --dialog:あ,a="";い,i="";う,u="";え,e="";お,o="";ん,n="";
+a = a ~= nil and a or ""
+e = e ~= nil and e or ""
+i = i ~= nil and i or ""
+n = n ~= nil and n or ""
+o = o ~= nil and o or ""
+u = u ~= nil and u or ""
+local patterns = {
+  a = a, A = a,
+  e = e, E = e,
+  i = i, I = i,
+  n = n, N = n,
+  o = o, O = o,
+  u = u, U = u
+}
 local volume, phoneme = PSDToolKitLib.gettalking(obj.track3)
 local v = "";
-if phoneme == "a" or phoneme == "_vol" then
-  v = a ~= nil and a or ""
-elseif phoneme == "i" then
-  v = i ~= nil and i or ""
-elseif phoneme == "u" then
-  v = u ~= nil and u or ""
-elseif phoneme == "e" then
-  v = e ~= nil and e or ""
-elseif phoneme == "o" then
-  v = o ~= nil and o or ""
+if phoneme == nil then
+  -- 音素情報がない時は音量に応じて「あ」の形を使う
+  -- （lab ファイルを使わずに「口パク　あいうえお」を使っている場合の措置）
+  if volume >= 1.0 then
+    v = patterns["a"]
+  end
 else
-  v = n ~= nil and n or ""
+  if PSDToolKitLib.isvowel(phoneme.cur) ~= 0 then
+    v = patterns[phoneme.cur]
+  else
+    if obj.track2 == 0 then
+      -- 子音処理タイプ0 -> 全て「ん」
+      v = patterns["n"]
+    elseif obj.track2 == 1 then
+      -- 子音処理タイプ1 -> 口を閉じる子音以外は前後の母音の形を引き継ぐ
+      if phoneme.cur == "pau" or phoneme.cur == "N" or phoneme.cur == "m" or phoneme.cur == "p" or phoneme.cur == "b" or phoneme.cur == "v" then
+        -- pau / ん / 子音（ま・ぱ・ば・ヴ行）
+        v = patterns["n"]
+      else
+        -- 処理されなかった全ての子音のデフォルト処理
+        -- 隣接する前後の母音の形を引き継ぐ
+        if phoneme.progress < 0.5 then
+          -- 前半は前の母音を引き継ぐ
+          if PSDToolKitLib.isvowel(phoneme.prev) ~= 0 and phoneme.prev_end == phoneme.cur_start then
+            v = patterns[phoneme.prev]
+          else
+            v = patterns["n"]
+          end
+        else
+          -- 後半は後ろの母音を先行させる
+          if PSDToolKitLib.isvowel(phoneme.next) ~= 0 and phoneme.next_start == phoneme.cur_end then
+            v = patterns[phoneme.next]
+          else
+            v = patterns["n"]
+          end
+        end
+      end
+    elseif obj.track2 == 2 then
+      -- 子音処理タイプ2 -> 口を閉じる子音以外は前後の母音の形より小さいもので補間
+      if phoneme.cur == "pau" or phoneme.cur == "N" or phoneme.cur == "m" or phoneme.cur == "p" or phoneme.cur == "b" or phoneme.cur == "v" then
+        -- pau / ん / 子音（ま・ぱ・ば・ヴ行）
+        v = patterns["n"]
+      elseif phoneme.cur == "cl" then
+        -- 促音（っ）
+        if phoneme.progress < 0.5 and PSDToolKitLib.isvowel(phoneme.prev) ~= 0 and phoneme.prev_end == phoneme.cur_start then
+          -- ひとつ前が母音で、かつ連続した場所に存在しているなら前半はその母音の形を引き継ぐ
+          v = patterns[phoneme.prev]
+        else
+          -- 後半は「う」の形で引き継ぐ
+          v = patterns["u"]
+        end
+      else
+        -- 処理されなかった全ての子音のデフォルト処理
+        -- 隣接する前後の母音に依存して形を決定する
+        if phoneme.progress < 0.5 then
+          -- 前半は前の母音を引き継ぐ
+          if PSDToolKitLib.isvowel(phoneme.prev) ~= 0 and phoneme.prev_end == phoneme.cur_start then
+            -- 前の母音よりなるべく小さい開け方になるように
+            if phoneme.prev == "a" or phoneme.prev == "A" then
+              v = patterns["o"]
+            elseif phoneme.prev == "i" or phoneme.prev == "I" then
+              v = patterns["i"]
+            else
+              v = patterns["u"]
+            end
+          else
+            v = patterns["n"]
+          end
+        else
+          -- 後半は後ろの母音を先行させる
+          if PSDToolKitLib.isvowel(phoneme.next) ~= 0 and phoneme.next_start == phoneme.cur_end then
+            -- 前の母音よりなるべく小さい開け方になるように
+            if phoneme.next == "a" or phoneme.next == "A" then
+              v = patterns["o"]
+            elseif phoneme.next == "i" or phoneme.next == "I" then
+              v = patterns["i"]
+            else
+              v = patterns["u"]
+            end
+          else
+            v = patterns["n"]
+          end
+        end
+      end
+    end
+  end
 end
 if v ~= "" then
   PSDToolKitLib.psd:addstate(v)
@@ -108,12 +197,12 @@ end
 if #m > 0 then
   local speed = obj.track0
   local id = PSDToolKitLib.psd.id
-  local stat = PSDToolKitLib.talkstat[id] or {frame = obj.frame-1, n = 0, p = ""}
+  local stat = PSDToolKitLib.talkstat[id] or {frame = obj.frame-1, n = 0}
   if stat.frame ~= obj.frame-1 then
     stat.n = 0
   end
   local volume, phoneme = PSDToolKitLib.gettalking(obj.track3)
-  if phoneme == "_vol" or phoneme == "a" or phoneme == "i" or phoneme == "u" or phoneme == "e" or phoneme == "o" then
+  if volume >= 1.0 then
     stat.n = stat.n + 1
     if stat.n > #m*speed - 1 then
       stat.n = #m*speed - 1
@@ -125,7 +214,6 @@ if #m > 0 then
     end
   end
   stat.frame = obj.frame
-  stat.p = phoneme
   PSDToolKitLib.psd:addstate(m[math.floor(stat.n / speed) + 1])
   PSDToolKitLib.talkstat[id] = stat
 end
