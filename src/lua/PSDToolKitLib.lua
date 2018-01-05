@@ -189,41 +189,58 @@ local function fileexists(filepath)
 end
 
 PSDToolKitLib.settalking = function(obj, src, locut, hicut, threshold)
-  local o = {
-    v = 0,
-    p = nil
-  }
+  local v, p = 0, nil
   if src == nil then
     local n, rate, buf = obj.getaudio(nil, "audiobuffer", "spectrum", 32)
-    o.v = PSDToolKitLib.talking(buf, rate, locut, hicut, threshold)
-    PSDToolKitLib.phoneme["latest"] = o
-    PSDToolKitLib.phoneme[obj.layer] = o
+    v = PSDToolKitLib.talking(buf, rate, locut, hicut, threshold)
+    PSDToolKitLib.settalkingraw(obj, v, p)
     return
   end
 
   local ext = string.lower(string.sub(src, -4))
   if ext == ".lab" then
-    o.p = PSDToolKitLib.talkingphoneme(src, obj.time)
+    p = PSDToolKitLib.talkingphoneme(src, obj.time)
     local wav = string.sub(src, 1, #src - 3) .. "wav"
     if fileexists(wav) then
       local n, rate, buf = obj.getaudio(nil, wav, "spectrum", 32)
-      o.v = PSDToolKitLib.talking(buf, rate, locut, hicut, threshold)
+      v = PSDToolKitLib.talking(buf, rate, locut, hicut, threshold)
     else
-      o.v = (#p > 0) and 1 or 0
+      v = (p ~= nil and #p.cur > 0) and 1 or 0
     end
-    PSDToolKitLib.phoneme["latest"] = o
-    PSDToolKitLib.phoneme[obj.layer] = o
+    PSDToolKitLib.settalkingraw(obj, v, p)
     return
   end
   if ext == ".wav" then
     local n, rate, buf = obj.getaudio(nil, src, "spectrum", 32)
-    o.v = PSDToolKitLib.talking(buf, rate, locut, hicut, threshold)
-    PSDToolKitLib.phoneme["latest"] = o
-    PSDToolKitLib.phoneme[obj.layer] = o
+    v = PSDToolKitLib.talking(buf, rate, locut, hicut, threshold)
+    PSDToolKitLib.settalkingraw(obj, v, p)
     return
   end
+  PSDToolKitLib.settalkingraw(obj, v, p)
+end
+
+PSDToolKitLib.settalkingraw = function(obj, volume, phoneme)
+  local o = {
+    v = volume,
+    p = phoneme
+  }
   PSDToolKitLib.phoneme["latest"] = o
   PSDToolKitLib.phoneme[obj.layer] = o
+end
+
+PSDToolKitLib.settalkingcur = function(obj, curphoneme)
+  PSDToolKitLib.settalkingraw(obj, 0, {
+    progress = obj.time/obj.totaltime,
+    cur = curphoneme,
+    cur_start = 1,
+    cur_end = obj.totaltime+1,
+    prev = "",
+    prev_start = 0,
+    prev_end = 0,
+    next = "",
+    next_start = 0,
+    next_end = 0
+  })
 end
 
 PSDToolKitLib.gettalking = function(index)

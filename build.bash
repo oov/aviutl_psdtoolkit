@@ -49,10 +49,12 @@ sed 's/\r$//' 'src/lua/@PSDToolKit.obj' | sed 's/$/\r/' > 'bin/script/PSDToolKit
 sed 's/\r$//' 'src/lua/GCMZDrops/psd.lua' | sed 's/$/\r/' > 'bin/GCMZDrops/psdtoolkit_psd.lua'
 sed 's/\r$//' 'src/lua/GCMZDrops/wav.lua' | sed 's/$/\r/' > 'bin/GCMZDrops/psdtoolkit_wav.lua'
 sed 's/\r$//' 'src/lua/GCMZDrops/srt.lua' | sed 's/$/\r/' > 'bin/GCMZDrops/psdtoolkit_srt.lua'
+sed 's/\r$//' 'src/lua/GCMZDrops/lab.lua' | sed 's/$/\r/' > 'bin/GCMZDrops/psdtoolkit_lab.lua'
 sed 's/\r$//' 'src/lua/GCMZDrops/exa/lip.exa' | sed 's/$/\r/' > 'bin/GCMZDrops/exa/lip.exa'
 sed 's/\r$//' 'src/lua/GCMZDrops/exa/text.exa' | sed 's/$/\r/' > 'bin/GCMZDrops/exa/text.exa'
 sed 's/\r$//' 'src/lua/GCMZDrops/exa/wav.exa' | sed 's/$/\r/' > 'bin/GCMZDrops/exa/wav.exa'
 sed 's/\r$//' 'src/lua/GCMZDrops/exa/srt.exa' | sed 's/$/\r/' > 'bin/GCMZDrops/exa/srt.exa'
+sed 's/\r$//' 'src/lua/GCMZDrops/exa/lab.exa' | sed 's/$/\r/' > 'bin/GCMZDrops/exa/lab.exa'
 
 # build src/go/assets/bindata.go
 pushd src/go/assets
