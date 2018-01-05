@@ -77,7 +77,7 @@ local patterns = {
   a = a, A = a,
   e = e, E = e,
   i = i, I = i,
-  n = n, N = n,
+  N = n,
   o = o, O = o,
   u = u, U = u
 }
@@ -87,7 +87,7 @@ if phoneme == nil then
   -- 音素情報がない時は音量に応じて「あ」の形を使う
   -- （lab ファイルを使わずに「口パク　あいうえお」を使っている場合の措置）
   if volume >= 1.0 then
-    v = patterns["a"]
+    v = patterns.a
   end
 else
   if PSDToolKitLib.isvowel(phoneme.cur) ~= 0 then
@@ -95,12 +95,12 @@ else
   else
     if obj.track2 == 0 then
       -- 子音処理タイプ0 -> 全て「ん」
-      v = patterns["n"]
+      v = patterns.N
     elseif obj.track2 == 1 then
       -- 子音処理タイプ1 -> 口を閉じる子音以外は前後の母音の形を引き継ぐ
       if phoneme.cur == "pau" or phoneme.cur == "N" or phoneme.cur == "m" or phoneme.cur == "p" or phoneme.cur == "b" or phoneme.cur == "v" then
         -- pau / ん / 子音（ま・ぱ・ば・ヴ行）
-        v = patterns["n"]
+        v = patterns.N
       else
         -- 処理されなかった全ての子音のデフォルト処理
         -- 隣接する前後の母音の形を引き継ぐ
@@ -109,14 +109,14 @@ else
           if PSDToolKitLib.isvowel(phoneme.prev) ~= 0 and phoneme.prev_end == phoneme.cur_start then
             v = patterns[phoneme.prev]
           else
-            v = patterns["n"]
+            v = patterns.N
           end
         else
           -- 後半は後ろの母音を先行させる
           if PSDToolKitLib.isvowel(phoneme.next) ~= 0 and phoneme.next_start == phoneme.cur_end then
             v = patterns[phoneme.next]
           else
-            v = patterns["n"]
+            v = patterns.N
           end
         end
       end
@@ -124,7 +124,7 @@ else
       -- 子音処理タイプ2 -> 口を閉じる子音以外は前後の母音の形より小さいもので補間
       if phoneme.cur == "pau" or phoneme.cur == "N" or phoneme.cur == "m" or phoneme.cur == "p" or phoneme.cur == "b" or phoneme.cur == "v" then
         -- pau / ん / 子音（ま・ぱ・ば・ヴ行）
-        v = patterns["n"]
+        v = patterns.N
       elseif phoneme.cur == "cl" then
         -- 促音（っ）
         if phoneme.progress < 0.5 and PSDToolKitLib.isvowel(phoneme.prev) ~= 0 and phoneme.prev_end == phoneme.cur_start then
@@ -132,7 +132,7 @@ else
           v = patterns[phoneme.prev]
         else
           -- 後半は「う」の形で引き継ぐ
-          v = patterns["u"]
+          v = patterns.u
         end
       else
         -- 処理されなかった全ての子音のデフォルト処理
@@ -142,28 +142,28 @@ else
           if PSDToolKitLib.isvowel(phoneme.prev) ~= 0 and phoneme.prev_end == phoneme.cur_start then
             -- 前の母音よりなるべく小さい開け方になるように
             if phoneme.prev == "a" or phoneme.prev == "A" then
-              v = patterns["o"]
+              v = patterns.o
             elseif phoneme.prev == "i" or phoneme.prev == "I" then
-              v = patterns["i"]
+              v = patterns.i
             else
-              v = patterns["u"]
+              v = patterns.u
             end
           else
-            v = patterns["n"]
+            v = patterns.N
           end
         else
           -- 後半は後ろの母音を先行させる
           if PSDToolKitLib.isvowel(phoneme.next) ~= 0 and phoneme.next_start == phoneme.cur_end then
             -- 前の母音よりなるべく小さい開け方になるように
             if phoneme.next == "a" or phoneme.next == "A" then
-              v = patterns["o"]
+              v = patterns.o
             elseif phoneme.next == "i" or phoneme.next == "I" then
-              v = patterns["i"]
+              v = patterns.i
             else
-              v = patterns["u"]
+              v = patterns.u
             end
           else
-            v = patterns["n"]
+            v = patterns.N
           end
         end
       end
