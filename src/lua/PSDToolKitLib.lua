@@ -99,6 +99,9 @@ PSDToolKitLib.psd = {
 }
 
 PSDToolKitLib.talking = function(buf, rate, lo, hi, thr)
+  if thr == 0 then
+    return 0
+  end
   local n = #buf
   local hzstep = rate / 2 / 1024
   local v, d, hz = 0, 0, 0
@@ -115,28 +118,155 @@ PSDToolKitLib.talking = function(buf, rate, lo, hi, thr)
   if d > 0 then
     v = v / d
   end
-  return v > thr
+  return v / thr
 end
 
 PSDToolKitLib.talkingphoneme = function(labfile, time)
   time = time * 10000000
   local line
   local f = io.open(labfile, "r")
+  local r = {
+    progress = 0,
+    cur = "",
+    cur_start = 0,
+    cur_end = 0,
+    prev = "",
+    prev_start = 0,
+    prev_end = 0,
+    next = "",
+    next_start = 0,
+    next_end = 0
+  }
   for line in f:lines() do
     local st, ed, p = string.match(line, "(%d+) (%d+) (%a+)")
     if st == nil then
-      return "" -- unexpected format
+      return nil -- unexpected format
     end
-    if st+0 < time and time < ed+0 then
+    st = st + 0
+    ed = ed + 0
+    if st <= time then
+      if time < ed then
+        if r.cur == "" then
+          r.progress = (time - st)/(ed - st)
+          r.cur = p
+          r.cur_start = st
+          r.cur_end = ed
+        end
+      else
+        r.prev = p
+        r.prev_start = st
+        r.prev_end = ed
+      end
+    else
+      r.next = p
+      r.next_start = st
+      r.next_end = ed
       f:close()
-      return p
+      return r
     end
   end
   f:close()
-  return ""
+  return r
 end
 
-PSDToolKitLib.phoneme = PSDToolKitLib.phoneme or ""
+PSDToolKitLib.isvowel = function(p)
+  if p == "a" or p == "e" or p == "i" or p == "o" or p == "u" then
+    return 1
+  end
+  if p == "A" or p == "E" or p == "I" or p == "O" or p == "U" then
+    return -1
+  end
+  return 0
+end
+
+local function fileexists(filepath)
+  local f = io.open(filepath, "rb")
+  if f ~= nil then
+    f:close()
+    return true
+  end
+  return false
+end
+
+PSDToolKitLib.settalking = function(obj, src, locut, hicut, threshold)
+  local v, p = 0, nil
+  if src == nil then
+    local n, rate, buf = obj.getaudio(nil, "audiobuffer", "spectrum", 32)
+    v = PSDToolKitLib.talking(buf, rate, locut, hicut, threshold)
+    PSDToolKitLib.settalkingraw(obj, v, p)
+    return
+  end
+
+  local ext = string.lower(string.sub(src, -4))
+  if ext == ".lab" then
+    p = PSDToolKitLib.talkingphoneme(src, obj.time)
+    local wav = string.sub(src, 1, #src - 3) .. "wav"
+    if fileexists(wav) then
+      local n, rate, buf = obj.getaudio(nil, wav, "spectrum", 32)
+      v = PSDToolKitLib.talking(buf, rate, locut, hicut, threshold)
+    else
+      v = (p ~= nil and #p.cur > 0) and 1 or 0
+    end
+    PSDToolKitLib.settalkingraw(obj, v, p)
+    return
+  end
+  if ext == ".wav" then
+    local n, rate, buf = obj.getaudio(nil, src, "spectrum", 32)
+    v = PSDToolKitLib.talking(buf, rate, locut, hicut, threshold)
+    PSDToolKitLib.settalkingraw(obj, v, p)
+    return
+  end
+  PSDToolKitLib.settalkingraw(obj, v, p)
+end
+
+PSDToolKitLib.settalkingraw = function(obj, volume, phoneme)
+  local o = {
+    v = volume,
+    p = phoneme
+  }
+  PSDToolKitLib.phoneme["latest"] = o
+  PSDToolKitLib.phoneme[obj.layer] = o
+end
+
+PSDToolKitLib.settalkingcur = function(obj, curphoneme)
+  PSDToolKitLib.settalkingraw(obj, 0, {
+    progress = obj.time/obj.totaltime,
+    cur = curphoneme,
+    cur_start = 1,
+    cur_end = obj.totaltime+1,
+    prev = "",
+    prev_start = 0,
+    prev_end = 0,
+    next = "",
+    next_start = 0,
+    next_end = 0
+  })
+end
+
+PSDToolKitLib.gettalking = function(index)
+  if index == 0 then
+    index = "latest"
+  end
+  local o = PSDToolKitLib.phoneme[index]
+  if o == nil then
+    return 0, nil
+  end
+  PSDToolKitLib.phoneme[index] = nil
+  return o.v, o.p
+end
+
+PSDToolKitLib.peektalking = function(index)
+  if index == 0 then
+    index = "latest"
+  end
+  local o = PSDToolKitLib.phoneme[index]
+  if o == nil then
+    return 0, nil
+  end
+  return o.v, o.p
+end
+
+PSDToolKitLib.phoneme = PSDToolKitLib.phoneme or {}
 
 PSDToolKitLib.talkstat = PSDToolKitLib.talkstat or {}
 

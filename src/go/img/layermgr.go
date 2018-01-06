@@ -403,11 +403,11 @@ func (m *LayerManager) NormalizeMap(layers map[int]*bool, flip Flip) bool {
 }
 
 func isForceVisible(s string) bool {
-	return len(s) > 2 && s[0] == '!' && s != "!?"
+	return len(s) > 1 && s[0] == '!' && s != "!?"
 }
 
 func isGroup(s string) bool {
-	return len(s) > 2 && s[0] == '*' && s[1] != '*'
+	return len(s) > 1 && s[0] == '*' && s[1] != '*'
 }
 
 func registerFlips(m *LayerManager, l *composite.Layer, sib []composite.Layer) {

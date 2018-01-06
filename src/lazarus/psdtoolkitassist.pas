@@ -221,13 +221,47 @@ type
   ShiftJISString = type ansistring(932);
 const
   ShowGUICaption: WideString = 'ウィンドウを表示';
+  ExEditNameANSI = #$8a#$67#$92#$a3#$95#$d2#$8f#$57; // '拡張編集'
+  ExEditVersion = ' version 0.92 ';
   HWND_MESSAGE = HWND(-3);
+  PROCESSOR_ARCHITECTURE_AMD64 = 9;
 var
+  i: Integer;
   wc: WNDCLASS;
+  si: SYSTEM_INFO;
+  asi: TSysInfo;
+  exedit: PFilter;
 begin
   Result := True;
-  if (MainDLLInstance = 0) or not LuaLoaded() then
-    Exit;
+  FWindow := 0;
+
+  try
+    GetNativeSystemInfo(@si);
+    if si.wProcessorArchitecture <> PROCESSOR_ARCHITECTURE_AMD64 then
+      raise Exception.Create('PSDToolKit を使用するには64bit 版の Windows が必要です。');
+    if MainDLLInstance = 0 then
+      raise Exception.Create('script\PSDToolKit\PSDToolKit.dll の読み込みに失敗しました。');
+    if not LuaLoaded() then
+      raise Exception.Create('lua51.dll の読み込みに失敗しました。');
+    if fp^.ExFunc^.GetSysInfo(nil, @asi) = AVIUTL_FALSE then
+      raise Exception.Create('AviUtl のバージョン情報取得に失敗しました。');
+    if asi.Build < 10000 then
+      raise Exception.Create('PSDToolKit を使うには AviUtl version 1.00 以降が必要です。');
+    for i := 0 to asi.FilterN - 1 do
+    begin
+      exedit := fp^.ExFunc^.GetFilterP(i);
+      if (exedit = nil) or (exedit^.Name <> ExEditNameANSI) then
+        continue;
+      if StrPos(exedit^.Information, ExEditVersion) = nil then
+        raise Exception.Create('PSDToolKit を使うには拡張編集'+ExEditVersion+'が必要です。');
+      break;
+    end;
+  except
+    on E: Exception do begin
+      MessageBoxW(0, PWideChar('PSDToolKit の初期化に失敗しました。'#13#10#13#10 + WideString(E.Message)), 'PSDToolKit', MB_ICONERROR);
+      Exit;
+    end;
+  end;
 
   wc.style := 0;
   wc.lpfnWndProc := @MenuWndProc;
@@ -253,7 +287,8 @@ begin
   Result := True;
   if MainDLLInstance = 0 then
     Exit;
-  DestroyWindow(FWindow);
+  if FWindow <> 0 then
+    DestroyWindow(FWindow);
 end;
 
 function TPSDToolKitAssist.WndProc(Window: HWND; Message: UINT; WP: WPARAM;
