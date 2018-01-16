@@ -1,6 +1,6 @@
 # Changelog
 
-## 0.1.3beta5 2018-01-XX
+## 0.1.3beta5 2018-01-17
 
 - ごちゃまぜドロップスを 0.3beta2 へ更新
 - Instant CTalk を追加
