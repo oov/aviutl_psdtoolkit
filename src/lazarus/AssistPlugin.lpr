@@ -13,4 +13,6 @@ exports
   GetFilterTableList;
 
 begin
+  SetMultiByteConversionCodePage(CP_UTF8);
+  Randomize();
 end.
