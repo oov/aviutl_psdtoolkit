@@ -43,17 +43,21 @@ PSDToolKit は AviUtl の拡張編集プラグイン上で PSD ファイルを�
   - 口パク　開閉のみ
   - 口パク準備
   - 目パチ
-- GCMZDrops/*.lua - ごちゃまぜドロップス用スクリプトファイル
+- GCMZDrops/*.lua - ごちゃまぜドロップス用スクリプトファイルなど
   - ごちゃまぜドロップスに同梱されているファイル
     - _entrypoint.lua
     - avoiddup.lua
     - example.lua
     - generic.lua
     - textsjis.lua
+    - dropper/example.lua
   - PSDToolKit 用のスクリプトファイル
     - psdtoolkit_psd.lua - 拡張編集ウィンドウに PSD ファイルをドロップ可能にする
     - psdtoolkit_wav.lua - シフトキーを押しながら *.wav ファイルをドロップで口パク準備なども自動生成
     - psdtoolkit_srt.lua - 字幕ファイル(*.srt) をドロップでテキストオブジェクトを自動生成
+    - psdtoolkit_lab.lua - ラベルファイル(*.lab) をドロップでテキストオブジェクトを自動生成
+    - dropper/psdtoolkit_ictalk.lua - Instant CTalk（CeVIO API による簡易的な音声作成ツール）
+    - dropper/ICTalk.dll - Instant CTalk のダイアログ表示を行うための Lua プラグイン
 
 更新履歴は CHANGELOG などを参照してください。  
 https://github.com/oov/aviutl_psdtoolkit/blob/master/CHANGELOG.md
