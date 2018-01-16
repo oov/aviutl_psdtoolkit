@@ -1,35 +1,35 @@
 local P = {}
 
-P.name = "LAB ファイルをインポート"
+P.name = "LAB �t�@�C�����C���|�[�g"
 
 P.priority = 0
 
--- 音素用のエイリアスファイル(*.exa)をどのように参照するか
--- この設定を使うと、ドロップされた *.lab ファイルの名前に応じて別のエイリアスファイルを使用できます。
--- エイリアスファイルは exa フォルダーの中に配置して下さい。
--- 該当するファイルが見つからない場合は exa\lab.exa が代わりに使用されます。
---   0 - 常に同じファイルを参照する
---     ドロップされたファイルに関わらず以下のエイリアスファイルが使用されます。
+-- ���f�p�̃G�C���A�X�t�@�C��(*.exa)���ǂ̂悤�ɎQ�Ƃ��邩
+-- ���̐ݒ���g���ƁA�h���b�v���ꂽ *.lab �t�@�C���̖��O�ɉ����ĕʂ̃G�C���A�X�t�@�C�����g�p�ł��܂��B
+-- �G�C���A�X�t�@�C���� exa �t�H���_�[�̒��ɔz�u���ĉ������B
+-- �Y������t�@�C����������Ȃ��ꍇ�� exa\lab.exa ������Ɏg�p����܂��B
+--   0 - ��ɓ����t�@�C�����Q�Ƃ���
+--     �h���b�v���ꂽ�t�@�C���Ɋւ�炸�ȉ��̃G�C���A�X�t�@�C�����g�p����܂��B
 --       exa\lab.exa
---   1 - ファイルが入っているフォルダ名を元にする
---     例: ドロップされたファイルが C:\MyFolder\TKHS_Hello_World.lab の時
+--   1 - �t�@�C���������Ă���t�H���_�������ɂ���
+--     ��: �h���b�v���ꂽ�t�@�C���� C:\MyFolder\TKHS_Hello_World.lab �̎�
 --       exa\MyFolder_lab.exa
---   2 - ファイル名を元にする
---     例: ドロップされたファイルが C:\MyFolder\TKHS_Hello_World.lab の時
+--   2 - �t�@�C���������ɂ���
+--     ��: �h���b�v���ꂽ�t�@�C���� C:\MyFolder\TKHS_Hello_World.lab �̎�
 --       exa\TKHS_Hello_World_lab.exa
---   3 - ファイル名の中で _ で区切られた最初の部分を元にする
---     例: ドロップされたファイルが C:\MyFolder\TKHS_Hello_World.lab の時
+--   3 - �t�@�C�����̒��� _ �ŋ�؂�ꂽ�ŏ��̕��������ɂ���
+--     ��: �h���b�v���ꂽ�t�@�C���� C:\MyFolder\TKHS_Hello_World.lab �̎�
 --       exa\TKHS_lab.exa
---   4 - ファイル名の中で _ で区切られた2つめの部分を元にする
---     例: ドロップされたファイルが C:\MyFolder\TKHS_Hello_World.lab の時
+--   4 - �t�@�C�����̒��� _ �ŋ�؂�ꂽ2�߂̕��������ɂ���
+--     ��: �h���b�v���ꂽ�t�@�C���� C:\MyFolder\TKHS_Hello_World.lab �̎�
 --       exa\Hello_lab.exa
---   5 - ファイル名の中で _ で区切られた3つめの部分を元にする
---     例: ドロップされたファイルが C:\MyFolder\TKHS_Hello_World.lab の時
+--   5 - �t�@�C�����̒��� _ �ŋ�؂�ꂽ3�߂̕��������ɂ���
+--     ��: �h���b�v���ꂽ�t�@�C���� C:\MyFolder\TKHS_Hello_World.lab �̎�
 --       exa\World_lab.exa
 P.exa_finder = 0
 
--- エイリアスファイルの改変処理
--- 一般的な用途では変更する必要はありません。
+-- �G�C���A�X�t�@�C���̉��Ϗ���
+-- ��ʓI�ȗp�r�ł͕ύX����K�v�͂���܂���B
 P.exa_modifler_lab = function(exa, values, modifiers)
   exa:set("vo", "start", values.START + 1)
   exa:set("vo", "end", values.END + 1)
@@ -45,7 +45,7 @@ P.text_escape = function(s)
 end
 
 -- ===========================================================
--- 設定　ここまで
+-- �ݒ�@�����܂�
 -- ===========================================================
 
 local wavP = require("psdtoolkit_wav")
@@ -53,7 +53,7 @@ local wavP = require("psdtoolkit_wav")
 function P.ondragenter(files, state)
   for i, v in ipairs(files) do
     if v.filepath:match("[^.]+$"):lower() == "lab" then
-      -- ファイルの拡張子が lab のファイルがあったら処理できそうなので true
+      -- �t�@�C���̊g���q�� lab �̃t�@�C�����������珈���ł������Ȃ̂� true
       return true
     end
   end
@@ -61,7 +61,7 @@ function P.ondragenter(files, state)
 end
 
 function P.ondragover(files, state)
-  -- ondragenter で処理できそうなものは ondragover でも処理できそうなので調べず true
+  -- ondragenter �ŏ����ł������Ȃ��̂� ondragover �ł������ł������Ȃ̂Œ��ׂ� true
   return true
 end
 
@@ -78,7 +78,7 @@ function P.parse(filepath)
     if st == nil then
       return nil -- unexpected format
     end
-    -- 秒単位に変換
+    -- �b�P�ʂɕϊ�
     maxendf = ed/10000000
     table.insert(r, {s=st/10000000, e=maxendf, p=p})
   end
@@ -88,11 +88,11 @@ end
 
 function P.ondrop(files, state)
   for i, v in ipairs(files) do
-    -- ファイルの拡張子が lab なら
+    -- �t�@�C���̊g���q�� lab �Ȃ�
     if v.filepath:match("[^.]+$"):lower() == "lab" then
-      -- プロジェクトの情報を取得する
+      -- �v���W�F�N�g�̏����擾����
       local proj = GCMZDrops.getexeditfileinfo()
-      -- lab ファイルを解析
+      -- lab �t�@�C�������
       local lab, len = P.parse(v.filepath)
 
       local oini = GCMZDrops.inistring("")
@@ -104,9 +104,9 @@ function P.ondrop(files, state)
       oini:set("exedit", "audio_rate", proj.audio_rate)
       oini:set("exedit", "audio_ch", proj.audio_ch)
       
-      -- lab の内容に従ってテキストオブジェクトを挿入していく
-      -- もし表示が被る場合は表示先のレイヤーも変える
-      -- ただしそれでも結局正しく扱えないのであまり意味はないかも
+      -- lab �̓��e�ɏ]���ăe�L�X�g�I�u�W�F�N�g��}�����Ă���
+      -- �����\�������ꍇ�͕\����̃��C���[���ς���
+      -- ����������ł����ǐ����������Ȃ��̂ł��܂�Ӗ��͂Ȃ�����
       local textbase = tostring(wavP.exaread(wavP.resolvepath(v.filepath, P.exa_finder), "lab"))
       local values = {
         START = 0,
@@ -151,11 +151,11 @@ function P.ondrop(files, state)
       end
       exo:write(tostring(oini))
       exo:close()
-      debug_print("["..P.name.."] が " .. v.filepath .. " を exo ファイルに差し替えました。元のファイルは orgfilepath で取得できます。")
+      debug_print("["..P.name.."] �� " .. v.filepath .. " �� exo �t�@�C���ɍ����ւ��܂����B���̃t�@�C���� orgfilepath �Ŏ擾�ł��܂��B")
       files[i] = {filepath=filepath, orgfilepath=v.filepath}
     end
   end
-  -- 他のイベントハンドラーにも処理をさせたいのでここは常に false
+  -- ���̃C�x���g�n���h���[�ɂ����������������̂ł����͏�� false
   return false
 end
 

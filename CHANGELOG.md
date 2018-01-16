@@ -4,6 +4,7 @@
 
 - ごちゃまぜドロップスを 0.3beta2 へ更新
 - Instant CTalk を追加
+- psdtoolkit_lab.lua の文字コードが間違っていたのを修正
 
 ## 0.1.3beta4 2018-01-05
 
