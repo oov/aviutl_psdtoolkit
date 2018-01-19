@@ -151,31 +151,29 @@ func (m *LayerManager) SetVisibleExclusive(seqID int, visible bool, flip Flip) b
 	return modified
 }
 
-func (m *LayerManager) normalizeGroupMap(seqID int, layers map[int]*bool) bool {
+func (m *LayerManager) normalizeGroupMap(seqID int, layers map[int]*deserializingState) bool {
 	g, ok := m.Group[seqID]
 	if !ok {
 		return false
 	}
 
-	modified := false
-	var done bool
+	found, maxPriority, maxPrioritySeqID := 0, -1, -1
 	for i := len(*g) - 1; i >= 0; i-- {
 		seqID := (*g)[i]
-		if !*layers[seqID] {
+		if !layers[seqID].Visible {
 			continue
 		}
-		if !done {
-			done = true
-			continue
+		found++
+		if layers[seqID].Priority > maxPriority {
+			maxPriority = layers[seqID].Priority
+			maxPrioritySeqID = seqID
 		}
-		*layers[seqID] = false
-		modified = true
+		layers[seqID].Visible = false
 	}
-	if !done && len(*g) > 0 {
-		*layers[(*g)[len(*g)-1]] = true
-		modified = true
+	if found > 0 {
+		layers[maxPrioritySeqID].Visible = true
 	}
-	return modified
+	return found > 1
 }
 
 func (m *LayerManager) normalizeFlipOne(seqID int, flip Flip) bool {
@@ -263,7 +261,7 @@ func (m *LayerManager) NormalizeFlipOne(seqID int, flip Flip) bool {
 	return m.normalizeFlipOne(seqID, flip)
 }
 
-func (m *LayerManager) normalizeFlipOneMap(seqID int, flip Flip, layers map[int]*bool, processed map[int]struct{}) bool {
+func (m *LayerManager) normalizeFlipOneMap(seqID int, flip Flip, layers map[int]*deserializingState, processed map[int]struct{}) bool {
 	if _, ok := processed[seqID]; ok {
 		return false
 	}
@@ -284,22 +282,22 @@ func (m *LayerManager) normalizeFlipOneMap(seqID int, flip Flip, layers map[int]
 	}
 	processed[orgID] = struct{}{}
 
-	org := layers[orgID]
+	org := &layers[orgID].Visible
 
 	xID := m.FlipXPair.FindMirror(orgID)
 	yID := m.FlipYPair.FindMirror(orgID)
 	xyID := m.FlipXYPair.FindMirror(orgID)
 	var mrrX, mrrY, mrrXY *bool
 	if xID != -1 {
-		mrrX = layers[xID]
+		mrrX = &layers[xID].Visible
 		processed[xID] = struct{}{}
 	}
 	if yID != -1 {
-		mrrY = layers[yID]
+		mrrY = &layers[yID].Visible
 		processed[yID] = struct{}{}
 	}
 	if xyID != -1 {
-		mrrXY = layers[xyID]
+		mrrXY = &layers[xyID].Visible
 		processed[xyID] = struct{}{}
 	}
 	if !*org &&
@@ -359,31 +357,30 @@ func (m *LayerManager) normalizeFlipOneMap(seqID int, flip Flip, layers map[int]
 }
 
 func (m *LayerManager) Normalize(flip Flip) bool {
-	layers := make(map[int]*bool, len(m.Flat))
+	layers := make(map[int]*deserializingState, len(m.Flat))
 	for _, seqID := range m.Flat {
-		b := m.Mapped[seqID].Visible
-		layers[seqID] = &b
+		layers[seqID] = &deserializingState{Visible: m.Mapped[seqID].Visible}
 	}
 	if !m.NormalizeMap(layers, flip) {
 		return false
 	}
-	for seqID, visible := range layers {
+	for seqID, dstate := range layers {
 		l := m.Mapped[seqID]
-		if l.Visible != *visible {
-			l.Visible = *visible
+		if l.Visible != dstate.Visible {
+			l.Visible = dstate.Visible
 			m.Renderer.SetDirtyByLayer(l)
 		}
 	}
 	return true
 }
 
-func (m *LayerManager) NormalizeMap(layers map[int]*bool, flip Flip) bool {
+func (m *LayerManager) NormalizeMap(layers map[int]*deserializingState, flip Flip) bool {
 	modified := false
 	for seqID := range m.ForceVisible {
-		if *layers[seqID] == true {
+		if layers[seqID].Visible == true {
 			continue
 		}
-		*layers[seqID] = true
+		layers[seqID].Visible = true
 		modified = true
 	}
 
@@ -491,17 +488,22 @@ func enumChildren(m *LayerManager, l *composite.Layer, sib []composite.Layer, di
 	}
 }
 
+type deserializingState struct {
+	Visible  bool
+	Priority int
+}
+
 func (m *LayerManager) Deserialize(s string, flip Flip, faviewRoot *FaviewNode) (bool, Flip, error) {
-	layers := make(map[int]*bool, len(m.Flat))
-	n := make([]bool, len(m.Flat))
+	layers := make(map[int]*deserializingState, len(m.Flat))
+	n := make([]deserializingState, len(m.Flat))
 	for index, seqID := range m.Flat {
-		n[index] = m.Mapped[seqID].Visible
+		n[index].Visible = m.Mapped[seqID].Visible
 		layers[seqID] = &n[index]
 	}
 
 	var items []*FaviewNode
 	newFlip := flip
-	for _, line := range strings.Split(s, " ") {
+	for priority, line := range strings.Split(s, " ") {
 		if len(line) < 2 {
 			continue
 		}
@@ -528,20 +530,29 @@ func (m *LayerManager) Deserialize(s string, flip Flip, faviewRoot *FaviewNode) 
 			i := 0
 			for _, v := range buf[2:] {
 				if i+7 < len(n) {
-					n[i+0] = v&0x80 != 0
-					n[i+1] = v&0x40 != 0
-					n[i+2] = v&0x20 != 0
-					n[i+3] = v&0x10 != 0
-					n[i+4] = v&0x08 != 0
-					n[i+5] = v&0x04 != 0
-					n[i+6] = v&0x02 != 0
-					n[i+7] = v&0x01 != 0
+					n[i+0].Visible = v&0x80 != 0
+					n[i+0].Priority = priority + 1
+					n[i+1].Visible = v&0x40 != 0
+					n[i+1].Priority = priority + 1
+					n[i+2].Visible = v&0x20 != 0
+					n[i+2].Priority = priority + 1
+					n[i+3].Visible = v&0x10 != 0
+					n[i+3].Priority = priority + 1
+					n[i+4].Visible = v&0x08 != 0
+					n[i+4].Priority = priority + 1
+					n[i+5].Visible = v&0x04 != 0
+					n[i+5].Priority = priority + 1
+					n[i+6].Visible = v&0x02 != 0
+					n[i+6].Priority = priority + 1
+					n[i+7].Visible = v&0x01 != 0
+					n[i+7].Priority = priority + 1
 					i += 8
 					continue
 				}
 				v <<= 8 - uint(len(n)-i)
 				for i < len(n) {
-					n[i] = v&0x80 != 0
+					n[i].Visible = v&0x80 != 0
+					n[i].Priority = priority + 1
 					v <<= 1
 					i++
 				}
@@ -561,16 +572,20 @@ func (m *LayerManager) Deserialize(s string, flip Flip, faviewRoot *FaviewNode) 
 			for _, v := range buf[2:] {
 				if i+3 < len(n) {
 					if v&0x80 != 0 {
-						n[i+0] = v&0x40 != 0
+						n[i+0].Visible = v&0x40 != 0
+						n[i+0].Priority = priority + 1
 					}
 					if v&0x20 != 0 {
-						n[i+1] = v&0x10 != 0
+						n[i+1].Visible = v&0x10 != 0
+						n[i+1].Priority = priority + 1
 					}
 					if v&0x08 != 0 {
-						n[i+2] = v&0x04 != 0
+						n[i+2].Visible = v&0x04 != 0
+						n[i+2].Priority = priority + 1
 					}
 					if v&0x02 != 0 {
-						n[i+3] = v&0x01 != 0
+						n[i+3].Visible = v&0x01 != 0
+						n[i+3].Priority = priority + 1
 					}
 					i += 4
 					continue
@@ -578,7 +593,8 @@ func (m *LayerManager) Deserialize(s string, flip Flip, faviewRoot *FaviewNode) 
 				v <<= (4 - uint(len(n)-i)) * 2
 				for i < len(n) {
 					if v&0x80 != 0 {
-						n[i] = v&0x40 != 0
+						n[i].Visible = v&0x40 != 0
+						n[i].Priority = priority + 1
 					}
 					v <<= 2
 					i++
@@ -611,7 +627,8 @@ func (m *LayerManager) Deserialize(s string, flip Flip, faviewRoot *FaviewNode) 
 					if !pass {
 						continue
 					}
-					n[i] = v[i]
+					n[i].Visible = v[i]
+					n[i].Priority = priority + 1
 				}
 			}
 		}
@@ -620,10 +637,10 @@ func (m *LayerManager) Deserialize(s string, flip Flip, faviewRoot *FaviewNode) 
 	m.NormalizeMap(layers, newFlip)
 	modified := flip != newFlip
 	r := m.Renderer
-	for seqID, visible := range layers {
+	for seqID, dstate := range layers {
 		l := m.Mapped[seqID]
-		if l.Visible != *visible {
-			l.Visible = *visible
+		if l.Visible != dstate.Visible {
+			l.Visible = dstate.Visible
 			r.SetDirtyByLayer(l)
 			modified = true
 		}
