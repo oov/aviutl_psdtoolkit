@@ -37,7 +37,7 @@ procedure WriteUInt32(const S: TStream; const V: DWORD);
 procedure WriteInt32(const S: TStream; const V: integer);
 procedure WriteSingle(const S: TStream; const V: single);
 procedure WriteString(const S: TStream; const V: UTF8String);
-procedure WriteRawString(const S: TStream; const V: string);
+procedure WriteRawString(const S: TStream; const V: RawByteString);
 procedure WriteIdAndFileName(const S: TStream; const ID: integer;
   const FileName: UTF8String);
 
@@ -267,7 +267,7 @@ begin
   S.WriteBuffer(V[1], Length(V));
 end;
 
-procedure WriteRawString(const S: TStream; const V: string);
+procedure WriteRawString(const S: TStream; const V: RawByteString);
 begin
   S.WriteBuffer(V[1], Length(V));
 end;
