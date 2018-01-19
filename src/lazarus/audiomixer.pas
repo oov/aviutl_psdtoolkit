@@ -511,7 +511,7 @@ begin
     SetWindowText(FParamsLabel, nil);
     Exit;
   end;
-  SetWindowText(FParamsLabel, PChar(ParamsToString(Strip)));
+  SetWindowTextW(FParamsLabel, PWideChar(WideString(ParamsToString(Strip))));
 end;
 
 function TAudioMixer.GetChannelStripEntry: PFilterDLL;
