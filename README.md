@@ -11,6 +11,7 @@ PSDToolKit は AviUtl の拡張編集プラグイン上で PSD ファイルを�
   - メニューに「ウィンドウを表示（デフォルトショートカットキー `Ctrl+W`）」を追加
 - AudioMixer.auf - AviUtl 用のプラグイン
   - 拡張編集で使える「チャンネルストリップ」オーディオフィルタを追加
+  - 拡張編集で使える「Aux1 チャンネルストリップ」オーディオフィルタを追加
   - 内部的に使用する「マスターチャンネルストリップ」を追加（常時有効）
 - GCMZDrops.auf - AviUtl 用のプラグイン
   - 拡張編集ウィンドウにファイルを投げつけた時の挙動を拡張するためのプラグイン
@@ -28,6 +29,7 @@ PSDToolKit は AviUtl の拡張編集プラグイン上で PSD ファイルを�
   - パーツ差し替え
   - 口パク
   - 目パチ
+  - 口パク準備
 - script/PSDToolKit/@PSDToolKit.obj - AviUtl 用のカスタムオブジェクトスクリプトセット
   - 口パク準備
 - script/PSDToolKit/PSDToolKitLib.lua - Lua で行うメイン処理が書かれたファイル
@@ -37,6 +39,7 @@ PSDToolKit は AviUtl の拡張編集プラグイン上で PSD ファイルを�
 - PSDToolKit/*.exa - 機能を探しやすくするための AviUtl 用エイリアスファイル
   - PSDToolKitオブジェクト
   - オブジェクト描画
+  - テキスト　字幕表示用・文字送り
   - テキスト　字幕表示用
   - パーツ差し替え
   - 口パク　あいうえお

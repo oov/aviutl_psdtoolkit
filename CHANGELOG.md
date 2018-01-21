@@ -1,4 +1,7 @@
 # Changelog
+## 0.1.3
+
+- Instant CTalk のキャスト選択を保持
 
 ## 0.1.3beta8 2018-01-20
 
