@@ -258,8 +258,9 @@ procedure TICTalkDialog.InitDialog();
 var
   h: THandle;
   SL: TStringList;
-  I: integer;
+  I, Idx: integer;
   started: boolean;
+  SelectedCast, WS: WideString;
 begin
   h := GetControl(ID_EDIT_TALK_MESSAGE);
   FEditOriginalProc := Windows.WNDPROC(GetWindowLongPtr(h, GWL_WNDPROC));
@@ -277,10 +278,16 @@ begin
   h := GetControl(ID_LISTBOX_CASTS);
   SL := GetAvailableCasts();
   try
-    for I := 0 to SL.Count - 1 do
-      SendMessageW(h, LB_ADDSTRING, 0, {%H-}LPARAM(PWideChar(WideString(SL[I]))));
+    Idx := 0;
+    SelectedCast := WideString(FIni.ReadString('Generic', 'SelectedCast', ''));
+    for I := 0 to SL.Count - 1 do begin
+      WS := WideString(SL[I]);
+      SendMessageW(h, LB_ADDSTRING, 0, {%H-}LPARAM(PWideChar(WS)));
+      if WS = SelectedCast then
+        Idx := I;
+    end;
     if SL.Count > 0 then
-      CastIndex := 0;
+      CastIndex := Idx;
   finally
     SL.Free;
   end;
@@ -297,6 +304,7 @@ end;
 procedure TICTalkDialog.FinalDialog();
 begin
   FIni.WriteBool('Generic', 'ExportSubtitle', ExportSubtitleText);
+  FIni.WriteString('Generic', 'SelectedCast', String(CastName));
   SetWindowLong(GetControl(ID_EDIT_TALK_MESSAGE), GWL_WNDPROC, LONG(FEditOriginalProc));
 end;
 
