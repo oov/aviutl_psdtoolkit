@@ -226,9 +226,15 @@ function P.insertexa(destini, srcini, index, layer)
 end
 
 local function fire(state, v)
-  if P.firemode == 0 then
+  local firemode = P.firemode
+  if v.overridefiremode ~= nil then
+    -- 他のスクリプトから overridefiremode 属性を追加されていた場合は
+    -- 設定内容に関わらずそちらの発動モードを採用する
+    firemode = v.overridefiremode
+  end
+  if firemode == 0 then
     return state.shift
-  elseif P.firemode == 1 then
+  elseif firemode == 1 then
     if state.shift then
       return false
     end
@@ -296,8 +302,14 @@ function P.ondrop(files, state)
         if text ~= nil then
           -- 文字エンコーディングが Shift_JIS 以外の時は Shift_JIS へ変換する
           -- TODO: GCMZDrops.encodeexotext で UTF-8 の受け入れを可能に
-          if P.text_encoding ~= "sjis" then
-            text = GCMZDrops.convertencoding(text, P.text_encoding, "sjis")
+          local enc = P.text_encoding
+          if v.overridetextencoding ~= nil then
+            -- 他のスクリプトから overridetextencoding 属性を追加されていた場合は
+            -- 設定内容に関わらずそちらの文字エンコーディングを採用する
+            enc = v.overridetextencoding
+          end
+          if enc ~= "sjis" then
+            text = GCMZDrops.convertencoding(text, enc, "sjis")
           end
           -- 挿入モードが 2 の時はテキストをスクリプトとして整形する
           if P.insertmode == 2 then

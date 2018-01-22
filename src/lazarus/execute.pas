@@ -119,11 +119,12 @@ begin
         begin
           Inc(PC);
           S := PC;
-          SS := S;
         end
         else
-          SS := FSliderName;
-        WriteRawString(f, Format('--track0:%s,1,%d,1,1'#13#10, [SS, N]));
+          S := FSliderName;
+        S := Format('--track0:%s,1,%d,1,1'#13#10, [S, N]);
+        SS := S;
+        WriteRawString(f, SS);
         WriteRawString(f, 'local names = {');
         while True do
         begin

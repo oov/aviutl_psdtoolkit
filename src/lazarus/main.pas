@@ -253,7 +253,17 @@ procedure TPSDToolKit.PrepareIPC;
 begin
   if FRemoteProcess.Running then
     Exit;
-  FRemoteProcess.Execute;
+  try
+    FRemoteProcess.Execute;
+  except
+    on E: EProcess do begin
+      raise Exception.Create(
+        'failed to execute: script\PSDToolKit\PSDToolKit.exe'#13#10+
+        E.Message+#13#10#13#10+
+        'Please check whether the antivirus software is blocking program execution.'#13#10+
+        'アンチウィルスソフトがプログラム実行を阻害していないか確認してください。');
+    end;
+  end;
   FRemoteProcess.CloseStderr;
   FRemoteProcess.Input.WriteBuffer('HELO', 4);
 

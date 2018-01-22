@@ -41,6 +41,8 @@ exports
   luaopen_PSDToolKit;
 
 initialization
+  SetMultiByteConversionCodePage(CP_UTF8);
+  Randomize();
   LoadLua(GetLuaDLLName());
 
 finalization
