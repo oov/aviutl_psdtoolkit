@@ -95,64 +95,76 @@ func b2i(b bool) int32 {
 	return 0
 }
 
-func (lv *LayerView) Render(ctx *nk.Context, winRect nk.Rect, img *img.Image) bool {
+func (lv *LayerView) Render(ctx *nk.Context, img *img.Image) bool {
+	if img == nil {
+		return false
+	}
+
+	const PADDING = 2
+	const LayerTabPaneHeight = 30
+
 	modified := false
-	if nk.NkBegin(ctx, "Layer", winRect, 0) != 0 {
-		if img != nil {
-			if img.PFV != nil {
-				if len(img.PFV.FaviewRoot.Children) > 0 {
-					nk.NkLayoutRowDynamic(ctx, 28, 3)
-					if nk.NkSelectLabel(ctx, "レイヤー", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.layerFavSelectedIndex == 0)) != b2i(lv.layerFavSelectedIndex == 0) {
-						lv.layerFavSelectedIndex = 0
-					}
-					if nk.NkSelectLabel(ctx, "シンプルV", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.layerFavSelectedIndex == 1)) != b2i(lv.layerFavSelectedIndex == 1) {
-						lv.layerFavSelectedIndex = 1
-					}
-					if nk.NkSelectLabel(ctx, "お気に入り", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.layerFavSelectedIndex == 2)) != b2i(lv.layerFavSelectedIndex == 2) {
-						lv.layerFavSelectedIndex = 2
-					}
-				} else {
-					nk.NkLayoutRowDynamic(ctx, 28, 2)
-					if nk.NkSelectLabel(ctx, "レイヤー", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.layerFavSelectedIndex == 0)) != b2i(lv.layerFavSelectedIndex == 0) {
-						lv.layerFavSelectedIndex = 0
-					}
-					if nk.NkSelectLabel(ctx, "お気に入り", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.layerFavSelectedIndex == 2)) != b2i(lv.layerFavSelectedIndex == 2) {
-						lv.layerFavSelectedIndex = 2
-					}
+	rgn := nk.NkWindowGetContentRegion(ctx)
+
+	nk.NkLayoutRowDynamic(ctx, LayerTabPaneHeight-PADDING, 1)
+	if nk.NkGroupBegin(ctx, "LayerTabPane", nk.WindowNoScrollbar) != 0 {
+		if img.PFV != nil {
+			if len(img.PFV.FaviewRoot.Children) > 0 {
+				nk.NkLayoutRowDynamic(ctx, LayerTabPaneHeight, 3)
+				if nk.NkSelectLabel(ctx, "レイヤー", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.layerFavSelectedIndex == 0)) != b2i(lv.layerFavSelectedIndex == 0) {
+					lv.layerFavSelectedIndex = 0
+				}
+				if nk.NkSelectLabel(ctx, "シンプルV", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.layerFavSelectedIndex == 1)) != b2i(lv.layerFavSelectedIndex == 1) {
+					lv.layerFavSelectedIndex = 1
+				}
+				if nk.NkSelectLabel(ctx, "お気に入り", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.layerFavSelectedIndex == 2)) != b2i(lv.layerFavSelectedIndex == 2) {
+					lv.layerFavSelectedIndex = 2
 				}
 			} else {
-				lv.layerFavSelectedIndex = 0
+				nk.NkLayoutRowDynamic(ctx, LayerTabPaneHeight, 2)
+				if nk.NkSelectLabel(ctx, "レイヤー", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.layerFavSelectedIndex == 0)) != b2i(lv.layerFavSelectedIndex == 0) {
+					lv.layerFavSelectedIndex = 0
+				}
+				if nk.NkSelectLabel(ctx, "お気に入り", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.layerFavSelectedIndex == 2)) != b2i(lv.layerFavSelectedIndex == 2) {
+					lv.layerFavSelectedIndex = 2
+				}
 			}
+		} else {
+			lv.layerFavSelectedIndex = 0
+		}
+		nk.NkGroupEnd(ctx)
+	}
 
-			switch lv.layerFavSelectedIndex {
-			case 0:
-				for i := len(img.PSD.Root.Children) - 1; i >= 0; i-- {
-					modified = lv.layoutLayer(ctx, img, 0, &img.PSD.Root.Children[i], true) || modified
+	nk.NkLayoutRowDynamic(ctx, rgn.H()-LayerTabPaneHeight-PADDING, 1)
+	if nk.NkGroupBegin(ctx, "MainTreePane", 0) != 0 {
+		switch lv.layerFavSelectedIndex {
+		case 0:
+			for i := len(img.PSD.Root.Children) - 1; i >= 0; i-- {
+				modified = lv.layoutLayer(ctx, img, 0, &img.PSD.Root.Children[i], true) || modified
+			}
+		case 1:
+			if img.PFV != nil && len(img.PFV.FaviewRoot.Children) > 0 {
+				nk.NkLayoutRowDynamic(ctx, 28, 1)
+				img.PFV.FaviewRoot.SelectedIndex = int(nk.NkComboString(
+					ctx,
+					img.PFV.FaviewRoot.ItemNameList,
+					int32(img.PFV.FaviewRoot.SelectedIndex),
+					int32(len(img.PFV.FaviewRoot.Children)),
+					28,
+					nk.NkVec2(rgn.W(), rgn.H()),
+				))
+				children := img.PFV.FaviewRoot.Children[img.PFV.FaviewRoot.SelectedIndex].Children
+				for i := range children {
+					modified = lv.layoutFaview(ctx, img, 0, &children[i]) || modified
 				}
-			case 1:
-				if img.PFV != nil && len(img.PFV.FaviewRoot.Children) > 0 {
-					nk.NkLayoutRowDynamic(ctx, 28, 1)
-					img.PFV.FaviewRoot.SelectedIndex = int(nk.NkComboString(
-						ctx,
-						img.PFV.FaviewRoot.ItemNameList,
-						int32(img.PFV.FaviewRoot.SelectedIndex),
-						int32(len(img.PFV.FaviewRoot.Children)),
-						28,
-						nk.NkVec2(winRect.W(), winRect.H()),
-					))
-					children := img.PFV.FaviewRoot.Children[img.PFV.FaviewRoot.SelectedIndex].Children
-					for i := range children {
-						modified = lv.layoutFaview(ctx, img, 0, &children[i]) || modified
-					}
-				}
-			case 2:
-				if img.PFV != nil {
-					modified = lv.layoutFavorites(ctx, img, 0, &img.PFV.Root) || modified
-				}
+			}
+		case 2:
+			if img.PFV != nil {
+				modified = lv.layoutFavorites(ctx, img, 0, &img.PFV.Root) || modified
 			}
 		}
+		nk.NkGroupEnd(ctx)
 	}
-	nk.NkEnd(ctx)
 	return modified
 }
 

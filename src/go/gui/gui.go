@@ -5,7 +5,6 @@ import (
 	"context"
 	"image"
 	"image/png"
-	"math"
 	"time"
 
 	"github.com/golang-ui/nuklear/nk"
@@ -17,27 +16,16 @@ import (
 	"github.com/oov/aviutl_psdtoolkit/src/go/img"
 	"github.com/oov/aviutl_psdtoolkit/src/go/imgmgr/editing"
 	"github.com/oov/aviutl_psdtoolkit/src/go/imgmgr/source"
+	"github.com/oov/aviutl_psdtoolkit/src/go/nkhelper"
 	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
 )
 
 const (
 	winWidth          = 1024
 	winHeight         = 768
-	topPaneHeight     = 48
-	bottomPaneHeight  = 56
+	topPaneHeight     = 30
 	topRightPaneWidth = 280
 	layerPaneWidth    = 320
-	layerPaneHeight   = winHeight - bottomPaneHeight - topPaneHeight
-	mainViewWidth     = winWidth - layerPaneWidth
-	mainViewHeight    = layerPaneHeight
-)
-
-type viewResizeMode int
-
-const (
-	vrmNone viewResizeMode = iota
-	vrmFast
-	vrmBeautiful
 )
 
 type GUI struct {
@@ -48,20 +36,10 @@ type GUI struct {
 
 	edImg editing.Editing
 
-	cancelRender        context.CancelFunc
-	cancelUpdateResized context.CancelFunc
-	cancelViewResize    context.CancelFunc
-	viewResizeRunning   viewResizeMode
-	viewResizeQueued    viewResizeMode
+	cancelRender context.CancelFunc
 
 	img           *img.Image
 	renderedImage *image.RGBA
-
-	minZoom  float32
-	maxZoom  float32
-	stepZoom float32
-	zoom     float64
-	zooming  bool
 
 	layerView *layerview.LayerView
 	mainView  *mainview.MainView
@@ -84,10 +62,6 @@ func New(Srcs *source.Sources) *GUI {
 	g := &GUI{
 		queue: make(chan func()),
 		edImg: editing.Editing{Srcs: Srcs},
-
-		minZoom:  -5,
-		maxZoom:  0,
-		stepZoom: 0.001,
 	}
 	return g
 }
@@ -140,6 +114,7 @@ func (g *GUI) Init(caption string, bgImg, mainFont, symbolFont []byte) error {
 	if err != nil {
 		return errors.Wrap(err, "gui: failed to initialize mainview")
 	}
+	g.mainView.SetZoomRange(-5, 0, 0.001)
 	return nil
 }
 
@@ -198,20 +173,7 @@ func (g *GUI) changeSelectedImage() {
 		return
 	}
 
-	// makes fit to the main view at initial look
-	targetRect := g.mainView.LatestActiveRect()
-	if targetRect.Empty() {
-		targetRect.Max.X += winWidth - layerPaneWidth
-		targetRect.Max.Y += winHeight - bottomPaneHeight
-	}
-	z := float64(targetRect.Dx()) / float64(img.PSD.CanvasRect.Dx())
-	if z*float64(img.PSD.CanvasRect.Dy()) > float64(targetRect.Dy()) {
-		z = float64(targetRect.Dy()) / float64(img.PSD.CanvasRect.Dy())
-	}
-	g.zoom = math.Log(z) / math.Ln2
-	g.mainView.ScrollToCenter()
-
-	updateRenderedImage(g, g.img)
+	updateRenderedImage(g, img)
 	g.layerView.UpdateThumbnails(img.PSD, 24, g.do)
 }
 
@@ -219,65 +181,73 @@ func (g *GUI) update() {
 	ctx := g.context
 	nk.NkPlatformNewFrame()
 	width, height := g.window.GetSize()
+	const PADDING = 2
 
 	modified := false
-	if nk.NkBegin(ctx, "TopLeftPane", nk.NkRect(0, 0, float32(width-topRightPaneWidth), topPaneHeight), 0) != 0 {
-		nk.NkLayoutRowDynamic(ctx, 28, 1)
-		n0 := g.edImg.SelectedIndex
-		n1 := int(nk.NkComboString(ctx, g.edImg.StringList(), int32(n0), int32(g.edImg.Len()), 28, nk.NkVec2(600, float32(height))))
-		if n0 != n1 {
-			g.edImg.SelectedIndex = n1
-			g.changeSelectedImage()
+
+	nk.NkStylePushVec2(ctx, nkhelper.GetStyleWindowPaddingPtr(ctx), nk.NkVec2(0, 0))
+	nk.NkStylePushVec2(ctx, nkhelper.GetStyleWindowGroupPaddingPtr(ctx), nk.NkVec2(0, 0))
+
+	if nk.NkBegin(ctx, "MainWindow", nk.NkRect(0, 0, float32(width), float32(height)), nk.WindowNoScrollbar) != 0 {
+		nk.NkLayoutRowBegin(ctx, nk.Static, topPaneHeight-PADDING, 2)
+
+		nk.NkLayoutRowPush(ctx, float32(width-topRightPaneWidth-PADDING))
+		if nk.NkGroupBegin(ctx, "TabPane", nk.WindowNoScrollbar) != 0 {
+			nk.NkLayoutRowDynamic(ctx, 28, 1)
+			n0 := g.edImg.SelectedIndex
+			n1 := int(nk.NkComboString(ctx, g.edImg.StringList(), int32(n0), int32(g.edImg.Len()), 28, nk.NkVec2(600, float32(height))))
+			if n0 != n1 {
+				g.edImg.SelectedIndex = n1
+				g.changeSelectedImage()
+			}
+			nk.NkGroupEnd(ctx)
 		}
+
+		nk.NkLayoutRowPush(ctx, float32(topRightPaneWidth-PADDING))
+		if nk.NkGroupBegin(ctx, "FilpSendPane", nk.WindowNoScrollbar) != 0 {
+			nk.NkLayoutRowDynamic(ctx, 28, 3)
+			if g.img != nil {
+				fx, fy := g.img.FlipX(), g.img.FlipY()
+				if (nk.NkSelectLabel(ctx, "⇆", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(fx)) != 0) != fx {
+					modified = g.img.SetFlipX(!fx) || modified
+				}
+				if (nk.NkSelectLabel(ctx, "⇅", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(fy)) != 0) != fy {
+					modified = g.img.SetFlipY(!fy) || modified
+				}
+				if nk.NkButtonLabel(ctx, "送る") != 0 {
+					g.sendEditingImage()
+				}
+			}
+			nk.NkGroupEnd(ctx)
+		}
+
+		nk.NkLayoutRowEnd(ctx)
+
+		nk.NkLayoutRowBegin(ctx, nk.Static, float32(height-topPaneHeight-PADDING), 2)
+
+		nk.NkLayoutRowPush(ctx, float32(layerPaneWidth-PADDING))
+		if nk.NkGroupBegin(ctx, "LayerTreePane", nk.WindowNoScrollbar) != 0 {
+			modified = g.layerView.Render(ctx, g.img) || modified
+			if modified {
+				g.img.Modified = true
+				g.img.Layers.Normalize(g.img.Flip)
+				updateRenderedImage(g, g.img)
+			}
+			nk.NkGroupEnd(ctx)
+		}
+
+		nk.NkLayoutRowPush(ctx, float32(width-layerPaneWidth-PADDING))
+		if nk.NkGroupBegin(ctx, "MainPane", nk.WindowNoScrollbar) != 0 {
+			g.mainView.Render(ctx)
+			nk.NkGroupEnd(ctx)
+		}
+		nk.NkLayoutRowEnd(ctx)
 	}
 	nk.NkEnd(ctx)
 
-	if nk.NkBegin(ctx, "TopRightPane", nk.NkRect(float32(width-topRightPaneWidth), 0, float32(topRightPaneWidth), topPaneHeight), 0) != 0 {
-		nk.NkLayoutRowDynamic(ctx, 28, 3)
-		if g.img != nil {
-			fx, fy := g.img.FlipX(), g.img.FlipY()
-			if (nk.NkSelectLabel(ctx, "⇆", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(fx)) != 0) != fx {
-				modified = g.img.SetFlipX(!fx) || modified
-			}
-			if (nk.NkSelectLabel(ctx, "⇅", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(fy)) != 0) != fy {
-				modified = g.img.SetFlipY(!fy) || modified
-			}
-			if nk.NkButtonLabel(ctx, "送る") != 0 {
-				g.sendEditingImage()
-			}
-		}
-	}
-	nk.NkEnd(ctx)
+	nk.NkStylePopVec2(ctx)
+	nk.NkStylePopVec2(ctx)
 
-	modified = g.layerView.Render(ctx, nk.NkRect(0, topPaneHeight, layerPaneWidth, float32(height-topPaneHeight)), g.img) || modified
-	if modified {
-		g.img.Modified = true
-		g.img.Layers.Normalize(g.img.Flip)
-		updateRenderedImage(g, g.img)
-	}
-
-	if nk.NkBegin(ctx, "BottomPane", nk.NkRect(layerPaneWidth, float32(height-bottomPaneHeight), float32(width-layerPaneWidth), bottomPaneHeight), 0) != 0 {
-		nk.NkLayoutRowDynamic(ctx, 0, 1)
-		if z := float64(nk.NkSlideFloat(ctx, g.minZoom, float32(g.zoom), g.maxZoom, g.stepZoom)); z != g.zoom {
-			if !g.zooming {
-				g.zooming = true
-			}
-			g.zoom = z
-			if g.renderedImage != nil {
-				updateViewImage(g, g.renderedImage, true)
-			}
-		} else if (ctx.LastWidgetState()&nk.WidgetStateActive) != nk.WidgetStateActive && g.zooming {
-			g.zooming = false
-			if g.renderedImage != nil {
-				updateViewImage(g, g.renderedImage, false)
-			}
-		}
-	}
-	nk.NkEnd(ctx)
-
-	g.mainView.Render(ctx, nk.NkRect(layerPaneWidth, topPaneHeight, float32(width-layerPaneWidth), float32(height-bottomPaneHeight-topPaneHeight)), g.zoom)
-
-	// Render
 	g.window.Render()
 }
 

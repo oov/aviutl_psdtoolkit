@@ -45,35 +45,14 @@ void *style_button_padding(void *p) {
 	return &ctx->style.button.padding;
 }
 
-struct nk_vec2 window_scrollbar_offset(void *p) {
-	struct nk_window *w = p;
-	struct nk_vec2 r = {w->scrollbar.x, w->scrollbar.y};
-	return r;
+void *style_window_padding(void *p) {
+	struct nk_context *ctx = p;
+	return &ctx->style.window.padding;
 }
 
-struct nk_rect window_bounds(void *p) {
-	struct nk_window *w = p;
-	return w->bounds;
-}
-
-void set_window_scrollbar_offset(void *p, void *o) {
-	struct nk_window *w = p;
-	struct nk_vec2 *offset = o;
-	w->scrollbar.x = offset->x;
-	w->scrollbar.y = offset->y;
-}
-
-struct nk_vec2 panel_offset(void *p) {
-	struct nk_panel *pn = p;
-	struct nk_vec2 r = {*pn->offset_x, *pn->offset_y};
-	return r;
-}
-
-void set_panel_offset(void *p, void *o) {
-	struct nk_panel *pn = p;
-	struct nk_vec2 *offset = o;
-	*pn->offset_x = offset->x;
-	*pn->offset_y = offset->y;
+void *style_window_group_padding(void *p) {
+	struct nk_context *ctx = p;
+	return &ctx->style.window.group_padding;
 }
 
 float font_height(void *p) {
@@ -118,27 +97,12 @@ func GetStyleButtonPaddingPtr(ctx *nk.Context) *nk.Vec2 {
 	return (*nk.Vec2)(C.style_button_padding(unsafe.Pointer(ctx.Ref())))
 }
 
-func GetWindowScrollBarOffset(w *nk.Window) nk.Vec2 {
-	r := C.window_scrollbar_offset(unsafe.Pointer(w.Ref()))
-	return *(*nk.Vec2)(unsafe.Pointer(&r))
+func GetStyleWindowPaddingPtr(ctx *nk.Context) *nk.Vec2 {
+	return (*nk.Vec2)(C.style_window_padding(unsafe.Pointer(ctx.Ref())))
 }
 
-func GetWindowBounds(w *nk.Window) nk.Rect {
-	r := C.window_bounds(unsafe.Pointer(w.Ref()))
-	return *(*nk.Rect)(unsafe.Pointer(&r))
-}
-
-func SetWindowScrollBarOffset(w *nk.Window, offset nk.Vec2) {
-	C.set_window_scrollbar_offset(unsafe.Pointer(w.Ref()), unsafe.Pointer(offset.Ref()))
-}
-
-func GetPanelOffset(p *nk.Panel) nk.Vec2 {
-	r := C.panel_offset(unsafe.Pointer(p.Ref()))
-	return *(*nk.Vec2)(unsafe.Pointer(&r))
-}
-
-func SetPanelOffset(p *nk.Panel, offset nk.Vec2) {
-	C.set_panel_offset(unsafe.Pointer(p.Ref()), unsafe.Pointer(offset.Ref()))
+func GetStyleWindowGroupPaddingPtr(ctx *nk.Context) *nk.Vec2 {
+	return (*nk.Vec2)(C.style_window_group_padding(unsafe.Pointer(ctx.Ref())))
 }
 
 func FontHeight(p *nk.UserFont) float32 {
