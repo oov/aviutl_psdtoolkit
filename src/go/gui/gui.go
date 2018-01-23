@@ -171,7 +171,7 @@ func (g *GUI) changeSelectedImage() {
 	}
 
 	updateRenderedImage(g, img)
-	g.layerView.UpdateThumbnails(img.PSD, 24, g.do)
+	g.layerView.UpdateLayerThumbnails(img.PSD, 24, g.do)
 }
 
 func (g *GUI) update() {

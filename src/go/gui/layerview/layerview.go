@@ -59,7 +59,7 @@ func New(mainFontHandle, symbolFontHandle *nk.UserFont) (*LayerView, error) {
 	return lv, nil
 }
 
-func (lv *LayerView) UpdateThumbnails(tree *composite.Tree, size int, doMain func(func())) {
+func (lv *LayerView) UpdateLayerThumbnails(tree *composite.Tree, size int, doMain func(func())) {
 	lv.thumbnailChip = map[int]*nk.Image{}
 	lv.thumbnailSize = size
 	go func() {
