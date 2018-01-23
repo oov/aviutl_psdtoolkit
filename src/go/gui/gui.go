@@ -37,7 +37,8 @@ type GUI struct {
 
 	cancelRender context.CancelFunc
 
-	img           *img.Image
+	img         *img.Image
+	thumbnailer *editing.Thumbnailer
 
 	layerView *layerview.LayerView
 	mainView  *mainview.MainView
@@ -69,7 +70,7 @@ func (g *GUI) AddFile(path string) error {
 	gc.EnterCS()
 	go g.do(gc.LeaveCS)
 
-	if _, err := g.edImg.Add(path); err != nil {
+	if err := g.edImg.Add(path); err != nil {
 		return err
 	}
 	g.changeSelectedImage()
@@ -170,6 +171,7 @@ func (g *GUI) changeSelectedImage() {
 		return
 	}
 
+	g.thumbnailer = g.edImg.SelectedImageThumbnailer()
 	updateRenderedImage(g, img)
 	g.layerView.UpdateLayerThumbnails(img.PSD, 24, g.do)
 }
