@@ -46,7 +46,6 @@ func updateRenderedImage(g *GUI, img *img.Image) {
 		}
 		ods.ODS("rendering: %dms", (time.Now().UnixNano()-s)/1e6)
 		g.do(func() {
-			g.renderedImage = rgba
 			g.mainView.SetRenderedImage(rgba)
 			cancel()
 		})

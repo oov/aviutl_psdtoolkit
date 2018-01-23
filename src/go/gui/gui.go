@@ -3,7 +3,6 @@ package gui
 import (
 	"bytes"
 	"context"
-	"image"
 	"image/png"
 	"time"
 
@@ -39,7 +38,6 @@ type GUI struct {
 	cancelRender context.CancelFunc
 
 	img           *img.Image
-	renderedImage *image.RGBA
 
 	layerView *layerview.LayerView
 	mainView  *mainview.MainView
@@ -167,7 +165,6 @@ func b2i(b bool) int32 {
 func (g *GUI) changeSelectedImage() {
 	img := g.edImg.SelectedImage()
 	g.img = img
-	g.renderedImage = nil
 	g.mainView.Clear()
 	if img == nil {
 		return
