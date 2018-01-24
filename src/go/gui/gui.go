@@ -184,12 +184,11 @@ func (g *GUI) update() {
 	width, height := g.window.GetSize()
 
 	const (
-		topPaneHeight      = 28
-		flipSendPaneWidth  = 280
-		closeButtonWidth   = 28
-		layerTreePaneWidth = 320
-		sideTabPaneWidth   = 64
-		padding            = 2
+		sidePaneWidth    = 360
+		topPaneHeight    = 28
+		closeButtonWidth = 28
+		sideTabPaneWidth = 64
+		padding          = 2
 	)
 
 	modified := false
@@ -198,12 +197,14 @@ func (g *GUI) update() {
 	nk.NkStylePushVec2(ctx, nkhelper.GetStyleWindowGroupPaddingPtr(ctx), nk.NkVec2(0, 0))
 
 	if nk.NkBegin(ctx, "MainWindow", nk.NkRect(0, 0, float32(width), float32(height)), nk.WindowNoScrollbar) != 0 {
-		nk.NkLayoutRowBegin(ctx, nk.Static, topPaneHeight-padding, 3)
+		nk.NkLayoutRowBegin(ctx, nk.Static, float32(height-padding), 2)
 
-		if g.img != nil {
-			nk.NkLayoutRowPush(ctx, float32(flipSendPaneWidth-padding))
-			if nk.NkGroupBegin(ctx, "FilpSendPane", nk.WindowNoScrollbar) != 0 {
-				nk.NkLayoutRowDynamic(ctx, 28, 3)
+		nk.NkLayoutRowPush(ctx, float32(sidePaneWidth-padding))
+		if nk.NkGroupBegin(ctx, "UIPane", nk.WindowNoScrollbar) != 0 {
+			if g.img != nil {
+				rgn := nk.NkWindowGetContentRegion(ctx)
+
+				nk.NkLayoutRowDynamic(ctx, float32(topPaneHeight-padding), 3)
 				if nk.NkButtonLabel(ctx, "送る") != 0 {
 					g.sendEditingImage()
 				}
@@ -214,53 +215,65 @@ func (g *GUI) update() {
 				if (nk.NkSelectLabel(ctx, "⇅", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(fy)) != 0) != fy {
 					modified = g.img.SetFlipY(!fy) || modified
 				}
-				nk.NkGroupEnd(ctx)
+
+				nk.NkLayoutRowBegin(ctx, nk.Static, float32(rgn.H()-padding), 3)
+
+				nk.NkLayoutRowPush(ctx, float32(sideTabPaneWidth-padding))
+				if nk.NkGroupBegin(ctx, "SideTabPane", nk.WindowNoScrollbar) != 0 {
+					n0 := g.edImg.SelectedIndex
+					n1 := g.tabView.Render(ctx)
+					if n0 != n1 {
+						g.edImg.SelectedIndex = n1
+						g.changeSelectedImage()
+					}
+					nk.NkGroupEnd(ctx)
+				}
+
+				nk.NkLayoutRowPush(ctx, float32(rgn.W()-sideTabPaneWidth-padding))
+				if nk.NkGroupBegin(ctx, "LayerTreePane", nk.WindowNoScrollbar) != 0 {
+					modified = g.layerView.Render(ctx, g.img) || modified
+					if modified {
+						g.img.Modified = true
+						g.img.Layers.Normalize(g.img.Flip)
+						updateRenderedImage(g, g.img)
+					}
+					nk.NkGroupEnd(ctx)
+				}
+				nk.NkLayoutRowEnd(ctx)
 			}
 
-			nk.NkLayoutRowPush(ctx, float32(width-flipSendPaneWidth-closeButtonWidth-padding*3))
-			nk.NkLabel(ctx, g.edImg.SelectedImageDisplayName(), nk.TextLeft)
-
-			nk.NkLayoutRowPush(ctx, float32(closeButtonWidth-padding))
-			if nk.NkButtonLabel(ctx, "×") != 0 {
-				g.edImg.Delete(g.edImg.SelectedIndex)
-				g.changeSelectedImage()
-			}
+			nk.NkGroupEnd(ctx)
 		}
 
-		nk.NkLayoutRowEnd(ctx)
+		nk.NkLayoutRowPush(ctx, float32(width-sidePaneWidth-padding))
+		if nk.NkGroupBegin(ctx, "MainPane", nk.WindowNoScrollbar) != 0 {
+			if g.img != nil {
+				rgn := nk.NkWindowGetContentRegion(ctx)
 
-		nk.NkLayoutRowBegin(ctx, nk.Static, float32(height-topPaneHeight-padding), 3)
+				nk.NkLayoutRowBegin(ctx, nk.Static, topPaneHeight-padding, 2)
+				nk.NkLayoutRowPush(ctx, float32(rgn.W()-closeButtonWidth-padding))
+				nk.NkLabel(ctx, g.edImg.SelectedImageDisplayName(), nk.TextCentered)
 
-		if g.img != nil {
-			nk.NkLayoutRowPush(ctx, float32(sideTabPaneWidth-padding))
-			if nk.NkGroupBegin(ctx, "SideTabPane", nk.WindowNoScrollbar) != 0 {
-				n0 := g.edImg.SelectedIndex
-				n1 := g.tabView.Render(ctx)
-				if n0 != n1 {
-					g.edImg.SelectedIndex = n1
+				nk.NkLayoutRowPush(ctx, float32(closeButtonWidth-padding))
+				if nk.NkButtonLabel(ctx, "×") != 0 {
+					g.edImg.Delete(g.edImg.SelectedIndex)
 					g.changeSelectedImage()
 				}
-				nk.NkGroupEnd(ctx)
-			}
 
-			nk.NkLayoutRowPush(ctx, float32(layerTreePaneWidth-padding))
-			if nk.NkGroupBegin(ctx, "LayerTreePane", nk.WindowNoScrollbar) != 0 {
-				modified = g.layerView.Render(ctx, g.img) || modified
-				if modified {
-					g.img.Modified = true
-					g.img.Layers.Normalize(g.img.Flip)
-					updateRenderedImage(g, g.img)
+				nk.NkLayoutRowEnd(ctx)
+
+				nk.NkLayoutRowBegin(ctx, nk.Static, float32(rgn.H()-padding), 3)
+
+				nk.NkLayoutRowPush(ctx, float32(rgn.W()))
+				if nk.NkGroupBegin(ctx, "MainPane", nk.WindowNoScrollbar) != 0 {
+					g.mainView.Render(ctx)
+					nk.NkGroupEnd(ctx)
 				}
-				nk.NkGroupEnd(ctx)
-			}
 
-			nk.NkLayoutRowPush(ctx, float32(width-layerTreePaneWidth-sideTabPaneWidth-padding*2))
-			if nk.NkGroupBegin(ctx, "MainPane", nk.WindowNoScrollbar) != 0 {
-				g.mainView.Render(ctx)
-				nk.NkGroupEnd(ctx)
+				nk.NkLayoutRowEnd(ctx)
 			}
+			nk.NkGroupEnd(ctx)
 		}
-
 		nk.NkLayoutRowEnd(ctx)
 	}
 	nk.NkEnd(ctx)
