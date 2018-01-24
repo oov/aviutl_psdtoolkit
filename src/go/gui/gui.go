@@ -12,6 +12,7 @@ import (
 	"github.com/oov/aviutl_psdtoolkit/src/go/gc"
 	"github.com/oov/aviutl_psdtoolkit/src/go/gui/layerview"
 	"github.com/oov/aviutl_psdtoolkit/src/go/gui/mainview"
+	"github.com/oov/aviutl_psdtoolkit/src/go/gui/tabview"
 	"github.com/oov/aviutl_psdtoolkit/src/go/img"
 	"github.com/oov/aviutl_psdtoolkit/src/go/imgmgr/editing"
 	"github.com/oov/aviutl_psdtoolkit/src/go/imgmgr/source"
@@ -20,11 +21,8 @@ import (
 )
 
 const (
-	winWidth          = 1024
-	winHeight         = 768
-	topPaneHeight     = 30
-	topRightPaneWidth = 280
-	layerPaneWidth    = 320
+	winWidth  = 1024
+	winHeight = 768
 )
 
 type GUI struct {
@@ -40,6 +38,7 @@ type GUI struct {
 	img         *img.Image
 	thumbnailer *editing.Thumbnailer
 
+	tabView   *tabview.TabView
 	layerView *layerview.LayerView
 	mainView  *mainview.MainView
 
@@ -89,6 +88,9 @@ func (g *GUI) Init(caption string, bgImg, mainFont, symbolFont []byte) error {
 	if err = g.initFont(mainFont, symbolFont); err != nil {
 		return errors.Wrap(err, "gui: failed to load a font")
 	}
+
+	g.tabView = tabview.New(&g.edImg)
+
 	g.layerView, err = layerview.New(g.font.MainHandle, g.font.SymbolHandle)
 	if err != nil {
 		return errors.Wrap(err, "gui: failed to initialize layerview")
@@ -180,7 +182,15 @@ func (g *GUI) update() {
 	ctx := g.context
 	nk.NkPlatformNewFrame()
 	width, height := g.window.GetSize()
-	const PADDING = 2
+
+	const (
+		topPaneHeight      = 28
+		flipSendPaneWidth  = 280
+		closeButtonWidth   = 28
+		layerTreePaneWidth = 320
+		sideTabPaneWidth   = 64
+		padding            = 2
+	)
 
 	modified := false
 
@@ -188,24 +198,15 @@ func (g *GUI) update() {
 	nk.NkStylePushVec2(ctx, nkhelper.GetStyleWindowGroupPaddingPtr(ctx), nk.NkVec2(0, 0))
 
 	if nk.NkBegin(ctx, "MainWindow", nk.NkRect(0, 0, float32(width), float32(height)), nk.WindowNoScrollbar) != 0 {
-		nk.NkLayoutRowBegin(ctx, nk.Static, topPaneHeight-PADDING, 2)
+		nk.NkLayoutRowBegin(ctx, nk.Static, topPaneHeight-padding, 3)
 
-		nk.NkLayoutRowPush(ctx, float32(width-topRightPaneWidth-PADDING))
-		if nk.NkGroupBegin(ctx, "TabPane", nk.WindowNoScrollbar) != 0 {
-			nk.NkLayoutRowDynamic(ctx, 28, 1)
-			n0 := g.edImg.SelectedIndex
-			n1 := int(nk.NkComboString(ctx, g.edImg.StringList(), int32(n0), int32(g.edImg.Len()), 28, nk.NkVec2(600, float32(height))))
-			if n0 != n1 {
-				g.edImg.SelectedIndex = n1
-				g.changeSelectedImage()
-			}
-			nk.NkGroupEnd(ctx)
-		}
-
-		nk.NkLayoutRowPush(ctx, float32(topRightPaneWidth-PADDING))
-		if nk.NkGroupBegin(ctx, "FilpSendPane", nk.WindowNoScrollbar) != 0 {
-			nk.NkLayoutRowDynamic(ctx, 28, 3)
-			if g.img != nil {
+		if g.img != nil {
+			nk.NkLayoutRowPush(ctx, float32(flipSendPaneWidth-padding))
+			if nk.NkGroupBegin(ctx, "FilpSendPane", nk.WindowNoScrollbar) != 0 {
+				nk.NkLayoutRowDynamic(ctx, 28, 3)
+				if nk.NkButtonLabel(ctx, "送る") != 0 {
+					g.sendEditingImage()
+				}
 				fx, fy := g.img.FlipX(), g.img.FlipY()
 				if (nk.NkSelectLabel(ctx, "⇆", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(fx)) != 0) != fx {
 					modified = g.img.SetFlipX(!fx) || modified
@@ -213,33 +214,53 @@ func (g *GUI) update() {
 				if (nk.NkSelectLabel(ctx, "⇅", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(fy)) != 0) != fy {
 					modified = g.img.SetFlipY(!fy) || modified
 				}
-				if nk.NkButtonLabel(ctx, "送る") != 0 {
-					g.sendEditingImage()
-				}
+				nk.NkGroupEnd(ctx)
 			}
-			nk.NkGroupEnd(ctx)
+
+			nk.NkLayoutRowPush(ctx, float32(width-flipSendPaneWidth-closeButtonWidth-padding*3))
+			nk.NkLabel(ctx, g.edImg.SelectedImageDisplayName(), nk.TextLeft)
+
+			nk.NkLayoutRowPush(ctx, float32(closeButtonWidth-padding))
+			if nk.NkButtonLabel(ctx, "×") != 0 {
+				g.edImg.Delete(g.edImg.SelectedIndex)
+				g.changeSelectedImage()
+			}
 		}
 
 		nk.NkLayoutRowEnd(ctx)
 
-		nk.NkLayoutRowBegin(ctx, nk.Static, float32(height-topPaneHeight-PADDING), 2)
+		nk.NkLayoutRowBegin(ctx, nk.Static, float32(height-topPaneHeight-padding), 3)
 
-		nk.NkLayoutRowPush(ctx, float32(layerPaneWidth-PADDING))
-		if nk.NkGroupBegin(ctx, "LayerTreePane", nk.WindowNoScrollbar) != 0 {
-			modified = g.layerView.Render(ctx, g.img) || modified
-			if modified {
-				g.img.Modified = true
-				g.img.Layers.Normalize(g.img.Flip)
-				updateRenderedImage(g, g.img)
+		if g.img != nil {
+			nk.NkLayoutRowPush(ctx, float32(sideTabPaneWidth-padding))
+			if nk.NkGroupBegin(ctx, "SideTabPane", nk.WindowNoScrollbar) != 0 {
+				n0 := g.edImg.SelectedIndex
+				n1 := g.tabView.Render(ctx)
+				if n0 != n1 {
+					g.edImg.SelectedIndex = n1
+					g.changeSelectedImage()
+				}
+				nk.NkGroupEnd(ctx)
 			}
-			nk.NkGroupEnd(ctx)
+
+			nk.NkLayoutRowPush(ctx, float32(layerTreePaneWidth-padding))
+			if nk.NkGroupBegin(ctx, "LayerTreePane", nk.WindowNoScrollbar) != 0 {
+				modified = g.layerView.Render(ctx, g.img) || modified
+				if modified {
+					g.img.Modified = true
+					g.img.Layers.Normalize(g.img.Flip)
+					updateRenderedImage(g, g.img)
+				}
+				nk.NkGroupEnd(ctx)
+			}
+
+			nk.NkLayoutRowPush(ctx, float32(width-layerTreePaneWidth-sideTabPaneWidth-padding*2))
+			if nk.NkGroupBegin(ctx, "MainPane", nk.WindowNoScrollbar) != 0 {
+				g.mainView.Render(ctx)
+				nk.NkGroupEnd(ctx)
+			}
 		}
 
-		nk.NkLayoutRowPush(ctx, float32(width-layerPaneWidth-PADDING))
-		if nk.NkGroupBegin(ctx, "MainPane", nk.WindowNoScrollbar) != 0 {
-			g.mainView.Render(ctx)
-			nk.NkGroupEnd(ctx)
-		}
 		nk.NkLayoutRowEnd(ctx)
 	}
 	nk.NkEnd(ctx)

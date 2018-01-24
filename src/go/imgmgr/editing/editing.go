@@ -7,16 +7,23 @@ import (
 	"image"
 	"math"
 	"path/filepath"
-	"strings"
-	"sync"
 	"time"
 
+	"github.com/golang-ui/nuklear/nk"
 	"github.com/pkg/errors"
 	"golang.org/x/image/draw"
 
 	"github.com/oov/aviutl_psdtoolkit/src/go/img"
 	"github.com/oov/aviutl_psdtoolkit/src/go/imgmgr/source"
+	"github.com/oov/aviutl_psdtoolkit/src/go/nkhelper"
 	"github.com/oov/downscale"
+)
+
+const (
+	thumbnailSize = 48
+	textureSize   = 256
+
+	limit = (textureSize * textureSize) / (thumbnailSize * thumbnailSize)
 )
 
 type Thumbnailer struct {
@@ -26,8 +33,6 @@ type Thumbnailer struct {
 }
 
 func makeThumbnail(src image.Image) (*image.NRGBA, error) {
-	const thumbnailSize = 32
-
 	rect := src.Bounds()
 	dx, dy := float64(rect.Dx()), float64(rect.Dy())
 	f := thumbnailSize / math.Max(dx, dy)
@@ -50,26 +55,26 @@ func makeThumbnail(src image.Image) (*image.NRGBA, error) {
 		return nil, errors.Errorf("unsupported image type %t", src)
 	}
 
-	r := image.NewNRGBA(image.Rect(0, 0, thumbnailSize, thumbnailSize))
-	draw.Draw(r, r.Rect, src, image.Pt(0, 0), draw.Over)
+	r := image.NewNRGBA(rect)
+	draw.Draw(r, rect, src, image.Pt(0, 0), draw.Over)
 	return r, nil
 }
 
-func (t *Thumbnailer) Update(img image.Image) {
-	t.ed.thumbnailM.Lock()
+func (t *Thumbnailer) Update(img image.Image, doer func(func())) {
 	if t.t != nil {
 		t.t.Stop()
 	}
-	t.t = time.AfterFunc(3*time.Second, func() {
+	t.t = time.AfterFunc(500*time.Millisecond, func() {
 		thumb, err := makeThumbnail(img)
 		if err != nil {
+			// TODO: report error
 			return
 		}
-		t.ed.thumbnailM.Lock()
-		t.item.Thumbnail = thumb
-		t.ed.thumbnailM.Unlock()
+		doer(func() {
+			t.item.Thumbnail = thumb
+			t.ed.thumbnails = nil
+		})
 	})
-	t.ed.thumbnailM.Unlock()
 }
 
 type item struct {
@@ -83,13 +88,17 @@ type Editing struct {
 	Srcs          *source.Sources
 	SelectedIndex int
 
-	images     []item
-	stringList string
+	images []item
 
-	thumbnailM sync.Mutex
+	thumbnailSheet        *image.NRGBA
+	thumbnailSheetTexture *nkhelper.Texture
+	thumbnails            []nk.Image
 }
 
 func (ed *Editing) Add(filePath string) error {
+	if len(ed.images) == limit {
+		return errors.Errorf("too many images")
+	}
 	img, err := ed.Srcs.NewImage(filePath)
 	if err != nil {
 		return errors.Wrapf(err, "editing: failed to load %q", filePath)
@@ -98,7 +107,7 @@ func (ed *Editing) Add(filePath string) error {
 		DisplayName: filepath.Base(*img.FilePath),
 		Image:       img,
 	})
-	ed.stringList = ""
+	ed.thumbnails = nil
 	ed.SelectedIndex = len(ed.images) - 1
 	return nil
 }
@@ -108,7 +117,7 @@ func (ed *Editing) Delete(index int) {
 	ed.images[len(ed.images)-1] = item{}
 	ed.images = ed.images[:len(ed.images)-1]
 
-	ed.stringList = ""
+	ed.thumbnails = nil
 	if len(ed.images) == 0 {
 		ed.SelectedIndex = 0
 	} else {
@@ -120,23 +129,49 @@ func (ed *Editing) Delete(index int) {
 
 func (ed *Editing) Clear() {
 	ed.images = nil
-	ed.stringList = ""
+	ed.thumbnails = nil
 	ed.SelectedIndex = 0
 }
 
-func (ed *Editing) StringList() string {
-	if ed.stringList == "" {
-		if ed.Empty() {
-			ed.stringList = "<NO ITEMS>\x00"
-		} else {
-			var s []string
-			for _, img := range ed.images {
-				s = append(s, img.DisplayName, "\x00")
+func (ed *Editing) ThumbnailList() ([]nk.Image, error) {
+	if ed.thumbnails == nil {
+		ed.thumbnailSheet = image.NewNRGBA(image.Rect(0, 0, textureSize, textureSize))
+		rects := make([]nk.Rect, len(ed.images))
+		var tx, ty int
+		for i, img := range ed.images {
+			if img.Thumbnail == nil {
+				continue
 			}
-			ed.stringList = strings.Join(s, "")
+			draw.Draw(
+				ed.thumbnailSheet,
+				image.Rect(tx, ty, tx+thumbnailSize, ty+thumbnailSize),
+				img.Thumbnail,
+				image.Pt(-(thumbnailSize-img.Thumbnail.Rect.Dx())/2, -(thumbnailSize-img.Thumbnail.Rect.Dy())/2),
+				draw.Over,
+			)
+			rects[i] = nk.NkRect(float32(tx), float32(ty), thumbnailSize, thumbnailSize)
+			tx += thumbnailSize
+			if tx+thumbnailSize >= textureSize {
+				tx = 0
+				ty += thumbnailSize
+			}
+		}
+
+		var err error
+		if ed.thumbnailSheetTexture == nil {
+			ed.thumbnailSheetTexture, err = nkhelper.NewTexture(ed.thumbnailSheet)
+		} else {
+			err = ed.thumbnailSheetTexture.Update(ed.thumbnailSheet)
+		}
+		if err != nil {
+			return nil, errors.Wrapf(err, "editing: cannot create texture")
+		}
+		ed.thumbnails = make([]nk.Image, len(ed.images))
+		for i, rect := range rects {
+			ed.thumbnails[i] = ed.thumbnailSheetTexture.SubImage(rect)
 		}
 	}
-	return ed.stringList
+	return ed.thumbnails, nil
 }
 
 func (ed *Editing) Len() int {
@@ -156,6 +191,13 @@ func (ed *Editing) SelectedImage() *img.Image {
 		return nil
 	}
 	return ed.images[ed.SelectedIndex].Image
+}
+
+func (ed *Editing) SelectedImageDisplayName() string {
+	if ed.SelectedIndex < 0 || ed.SelectedIndex >= len(ed.images) {
+		return ""
+	}
+	return ed.images[ed.SelectedIndex].DisplayName
 }
 
 func (ed *Editing) SelectedImageThumbnailer() *Thumbnailer {

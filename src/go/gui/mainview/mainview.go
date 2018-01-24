@@ -102,15 +102,17 @@ func (mv *MainView) Clear() {
 func (mv *MainView) Render(ctx *nk.Context) {
 	rgn := nk.NkWindowGetContentRegion(ctx)
 	winHeight := rgn.H()
-	const bottomPaneHeight = 48
-	const PADDING = 2
+	const (
+		bottomPaneHeight = 48
+		padding          = 2
+	)
 
-	nk.NkLayoutRowDynamic(ctx, winHeight-bottomPaneHeight-PADDING, 1)
+	nk.NkLayoutRowDynamic(ctx, winHeight-bottomPaneHeight-padding, 1)
 	if nk.NkGroupScrolledOffsetBegin(ctx, &mv.scrollX, &mv.scrollY, "CanvasPane", 0) != 0 {
 		mv.renderCanvas(ctx)
 		nk.NkGroupEnd(ctx)
 	}
-	nk.NkLayoutRowDynamic(ctx, float32(bottomPaneHeight-PADDING), 1)
+	nk.NkLayoutRowDynamic(ctx, float32(bottomPaneHeight-padding), 1)
 	if nk.NkGroupBegin(ctx, "ScalerPane", nk.WindowNoScrollbar) != 0 {
 		nk.NkLayoutRowDynamic(ctx, 0, 1)
 		if z := float64(nk.NkSlideFloat(ctx, mv.minZoom, float32(mv.zoom), mv.maxZoom, mv.stepZoom)); z != mv.zoom {

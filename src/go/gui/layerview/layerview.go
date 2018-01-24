@@ -100,17 +100,19 @@ func (lv *LayerView) Render(ctx *nk.Context, img *img.Image) bool {
 		return false
 	}
 
-	const PADDING = 2
-	const LayerTabPaneHeight = 30
+	const (
+		layerTabPaneHeight = 30
+		padding            = 2
+	)
 
 	modified := false
 	rgn := nk.NkWindowGetContentRegion(ctx)
 
-	nk.NkLayoutRowDynamic(ctx, LayerTabPaneHeight-PADDING, 1)
+	nk.NkLayoutRowDynamic(ctx, layerTabPaneHeight-padding, 1)
 	if nk.NkGroupBegin(ctx, "LayerTabPane", nk.WindowNoScrollbar) != 0 {
 		if img.PFV != nil {
 			if len(img.PFV.FaviewRoot.Children) > 0 {
-				nk.NkLayoutRowDynamic(ctx, LayerTabPaneHeight, 3)
+				nk.NkLayoutRowDynamic(ctx, layerTabPaneHeight, 3)
 				if nk.NkSelectLabel(ctx, "レイヤー", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.layerFavSelectedIndex == 0)) != b2i(lv.layerFavSelectedIndex == 0) {
 					lv.layerFavSelectedIndex = 0
 				}
@@ -121,7 +123,7 @@ func (lv *LayerView) Render(ctx *nk.Context, img *img.Image) bool {
 					lv.layerFavSelectedIndex = 2
 				}
 			} else {
-				nk.NkLayoutRowDynamic(ctx, LayerTabPaneHeight, 2)
+				nk.NkLayoutRowDynamic(ctx, layerTabPaneHeight, 2)
 				if nk.NkSelectLabel(ctx, "レイヤー", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(lv.layerFavSelectedIndex == 0)) != b2i(lv.layerFavSelectedIndex == 0) {
 					lv.layerFavSelectedIndex = 0
 				}
@@ -135,7 +137,7 @@ func (lv *LayerView) Render(ctx *nk.Context, img *img.Image) bool {
 		nk.NkGroupEnd(ctx)
 	}
 
-	nk.NkLayoutRowDynamic(ctx, rgn.H()-LayerTabPaneHeight-PADDING, 1)
+	nk.NkLayoutRowDynamic(ctx, rgn.H()-layerTabPaneHeight-padding, 1)
 	if nk.NkGroupBegin(ctx, "MainTreePane", 0) != 0 {
 		switch lv.layerFavSelectedIndex {
 		case 0:
