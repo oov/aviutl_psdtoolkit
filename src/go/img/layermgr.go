@@ -34,7 +34,7 @@ type LayerManager struct {
 
 	Mapped   map[int]*composite.Layer
 	Flat     []int
-	FullPath map[string]int // int != SeqID
+	FullPath map[string]int // int != SeqID, index in Flat
 
 	ForceVisible map[int]struct{}
 	Group        map[int]*[]int
@@ -653,29 +653,50 @@ func (m *LayerManager) Serialize() (string, error) {
 	return "V." + s, nil
 }
 
-func (m *LayerManager) SerializeFolderState() (string, error) {
-	v := make([]bool, len(m.Flat))
-	for i, seqID := range m.Flat {
-		l := m.Mapped[seqID]
-		v[i] = l.Folder && l.FolderOpen
-	}
-	s, err := serializeBits(v)
-	if err != nil {
-		return "", errors.Wrap(err, "LayerManager.SerializeFolderState: failed to serialize")
-	}
-	return s, err
+type SerializedData struct {
+	Visible    bool
+	FolderOpen bool
 }
 
-func (m *LayerManager) DeserializeFolderState(state string) error {
-	b, err := deserializeBitsAsBool(state)
-	if err != nil {
-		return err
-	}
-	for i, seqID := range m.Flat {
-		l := m.Mapped[seqID]
-		if l.Folder {
-			l.FolderOpen = b[i]
+func (m *LayerManager) SerializeSafe() map[string]SerializedData {
+	v := make(map[string]SerializedData, len(m.Flat))
+	for fullPath, idx := range m.FullPath {
+		l := m.Mapped[m.Flat[idx]]
+		v[fullPath] = SerializedData{
+			Visible:    l.Visible,
+			FolderOpen: l.Folder && l.FolderOpen,
 		}
+	}
+	return v
+}
+
+type deserializeError []string
+
+func (e deserializeError) Error() string {
+	var b []byte
+	b = append(b, "some of the layers not found:\n"...)
+	for _, p := range e {
+		b = append(b, p...)
+		b = append(b, '\n')
+	}
+	return string(b)
+}
+
+func (m *LayerManager) DeserializeSafe(state map[string]SerializedData) error {
+	var e deserializeError
+	for fullPath, d := range state {
+		if idx, ok := m.FullPath[fullPath]; ok {
+			l := m.Mapped[m.Flat[idx]]
+			l.Visible = d.Visible
+			if l.Folder {
+				l.FolderOpen = d.FolderOpen
+			}
+		} else {
+			e = append(e, fullPath)
+		}
+	}
+	if e != nil {
+		return e
 	}
 	return nil
 }

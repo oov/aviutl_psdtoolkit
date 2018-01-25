@@ -79,16 +79,28 @@ func (mv *MainView) SetZoomRange(min, max, step float32) {
 	mv.stepZoom = step
 }
 
+func (mv *MainView) adjustZoom(imageRect image.Rectangle) {
+	latestActiveRect := mv.latestActiveRect
+	// If activeRect is empty, it can not be processed correctly.
+	// In that case we will try again next time.
+	if latestActiveRect.Empty() {
+		go mv.do(func() {
+			mv.adjustZoom(imageRect)
+		})
+		return
+	}
+	z := float64(latestActiveRect.Dx()) / float64(imageRect.Dx())
+	if z*float64(imageRect.Dy()) > float64(latestActiveRect.Dy()) {
+		z = float64(latestActiveRect.Dy()) / float64(imageRect.Dy())
+	}
+	mv.zoom = math.Log(z) / math.Ln2
+	mv.forceFitToWindow = true
+}
+
 func (mv *MainView) SetRenderedImage(img *image.RGBA) {
 	mv.renderedImage = img
 	if mv.resizedImage == nil {
-		targetRect := mv.latestActiveRect
-		z := float64(targetRect.Dx()) / float64(img.Rect.Dx())
-		if z*float64(img.Rect.Dy()) > float64(targetRect.Dy()) {
-			z = float64(targetRect.Dy()) / float64(img.Rect.Dy())
-		}
-		mv.zoom = math.Log(z) / math.Ln2
-		mv.forceFitToWindow = true
+		mv.adjustZoom(img.Rect)
 	}
 	mv.updateViewImage(true)
 }

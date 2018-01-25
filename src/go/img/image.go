@@ -8,6 +8,7 @@ import (
 	"github.com/disintegration/gift"
 	"github.com/pkg/errors"
 
+	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
 	"github.com/oov/downscale"
 	"github.com/oov/psd/composite"
 )
@@ -168,41 +169,26 @@ type ProjectState struct {
 	Version  int
 	FilePath string
 	Flip     Flip
-	Layer    string
-	Folder   string
+	Layer    map[string]SerializedData
 }
 
 func (img *Image) SerializeProject() (*ProjectState, error) {
-	layer, err := img.Layers.Serialize()
-	if err != nil {
-		return nil, errors.Wrap(err, "img: failed to serialize layer state")
-	}
-	folder, err := img.Layers.SerializeFolderState()
-	if err != nil {
-		return nil, errors.Wrap(err, "img: failed to serialize folder state")
-	}
 	return &ProjectState{
 		Version:  1,
 		FilePath: *img.FilePath,
 		Flip:     img.Flip,
-		Layer:    layer,
-		Folder:   folder,
+		Layer:    img.Layers.SerializeSafe(),
 	}, nil
 }
 
 func (img *Image) DeserializeProject(state *ProjectState) error {
-	var froot *FaviewNode
-	if img.PFV != nil {
-		froot = &img.PFV.FaviewRoot
-	}
-	_, _, err := img.Layers.Deserialize(state.Layer, state.Flip, froot)
-	if err != nil {
-		return errors.Wrap(err, "img: failed to deserialize layer state")
-	}
-	err = img.Layers.DeserializeFolderState(state.Folder)
-	if err != nil {
-		return errors.Wrap(err, "img: failed to deserialize folder state")
-	}
 	img.Flip = state.Flip
+	if err := img.Layers.DeserializeSafe(state.Layer); err != nil {
+		if warn, ok := err.(deserializeError); ok {
+			ods.ODS("%v", warn)
+		} else {
+			return err
+		}
+	}
 	return nil
 }
