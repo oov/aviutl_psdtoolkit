@@ -23,7 +23,7 @@ func TestSerializeBits(t *testing.T) {
 	for _, testData := range serializeBitsTestData {
 		got, err := serializeBits(testData.Visibility)
 		if err != nil {
-			t.Errorf("serialize(%v): error %v", err)
+			t.Errorf("serialize(%v): error %v", testData.Visibility, err)
 		}
 		if got != testData.Want {
 			t.Errorf("serialize(%v) == %q, want %q", testData.Visibility, got, testData.Want)
