@@ -41,6 +41,7 @@ func main() {
 	ipcm := ipc.New(srcs)
 	g := gui.New(srcs)
 
+	ipcm.AddFile = g.AddFileSync
 	ipcm.ShowGUI = g.ShowWindow
 	ipcm.Serialize = g.Serialize
 	ipcm.Deserialize = g.Deserialize

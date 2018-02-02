@@ -20,6 +20,7 @@ import (
 )
 
 type IPC struct {
+	AddFile     func(file string) error
 	ShowGUI     func() (uintptr, error)
 	Serialize   func() (string, error)
 	Deserialize func(state string) error
@@ -212,6 +213,16 @@ func (ipc *IPC) Abort(err error) {
 func (ipc *IPC) dispatch(cmd string) error {
 	switch cmd {
 	case "HELO":
+		return writeUint32(0x80000000)
+
+	case "ADDF":
+		file, err := readString()
+		if err != nil {
+			return err
+		}
+		if err = ipc.AddFile(file); err != nil {
+			return err
+		}
 		return writeUint32(0x80000000)
 
 	case "DRAW":

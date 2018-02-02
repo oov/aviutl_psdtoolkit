@@ -76,6 +76,17 @@ func (g *GUI) AddFile(path string) error {
 	return nil
 }
 
+func (g *GUI) AddFileSync(path string) error {
+	var err error
+	g.do(func() {
+		err = g.AddFile(path)
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
 func (g *GUI) Init(caption string, bgImg, mainFont, symbolFont []byte) error {
 	var err error
 	if g.window, g.context, err = newWindow(winWidth, winHeight, caption); err != nil {
