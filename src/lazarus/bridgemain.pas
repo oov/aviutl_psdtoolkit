@@ -37,8 +37,8 @@ type
       OffsetY: System.PInteger; out Modified: boolean; out Width: integer;
       out Height: integer);
     procedure ShowGUI();
-    function Serialize(): string;
-    procedure Deserialize(s: string);
+    function Serialize(): RawByteString;
+    procedure Deserialize(s: RawByteString);
   end;
 
 implementation
@@ -220,7 +220,7 @@ begin
   end;
 end;
 
-function TPSDToolKitBridge.Serialize(): string;
+function TPSDToolKitBridge.Serialize(): RawByteString;
 begin
   EnterCS('SRLZ');
   try
@@ -238,7 +238,7 @@ begin
   end;
 end;
 
-procedure TPSDToolKitBridge.Deserialize(s: string);
+procedure TPSDToolKitBridge.Deserialize(s: RawByteString);
 var
   r: boolean;
 begin

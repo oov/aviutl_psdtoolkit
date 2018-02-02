@@ -19,269 +19,303 @@ var
   bridge: TPSDToolKitBridge;
   CacheMgr: TCacheManager;
 
-function LuaAddFile(L: Plua_State): integer; cdecl;
-var
-  filename: ShiftJISString;
+function LuaReturn(L: Plua_State; const Ret: integer): integer;
 begin
-  try
-    filename := lua_tostring(L, 1);
-    bridge.AddFile(filename);
-  except
-    on e: Exception do
-    begin
-      lua_pushboolean(L, False);
-      lua_pushstring(L, PChar(e.Message));
-      Result := 2;
-      Exit;
+  if Ret = -1 then
+    // *** IMPORTANT ***
+    // Both Lua and FreePascal are using setjmp/longjmp for error/exception handling.
+    // So while using lua_error(luaL_error), we cannot use try statement, any string type, etc.
+    // If we do not follow this rule the program crashes in random places.
+    Result := luaL_error(L, '%s', lua_tostring(L, -1))
+  else
+    Result := Ret;
+end;
+
+function LuaPushError(L: Plua_State; E: Exception): integer;
+var
+  SJIS: ShiftJISString;
+begin
+  SJIS := ShiftJISString(E.Message);
+  lua_pushlstring(L, @SJIS[1], Length(SJIS));
+  Result := -1;
+end;
+
+function LuaAddFile(L: Plua_State): integer; cdecl;
+
+  function Main(): integer;
+  var
+    FilePath: UTF8String;
+  begin
+    try
+      FilePath := lua_tostring(L, 1);
+      lua_pop(L, 1);
+      bridge.AddFile(FilePath);
+      Result := 0;
+    except
+      on E: Exception do
+        Result := LuaPushError(L, E);
     end;
   end;
-  lua_pushboolean(L, True);
-  Result := 1;
+
+begin
+  Result := LuaReturn(L, Main());
 end;
 
 function LuaDraw(L: Plua_State): integer; cdecl;
-var
-  id: integer;
-  filename: ShiftJISString;
-  w, h: integer;
-  p: Pointer;
-begin
-  try
-    id := lua_tointeger(L, 1);
-    filename := lua_tostring(L, 2);
-    p := lua_topointer(L, 3);
-    w := lua_tointeger(L, 4);
-    h := lua_tointeger(L, 5);
-    bridge.Draw(id, filename, p, w, h);
-  except
-    on e: Exception do
-    begin
-      lua_pushboolean(L, False);
-      lua_pushstring(L, PChar(e.Message));
-      Result := 2;
-      Exit;
+
+  function Main(): integer;
+  var
+    id: integer;
+    filename: ShiftJISString;
+    w, h: integer;
+    p: Pointer;
+  begin
+    try
+      id := lua_tointeger(L, 1);
+      filename := lua_tostring(L, 2);
+      p := lua_topointer(L, 3);
+      w := lua_tointeger(L, 4);
+      h := lua_tointeger(L, 5);
+      lua_pop(L, 5);
+      bridge.Draw(id, filename, p, w, h);
+      Result := 0;
+    except
+      on E: Exception do
+        Result := LuaPushError(L, E);
     end;
   end;
-  lua_pushboolean(L, True);
-  Result := 1;
+
+begin
+  Result := LuaReturn(L, Main());
 end;
 
 function LuaGetLayerNames(L: Plua_State): integer; cdecl;
-var
-  id, i, pos, di: integer;
-  filename: ShiftJISString;
-  s: UTF8String;
-begin
-  try
-    id := lua_tointeger(L, 1);
-    filename := lua_tostring(L, 2);
-    lua_pushboolean(L, True);
-    s := bridge.GetLayerNames(id, filename);
-    lua_newtable(L);
-    pos := 1;
-    di := 1;
-    for i := 1 to Length(s) do
-      if s[i] = #$0a then
-      begin
-        lua_pushlstring(L, @s[pos], i - pos);
-        lua_rawseti(L, 4, di);
-        pos := i + 1;
-        Inc(di);
-      end;
-    lua_pushlstring(L, @s[pos], Length(s) - pos + 1);
-    lua_rawseti(L, 4, di);
-  except
-    on e: Exception do
-    begin
-      lua_pushboolean(L, False);
-      lua_pushstring(L, PChar(e.Message));
-      Result := 2;
-      Exit;
+
+  function Main(): integer;
+  var
+    id, i, pos, di: integer;
+    filename: ShiftJISString;
+    s: UTF8String;
+  begin
+    try
+      id := lua_tointeger(L, 1);
+      filename := lua_tostring(L, 2);
+      lua_pop(L, 2);
+      s := bridge.GetLayerNames(id, filename);
+      lua_newtable(L);
+      pos := 1;
+      di := 1;
+      for i := 1 to Length(s) do
+        if s[i] = #$0a then
+        begin
+          lua_pushlstring(L, @s[pos], i - pos);
+          lua_rawseti(L, -2, di);
+          pos := i + 1;
+          Inc(di);
+        end;
+      lua_pushlstring(L, @s[pos], Length(s) - pos + 1);
+      lua_rawseti(L, -2, di);
+      Result := 1;
+    except
+      on E: Exception do
+        Result := LuaPushError(L, E);
     end;
   end;
-  Result := 2;
+
+begin
+  Result := LuaReturn(L, Main());
 end;
 
 function LuaSetProperties(L: Plua_State): integer; cdecl;
-var
-  id: integer;
-  filename, tmp: ShiftJISString;
 
-  Layer: UTF8String;
-  pLayer: PUTF8String;
-  Scale: single;
-  pScale: PSingle;
-  OffsetX, OffsetY: integer;
-  pOffsetX, pOffsetY: System.PInteger;
-  Modified: boolean;
-  Width, Height: integer;
-begin
-  try
-    id := lua_tointeger(L, 1);
-    filename := lua_tostring(L, 2);
-    lua_getfield(L, 3, 'layer');
-    lua_getfield(L, 3, 'scale');
-    lua_getfield(L, 3, 'offsetx');
-    lua_getfield(L, 3, 'offsety');
+  function Main(): integer;
+  var
+    id: integer;
+    filename, tmp: ShiftJISString;
 
-    if lua_isstring(L, 4) then
-    begin
-      tmp := lua_tostring(L, 4);
-      Layer := tmp;
-      pLayer := @Layer;
-    end
-    else
-      pLayer := nil;
+    Layer: UTF8String;
+    pLayer: PUTF8String;
+    Scale: single;
+    pScale: PSingle;
+    OffsetX, OffsetY: integer;
+    pOffsetX, pOffsetY: System.PInteger;
+    Modified: boolean;
+    Width, Height: integer;
+  begin
+    try
+      id := lua_tointeger(L, 1);
+      filename := lua_tostring(L, 2);
 
-    if lua_isnumber(L, 5) then
-    begin
-      Scale := lua_tonumber(L, 5);
-      pScale := @Scale;
-    end
-    else
-      pScale := nil;
+      lua_getfield(L, 3, 'layer');
+      if lua_isstring(L, -1) then
+      begin
+        tmp := lua_tostring(L, -1);
+        Layer := tmp;
+        pLayer := @Layer;
+      end
+      else
+        pLayer := nil;
+      lua_pop(L, 1);
 
-    if lua_isnumber(L, 6) then
-    begin
-      OffsetX := lua_tointeger(L, 6);
-      pOffsetX := @OffsetX;
-    end
-    else
-      pOffsetX := nil;
+      lua_getfield(L, 3, 'scale');
+      if lua_isnumber(L, -1) then
+      begin
+        Scale := lua_tonumber(L, -1);
+        pScale := @Scale;
+      end
+      else
+        pScale := nil;
+      lua_pop(L, 1);
 
-    if lua_isnumber(L, 7) then
-    begin
-      OffsetY := lua_tointeger(L, 7);
-      pOffsetY := @OffsetY;
-    end
-    else
-      pOffsetY := nil;
+      lua_getfield(L, 3, 'offsetx');
+      if lua_isnumber(L, -1) then
+      begin
+        OffsetX := lua_tointeger(L, -1);
+        pOffsetX := @OffsetX;
+      end
+      else
+        pOffsetX := nil;
+      lua_pop(L, 1);
 
-    bridge.SetProperties(id, filename, pLayer, pScale,
-      pOffsetX, pOffsetY, Modified, Width, Height);
-  except
-    on e: Exception do
-    begin
-      lua_pushboolean(L, False);
-      lua_pushstring(L, PChar(e.Message));
-      Result := 2;
-      Exit;
+      lua_getfield(L, 3, 'offsety');
+      if lua_isnumber(L, -1) then
+      begin
+        OffsetY := lua_tointeger(L, -1);
+        pOffsetY := @OffsetY;
+      end
+      else
+        pOffsetY := nil;
+      lua_pop(L, 1);
+
+      lua_pop(L, 3);
+      bridge.SetProperties(id, filename, pLayer, pScale,
+        pOffsetX, pOffsetY, Modified, Width, Height);
+      lua_pushboolean(L, Modified);
+      lua_pushinteger(L, Width);
+      lua_pushinteger(L, Height);
+      Result := 3;
+    except
+      on E: Exception do
+        Result := LuaPushError(L, E);
     end;
   end;
-  lua_pushboolean(L, True);
-  lua_pushboolean(L, Modified);
-  lua_pushinteger(L, Width);
-  lua_pushinteger(L, Height);
-  Result := 4;
+
+begin
+  Result := LuaReturn(L, Main());
 end;
 
 function LuaShowGUI(L: Plua_State): integer; cdecl;
-begin
-  try
-    bridge.ShowGUI();
-  except
-    on e: Exception do
-    begin
-      lua_pushboolean(L, False);
-      lua_pushstring(L, PChar(e.Message));
-      Result := 2;
-      Exit;
+
+  function Main(): integer;
+  begin
+    try
+      bridge.ShowGUI();
+      Result := 0;
+    except
+      on E: Exception do
+        Result := LuaPushError(L, E);
     end;
   end;
-  lua_pushboolean(L, True);
-  Result := 1;
+
+begin
+  Result := LuaReturn(L, Main());
 end;
 
 function LuaSerialize(L: Plua_State): integer; cdecl;
-var
-  S: string;
-begin
-  try
-    S := bridge.Serialize();
-  except
-    on e: Exception do
-    begin
-      lua_pushboolean(L, False);
-      lua_pushstring(L, PChar(e.Message));
-      Result := 2;
-      Exit;
+
+  function Main(): integer;
+  var
+    S: RawByteString;
+  begin
+    try
+      S := bridge.Serialize();
+      lua_pushlstring(L, @S[1], Length(S));
+      Result := 1;
+    except
+      on E: Exception do
+        Result := LuaPushError(L, E);
     end;
   end;
-  lua_pushboolean(L, True);
-  lua_pushlstring(L, @S[1], Length(S));
-  Result := 2;
+
+begin
+  Result := LuaReturn(L, Main());
 end;
 
 function LuaDeserialize(L: Plua_State): integer; cdecl;
-begin
-  try
-    bridge.Deserialize(lua_tostring(L, 1));
-  except
-    on e: Exception do
-    begin
-      lua_pushboolean(L, False);
-      lua_pushstring(L, PChar(e.Message));
-      Result := 2;
-      Exit;
+
+  function Main(): integer;
+  var
+    S: RawByteString;
+  begin
+    try
+      S := lua_tostring(L, 1);
+      lua_pop(L, 1);
+      bridge.Deserialize(S);
+      Result := 0;
+    except
+      on E: Exception do
+        Result := LuaPushError(L, E);
     end;
   end;
-  lua_pushboolean(L, True);
-  lua_pushboolean(L, True);
-  Result := 2;
+
+begin
+  Result := LuaReturn(L, Main());
 end;
 
 function LuaPutCache(L: Plua_State): integer; cdecl;
-var
-  id: ShiftJISString;
-  p: Pointer;
-  len: integer;
-  f: boolean;
-begin
-  try
-    id := lua_tostring(L, 1);
-    p := lua_topointer(L, 2);
-    len := lua_tointeger(L, 3);
-    f := lua_toboolean(L, 4);
-    if f then
-      CacheMgr.PutToFile(id, p, len)
-    else
-      CacheMgr.PutToMemory(id, p, len);
-  except
-    on e: Exception do
-    begin
-      lua_pushboolean(L, False);
-      lua_pushstring(L, PChar(e.Message));
-      Result := 2;
-      Exit;
+
+  function Main(): integer;
+  var
+    Id: ShiftJISString;
+    P: Pointer;
+    Len: integer;
+    F: boolean;
+  begin
+    try
+      Id := lua_tostring(L, 1);
+      P := lua_topointer(L, 2);
+      Len := lua_tointeger(L, 3);
+      F := lua_toboolean(L, 4);
+      lua_pop(L, 4);
+      if F then
+        CacheMgr.PutToFile(Id, P, Len)
+      else
+        CacheMgr.PutToMemory(Id, P, Len);
+      Result := 0;
+    except
+      on E: Exception do
+        Result := LuaPushError(L, E);
     end;
   end;
-  lua_pushboolean(L, True);
-  Result := 1;
+
+begin
+  Result := LuaReturn(L, Main());
 end;
 
 function LuaGetCache(L: Plua_State): integer; cdecl;
-var
-  id: ShiftJISString;
-  p: Pointer;
-  len: integer;
-  r: boolean;
-begin
-  try
-    id := lua_tostring(L, 1);
-    p := lua_topointer(L, 2);
-    len := lua_tointeger(L, 3);
-    r := CacheMgr.Get(id, p, len);
-  except
-    on e: Exception do
-    begin
-      lua_pushboolean(L, False);
-      lua_pushstring(L, PChar(e.Message));
-      Result := 2;
-      Exit;
+
+  function Main(): integer;
+  var
+    Id: ShiftJISString;
+    P: Pointer;
+    Len: integer;
+  begin
+    try
+      Id := lua_tostring(L, 1);
+      P := lua_topointer(L, 2);
+      Len := lua_tointeger(L, 3);
+      lua_pop(L, 3);
+      if not CacheMgr.Get(Id, P, Len) then
+        raise Exception.Create('failed to get image cache');
+      Result := 0;
+    except
+      on E: Exception do
+        Result := LuaPushError(L, E);
     end;
   end;
-  lua_pushboolean(L, r);
-  Result := 1;
+
+begin
+  Result := LuaReturn(L, Main());
 end;
 
 function luaopen_PSDToolKitBridge(L: Plua_State): integer; cdecl;
