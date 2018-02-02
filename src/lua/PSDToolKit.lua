@@ -1,6 +1,6 @@
-PSDToolKitLib = PSDToolKitLib or {}
+PSDToolKit = PSDToolKit or {}
 
-PSDToolKitLib.psd = {
+PSDToolKit.psd = {
   id = 0,
   file = "",
   layer = {},
@@ -28,7 +28,7 @@ PSDToolKitLib.psd = {
       return
     end
     self.rendered = true
-    require("PSDToolKit")
+    require("PSDToolKitBridge")
     if self.file == "" then
       self:msg("[PSDToolKit] NO IMAGE")
       return
@@ -49,14 +49,14 @@ PSDToolKitLib.psd = {
     if #self.layer > 0 then
       self.layer = table.concat(self.layer, " ")
     end
-    local ok, modified, width, height = PSDToolKit.setprops(self.id, self.file, self)
+    local ok, modified, width, height = PSDToolKitBridge.setprops(self.id, self.file, self)
     if not ok then
       self:msg("[PSDToolKit] CANNOT LOAD\n\n"..modified)
       return
     end
     if not modified then
       local data, w, h = self:getpixeldata(width, height)
-      if PSDToolKit.getcache("cache:"..self.id.." "..self.file, data, w * 4 * h) then
+      if PSDToolKitBridge.getcache("cache:"..self.id.." "..self.file, data, w * 4 * h) then
         obj.putpixeldata(data)
         obj.cx = w % 2 == 1 and 0.5 or 0
         obj.cy = h % 2 == 1 and 0.5 or 0
@@ -64,12 +64,12 @@ PSDToolKitLib.psd = {
       end
     end
     local data, w, h = self:getpixeldata(width, height)
-    local ok, msg = PSDToolKit.draw(self.id, self.file, data, w, h)
+    local ok, msg = PSDToolKitBridge.draw(self.id, self.file, data, w, h)
     if not ok then
       self:msg("[PSDToolKit] CANNOT RENDER\n\n"..msg)
       return
     end
-    PSDToolKit.putcache("cache:"..self.id.." "..self.file, data, w * 4 * h, false)
+    PSDToolKitBridge.putcache("cache:"..self.id.." "..self.file, data, w * 4 * h, false)
     obj.putpixeldata(data)
     obj.cx = w % 2 == 1 and 0.5 or 0
     obj.cy = h % 2 == 1 and 0.5 or 0
@@ -98,7 +98,7 @@ PSDToolKitLib.psd = {
   end
 }
 
-PSDToolKitLib.talking = function(buf, rate, lo, hi, thr)
+PSDToolKit.talking = function(buf, rate, lo, hi, thr)
   if thr == 0 then
     return 0
   end
@@ -121,7 +121,7 @@ PSDToolKitLib.talking = function(buf, rate, lo, hi, thr)
   return v / thr
 end
 
-PSDToolKitLib.talkingphoneme = function(labfile, time)
+PSDToolKit.talkingphoneme = function(labfile, time)
   time = time * 10000000
   local line
   local f = io.open(labfile, "r")
@@ -169,7 +169,7 @@ PSDToolKitLib.talkingphoneme = function(labfile, time)
   return r
 end
 
-PSDToolKitLib.isvowel = function(p)
+PSDToolKit.isvowel = function(p)
   if p == "a" or p == "e" or p == "i" or p == "o" or p == "u" then
     return 1
   end
@@ -188,48 +188,48 @@ local function fileexists(filepath)
   return false
 end
 
-PSDToolKitLib.settalking = function(obj, src, locut, hicut, threshold)
+PSDToolKit.settalking = function(obj, src, locut, hicut, threshold)
   local v, p = 0, nil
   if src == nil then
     local n, rate, buf = obj.getaudio(nil, "audiobuffer", "spectrum", 32)
-    v = PSDToolKitLib.talking(buf, rate, locut, hicut, threshold)
-    PSDToolKitLib.settalkingraw(obj, v, p)
+    v = PSDToolKit.talking(buf, rate, locut, hicut, threshold)
+    PSDToolKit.settalkingraw(obj, v, p)
     return
   end
 
   local ext = string.lower(string.sub(src, -4))
   if ext == ".lab" then
-    p = PSDToolKitLib.talkingphoneme(src, obj.time)
+    p = PSDToolKit.talkingphoneme(src, obj.time)
     local wav = string.sub(src, 1, #src - 3) .. "wav"
     if fileexists(wav) then
       local n, rate, buf = obj.getaudio(nil, wav, "spectrum", 32)
-      v = PSDToolKitLib.talking(buf, rate, locut, hicut, threshold)
+      v = PSDToolKit.talking(buf, rate, locut, hicut, threshold)
     else
       v = (p ~= nil and #p.cur > 0) and 1 or 0
     end
-    PSDToolKitLib.settalkingraw(obj, v, p)
+    PSDToolKit.settalkingraw(obj, v, p)
     return
   end
   if ext == ".wav" then
     local n, rate, buf = obj.getaudio(nil, src, "spectrum", 32)
-    v = PSDToolKitLib.talking(buf, rate, locut, hicut, threshold)
-    PSDToolKitLib.settalkingraw(obj, v, p)
+    v = PSDToolKit.talking(buf, rate, locut, hicut, threshold)
+    PSDToolKit.settalkingraw(obj, v, p)
     return
   end
-  PSDToolKitLib.settalkingraw(obj, v, p)
+  PSDToolKit.settalkingraw(obj, v, p)
 end
 
-PSDToolKitLib.settalkingraw = function(obj, volume, phoneme)
+PSDToolKit.settalkingraw = function(obj, volume, phoneme)
   local o = {
     v = volume,
     p = phoneme
   }
-  PSDToolKitLib.phoneme["latest"] = o
-  PSDToolKitLib.phoneme[obj.layer] = o
+  PSDToolKit.phoneme["latest"] = o
+  PSDToolKit.phoneme[obj.layer] = o
 end
 
-PSDToolKitLib.settalkingcur = function(obj, curphoneme)
-  PSDToolKitLib.settalkingraw(obj, 0, {
+PSDToolKit.settalkingcur = function(obj, curphoneme)
+  PSDToolKit.settalkingraw(obj, 0, {
     progress = obj.time/obj.totaltime,
     cur = curphoneme,
     cur_start = 1,
@@ -243,36 +243,36 @@ PSDToolKitLib.settalkingcur = function(obj, curphoneme)
   })
 end
 
-PSDToolKitLib.gettalking = function(index)
+PSDToolKit.gettalking = function(index)
   if index == 0 then
     index = "latest"
   end
-  local o = PSDToolKitLib.phoneme[index]
+  local o = PSDToolKit.phoneme[index]
   if o == nil then
     return 0, nil
   end
-  PSDToolKitLib.phoneme[index] = nil
+  PSDToolKit.phoneme[index] = nil
   return o.v, o.p
 end
 
-PSDToolKitLib.peektalking = function(index)
+PSDToolKit.peektalking = function(index)
   if index == 0 then
     index = "latest"
   end
-  local o = PSDToolKitLib.phoneme[index]
+  local o = PSDToolKit.phoneme[index]
   if o == nil then
     return 0, nil
   end
   return o.v, o.p
 end
 
-PSDToolKitLib.phoneme = PSDToolKitLib.phoneme or {}
+PSDToolKit.phoneme = PSDToolKit.phoneme or {}
 
-PSDToolKitLib.talkstat = PSDToolKitLib.talkstat or {}
+PSDToolKit.talkstat = PSDToolKit.talkstat or {}
 
-PSDToolKitLib.text = PSDToolKitLib.text or {}
+PSDToolKit.text = PSDToolKit.text or {}
 
-PSDToolKitLib.settext = function(text, obj, unescape)
+PSDToolKit.settext = function(text, obj, unescape)
   if unescape then
     text = text:gsub("([\128-\160\224-\255]\092)\092", "%1")
   end
@@ -283,32 +283,32 @@ PSDToolKitLib.settext = function(text, obj, unescape)
     tf = obj.totalframe,
     tt = obj.totaltime
   }
-  PSDToolKitLib.text["latest"] = o
-  PSDToolKitLib.text[obj.layer] = o
+  PSDToolKit.text["latest"] = o
+  PSDToolKit.text[obj.layer] = o
 end
 
-PSDToolKitLib.gettext = function(index)
+PSDToolKit.gettext = function(index)
   local s = ''
   if index == 0 then
     index = "latest"
   end
-  if PSDToolKitLib.text[index] ~= nil then
-    s = PSDToolKitLib.text[index].s
-    PSDToolKitLib.text[index] = nil
+  if PSDToolKit.text[index] ~= nil then
+    s = PSDToolKit.text[index].s
+    PSDToolKit.text[index] = nil
   end
   return s
 end
 
-PSDToolKitLib.gettextdata = function(index)
+PSDToolKit.gettextdata = function(index)
   local o = nil
   if index == 0 then
     index = "latest"
   end
-  if PSDToolKitLib.text[index] ~= nil then
-    o = PSDToolKitLib.text[index]
-    PSDToolKitLib.text[index] = nil
+  if PSDToolKit.text[index] ~= nil then
+    o = PSDToolKit.text[index]
+    PSDToolKit.text[index] = nil
   end
   return o
 end
 
-return PSDToolKitLib
+return PSDToolKit
