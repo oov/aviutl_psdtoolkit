@@ -96,7 +96,11 @@ func (s *Sources) load(filePath string) (*Source, error) {
 		defer f2.Close()
 		pf, err = img.NewPFV(f2, lm)
 		if err != nil {
-			return nil, errors.Wrap(err, "source: cannot parse the pfv file")
+			if img.IsWarning(err) {
+				s.Logger.Println(err)
+			} else {
+				return nil, errors.Wrap(err, "source: cannot parse the pfv file")
+			}
 		}
 	}
 

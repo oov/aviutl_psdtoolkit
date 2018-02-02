@@ -6,9 +6,25 @@ import (
 	"strings"
 	"time"
 
-	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
 	"github.com/pkg/errors"
 )
+
+type warning []error
+
+func (e warning) Error() string {
+	var b []byte
+	b = append(b, "there were some warnings:\n"...)
+	for _, s := range e {
+		b = append(b, s.Error()...)
+		b = append(b, '\n')
+	}
+	return string(b)
+}
+
+func IsWarning(err error) bool {
+	_, ok := err.(warning)
+	return ok
+}
 
 type PFV struct {
 	Setting    map[string]string
@@ -79,6 +95,8 @@ func NewPFV(r io.Reader, mgr *LayerManager) (*PFV, error) {
 		},
 	}
 
+	var warns warning
+
 	header := true
 	var name, typ string
 	var data []string
@@ -96,7 +114,11 @@ func NewPFV(r io.Reader, mgr *LayerManager) (*PFV, error) {
 				header = false
 			} else {
 				if err = insert(&p.Root, typ, name, data, mgr); err != nil {
-					return nil, err
+					if w, ok := err.(warning); ok {
+						warns = append(warns, w...)
+					} else {
+						return nil, err
+					}
 				}
 			}
 			t = t[2:]
@@ -116,11 +138,11 @@ func NewPFV(r io.Reader, mgr *LayerManager) (*PFV, error) {
 				continue
 			}
 			if s[0], err = decodeName(s[0]); err != nil {
-				ods.ODS("%q could not decode, skipped: %v", s[0], err)
+				warns = append(warns, errors.Errorf("img: %q could not decode, skipped: %v", s[0], err))
 				continue
 			}
 			if s[1], err = decodeName(s[1]); err != nil {
-				ods.ODS("%q could not decode, skipped: %v", s[1], err)
+				warns = append(warns, errors.Errorf("img: %q could not decode, skipped: %v", s[0], err))
 				continue
 			}
 			p.Setting[s[0]] = s[1]
@@ -129,15 +151,22 @@ func NewPFV(r io.Reader, mgr *LayerManager) (*PFV, error) {
 		}
 	}
 	if err := sc.Err(); err != nil {
-		return nil, errors.Wrap(err, "pfv: unexpected error")
+		return nil, errors.Wrap(err, "img: unexpected error")
 	}
 	if len(data) > 0 {
 		if err = insert(&p.Root, typ, name, data, mgr); err != nil {
-			return nil, err
+			if w, ok := err.(warning); ok {
+				warns = append(warns, w...)
+			} else {
+				return nil, err
+			}
 		}
 	}
 	if err := registerFaview(p); err != nil {
-		return nil, errors.Wrap(err, "pfv: unexpected error")
+		return nil, errors.Wrap(err, "img: unexpected error")
+	}
+	if warns != nil {
+		return p, warns
 	}
 	return p, nil
 }
@@ -153,6 +182,7 @@ func dump(n *Node, indent string) {
 */
 
 func insert(root *Node, typ string, name string, data []string, mgr *LayerManager) error {
+	var warns warning
 	n, err := insertNodeRecursive(root, name)
 	if err != nil {
 		return err
@@ -167,7 +197,7 @@ func insert(root *Node, typ string, name string, data []string, mgr *LayerManage
 				if lp == -1 {
 					idx, ok := mgr.FullPath[l]
 					if !ok {
-						ods.ODS("img: WARN: layer %q not found", l)
+						warns = append(warns, errors.Errorf("img: layer %q not found", l))
 						break
 					}
 					set[idx] = true
@@ -175,7 +205,7 @@ func insert(root *Node, typ string, name string, data []string, mgr *LayerManage
 				}
 				idx, ok := mgr.FullPath[l[:lp+p]]
 				if !ok {
-					ods.ODS("img: WARN: layer %q not found", l[:lp+p])
+					warns = append(warns, errors.Errorf("img: layer %q not found", l[:lp+p]))
 					break
 				}
 				set[idx] = true
@@ -194,7 +224,7 @@ func insert(root *Node, typ string, name string, data []string, mgr *LayerManage
 				if lp == -1 {
 					idx, ok := mgr.FullPath[l]
 					if !ok {
-						ods.ODS("img: WARN: layer %q not found", l)
+						warns = append(warns, errors.Errorf("img: layer %q not found", l))
 						break
 					}
 					set[idx] = true
@@ -202,7 +232,7 @@ func insert(root *Node, typ string, name string, data []string, mgr *LayerManage
 				}
 				idx, ok := mgr.FullPath[l[:lp+p]]
 				if !ok {
-					ods.ODS("img: WARN: layer %q not found", l[:lp+p])
+					warns = append(warns, errors.Errorf("img: layer %q not found", l[:lp+p]))
 					break
 				}
 				set[idx] = true
@@ -212,6 +242,9 @@ func insert(root *Node, typ string, name string, data []string, mgr *LayerManage
 		n.FilterSetting = set
 	default:
 		return errors.New("img: unexpected pfv node type: " + typ)
+	}
+	if warns != nil {
+		return warns
 	}
 	return nil
 }
