@@ -186,6 +186,42 @@ func NewPFV(r io.Reader, mgr *LayerManager) (*PFV, error) {
 	return p, nil
 }
 
+func cloneNode(src, dest *Node) {
+	dest.Name = src.Name
+	dest.Open = src.Open
+	dest.FilterSetting = src.FilterSetting
+	dest.Setting = src.Setting
+	for i := range src.Children {
+		dest.Children = append(dest.Children, Node{
+			Parent:   dest,
+			Children: []Node{},
+		})
+		cloneNode(&src.Children[i], &dest.Children[i])
+	}
+}
+
+func (pfv *PFV) Clone() (*PFV, error) {
+	if pfv == nil {
+		return nil, nil
+	}
+
+	other := &PFV{
+		Setting: make(map[string]string),
+		Root: Node{
+			Name:     pfv.Root.Name,
+			Children: []Node{},
+		},
+	}
+	for k, v := range pfv.Setting {
+		other.Setting[k] = v
+	}
+	cloneNode(&pfv.Root, &other.Root)
+	if err := registerFaview(other); err != nil {
+		return nil, errors.Wrap(err, "img: unexpected error")
+	}
+	return other, nil
+}
+
 type PFVNodeSerializedData struct {
 	Open bool
 }

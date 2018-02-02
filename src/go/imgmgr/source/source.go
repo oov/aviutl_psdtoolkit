@@ -151,6 +151,10 @@ func (s *Sources) NewImage(filePath string) (*img.Image, error) {
 		return nil, err
 	}
 	psd := src.PSD.Clone()
+	pfv, err := src.PFV.Clone()
+	if err != nil {
+		return nil, err
+	}
 	return &img.Image{
 		Toucher: src,
 
@@ -158,7 +162,7 @@ func (s *Sources) NewImage(filePath string) (*img.Image, error) {
 		FileHash: src.FileHash,
 
 		PSD:    psd,
-		PFV:    src.PFV,
+		PFV:    pfv,
 		Layers: img.NewLayerManager(psd),
 
 		InitialLayerState: &src.InitialLayerState,
