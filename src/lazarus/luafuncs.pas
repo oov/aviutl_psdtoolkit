@@ -6,43 +6,38 @@ unit LuaFuncs;
 interface
 
 uses
-  SysUtils, lua;
+  lua;
 
-function LuaDraw(L: Plua_State): integer; cdecl;
-function LuaGetLayerNames(L: Plua_State): integer; cdecl;
-function LuaSetProperties(L: Plua_State): integer; cdecl;
-function LuaShowGUI(L: Plua_State): integer; cdecl;
-function LuaSerialize(L: Plua_State): integer; cdecl;
-function LuaDeserialize(L: Plua_State): integer; cdecl;
-
-function LuaPutCache(L: Plua_State): integer; cdecl;
-function LuaGetCache(L: Plua_State): integer; cdecl;
-
-type
-  TEntry = record
-    Name: PChar;
-    Func: lua_CFunction;
-  end;
-
-const
-  Functions: array[0..7] of TEntry = (
-    (Name: 'draw'; Func: @LuaDraw),
-    (Name: 'getlayernames'; Func: @LuaGetLayerNames),
-    (Name: 'setprops'; Func: @LuaSetProperties),
-    (Name: 'showgui'; Func: @LuaShowGUI),
-    (Name: 'serialize'; Func: @LuaSerialize),
-    (Name: 'deserialize'; Func: @LuaDeserialize),
-    (Name: 'putcache'; Func: @LuaPutCache),
-    (Name: 'getcache'; Func: @LuaGetCache));
+function luaopen_PSDToolKitBridge(L: Plua_State): integer; cdecl;
 
 implementation
 
 uses
-  Main, Cache, Util;
+  SysUtils, BridgeMain, Cache, Util;
 
 var
-  psdtool: TPSDToolKit;
+  bridge: TPSDToolKitBridge;
   CacheMgr: TCacheManager;
+
+function LuaAddFile(L: Plua_State): integer; cdecl;
+var
+  filename: ShiftJISString;
+begin
+  try
+    filename := lua_tostring(L, 1);
+    bridge.AddFile(filename);
+  except
+    on e: Exception do
+    begin
+      lua_pushboolean(L, False);
+      lua_pushstring(L, PChar(e.Message));
+      Result := 2;
+      Exit;
+    end;
+  end;
+  lua_pushboolean(L, True);
+  Result := 1;
+end;
 
 function LuaDraw(L: Plua_State): integer; cdecl;
 var
@@ -57,7 +52,7 @@ begin
     p := lua_topointer(L, 3);
     w := lua_tointeger(L, 4);
     h := lua_tointeger(L, 5);
-    psdtool.Draw(id, filename, p, w, h);
+    bridge.Draw(id, filename, p, w, h);
   except
     on e: Exception do
     begin
@@ -81,7 +76,7 @@ begin
     id := lua_tointeger(L, 1);
     filename := lua_tostring(L, 2);
     lua_pushboolean(L, True);
-    s := psdtool.GetLayerNames(id, filename);
+    s := bridge.GetLayerNames(id, filename);
     lua_newtable(L);
     pos := 1;
     di := 1;
@@ -162,7 +157,7 @@ begin
     else
       pOffsetY := nil;
 
-    psdtool.SetProperties(id, filename, pLayer, pScale,
+    bridge.SetProperties(id, filename, pLayer, pScale,
       pOffsetX, pOffsetY, Modified, Width, Height);
   except
     on e: Exception do
@@ -183,7 +178,7 @@ end;
 function LuaShowGUI(L: Plua_State): integer; cdecl;
 begin
   try
-    psdtool.ShowGUI();
+    bridge.ShowGUI();
   except
     on e: Exception do
     begin
@@ -202,7 +197,7 @@ var
   S: string;
 begin
   try
-    S := psdtool.Serialize();
+    S := bridge.Serialize();
   except
     on e: Exception do
     begin
@@ -220,7 +215,7 @@ end;
 function LuaDeserialize(L: Plua_State): integer; cdecl;
 begin
   try
-    psdtool.Deserialize(lua_tostring(L, 1));
+    bridge.Deserialize(lua_tostring(L, 1));
   except
     on e: Exception do
     begin
@@ -289,14 +284,44 @@ begin
   Result := 1;
 end;
 
+function luaopen_PSDToolKitBridge(L: Plua_State): integer; cdecl;
+type
+  TEntry = record
+    Name: PChar;
+    Func: lua_CFunction;
+  end;
+const
+  Functions: array[0..8] of TEntry = (
+    (Name: 'addfile'; Func: @LuaAddFile),
+    (Name: 'draw'; Func: @LuaDraw),
+    (Name: 'getlayernames'; Func: @LuaGetLayerNames),
+    (Name: 'setprops'; Func: @LuaSetProperties),
+    (Name: 'showgui'; Func: @LuaShowGUI),
+    (Name: 'serialize'; Func: @LuaSerialize),
+    (Name: 'deserialize'; Func: @LuaDeserialize),
+    (Name: 'putcache'; Func: @LuaPutCache),
+    (Name: 'getcache'; Func: @LuaGetCache));
+var
+  i: integer;
+begin
+  lua_newtable(L);
+  for i := Low(Functions) to High(Functions) do
+  begin
+    lua_pushcfunction(L, Functions[i].Func);
+    lua_setfield(L, 2, Functions[i].Name);
+  end;
+  lua_pushvalue(L, 2);
+  lua_setglobal(L, 'PSDToolKitBridge');
+  Result := 1;
+end;
+
 initialization
-  Randomize();
-  psdtool := TPSDToolKit.Create();
+  bridge := TPSDToolKitBridge.Create();
   cacheMgr := TCacheManager.Create();
 
 
 finalization
-  psdtool.Free();
+  bridge.Free();
   cacheMgr.Free();
 
 end.

@@ -1,4 +1,4 @@
-unit Main;
+unit BridgeMain;
 
 {$mode objfpc}{$H+}
 {$CODEPAGE UTF-8}
@@ -6,13 +6,13 @@ unit Main;
 interface
 
 uses
-  SysUtils, Classes, Process, Remote, Util;
+  SysUtils, Process, Remote;
 
 type
 
-  { TPSDToolKit }
+  { TPSDToolKitBridge }
 
-  TPSDToolKit = class
+  TPSDToolKitBridge = class
   private
     FRemoteProcess: TProcess;
     FReceiver: TReceiver;
@@ -28,6 +28,7 @@ type
   public
     constructor Create();
     destructor Destroy(); override;
+    procedure AddFile(FilePath: UTF8String);
     procedure Draw(id: integer; filename: UTF8String; p: PByteArray;
       Width: integer; Height: integer);
     function GetLayerNames(id: integer; filename: UTF8String): UTF8String;
@@ -43,27 +44,21 @@ type
 implementation
 
 uses
-  Windows, Execute;
+  Windows, Classes, Execute, Util;
 
-{ TPSDToolKit }
+{ TPSDToolKitBridge }
 
-constructor TPSDToolKit.Create();
-var
-  ws: WideString;
+constructor TPSDToolKitBridge.Create();
 begin
   inherited Create;
   InitCriticalSection(FCS);
   FRemoteProcess := TProcess.Create(nil);
-  ws := GetDLLName();
-  ws[Length(ws) - 2] := 'e';
-  ws[Length(ws) - 1] := 'x';
-  ws[Length(ws) - 0] := 'e';
-  FRemoteProcess.Executable := ws;
+  FRemoteProcess.Executable := ExtractFileDir(GetDLLName()) + '\PSDToolKit.exe';
   FRemoteProcess.Options := [poUsePipes, poNoConsole];
   FReceiver := nil;
 end;
 
-destructor TPSDToolKit.Destroy;
+destructor TPSDToolKitBridge.Destroy();
 begin
   if FReceiver <> nil then
     FReceiver.Terminate;
@@ -86,7 +81,22 @@ begin
   inherited Destroy;
 end;
 
-procedure TPSDToolKit.Draw(id: integer; filename: UTF8String;
+procedure TPSDToolKitBridge.AddFile(FilePath: UTF8String);
+begin
+  EnterCS('ADDF');
+  try
+    PrepareIPC();
+    FRemoteProcess.Input.WriteBuffer('ADDF', 4);
+    WriteString(FRemoteProcess.Input, FilePath);
+    ODS('  FilePath: %s', [FilePath]);
+  finally
+    LeaveCS('ADDF');
+  end;
+  FReceiver.WaitResult();
+  FReceiver.Done();
+end;
+
+procedure TPSDToolKitBridge.Draw(id: integer; filename: UTF8String;
   p: PByteArray; Width: integer; Height: integer);
 var
   l: integer;
@@ -111,7 +121,7 @@ begin
   end;
 end;
 
-function TPSDToolKit.GetLayerNames(id: integer; filename: UTF8String): UTF8String;
+function TPSDToolKitBridge.GetLayerNames(id: integer; filename: UTF8String): UTF8String;
 begin
   EnterCS('LNAM');
   try
@@ -130,7 +140,7 @@ begin
   end;
 end;
 
-procedure TPSDToolKit.SetProperties(id: integer; filename: UTF8String;
+procedure TPSDToolKitBridge.SetProperties(id: integer; filename: UTF8String;
   Layer: PUTF8String; Scale: PSingle; OffsetX: System.PInteger;
   OffsetY: System.PInteger; out Modified: boolean; out Width: integer;
   out Height: integer);
@@ -185,7 +195,7 @@ begin
   end;
 end;
 
-procedure TPSDToolKit.ShowGUI();
+procedure TPSDToolKitBridge.ShowGUI();
 var
   h: THandle;
 begin
@@ -210,7 +220,7 @@ begin
   end;
 end;
 
-function TPSDToolKit.Serialize(): string;
+function TPSDToolKitBridge.Serialize(): string;
 begin
   EnterCS('SRLZ');
   try
@@ -228,7 +238,7 @@ begin
   end;
 end;
 
-procedure TPSDToolKit.Deserialize(s: string);
+procedure TPSDToolKitBridge.Deserialize(s: string);
 var
   r: boolean;
 begin
@@ -249,7 +259,7 @@ begin
   end;
 end;
 
-procedure TPSDToolKit.PrepareIPC;
+procedure TPSDToolKitBridge.PrepareIPC();
 begin
   if FRemoteProcess.Running then
     Exit;
@@ -275,7 +285,7 @@ begin
   FReceiver.Done();
 end;
 
-procedure TPSDToolKit.OnRequest(Sender: TObject; const Command: UTF8String);
+procedure TPSDToolKitBridge.OnRequest(Sender: TObject; const Command: UTF8String);
 const
   UnknownCommandErr = 'Unknown Command';
 begin
@@ -291,7 +301,7 @@ begin
   end;
 end;
 
-procedure TPSDToolKit.OnReceiveEditingImageState;
+procedure TPSDToolKitBridge.OnReceiveEditingImageState();
 var
   FilePath, State: UTF8String;
 begin
@@ -309,7 +319,7 @@ begin
   end;
 end;
 
-procedure TPSDToolKit.OnReceiveCopyFaviewValue;
+procedure TPSDToolKitBridge.OnReceiveCopyFaviewValue();
 var
   FilePath, SliderName, Name, Value: UTF8String;
 begin
@@ -328,7 +338,7 @@ begin
     MessageBox(FPSDToolWindow, 'could not open clipboard', 'PSDToolKit', MB_ICONERROR);
 end;
 
-procedure TPSDToolKit.OnReceiveExportFaviewSlider;
+procedure TPSDToolKitBridge.OnReceiveExportFaviewSlider();
 var
   FilePath, SliderName, Names, Values: UTF8String;
 begin
@@ -347,13 +357,13 @@ begin
   end;
 end;
 
-procedure TPSDToolKit.EnterCS(CommandName: string);
+procedure TPSDToolKitBridge.EnterCS(CommandName: string);
 begin
   EnterCriticalSection(FCS);
   ODS('%s BEGIN', [CommandName]);
 end;
 
-procedure TPSDToolKit.LeaveCS(CommandName: string);
+procedure TPSDToolKitBridge.LeaveCS(CommandName: string);
 begin
   ODS('%s END', [CommandName]);
   LeaveCriticalSection(FCS);
