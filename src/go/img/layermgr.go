@@ -670,20 +670,8 @@ func (m *LayerManager) SerializeSafe() map[string]SerializedData {
 	return v
 }
 
-type deserializeError []string
-
-func (e deserializeError) Error() string {
-	var b []byte
-	b = append(b, "some of the layers not found:\n"...)
-	for _, p := range e {
-		b = append(b, p...)
-		b = append(b, '\n')
-	}
-	return string(b)
-}
-
 func (m *LayerManager) DeserializeSafe(state map[string]SerializedData) error {
-	var e deserializeError
+	var warns warning
 	for fullPath, d := range state {
 		if idx, ok := m.FullPath[fullPath]; ok {
 			l := m.Mapped[m.Flat[idx]]
@@ -692,11 +680,11 @@ func (m *LayerManager) DeserializeSafe(state map[string]SerializedData) error {
 				l.FolderOpen = d.FolderOpen
 			}
 		} else {
-			e = append(e, fullPath)
+			warns = append(warns, errors.Errorf("img: layer %q not found", fullPath))
 		}
 	}
-	if e != nil {
-		return e
+	if warns != nil {
+		return warns
 	}
 	return nil
 }

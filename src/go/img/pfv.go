@@ -41,6 +41,21 @@ type Node struct {
 	Setting       []bool
 }
 
+func (n *Node) FullPath() string {
+	names := []string{}
+	c := n
+	for c != nil {
+		if c.Parent != nil {
+			names = append(names, encodeName(c.Name))
+		}
+		c = c.Parent
+	}
+	for i, l := 0, len(names)/2; i < l; i++ {
+		names[i], names[len(names)-i-1] = names[len(names)-i-1], names[i]
+	}
+	return strings.Join(names, "\\")
+}
+
 func (n *Node) Item() bool   { return n.Setting != nil }
 func (n *Node) Folder() bool { return n.Children != nil && n.FilterSetting == nil }
 func (n *Node) Filter() bool { return n.FilterSetting != nil }
@@ -171,6 +186,192 @@ func NewPFV(r io.Reader, mgr *LayerManager) (*PFV, error) {
 	return p, nil
 }
 
+type PFVNodeSerializedData struct {
+	Open bool
+}
+
+func serializeNode(n *Node, m map[string]PFVNodeSerializedData) {
+	m[n.FullPath()] = PFVNodeSerializedData{
+		Open: n.Open,
+	}
+	for i := range n.Children {
+		serializeNode(&n.Children[i], m)
+	}
+}
+
+func (pfv *PFV) serializeNode() (map[string]PFVNodeSerializedData, error) {
+	m := map[string]PFVNodeSerializedData{}
+	serializeNode(&pfv.Root, m)
+	return m, nil
+}
+
+func (pfv *PFV) deserializeNode(data map[string]PFVNodeSerializedData) error {
+	var e warning
+	for fullPath, d := range data {
+		n, err := pfv.FindNode(fullPath, false)
+		if err != nil {
+			return err
+		}
+		if n != nil {
+			n.Open = d.Open
+		} else {
+			e = append(e, errors.Errorf("img: node %q is not found", fullPath))
+		}
+	}
+	if e != nil {
+		return e
+	}
+	return nil
+}
+
+type PFVFaviewNodeSerializedData struct {
+	SelectedName string
+}
+
+func serializeFaviewNode(fn *FaviewNode, m map[string]PFVFaviewNodeSerializedData) {
+	m[fn.FullPath()] = PFVFaviewNodeSerializedData{
+		SelectedName: fn.SelectedName(),
+	}
+	for i := range fn.Children {
+		serializeFaviewNode(&fn.Children[i], m)
+	}
+}
+
+func (pfv *PFV) serializeFaviewNode() (map[string]PFVFaviewNodeSerializedData, error) {
+	m := map[string]PFVFaviewNodeSerializedData{}
+	serializeFaviewNode(&pfv.FaviewRoot, m)
+	return m, nil
+}
+
+func (pfv *PFV) deserializeFaviewNode(data map[string]PFVFaviewNodeSerializedData) error {
+	var e warning
+	for fullPath, d := range data {
+		fn, err := pfv.FindFaviewNode(fullPath, false)
+		if err != nil {
+			return err
+		}
+		if fn != nil {
+			for i := range fn.Items {
+				if fn.Items[i].Name == d.SelectedName {
+					fn.SelectedIndex = i
+					break
+				}
+			}
+		} else {
+			e = append(e, errors.Errorf("img: faview node %q is not found", fullPath))
+		}
+	}
+	if e != nil {
+		return e
+	}
+	return nil
+}
+
+type PFVSerializedData struct {
+	Node       map[string]PFVNodeSerializedData
+	FaviewNode map[string]PFVFaviewNodeSerializedData
+}
+
+func (pfv *PFV) Serialize() (*PFVSerializedData, error) {
+	n, err := pfv.serializeNode()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to serialize node")
+	}
+	fn, err := pfv.serializeFaviewNode()
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to serialize faview node")
+	}
+	return &PFVSerializedData{Node: n, FaviewNode: fn}, nil
+}
+
+func (pfv *PFV) Deserialize(data *PFVSerializedData) error {
+	var e warning
+	err := pfv.deserializeNode(data.Node)
+	if err != nil {
+		if de, ok := err.(warning); ok {
+			e = append(e, de...)
+		} else {
+			return errors.Wrap(err, "failed to deserialize node")
+		}
+	}
+	err = pfv.deserializeFaviewNode(data.FaviewNode)
+	if err != nil {
+		if de, ok := err.(warning); ok {
+			e = append(e, de...)
+		} else {
+			return errors.Wrap(err, "failed to deserialize faview node")
+		}
+	}
+	if e != nil {
+		return e
+	}
+	return nil
+}
+
+func (pfv *PFV) FindNode(fullPath string, ignoreRootName bool) (*Node, error) {
+	if fullPath == "" {
+		return nil, errors.New("img: fullPath must not be empty")
+	}
+	names := strings.Split(fullPath, "\\")
+	name, err := decodeName(names[0])
+	if err != nil {
+		return nil, errors.Wrapf(err, "img: failed to decode favorite root node name: %q", names[0])
+	}
+	if name != pfv.Root.Name && !ignoreRootName {
+		return nil, nil
+	}
+
+	n := &pfv.Root
+
+nameLoop:
+	for _, encodedName := range names[1:] {
+		name, err = decodeName(encodedName)
+		if err != nil {
+			return nil, errors.Wrapf(err, "img: failed to decode favorite node name: %q", encodedName)
+		}
+		for i := range n.Children {
+			if n.Children[i].Name == name {
+				n = &n.Children[i]
+				continue nameLoop
+			}
+		}
+		return nil, nil
+	}
+	return n, nil
+}
+
+func (pfv *PFV) FindFaviewNode(fullPath string, ignoreRootName bool) (*FaviewNode, error) {
+	if fullPath == "" {
+		return nil, errors.New("img: fullPath must not be empty")
+	}
+	names := strings.Split(fullPath, "\\")
+	name, err := decodeName(names[0])
+	if err != nil {
+		return nil, errors.Wrapf(err, "img: failed to decode faview root node name: %q", names[0])
+	}
+	if name != pfv.FaviewRoot.NameNode.Name && !ignoreRootName {
+		return nil, nil
+	}
+
+	fn := &pfv.FaviewRoot
+
+nameLoop:
+	for _, encodedName := range names[1:] {
+		name, err = decodeName(encodedName)
+		if err != nil {
+			return nil, errors.Wrapf(err, "img: failed to decode faview node name: %q", encodedName)
+		}
+		for i := range fn.Children {
+			if fn.Children[i].NameNode.Name == name {
+				fn = &fn.Children[i]
+				continue nameLoop
+			}
+		}
+		return nil, nil
+	}
+	return fn, nil
+}
+
 /*
 func dump(n *Node, indent string) {
 	ods.ODS("%s%s", indent, n.Name)
@@ -290,6 +491,7 @@ type FaviewNode struct {
 }
 
 func registerFaview(p *PFV) error {
+	p.FaviewRoot.NameNode = &p.Root
 	enumFaviewRoot(&p.FaviewRoot, &p.Root)
 	if len(p.FaviewRoot.Children) > 0 {
 		nameList := make([]string, 0, len(p.FaviewRoot.Children))
@@ -297,8 +499,6 @@ func registerFaview(p *PFV) error {
 			nameList = append(nameList, p.FaviewRoot.Children[i].NameNode.Name)
 		}
 		p.FaviewRoot.ItemNameList = strings.Join(nameList, "\x00")
-		p.FaviewRoot.SelectedIndex = 0
-		p.FaviewRoot.NameNode = &p.Root
 	}
 	return nil
 }
@@ -357,6 +557,21 @@ func (fn *FaviewNode) FullName() string {
 	for c != nil {
 		if c.Parent != nil {
 			n = append(n, c.NameNode.Name)
+		}
+		c = c.Parent
+	}
+	for i, l := 0, len(n)/2; i < l; i++ {
+		n[i], n[len(n)-i-1] = n[len(n)-i-1], n[i]
+	}
+	return strings.Join(n, "\\")
+}
+
+func (fn *FaviewNode) FullPath() string {
+	n := []string{}
+	c := fn
+	for c != nil {
+		if c.Parent != nil {
+			n = append(n, encodeName(c.NameNode.Name))
 		}
 		c = c.Parent
 	}
