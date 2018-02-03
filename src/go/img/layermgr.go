@@ -2,12 +2,10 @@ package img
 
 import (
 	"encoding/binary"
-	"strconv"
 	"strings"
 
 	"github.com/pkg/errors"
 
-	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
 	"github.com/oov/psd/composite"
 )
 
@@ -500,7 +498,6 @@ func (m *LayerManager) Deserialize(s string, flip Flip, faviewRoot *FaviewNode) 
 		layers[seqID] = &n[index]
 	}
 
-	var items []*FaviewNode
 	newFlip := flip
 	for priority, line := range strings.Split(s, " ") {
 		if len(line) < 2 {
@@ -591,37 +588,6 @@ func (m *LayerManager) Deserialize(s string, flip Flip, faviewRoot *FaviewNode) 
 					}
 					v <<= 2
 					i++
-				}
-			}
-		case "S.":
-			if items == nil {
-				if faviewRoot == nil {
-					ods.ODS("do not have faview data. skipped.")
-					continue
-				}
-				items = faviewRoot.EnumItemNode()
-			}
-			values := strings.Split(line[2:], "_")
-			for i := 0; i < len(items) && i < len(values); i++ {
-				if values[i] == "" {
-					continue
-				}
-				index, err := strconv.Atoi(values[i])
-				if err != nil {
-					ods.ODS("%q is not a valid number. skipped.", values[i])
-					continue
-				}
-				if index < 0 || index >= len(items[i].Items) {
-					ods.ODS("index %d is out of range. skipped.", index)
-					continue
-				}
-				f, v := items[i].Items[index].RawState()
-				for i, pass := range f {
-					if !pass {
-						continue
-					}
-					n[i].Visible = v[i]
-					n[i].Priority = priority + 1
 				}
 			}
 		}
