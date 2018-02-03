@@ -35,6 +35,9 @@ implementation
 uses
   lua, SysUtils, Ver;
 
+type
+  ShiftJISString = type ansistring(932);
+
 var
   MainDLLInstance: THandle;
 
@@ -74,97 +77,108 @@ end;
 
 procedure ShowGUI();
 var
-  h: THandle;
   s: WideString;
+  err: ShiftJISString;
   L: Plua_state;
   Proc: lua_CFunction;
   n: integer;
 begin
   if MainDLLInstance = 0 then
     Exit;
-  Proc := lua_CFunction(GetProcAddress(MainDLLInstance, 'luaopen_PSDToolKit'));
-  if Proc = nil then
-    Exit;
-  L := lua_newstate(@LuaAllocator, nil);
-  if L = nil then
-    Exit;
   try
-    lua_pushstring(L, 'PSDToolKit');
-    n := Proc(L);
-    if n <> 1 then
-      Exit;
-    lua_getfield(L, 2, 'showgui');
-    if not lua_iscfunction(L, 3) then
-      Exit;
-    lua_call(L, 0, 2);
-    if not lua_toboolean(L, -2) then
-    begin
-      h := FindExEditWindow();
-      s := 'ウィンドウの表示中にエラーが発生しました。'#13#10#13#10 + WideString(string(lua_tostring(L, -1)));
-      MessageBoxW(h, PWideChar(s), 'PSDToolKit', MB_ICONERROR);
+    Proc := lua_CFunction(GetProcAddress(MainDLLInstance, 'luaopen_PSDToolKitBridge'));
+    if Proc = nil then
+      raise Exception.Create('luaopen_PSDToolKitBridge not found');
+    L := lua_newstate(@LuaAllocator, nil);
+    if L = nil then
+      raise Exception.Create('failed to execute lua_newstate');
+    try
+      lua_pushstring(L, 'PSDToolKitBridge');
+      n := Proc(L);
+      if n <> 1 then
+        raise Exception.Create('luaopen_PSDToolKitBridge returned unexpected value');
+      lua_getfield(L, 2, 'showgui');
+      if not lua_iscfunction(L, 3) then
+        raise Exception.Create('PSDToolKitBridge.showgui is not a function');
+
+      if lua_pcall(L, 0, 0, 0) <> 0 then
+      begin
+        err := lua_tostring(L, -1);
+        raise Exception.Create(err);
+      end;
+    finally
+      lua_close(L);
     end;
-  finally
-    lua_close(L);
+  except
+    on E: Exception do
+    begin
+      s := 'ウィンドウの表示中にエラーが発生しました。'#13#10#13#10 + E.Message;
+      MessageBoxW(FindExEditWindow(), PWideChar(s), 'PSDToolKit', MB_ICONERROR);
+    end;
   end;
 end;
 
-function Serialize(): string;
+function Serialize(): RawByteString;
 var
   L: Plua_state;
   Proc: lua_CFunction;
+  err: ShiftJISString;
   n: integer;
 begin
   if MainDLLInstance = 0 then
     Exit;
-  Proc := lua_CFunction(GetProcAddress(MainDLLInstance, 'luaopen_PSDToolKit'));
+  Proc := lua_CFunction(GetProcAddress(MainDLLInstance, 'luaopen_PSDToolKitBridge'));
   if Proc = nil then
-    Exit;
+    raise Exception.Create('luaopen_PSDToolKitBridge not found');
   L := lua_newstate(@LuaAllocator, nil);
   if L = nil then
-    Exit;
+    raise Exception.Create('failed to execute lua_newstate');
   try
-    lua_pushstring(L, 'PSDToolKit');
+    lua_pushstring(L, 'PSDToolKitBridge');
     n := Proc(L);
     if n <> 1 then
-      raise Exception.Create('PSDToolKit が見つかりません');
+      raise Exception.Create('luaopen_PSDToolKitBridge returned unexpected value');
     lua_getfield(L, 2, 'serialize');
     if not lua_iscfunction(L, 3) then
-      raise Exception.Create('PSDToolKit.serialize が見つかりません');
-    lua_call(L, 0, 2);
+      raise Exception.Create('PSDToolKitBridge.serialize is not a function');
+    if lua_pcall(L, 0, 1, 0) <> 0 then begin
+      err := lua_tostring(L, -1);
+      raise Exception.Create(err);
+    end;
     Result := lua_tostring(L, -1);
-    if not lua_toboolean(L, -2) then
-      raise Exception.Create(Result);
   finally
     lua_close(L);
   end;
 end;
 
-procedure Deserialize(s: string);
+procedure Deserialize(s: RawByteString);
 var
   L: Plua_state;
   Proc: lua_CFunction;
+  err: ShiftJISString;
   n: integer;
 begin
   if MainDLLInstance = 0 then
     Exit;
-  Proc := lua_CFunction(GetProcAddress(MainDLLInstance, 'luaopen_PSDToolKit'));
+  Proc := lua_CFunction(GetProcAddress(MainDLLInstance, 'luaopen_PSDToolKitBridge'));
   if Proc = nil then
-    Exit;
+    raise Exception.Create('luaopen_PSDToolKitBridge not found');
   L := lua_newstate(@LuaAllocator, nil);
   if L = nil then
-    Exit;
+    raise Exception.Create('failed to execute lua_newstate');
   try
-    lua_pushstring(L, 'PSDToolKit');
+    lua_pushstring(L, 'PSDToolKitBridge');
     n := Proc(L);
     if n <> 1 then
-      raise Exception.Create('PSDToolKit が見つかりません');
+      raise Exception.Create('luaopen_PSDToolKitBridge returned unexpected value');
     lua_getfield(L, 2, 'deserialize');
     if not lua_iscfunction(L, 3) then
-      raise Exception.Create('PSDToolKit.deserialize が見つかりません');
+      raise Exception.Create('PSDToolKitBridge.deserialize is not a function');
     lua_pushlstring(L, @s[1], Length(s));
-    lua_call(L, 1, 2);
-    if not lua_toboolean(L, -2) then
-      raise Exception.Create(lua_tostring(L, -1));
+    if lua_pcall(L, 1, 0, 0) <> 0 then begin
+      err := lua_tostring(L, -1);
+      raise Exception.Create(err);
+    end;
   finally
     lua_close(L);
   end;
@@ -226,7 +240,7 @@ const
   HWND_MESSAGE = HWND(-3);
   PROCESSOR_ARCHITECTURE_AMD64 = 9;
 var
-  i: Integer;
+  i: integer;
   wc: WNDCLASS;
   si: SYSTEM_INFO;
   asi: TSysInfo;
@@ -238,27 +252,35 @@ begin
   try
     GetNativeSystemInfo(@si);
     if si.wProcessorArchitecture <> PROCESSOR_ARCHITECTURE_AMD64 then
-      raise Exception.Create('PSDToolKit を使用するには64bit 版の Windows が必要です。');
+      raise Exception.Create(
+        'PSDToolKit を使用するには64bit 版の Windows が必要です。');
     if MainDLLInstance = 0 then
-      raise Exception.Create('script\PSDToolKit\PSDToolKit.dll の読み込みに失敗しました。');
+      raise Exception.Create(
+        'script\PSDToolKit\PSDToolKitBridge.dll の読み込みに失敗しました。');
     if not LuaLoaded() then
       raise Exception.Create('lua51.dll の読み込みに失敗しました。');
     if fp^.ExFunc^.GetSysInfo(nil, @asi) = AVIUTL_FALSE then
-      raise Exception.Create('AviUtl のバージョン情報取得に失敗しました。');
+      raise Exception.Create(
+        'AviUtl のバージョン情報取得に失敗しました。');
     if asi.Build < 10000 then
-      raise Exception.Create('PSDToolKit を使うには AviUtl version 1.00 以降が必要です。');
+      raise Exception.Create(
+        'PSDToolKit を使うには AviUtl version 1.00 以降が必要です。');
     for i := 0 to asi.FilterN - 1 do
     begin
       exedit := fp^.ExFunc^.GetFilterP(i);
       if (exedit = nil) or (exedit^.Name <> ExEditNameANSI) then
         continue;
       if StrPos(exedit^.Information, ExEditVersion) = nil then
-        raise Exception.Create('PSDToolKit を使うには拡張編集'+ExEditVersion+'が必要です。');
+        raise Exception.Create('PSDToolKit を使うには拡張編集' +
+          ExEditVersion + 'が必要です。');
       break;
     end;
   except
-    on E: Exception do begin
-      MessageBoxW(0, PWideChar('PSDToolKit の初期化に失敗しました。'#13#10#13#10 + WideString(E.Message)), 'PSDToolKit', MB_ICONERROR);
+    on E: Exception do
+    begin
+      MessageBoxW(0, PWideChar(
+        'PSDToolKit の初期化に失敗しました。'#13#10#13#10 + WideString(E.Message)),
+        'PSDToolKit', MB_ICONERROR);
       Exit;
     end;
   end;
@@ -307,7 +329,10 @@ begin
     Move(Data^, S[1], Size);
     Deserialize(S);
   except
-    on E: Exception do MessageBoxW(FindExEditWindow, PWideChar('読み込み中にエラーが発生しました。'#13#10#13#10 + WideString(E.Message)), 'PSDToolKit', MB_ICONERROR);
+    on E: Exception do
+      MessageBoxW(FindExEditWindow, PWideChar(
+        '読み込み中にエラーが発生しました。'#13#10#13#10 +
+        WideString(E.Message)), 'PSDToolKit', MB_ICONERROR);
   end;
   Result := True;
 end;
@@ -320,9 +345,13 @@ begin
   try
     S := Serialize();
     Size := Length(S);
-    if Assigned(Data) then Move(s[1], Data^, Length(S));
+    if Assigned(Data) then
+      Move(s[1], Data^, Length(S));
   except
-    on E: Exception do MessageBoxW(FindExEditWindow, PWideChar('保存中にエラーが発生しました。'#13#10#13#10 + WideString(E.Message)), 'PSDToolKit', MB_ICONERROR);
+    on E: Exception do
+      MessageBoxW(FindExEditWindow, PWideChar(
+        '保存中にエラーが発生しました。'#13#10#13#10 + WideString(E.Message)),
+        'PSDToolKit', MB_ICONERROR);
   end;
   Result := True;
 end;
@@ -331,7 +360,8 @@ function GetMainDLLName(): WideString;
 begin
   SetLength(Result, MAX_PATH);
   GetModuleFileNameW(hInstance, @Result[1], MAX_PATH);
-  Result := ExtractFileDir(PWideChar(Result)) + '\script\PSDToolKit\PSDToolKit.dll';
+  Result := ExtractFileDir(PWideChar(Result)) +
+    '\script\PSDToolKit\PSDToolKitBridge.dll';
 end;
 
 function GetLuaDLLName(): WideString;
