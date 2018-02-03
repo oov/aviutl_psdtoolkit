@@ -112,6 +112,13 @@ Z=0.0
 blend=0
 ]]
 
+      -- PSDToolKit ウィンドウにドロップされたファイルを追加する
+      -- 一時的に package.cpath を書き換え PSDToolKitBridge.dll を読み込んで addfile を呼ぶ
+      local origcpath = package.cpath
+      package.cpath = GCMZDrops.scriptdir() .. "..\\script\\PSDToolKit\\?.dll"
+      require('PSDToolKitBridge').addfile(GCMZDrops.convertencoding(filepath, "sjis", "utf8"))
+      package.cpath = origcpath
+
       local filepath = GCMZDrops.createtempfile("psd", ".exo")
       f, err = io.open(filepath, "wb")
       if f == nil then
