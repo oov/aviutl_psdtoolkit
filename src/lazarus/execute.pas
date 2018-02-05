@@ -125,26 +125,19 @@ begin
         S := Format('--track0:%s,1,%d,1,1'#13#10, [S, N]);
         SS := S;
         WriteRawString(f, SS);
-        WriteRawString(f, 'local names = {');
+        WriteRawString(f, 'local values = {'#13#10);
         while True do
         begin
-          S := StringifyForLua(Token(#0, FNames)) + ', ';
+          S := '  ' + StringifyForLua(Token(#0, FValues)) + ', -- ';
           SS := S;
           WriteRawString(f, SS);
-          if FNames = '' then
-            break;
-        end;
-        WriteRawString(f, 'nil}'#13#10);
-        WriteRawString(f, 'local values = {');
-        while True do
-        begin
-          S := StringifyForLua(Token(#0, FValues)) + ', ';
+          S := StringifyForLua(Token(#0, FNames)) + #13#10;
           SS := S;
           WriteRawString(f, SS);
           if FValues = '' then
             break;
         end;
-        WriteRawString(f, 'nil}'#13#10);
+        WriteRawString(f, '  nil'#13#10'}'#13#10);
         WriteRawString(f, 'PSD:addstate(values[obj.track0])'#13#10);
       finally
         f.Free;
