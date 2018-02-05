@@ -169,15 +169,17 @@ type ProjectState struct {
 	FilePath string
 	Flip     Flip
 	Layer    map[string]SerializedData
+	PFV      PFVSerializedData
 }
 
-func (img *Image) SerializeProject() (*ProjectState, error) {
+func (img *Image) SerializeProject() *ProjectState {
 	return &ProjectState{
 		Version:  1,
 		FilePath: *img.FilePath,
 		Flip:     img.Flip,
 		Layer:    img.Layers.SerializeSafe(),
-	}, nil
+		PFV:      img.PFV.Serialize(),
+	}
 }
 
 func (img *Image) DeserializeProject(state *ProjectState) error {
@@ -187,7 +189,14 @@ func (img *Image) DeserializeProject(state *ProjectState) error {
 		if w, ok := err.(warning); ok {
 			warn = append(warn, w...)
 		} else {
-			return err
+			return errors.Wrap(err, "Image.DeserializeProject: failed to deserialize")
+		}
+	}
+	if err := img.PFV.Deserialize(state.PFV); err != nil {
+		if w, ok := err.(warning); ok {
+			warn = append(warn, w...)
+		} else {
+			return errors.Wrap(err, "Image.DeserializeProject: failed to deserialize")
 		}
 	}
 	if warn != nil {

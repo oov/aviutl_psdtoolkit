@@ -45,9 +45,7 @@ func (n *Node) FullPath() string {
 	names := []string{}
 	c := n
 	for c != nil {
-		if c.Parent != nil {
-			names = append(names, encodeName(c.Name))
-		}
+		names = append(names, encodeName(c.Name))
 		c = c.Parent
 	}
 	for i, l := 0, len(names)/2; i < l; i++ {
@@ -227,18 +225,18 @@ type PFVNodeSerializedData struct {
 }
 
 func serializeNode(n *Node, m map[string]PFVNodeSerializedData) {
-	m[n.FullPath()] = PFVNodeSerializedData{
-		Open: n.Open,
-	}
+	var d PFVNodeSerializedData
+	d.Open = n.Open
+	m[n.FullPath()] = d
 	for i := range n.Children {
 		serializeNode(&n.Children[i], m)
 	}
 }
 
-func (pfv *PFV) serializeNode() (map[string]PFVNodeSerializedData, error) {
+func (pfv *PFV) serializeNode() map[string]PFVNodeSerializedData {
 	m := map[string]PFVNodeSerializedData{}
 	serializeNode(&pfv.Root, m)
-	return m, nil
+	return m
 }
 
 func (pfv *PFV) deserializeNode(data map[string]PFVNodeSerializedData) error {
@@ -265,18 +263,20 @@ type PFVFaviewNodeSerializedData struct {
 }
 
 func serializeFaviewNode(fn *FaviewNode, m map[string]PFVFaviewNodeSerializedData) {
-	m[fn.FullPath()] = PFVFaviewNodeSerializedData{
-		SelectedName: fn.SelectedName(),
+	var d PFVFaviewNodeSerializedData
+	if len(fn.Items) > 0 {
+		d.SelectedName = fn.SelectedName()
 	}
+	m[fn.FullPath()] = d
 	for i := range fn.Children {
 		serializeFaviewNode(&fn.Children[i], m)
 	}
 }
 
-func (pfv *PFV) serializeFaviewNode() (map[string]PFVFaviewNodeSerializedData, error) {
+func (pfv *PFV) serializeFaviewNode() map[string]PFVFaviewNodeSerializedData {
 	m := map[string]PFVFaviewNodeSerializedData{}
 	serializeFaviewNode(&pfv.FaviewRoot, m)
-	return m, nil
+	return m
 }
 
 func (pfv *PFV) deserializeFaviewNode(data map[string]PFVFaviewNodeSerializedData) error {
@@ -308,34 +308,34 @@ type PFVSerializedData struct {
 	FaviewNode map[string]PFVFaviewNodeSerializedData
 }
 
-func (pfv *PFV) Serialize() (*PFVSerializedData, error) {
-	n, err := pfv.serializeNode()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to serialize node")
+func (pfv *PFV) Serialize() PFVSerializedData {
+	if pfv == nil {
+		return PFVSerializedData{}
 	}
-	fn, err := pfv.serializeFaviewNode()
-	if err != nil {
-		return nil, errors.Wrap(err, "failed to serialize faview node")
+	return PFVSerializedData{
+		Node:       pfv.serializeNode(),
+		FaviewNode: pfv.serializeFaviewNode(),
 	}
-	return &PFVSerializedData{Node: n, FaviewNode: fn}, nil
 }
 
-func (pfv *PFV) Deserialize(data *PFVSerializedData) error {
+func (pfv *PFV) Deserialize(data PFVSerializedData) error {
 	var e warning
-	err := pfv.deserializeNode(data.Node)
-	if err != nil {
-		if de, ok := err.(warning); ok {
-			e = append(e, de...)
-		} else {
-			return errors.Wrap(err, "failed to deserialize node")
+	if data.Node != nil {
+		if err := pfv.deserializeNode(data.Node); err != nil {
+			if de, ok := err.(warning); ok {
+				e = append(e, de...)
+			} else {
+				return errors.Wrap(err, "img: failed to deserialize node")
+			}
 		}
 	}
-	err = pfv.deserializeFaviewNode(data.FaviewNode)
-	if err != nil {
-		if de, ok := err.(warning); ok {
-			e = append(e, de...)
-		} else {
-			return errors.Wrap(err, "failed to deserialize faview node")
+	if data.FaviewNode != nil {
+		if err := pfv.deserializeFaviewNode(data.FaviewNode); err != nil {
+			if de, ok := err.(warning); ok {
+				e = append(e, de...)
+			} else {
+				return errors.Wrap(err, "img: failed to deserialize faview node")
+			}
 		}
 	}
 	if e != nil {
@@ -606,9 +606,7 @@ func (fn *FaviewNode) FullPath() string {
 	n := []string{}
 	c := fn
 	for c != nil {
-		if c.Parent != nil {
-			n = append(n, encodeName(c.NameNode.Name))
-		}
+		n = append(n, encodeName(c.NameNode.Name))
 		c = c.Parent
 	}
 	for i, l := 0, len(n)/2; i < l; i++ {

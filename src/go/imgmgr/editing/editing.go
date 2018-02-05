@@ -214,11 +214,7 @@ type serializeData struct {
 func (ed *Editing) Serialize() (string, error) {
 	var srz serializeData
 	for _, item := range ed.images {
-		ps, err := item.Image.SerializeProject()
-		if err != nil {
-			return "", errors.Wrapf(err, "editing: cannot serialize %q", item.DisplayName)
-		}
-		srz.Images = append(srz.Images, ps)
+		srz.Images = append(srz.Images, item.Image.SerializeProject())
 	}
 	b := bytes.NewBufferString("")
 	if err := json.NewEncoder(b).Encode(srz); err != nil {
