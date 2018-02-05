@@ -8,6 +8,7 @@ import (
 	"github.com/disintegration/gift"
 	"github.com/pkg/errors"
 
+	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
 	"github.com/oov/downscale"
 	"github.com/oov/psd/composite"
 )
@@ -200,7 +201,8 @@ func (img *Image) DeserializeProject(state *ProjectState) error {
 		}
 	}
 	if warn != nil {
-		return warn
+		// TODO: error handling
+		ods.ODS("WARN: %v", warn)
 	}
 	return nil
 }
