@@ -86,6 +86,14 @@ func (g *GUI) AddFileSync(path string) error {
 	return nil
 }
 
+func (g *GUI) ClearFiles() error {
+	g.do(func() {
+		g.edImg.Clear()
+		g.changeSelectedImage()
+	})
+	return nil
+}
+
 func (g *GUI) Init(caption string, bgImg, mainFont, symbolFont []byte) error {
 	var err error
 	if g.window, g.context, err = newWindow(winWidth, winHeight, caption); err != nil {

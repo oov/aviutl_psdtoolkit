@@ -28,6 +28,7 @@ type
     constructor Create();
     destructor Destroy(); override;
     procedure AddFile(FilePath: UTF8String);
+    procedure ClearFiles();
     procedure Draw(id: integer; filename: UTF8String; p: PByteArray;
       Width: integer; Height: integer);
     function GetLayerNames(id: integer; filename: UTF8String): UTF8String;
@@ -90,6 +91,19 @@ begin
     ODS('  FilePath: %s', [FilePath]);
   finally
     LeaveCS('ADDF');
+  end;
+  FReceiver.WaitResult();
+  FReceiver.Done();
+end;
+
+procedure TPSDToolKitBridge.ClearFiles();
+begin
+  EnterCS('CLRF');
+  try
+    PrepareIPC();
+    FRemoteProcess.Input.WriteBuffer('CLRF', 4);
+  finally
+    LeaveCS('CLRF');
   end;
   FReceiver.WaitResult();
   FReceiver.Done();

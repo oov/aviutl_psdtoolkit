@@ -61,6 +61,23 @@ begin
   Result := LuaReturn(L, Main());
 end;
 
+function LuaClearFiles(L: Plua_State): integer; cdecl;
+
+  function Main(): integer;
+  begin
+    try
+      bridge.ClearFiles();
+      Result := 0;
+    except
+      on E: Exception do
+        Result := LuaPushError(L, E);
+    end;
+  end;
+
+begin
+  Result := LuaReturn(L, Main());
+end;
+
 function LuaDraw(L: Plua_State): integer; cdecl;
 
   function Main(): integer;
@@ -325,8 +342,9 @@ type
     Func: lua_CFunction;
   end;
 const
-  Functions: array[0..8] of TEntry = (
+  Functions: array[0..9] of TEntry = (
     (Name: 'addfile'; Func: @LuaAddFile),
+    (Name: 'clearfiles'; Func: @LuaClearFiles),
     (Name: 'draw'; Func: @LuaDraw),
     (Name: 'getlayernames'; Func: @LuaGetLayerNames),
     (Name: 'setprops'; Func: @LuaSetProperties),

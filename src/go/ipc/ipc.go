@@ -21,6 +21,7 @@ import (
 
 type IPC struct {
 	AddFile     func(file string) error
+	ClearFiles  func() error
 	ShowGUI     func() (uintptr, error)
 	Serialize   func() (string, error)
 	Deserialize func(state string) error
@@ -195,6 +196,12 @@ func (ipc *IPC) dispatch(cmd string) error {
 			return err
 		}
 		if err = ipc.AddFile(file); err != nil {
+			return err
+		}
+		return writeUint32(0x80000000)
+
+	case "CLRF":
+		if err := ipc.ClearFiles(); err != nil {
 			return err
 		}
 		return writeUint32(0x80000000)

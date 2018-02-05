@@ -184,6 +184,49 @@ begin
   end;
 end;
 
+procedure ClearFiles();
+var
+  s: WideString;
+  err: ShiftJISString;
+  L: Plua_state;
+  Proc: lua_CFunction;
+  n: integer;
+begin
+  if MainDLLInstance = 0 then
+    Exit;
+  try
+    Proc := lua_CFunction(GetProcAddress(MainDLLInstance, 'luaopen_PSDToolKitBridge'));
+    if Proc = nil then
+      raise Exception.Create('luaopen_PSDToolKitBridge not found');
+    L := lua_newstate(@LuaAllocator, nil);
+    if L = nil then
+      raise Exception.Create('failed to execute lua_newstate');
+    try
+      lua_pushstring(L, 'PSDToolKitBridge');
+      n := Proc(L);
+      if n <> 1 then
+        raise Exception.Create('luaopen_PSDToolKitBridge returned unexpected value');
+      lua_getfield(L, 2, 'clearfiles');
+      if not lua_iscfunction(L, 3) then
+        raise Exception.Create('PSDToolKitBridge.clearfiles is not a function');
+
+      if lua_pcall(L, 0, 0, 0) <> 0 then
+      begin
+        err := lua_tostring(L, -1);
+        raise Exception.Create(err);
+      end;
+    finally
+      lua_close(L);
+    end;
+  except
+    on E: Exception do
+    begin
+      s := '編集中ファイルのクリア中にエラーが発生しました。'#13#10#13#10 + E.Message;
+      MessageBoxW(FindExEditWindow(), PWideChar(s), 'PSDToolKit', MB_ICONERROR);
+    end;
+  end;
+end;
+
 function MenuWndProc(hwnd: HWND; Msg: UINT; WP: WPARAM; LP: LPARAM): LRESULT; stdcall;
 begin
   case Msg of
@@ -192,14 +235,8 @@ begin
       if WP = 1 then
         ShowGUI();
     end;
-    WM_FILTER_FILE_OPEN:
-    begin
-      OutputDebugString('Open');
-    end;
-    WM_FILTER_FILE_CLOSE:
-    begin
-      OutputDebugString('Close');
-    end;
+    WM_FILTER_FILE_OPEN: ClearFiles();
+    WM_FILTER_FILE_CLOSE: ClearFiles();
   end;
 
   Result := DefWindowProc(hwnd, Msg, WP, LP);
