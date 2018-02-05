@@ -334,7 +334,7 @@ begin
   finally
     LeaveCS('CPFV');
   end;
-  if not CopyToClipboard(FPSDToolWindow, Value) then
+  if not CopyToClipboard(FPSDToolWindow, WideString(Value)) then
     MessageBox(FPSDToolWindow, 'could not open clipboard', 'PSDToolKit', MB_ICONERROR);
 end;
 

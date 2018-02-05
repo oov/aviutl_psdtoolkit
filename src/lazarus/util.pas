@@ -24,7 +24,7 @@ function SaveDialog(const Window: THandle; const Title: WideString;
   const Filter: WideString; const nFilterIndex: cardinal;
   DefFileName: WideString = ''; DefExt: WideString = '';
   InitialDir: WideString = ''): WideString;
-function CopyToClipboard(const hwnd: THandle; const S: string): boolean;
+function CopyToClipboard(const hwnd: THandle; const S: WideString): boolean;
 
 function Token(const Delimiter: UTF8String; var s: UTF8String): UTF8String;
 function GetDLLName(): WideString;
@@ -117,27 +117,27 @@ begin
     Result := '';
 end;
 
-function CopyToClipboard(const hwnd: THandle; const S: string): boolean;
+function CopyToClipboard(const hwnd: THandle; const S: WideString): boolean;
 var
   h: HGLOBAL;
-  p: PChar;
+  p: PWideChar;
 begin
   Result := False;
   if not OpenClipboard(hwnd) then
     Exit;
-  h := GlobalAlloc(GHND, Length(S) + 1);
+  h := GlobalAlloc(GHND, Length(S)*2 + 2);
   try
     p := GlobalLock(h);
     try
       if p = nil then
         Exit;
-      Move(S[1], p^, Length(S));
+      Move(S[1], p^, Length(S)*2);
       p[Length(S)] := #0;
     finally
       GlobalUnlock(h);
     end;
     EmptyClipboard();
-    SetClipboardData(CF_TEXT, h);
+    SetClipboardData(CF_UNICODETEXT, h);
   except
     GlobalFree(h);
     raise;

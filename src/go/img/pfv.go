@@ -51,7 +51,7 @@ func (n *Node) FullPath() string {
 	for i, l := 0, len(names)/2; i < l; i++ {
 		names[i], names[len(names)-i-1] = names[len(names)-i-1], names[i]
 	}
-	return strings.Join(names, "\\")
+	return strings.Join(names, "/")
 }
 
 func (n *Node) Item() bool   { return n.Setting != nil }
@@ -70,22 +70,6 @@ func (n *Node) RawState() (filter, visibility []bool) {
 		return filter, n.Setting
 	}
 	return nil, n.Setting
-}
-
-func (n *Node) State() (string, error) {
-	f, v := n.RawState()
-	bits := make([]bool, len(v)*2)
-	for i, pass := range f {
-		if pass {
-			bits[i*2] = true
-			bits[i*2+1] = v[i]
-		}
-	}
-	s, err := serializeBits(bits)
-	if err != nil {
-		return "", errors.Wrap(err, "pfv.State: cannot serialize")
-	}
-	return "F." + s, nil
 }
 
 func NewPFV(r io.Reader, mgr *LayerManager) (*PFV, error) {
@@ -348,7 +332,7 @@ func (pfv *PFV) FindNode(fullPath string, ignoreRootName bool) (*Node, error) {
 	if fullPath == "" {
 		return nil, errors.New("img: fullPath must not be empty")
 	}
-	names := strings.Split(fullPath, "\\")
+	names := strings.Split(fullPath, "/")
 	name, err := decodeName(names[0])
 	if err != nil {
 		return nil, errors.Wrapf(err, "img: failed to decode favorite root node name: %q", names[0])
@@ -380,7 +364,7 @@ func (pfv *PFV) FindFaviewNode(fullPath string, ignoreRootName bool) (*FaviewNod
 	if fullPath == "" {
 		return nil, errors.New("img: fullPath must not be empty")
 	}
-	names := strings.Split(fullPath, "\\")
+	names := strings.Split(fullPath, "/")
 	name, err := decodeName(names[0])
 	if err != nil {
 		return nil, errors.Wrapf(err, "img: failed to decode faview root node name: %q", names[0])
@@ -612,7 +596,7 @@ func (fn *FaviewNode) FullPath() string {
 	for i, l := 0, len(n)/2; i < l; i++ {
 		n[i], n[len(n)-i-1] = n[len(n)-i-1], n[i]
 	}
-	return strings.Join(n, "\\")
+	return strings.Join(n, "/")
 }
 
 func (fn *FaviewNode) EnumItemNode() []*FaviewNode {
@@ -630,23 +614,12 @@ func enumItemNode(n *FaviewNode, a *[]*FaviewNode) {
 	}
 }
 
-func (fn *FaviewNode) SelectedState() (string, error) {
-	return fn.Items[fn.SelectedIndex].State()
-}
-
 func (fn *FaviewNode) SelectedName() string {
 	return fn.Items[fn.SelectedIndex].Name
 }
 
-func (fn *FaviewNode) AllState() ([]string, error) {
-	r := make([]string, len(fn.Items))
-	var err error
-	for i := range fn.Items {
-		if r[i], err = fn.Items[i].State(); err != nil {
-			return nil, err
-		}
-	}
-	return r, nil
+func (fn *FaviewNode) EncodedSelectedName() string {
+	return encodeName(fn.Items[fn.SelectedIndex].Name)
 }
 
 func (fn *FaviewNode) AllName() []string {
@@ -655,6 +628,27 @@ func (fn *FaviewNode) AllName() []string {
 		r[i] = fn.Items[i].Name
 	}
 	return r
+}
+
+func (fn *FaviewNode) AllEncodedName() []string {
+	r := make([]string, len(fn.Items))
+	for i := range fn.Items {
+		r[i] = encodeName(fn.Items[i].Name)
+	}
+	return r
+}
+
+func (fn *FaviewNode) FindItem(encodedName string) int {
+	name, err := decodeName(encodedName)
+	if err != nil {
+		return -1
+	}
+	for i := range fn.Items {
+		if fn.Items[i].Name == name {
+			return i
+		}
+	}
+	return -1
 }
 
 func makeFilter(f []bool, n *Node) bool {

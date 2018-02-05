@@ -9,6 +9,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/oov/aviutl_psdtoolkit/src/go/img"
+	"github.com/oov/aviutl_psdtoolkit/src/go/img/prop"
 	"github.com/oov/aviutl_psdtoolkit/src/go/nkhelper"
 	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
 	"github.com/oov/psd/composite"
@@ -494,12 +495,7 @@ func rgbaToNRGBA(rgba *image.RGBA) *image.NRGBA {
 }
 
 func (lv *LayerView) selectFavoriteNode(img *img.Image, n *img.Node) bool {
-	state, err := n.State()
-	if err != nil {
-		lv.ReportError(errors.Wrap(err, "layerview: cannot serialize"))
-		return false
-	}
-	m, err := img.Deserialize(state)
+	m, err := img.Deserialize("F" + prop.Encode(n.FullPath()))
 	if err != nil {
 		lv.ReportError(errors.Wrap(err, "layerview: cannot deserialize"))
 		return false
@@ -508,35 +504,27 @@ func (lv *LayerView) selectFavoriteNode(img *img.Image, n *img.Node) bool {
 }
 
 func (lv *LayerView) selectFaviewNode(img *img.Image, n *img.FaviewNode, newSelectedIndex int) bool {
-	state, err := n.Items[newSelectedIndex].State()
+	oi := n.SelectedIndex
+	n.SelectedIndex = newSelectedIndex
+	n.LastModified = time.Now()
+	m, err := img.Deserialize("S" + prop.Encode(n.FullPath()+"~"+n.EncodedSelectedName()))
 	if err != nil {
-		lv.ReportError(errors.Wrap(err, "layerview: cannot serialize"))
-		return false
-	}
-	m, err := img.Deserialize(state)
-	if err != nil {
+		n.SelectedIndex = oi
 		lv.ReportError(errors.Wrap(err, "layerview: cannot deserialize"))
 		return false
 	}
-	n.SelectedIndex = newSelectedIndex
-	n.LastModified = time.Now()
 	return m
 }
 
 func (lv *LayerView) copyFaviewNode(img *img.Image, n *img.FaviewNode) {
-	state, err := n.SelectedState()
-	if err != nil {
-		lv.ReportError(errors.Wrap(err, "layerview: cannot copy"))
-		return
-	}
-	lv.CopyFaviewValue(*img.FilePath, n.FullName(), n.SelectedName(), state)
+	lv.CopyFaviewValue(*img.FilePath, n.FullName(), n.SelectedName(), "S"+prop.Encode(n.FullPath()+"~"+n.EncodedSelectedName()))
 }
 
 func (lv *LayerView) exportFaviewNode(img *img.Image, n *img.FaviewNode) {
-	state, err := n.AllState()
-	if err != nil {
-		lv.ReportError(errors.Wrap(err, "layerview: cannot export"))
-		return
+	fullPath := n.FullPath()
+	values := n.AllEncodedName()
+	for i := range values {
+		values[i] = "S" + prop.Encode(fullPath+"~"+values[i])
 	}
-	lv.ExportFaviewSlider(*img.FilePath, n.FullName(), n.AllName(), state)
+	lv.ExportFaviewSlider(*img.FilePath, n.FullName(), n.AllName(), values)
 }

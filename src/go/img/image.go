@@ -152,11 +152,7 @@ func (img *Image) Serialize() (string, error) {
 }
 
 func (img *Image) Deserialize(s string) (bool, error) {
-	var froot *FaviewNode
-	if img.PFV != nil {
-		froot = &img.PFV.FaviewRoot
-	}
-	m, f, err := img.Layers.Deserialize(s, img.Flip, froot)
+	m, f, err := img.Layers.Deserialize(s, img.Flip, img.PFV)
 	if err != nil {
 		return false, err
 	}

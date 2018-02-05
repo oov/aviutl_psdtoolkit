@@ -6,6 +6,8 @@ import (
 
 	"github.com/pkg/errors"
 
+	"github.com/oov/aviutl_psdtoolkit/src/go/img/prop"
+	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
 	"github.com/oov/psd/composite"
 )
 
@@ -490,7 +492,7 @@ type deserializingState struct {
 	Priority int
 }
 
-func (m *LayerManager) Deserialize(s string, flip Flip, faviewRoot *FaviewNode) (bool, Flip, error) {
+func (m *LayerManager) Deserialize(s string, flip Flip, pfv *PFV) (bool, Flip, error) {
 	layers := make(map[int]*deserializingState, len(m.Flat))
 	n := make([]deserializingState, len(m.Flat))
 	for index, seqID := range m.Flat {
@@ -550,45 +552,69 @@ func (m *LayerManager) Deserialize(s string, flip Flip, faviewRoot *FaviewNode) 
 					i++
 				}
 			}
-		case "F.":
-			buf, err := deserializeBits(line[2:])
+		case "F.", "F_":
+			if pfv == nil {
+				ods.ODS("do not have favorite data. skipped.")
+				continue
+			}
+			s, err := prop.Decode(line[1:])
 			if err != nil {
-				return false, FlipNone, errors.Wrap(err, "img: cannot deserialize")
+				ods.ODS("%q is not a valid state. skipped. %v", line[1:], err)
+				continue
 			}
-			if len(n)*2 != int(binary.LittleEndian.Uint16(buf)) {
-				return false, FlipNone, errors.New("img: number of layers mismatch")
+			fn, err := pfv.FindNode(s, false)
+			if err != nil {
+				ods.ODS("failed to find favorite node. %v", err)
+				continue
 			}
-			i := 0
-			for _, v := range buf[2:] {
-				if i+3 < len(n) {
-					if v&0x80 != 0 {
-						n[i+0].Visible = v&0x40 != 0
-						n[i+0].Priority = priority + 1
-					}
-					if v&0x20 != 0 {
-						n[i+1].Visible = v&0x10 != 0
-						n[i+1].Priority = priority + 1
-					}
-					if v&0x08 != 0 {
-						n[i+2].Visible = v&0x04 != 0
-						n[i+2].Priority = priority + 1
-					}
-					if v&0x02 != 0 {
-						n[i+3].Visible = v&0x01 != 0
-						n[i+3].Priority = priority + 1
-					}
-					i += 4
+			if fn == nil {
+				ods.ODS("favorite node %q not found. skipped.", s)
+				continue
+			}
+			f, v := fn.RawState()
+			for i, pass := range f {
+				if !pass {
 					continue
 				}
-				v <<= (4 - uint(len(n)-i)) * 2
-				for i < len(n) {
-					if v&0x80 != 0 {
-						n[i].Visible = v&0x40 != 0
-						n[i].Priority = priority + 1
-					}
-					v <<= 2
-					i++
+				n[i].Visible = v[i]
+				n[i].Priority = priority + 1
+			}
+		case "S.", "S_":
+			if pfv == nil {
+				ods.ODS("do not have favorite data. skipped.")
+				continue
+			}
+			s, err := prop.Decode(line[1:])
+			if err != nil {
+				ods.ODS("%q is not a valid state. skipped. %v", line[1:], err)
+				continue
+			}
+			kv := strings.Split(s, "~")
+			if len(kv) != 2 {
+				ods.ODS("unexpected format: %q. skipped. %v", s, err)
+				continue
+			}
+			fn, err := pfv.FindFaviewNode(kv[0], false)
+			if err != nil {
+				ods.ODS("failed to find faview node. %v", err)
+				continue
+			}
+			if fn == nil {
+				ods.ODS("faview node %q not found. skipped.", kv[0])
+				continue
+			}
+			idx := fn.FindItem(kv[1])
+			if idx == -1 {
+				ods.ODS("faview node item %q not found. skipped.", kv[1])
+				continue
+			}
+			f, v := fn.Items[idx].RawState()
+			for i, pass := range f {
+				if !pass {
+					continue
 				}
+				n[i].Visible = v[i]
+				n[i].Priority = priority + 1
 			}
 		}
 	}
