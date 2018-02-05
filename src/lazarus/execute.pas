@@ -145,7 +145,7 @@ begin
             break;
         end;
         WriteRawString(f, 'nil}'#13#10);
-        WriteRawString(f, 'PSDToolKitLib.psd:addstate(values[obj.track0])'#13#10);
+        WriteRawString(f, 'PSD:addstate(values[obj.track0])'#13#10);
       finally
         f.Free;
       end;

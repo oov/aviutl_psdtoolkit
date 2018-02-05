@@ -39,7 +39,7 @@ P.exa_modifler_lab = function(exa, values, modifiers)
 end
 
 P.text_prefix = '<?l='
-P.text_postfix = ';require("PSDToolKit\\\\PSDToolKitLib").settalkingcur(obj,l);l=nil?>'
+P.text_postfix = ';require("PSDToolKit").talk:setphoneme(obj,l);l=nil?>'
 P.text_escape = function(s)
   return GCMZDrops.encodeluastring(s)
 end

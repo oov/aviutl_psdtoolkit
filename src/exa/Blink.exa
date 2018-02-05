@@ -10,4 +10,4 @@ check0=0
 type=0
 filter=2
 name=–Úƒpƒ`@PSDToolKit
-param=m0="";m1="";m2="";m3="";m4="";
+param=local m0="";local m1="";local m2="";local m3="";local m4="";

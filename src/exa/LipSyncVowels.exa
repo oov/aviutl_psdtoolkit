@@ -5,9 +5,9 @@ _name=アニメーション効果
 track0=0.00
 track1=0.00
 track2=0.00
-track3=0.00
+track3=1.00
 check0=0
 type=0
 filter=2
 name=口パク あいうえお@PSDToolKit
-param=a="";i="";u="";e="";o="";n="";
+param=local a="";local i="";local u="";local e="";local o="";local n="";

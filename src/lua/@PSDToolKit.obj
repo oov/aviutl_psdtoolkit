@@ -4,43 +4,28 @@
 --track0:ローカット,1,16000,100,1
 --track1:ハイカット,1,16000,1000,1
 --track2:しきい値,1,2000,20,1
---check0:編集全体の音声を元にする,0
 --file:
 tonumber(nil)
-if obj.check0 then
-  file = nil
+local PSDToolKit = require("PSDToolKit")
+if file ~= nil and file ~= "" then
+  PSDToolKit.talk:set(obj, file, obj.track0, obj.track1, obj.track2)
 end
-require("PSDToolKitLib").settalking(obj, file, obj.track0, obj.track1, obj.track2)
 file = nil
 
 @テキスト 字幕用・文字送り
---track0:レイヤー,0,100,0,1
+--track0:準備レイヤ,1,100,1,1
 --track1:サイズ,1,256,34,1
 --track2:表示速度,0,100,0,0.1
 --track3:装飾タイプ,0,4,0,1
 --dialog:フォント名,local name="MS UI Gothic";文字色/col,local c1=0xffffff;影・縁取り色/col,local c2=0x000000;横位置(0-2),local ha=0;縦位置(0-2),local va=0
-local o = require("PSDToolKitLib").gettextdata(obj.track0)
-if o ~= nil then
-  obj.setfont(name, obj.track1, obj.track3, c1, c2)
-  obj.load("text", o.s, obj.track2, o.t)
-  if ha == 0 then
-    obj.cx = -obj.w*0.5
-  elseif ha == 1 then
-    -- 中央寄せは奇数の時にボケてしまうので 0.5px ずらす
-    if obj.w % 2 == 1 then
-      obj.cx = obj.cx + 0.5
-    end
-  elseif ha == 2 then
-    obj.cx = obj.w*0.5
-  end
-  if va == 0 then
-    obj.cy = -obj.h*0.5
-  elseif va == 1 then
-    -- 中央寄せは奇数の時にボケてしまうので 0.5px ずらす
-    if obj.h % 2 == 1 then
-      obj.cy = obj.cy + 0.5
-    end
-  elseif va == 2 then
-    obj.cy = obj.h*0.5
-  end
-end
+local PSDToolKit = require("PSDToolKit")
+PSDToolKit.subtitle:messtep(obj, obj.track0, {
+  speed = obj.track2,
+  fontname = name,
+  fontsize = obj.track1,
+  fontcolor = c1,
+  fontdecoration = obj.track3,
+  fontdecorationcolor = c2,
+  halign = ha,
+  valign = va
+})

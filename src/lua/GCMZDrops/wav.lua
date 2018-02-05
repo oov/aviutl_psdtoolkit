@@ -115,7 +115,7 @@ end
 
 -- 挿入モード 2 の時に使用される接頭辞、接尾辞とエスケープ処理
 P.text_prefix = '<?s=[==['
-P.text_postfix = ']==];require("PSDToolKit\\\\PSDToolKitLib").settext(s, obj, true);s=nil?>'
+P.text_postfix = ']==];require("PSDToolKit").subtitle:set(s, obj, true);s=nil?>'
 P.text_escape = function(s)
   return s:gsub("]==]", ']==].."]==]"..[==[')
 end

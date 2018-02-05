@@ -41,7 +41,8 @@ sed 's/\r$//' 'src/exa/Subtitle.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/テキス
 sed 's/\r$//' 'src/exa/SubtitleStep.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/テキスト　字幕表示用・文字送り.exa'
 
 # copy script files
-sed 's/\r$//' 'src/lua/PSDToolKitLib.lua' | sed 's/$/\r/' > 'bin/script/PSDToolKit/PSDToolKitLib.lua'
+sed 's/\r$//' 'src/lua/PSDToolKit.lua' | sed 's/$/\r/' > 'bin/script/PSDToolKit/PSDToolKit.lua'
+sed 's/\r$//' 'src/lua/PSDToolKitIndex.lua' | sed 's/$/\r/' > 'bin/script/PSDToolKit.lua'
 sed 's/\r$//' 'src/lua/@PSDToolKit.anm' | sed 's/$/\r/' > 'bin/script/PSDToolKit/@PSDToolKit.anm'
 sed 's/\r$//' 'src/lua/@PSDToolKit.obj' | sed 's/$/\r/' > 'bin/script/PSDToolKit/@PSDToolKit.obj'
 
@@ -81,6 +82,7 @@ cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/ictalk/ictalk.lpi
 # mkdir aviutl/PSDToolKit aviutl/script aviutl/script/PSDToolKit aviutl/GCMZDrops aviutl/GCMZDrops/exa
 # cp bin/*.auf aviutl/
 # cp bin/PSDToolKit/* aviutl/PSDToolKit/
+# cp bin/script/* aviutl/script/
 # cp bin/script/PSDToolKit/* aviutl/script/PSDToolKit/
 # cp bin/GCMZDrops/* aviutl/GCMZDrops/
 # cp bin/GCMZDrops/exa/* aviutl/GCMZDrops/exa/

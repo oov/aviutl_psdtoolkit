@@ -3,7 +3,7 @@ length=256
 camera=0
 [vo.0]
 _name=カスタムオブジェクト
-track0=0.00
+track0=1.00
 track1=34.00
 track2=15.00
 track3=0.00

@@ -6,272 +6,93 @@
 --track3:オフセットY,-5000,5000,0,1
 --check0:描画も行う,1
 --param:
-require("PSDToolKitLib")
-PSDToolKitLib.psd:init(
-  obj.track0*1000 + obj.layer,
-  f ~= nil and f or "",
-  obj.track1/100,
-  obj.track2,
-  obj.track3
-)
-if l ~= nil then
-  PSDToolKitLib.psd:addstate(l)
-end
-f = nil
-l = nil
+local PSDToolKit = require("PSDToolKit")
+-- グローバルに PSD という名前のオブジェクトを確保
+PSD = PSDToolKit.PSDState.new(obj.track0*1000 + obj.layer)
+if f ~= nil and f ~= "" then PSD.file = f; f = nil end
+if l ~= nil and l ~= "" then PSD:addstate(l); l = nil end
+PSD.scale = obj.track1/100
+PSD.offsetx = obj.track2
+PSD.offsety = obj.track3
 if obj.check0 then
-  PSDToolKitLib.psd:render()
+  local ok, msg = pcall(PSD.render, PSD, obj)
+  if not ok then PSDToolKit.print(obj, msg) end
 end
 
 @オブジェクト描画
-PSDToolKitLib.psd:render()
+local ok, msg = pcall(PSD.render, PSD, obj)
+if not ok then require("PSDToolKit").print(obj, msg) end
 
 @パーツ差し替え
 --track0:パーツ,0,15,0,1
 --dialog:0,p0="";1,p1="";2,p2="";3,p3="";4,p4="";5,p5="";6,p6="";7,p7="";8,p8="";9,p9="";10,p10="";11,p11="";12,p12="";13,p13="";14,p14="";15,p15="";
-if obj.track0 == 0 and p0 ~= nil and p0 ~= "" then
-  PSDToolKitLib.psd:addstate(p0)
-elseif obj.track0 == 1 and p1 ~= nil and p1 ~= "" then
-  PSDToolKitLib.psd:addstate(p1)
-elseif obj.track0 == 2 and p2 ~= nil and p2 ~= "" then
-  PSDToolKitLib.psd:addstate(p2)
-elseif obj.track0 == 3 and p3 ~= nil and p3 ~= "" then
-  PSDToolKitLib.psd:addstate(p3)
-elseif obj.track0 == 4 and p4 ~= nil and p4 ~= "" then
-  PSDToolKitLib.psd:addstate(p4)
-elseif obj.track0 == 5 and p5 ~= nil and p5 ~= "" then
-  PSDToolKitLib.psd:addstate(p5)
-elseif obj.track0 == 6 and p6 ~= nil and p6 ~= "" then
-  PSDToolKitLib.psd:addstate(p6)
-elseif obj.track0 == 7 and p7 ~= nil and p7 ~= "" then
-  PSDToolKitLib.psd:addstate(p7)
-elseif obj.track0 == 8 and p8 ~= nil and p8 ~= "" then
-  PSDToolKitLib.psd:addstate(p8)
-elseif obj.track0 == 9 and p9 ~= nil and p9 ~= "" then
-  PSDToolKitLib.psd:addstate(p9)
-elseif obj.track0 == 10 and p10 ~= nil and p10 ~= "" then
-  PSDToolKitLib.psd:addstate(p10)
-elseif obj.track0 == 11 and p11 ~= nil and p11 ~= "" then
-  PSDToolKitLib.psd:addstate(p11)
-elseif obj.track0 == 12 and p12 ~= nil and p12 ~= "" then
-  PSDToolKitLib.psd:addstate(p12)
-elseif obj.track0 == 13 and p13 ~= nil and p13 ~= "" then
-  PSDToolKitLib.psd:addstate(p13)
-elseif obj.track0 == 14 and p14 ~= nil and p14 ~= "" then
-  PSDToolKitLib.psd:addstate(p14)
-elseif obj.track0 == 15 and p15 ~= nil and p15 ~= "" then
-  PSDToolKitLib.psd:addstate(p15)
-end
+local m = {
+  p0 ~= nil and p0 or "",
+  p1 ~= nil and p1 or "",
+  p2 ~= nil and p2 or "",
+  p3 ~= nil and p3 or "",
+  p4 ~= nil and p4 or "",
+  p5 ~= nil and p5 or "",
+  p6 ~= nil and p6 or "",
+  p7 ~= nil and p7 or "",
+  p8 ~= nil and p8 or "",
+  p9 ~= nil and p9 or "",
+  p10 ~= nil and p10 or "",
+  p11 ~= nil and p11 or "",
+  p12 ~= nil and p12 or "",
+  p13 ~= nil and p13 or "",
+  p14 ~= nil and p14 or "",
+  p15 ~= nil and p15 or ""
+}
+PSD:addstate(m[obj.track0])
 
 @口パク あいうえお
 --track2:子音処理,0,2,0,1
---track3:準備レイヤ,0,100,0,1
---dialog:あ,a="";い,i="";う,u="";え,e="";お,o="";ん,n="";
-a = a ~= nil and a or ""
-e = e ~= nil and e or ""
-i = i ~= nil and i or ""
-n = n ~= nil and n or ""
-o = o ~= nil and o or ""
-u = u ~= nil and u or ""
-local patterns = {
-  a = a, A = a,
-  e = e, E = e,
-  i = i, I = i,
-  N = n,
-  o = o, O = o,
-  u = u, U = u
-}
-local volume, phoneme = PSDToolKitLib.gettalking(obj.track3)
-local v = "";
-if phoneme == nil then
-  -- 音素情報がない時は音量に応じて「あ」の形を使う
-  -- （lab ファイルを使わずに「口パク　あいうえお」を使っている場合の措置）
-  if volume >= 1.0 then
-    v = patterns.a
-  end
-else
-  if PSDToolKitLib.isvowel(phoneme.cur) ~= 0 then
-    v = patterns[phoneme.cur]
-  else
-    if obj.track2 == 0 then
-      -- 子音処理タイプ0 -> 全て「ん」
-      v = patterns.N
-    elseif obj.track2 == 1 then
-      -- 子音処理タイプ1 -> 口を閉じる子音以外は前後の母音の形を引き継ぐ
-      if phoneme.cur == "pau" or phoneme.cur == "N" or phoneme.cur == "m" or phoneme.cur == "p" or phoneme.cur == "b" or phoneme.cur == "v" then
-        -- pau / ん / 子音（ま・ぱ・ば・ヴ行）
-        v = patterns.N
-      else
-        -- 処理されなかった全ての子音のデフォルト処理
-        -- 隣接する前後の母音の形を引き継ぐ
-        if phoneme.progress < 0.5 then
-          -- 前半は前の母音を引き継ぐ
-          if PSDToolKitLib.isvowel(phoneme.prev) ~= 0 and phoneme.prev_end == phoneme.cur_start then
-            v = patterns[phoneme.prev]
-          else
-            v = patterns.N
-          end
-        else
-          -- 後半は後ろの母音を先行させる
-          if PSDToolKitLib.isvowel(phoneme.next) ~= 0 and phoneme.next_start == phoneme.cur_end then
-            v = patterns[phoneme.next]
-          else
-            v = patterns.N
-          end
-        end
-      end
-    elseif obj.track2 == 2 then
-      -- 子音処理タイプ2 -> 口を閉じる子音以外は前後の母音の形より小さいもので補間
-      if phoneme.cur == "pau" or phoneme.cur == "N" or phoneme.cur == "m" or phoneme.cur == "p" or phoneme.cur == "b" or phoneme.cur == "v" then
-        -- pau / ん / 子音（ま・ぱ・ば・ヴ行）
-        v = patterns.N
-      elseif phoneme.cur == "cl" then
-        -- 促音（っ）
-        if phoneme.progress < 0.5 and PSDToolKitLib.isvowel(phoneme.prev) ~= 0 and phoneme.prev_end == phoneme.cur_start then
-          -- ひとつ前が母音で、かつ連続した場所に存在しているなら前半はその母音の形を引き継ぐ
-          v = patterns[phoneme.prev]
-        else
-          -- 後半は「う」の形で引き継ぐ
-          v = patterns.u
-        end
-      else
-        -- 処理されなかった全ての子音のデフォルト処理
-        -- 隣接する前後の母音に依存して形を決定する
-        if phoneme.progress < 0.5 then
-          -- 前半は前の母音を引き継ぐ
-          if PSDToolKitLib.isvowel(phoneme.prev) ~= 0 and phoneme.prev_end == phoneme.cur_start then
-            -- 前の母音よりなるべく小さい開け方になるように
-            if phoneme.prev == "a" or phoneme.prev == "A" then
-              v = patterns.o
-            elseif phoneme.prev == "i" or phoneme.prev == "I" then
-              v = patterns.i
-            else
-              v = patterns.u
-            end
-          else
-            v = patterns.N
-          end
-        else
-          -- 後半は後ろの母音を先行させる
-          if PSDToolKitLib.isvowel(phoneme.next) ~= 0 and phoneme.next_start == phoneme.cur_end then
-            -- 前の母音よりなるべく小さい開け方になるように
-            if phoneme.next == "a" or phoneme.next == "A" then
-              v = patterns.o
-            elseif phoneme.next == "i" or phoneme.next == "I" then
-              v = patterns.i
-            else
-              v = patterns.u
-            end
-          else
-            v = patterns.N
-          end
-        end
-      end
-    end
-  end
-end
-if v ~= "" then
-  PSDToolKitLib.psd:addstate(v)
-end
+--track3:準備レイヤ,1,100,1,1
+--dialog:あ,local a="";い,local i="";う,local u="";え,local e="";お,local o="";ん,local n="";
+local PSDToolKit = require("PSDToolKit")
+local m = {a=a, e=e, i=i, o=o, u=u}
+PSD:addstate(PSDToolKit.LipSyncLab.new(m, obj.track2, obj.track3))
 
 @口パク 開閉のみ
 --track0:速さ,1,100,1,1
---track3:準備レイヤ,0,100,0,1
---dialog:開き,m0="";ほぼ開き,m1="";半開き,m2="";ほぼ閉じ,m3="";閉じ,m4="";
+--track3:準備レイヤ,1,100,1,1
+--dialog:開き,local m0="";ほぼ開き,local m1="";半開き,local m2="";ほぼ閉じ,local m3="";閉じ,local m4="";
+local PSDToolKit = require("PSDToolKit")
 local m = {}
-if m4 ~= nil and m4 ~= "" then
-  table.insert(m, m4)
-end
-if m3 ~= nil and m3 ~= "" then
-  table.insert(m, m3)
-end
-if m2 ~= nil and m2 ~= "" then
-  table.insert(m, m2)
-end
-if m1 ~= nil and m1 ~= "" then
-  table.insert(m, m1)
-end
-if m0 ~= nil and m0 ~= "" then
-  table.insert(m, m0)
-end
+if m4 ~= nil and m4 ~= "" then table.insert(m, m4) end
+if m3 ~= nil and m3 ~= "" then table.insert(m, m3) end
+if m2 ~= nil and m2 ~= "" then table.insert(m, m2) end
+if m1 ~= nil and m1 ~= "" then table.insert(m, m1) end
+if m0 ~= nil and m0 ~= "" then table.insert(m, m0) end
 if #m > 0 then
-  local speed = obj.track0
-  local id = PSDToolKitLib.psd.id
-  local stat = PSDToolKitLib.talkstat[id] or {frame = obj.frame-1, n = 0}
-  if stat.frame ~= obj.frame-1 then
-    stat.n = 0
-  end
-  local volume, phoneme = PSDToolKitLib.gettalking(obj.track3)
-  if volume >= 1.0 then
-    stat.n = stat.n + 1
-    if stat.n > #m*speed - 1 then
-      stat.n = #m*speed - 1
-    end
-  else
-    stat.n = stat.n - 1
-    if stat.n < 0 then
-      stat.n = 0
-    end
-  end
-  stat.frame = obj.frame
-  PSDToolKitLib.psd:addstate(m[math.floor(stat.n / speed) + 1])
-  PSDToolKitLib.talkstat[id] = stat
+  PSD:addstate(PSDToolKit.LipSyncSimple.new(m, obj.track0, obj.track3))
 end
 
 @目パチ
 --track0:間隔,0,1000,120,1
 --track1:速さ,1,100,1,1
 --track2:オフセット,0,10000,0,1
---dialog:開き,m0="";ほぼ開き,m1="";半開き,m2="";ほぼ閉じ,m3="";閉じ,m4="";
+--dialog:開き,local m0="";ほぼ開き,local m1="";半開き,local m2="";ほぼ閉じ,local m3="";閉じ,local m4="";
+local PSDToolKit = require("PSDToolKit")
 local m = {}
-if m4 ~= nil and m4 ~= "" then
-  table.insert(m, m4)
-end
-if m3 ~= nil and m3 ~= "" then
-  table.insert(m, m3)
-end
-if m2 ~= nil and m2 ~= "" then
-  table.insert(m, m2)
-end
-if m1 ~= nil and m1 ~= "" then
-  table.insert(m, m1)
-end
-if m0 ~= nil and m0 ~= "" then
-  table.insert(m, m0)
-end
+if m4 ~= nil and m4 ~= "" then table.insert(m, m4) end
+if m3 ~= nil and m3 ~= "" then table.insert(m, m3) end
+if m2 ~= nil and m2 ~= "" then table.insert(m, m2) end
+if m1 ~= nil and m1 ~= "" then table.insert(m, m1) end
+if m0 ~= nil and m0 ~= "" then table.insert(m, m0) end
 if #m > 0 then
-  if #m > 3 then
-    table.insert(m, 1, m[#m-1])
-  end
-
-  local interval, speed, offset = obj.track0, obj.track1, obj.track2
-  local basetime = obj.frame + interval + offset
-  local blink = basetime % interval
-  local blink2 = (basetime + speed*#m*2) % (interval * 5)
-  local applied = false
-  for i, v in ipairs(m) do
-    local l = speed*i
-    local r = l + speed
-    if (l <= blink and blink < r)or(l <= blink2 and blink2 < r) then
-      PSDToolKitLib.psd:addstate(v)
-      applied = true
-      break;
-    end
-  end
-  if not applied then
-    PSDToolKitLib.psd:addstate(m[#m])
-  end
+  PSD:addstate(PSDToolKit.Blinker.new(m, obj.track0, obj.track1, obj.track2))
 end
 
 @口パク準備
 --track0:ローカット,1,16000,100,1
 --track1:ハイカット,1,16000,1000,1
 --track2:しきい値,1,2000,20,1
---check0:編集全体の音声を元にする,0
 --file:
 tonumber(nil)
-if obj.check0 then
-  file = nil
+local PSDToolKit = require("PSDToolKit")
+if file ~= nil and file ~= "" then
+  PSDToolKit.talk:set(obj, file, obj.track0, obj.track1, obj.track2)
 end
-require("PSDToolKitLib").settalking(obj, file, obj.track0, obj.track1, obj.track2)
 file = nil
