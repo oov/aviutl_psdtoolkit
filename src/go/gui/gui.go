@@ -51,8 +51,7 @@ type GUI struct {
 	}
 
 	SendEditingImageState func(path, state string) error
-	CopyFaviewValue       func(path, sliderName, name, value string) error
-	ExportFaviewSlider    func(path, sliderName string, names, values []string) error
+	ExportFaviewSlider    func(path, sliderName string, names, values []string, selectedIndex int) error
 	DropFiles             func(filenames []string)
 }
 
@@ -107,13 +106,8 @@ func (g *GUI) Init(caption string, bgImg, mainFont, symbolFont []byte) error {
 		return errors.Wrap(err, "gui: failed to initialize layerview")
 	}
 	g.layerView.ReportError = g.ReportError
-	g.layerView.CopyFaviewValue = func(path, sliderName, name, value string) {
-		if err := g.CopyFaviewValue(path, sliderName, name, value); err != nil {
-			g.ReportError(errors.Wrap(err, "gui: cannot copy to the clipboard"))
-		}
-	}
-	g.layerView.ExportFaviewSlider = func(path, sliderName string, names, values []string) {
-		if err := g.ExportFaviewSlider(path, sliderName, names, values); err != nil {
+	g.layerView.ExportFaviewSlider = func(path, sliderName string, names, values []string, selectedIndex int) {
+		if err := g.ExportFaviewSlider(path, sliderName, names, values, selectedIndex); err != nil {
 			g.ReportError(errors.Wrap(err, "gui: cannot export faview slider"))
 		}
 	}

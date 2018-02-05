@@ -21,7 +21,6 @@ type
     procedure PrepareIPC();
     procedure OnRequest(Sender: TObject; const Command: UTF8String);
     procedure OnReceiveEditingImageState();
-    procedure OnReceiveCopyFaviewValue();
     procedure OnReceiveExportFaviewSlider();
     procedure EnterCS(CommandName: string);
     procedure LeaveCS(CommandName: string);
@@ -291,7 +290,6 @@ const
 begin
   case Command of
     'EDIS': OnReceiveEditingImageState();
-    'CPFV': OnReceiveCopyFaviewValue();
     'EXFS': OnReceiveExportFaviewSlider();
     else
     begin
@@ -319,39 +317,22 @@ begin
   end;
 end;
 
-procedure TPSDToolKitBridge.OnReceiveCopyFaviewValue();
-var
-  FilePath, SliderName, Name, Value: UTF8String;
-begin
-  FilePath := FReceiver.ReadString();
-  SliderName := FReceiver.ReadString();
-  Name := FReceiver.ReadString();
-  Value := FReceiver.ReadString();
-  ODS('  -> SliderName: %s / Name: %s / Value: %s', [SliderName, Name, Value]);
-  EnterCS('CPFV');
-  try
-    WriteUInt32(FRemoteProcess.Input, $80000000);
-  finally
-    LeaveCS('CPFV');
-  end;
-  if not CopyToClipboard(FPSDToolWindow, WideString(Value)) then
-    MessageBox(FPSDToolWindow, 'could not open clipboard', 'PSDToolKit', MB_ICONERROR);
-end;
-
 procedure TPSDToolKitBridge.OnReceiveExportFaviewSlider();
 var
   FilePath, SliderName, Names, Values: UTF8String;
+  SelectedIndex: integer;
 begin
   FilePath := FReceiver.ReadString();
 
   SliderName := FReceiver.ReadString();
   Names := FReceiver.ReadString();
   Values := FReceiver.ReadString();
-  ODS('  -> SliderName: %s / Names: %s / Values: %s', [SliderName, Names, Values]);
+  SelectedIndex := FReceiver.ReadInt32();
+  ODS('  -> SliderName: %s / Names: %s / Values: %s / SelectedIndex: %d', [SliderName, Names, Values, SelectedIndex]);
   EnterCS('EXFS');
   try
     WriteUInt32(FRemoteProcess.Input, $80000000);
-    TExportFaviewSlider.Create(FPSDToolWindow, FilePath, SliderName, Names, Values);
+    TExportFaviewSlider.Create(FPSDToolWindow, FilePath, SliderName, Names, Values, SelectedIndex);
   finally
     LeaveCS('EXFS');
   end;

@@ -147,36 +147,7 @@ func (ipc *IPC) SendEditingImageState(filePath, state string) error {
 	return err
 }
 
-func (ipc *IPC) CopyFaviewValue(filePath, sliderName, name, value string) error {
-	var err error
-	ipc.do(func() {
-		fmt.Print("CPFV")
-		ods.ODS("  FilePath: %s", filePath)
-		if err = writeString(filePath); err != nil {
-			return
-		}
-		ods.ODS("  SliderName: %s / Name: %s / Value: %s", sliderName, name, value)
-		if err = writeString(sliderName); err != nil {
-			return
-		}
-		if err = writeString(name); err != nil {
-			return
-		}
-		if err = writeString(value); err != nil {
-			return
-		}
-	})
-	if err != nil {
-		return err
-	}
-	ods.ODS("wait CPFV reply...")
-	err = <-ipc.reply
-	ods.ODS("wait CPFV reply ok")
-	ipc.replyDone <- struct{}{}
-	return err
-}
-
-func (ipc *IPC) ExportFaviewSlider(filePath, sliderName string, names, values []string) error {
+func (ipc *IPC) ExportFaviewSlider(filePath, sliderName string, names, values []string, selectedIndex int) error {
 	var err error
 	ipc.do(func() {
 		fmt.Print("EXFS")
@@ -192,6 +163,9 @@ func (ipc *IPC) ExportFaviewSlider(filePath, sliderName string, names, values []
 			return
 		}
 		if err = writeString(strings.Join(values, "\x00")); err != nil {
+			return
+		}
+		if err = writeInt32(int32(selectedIndex)); err != nil {
 			return
 		}
 	})

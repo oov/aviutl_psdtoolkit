@@ -41,8 +41,7 @@ type LayerView struct {
 	layerFavSelectedIndex int32
 
 	ReportError        func(error)
-	CopyFaviewValue    func(path, sliderName, name, value string)
-	ExportFaviewSlider func(path, sliderName string, names, values []string)
+	ExportFaviewSlider func(path, sliderName string, names, values []string, selectedIndex int)
 }
 
 func New(mainFontHandle, symbolFontHandle *nk.UserFont) (*LayerView, error) {
@@ -401,7 +400,7 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 	nk.NkLayoutSpaceEnd(ctx)
 
 	if len(n.Items) > 0 {
-		nk.NkLayoutSpaceBegin(ctx, nk.Static, 28, 5)
+		nk.NkLayoutSpaceBegin(ctx, nk.Static, 28, 4)
 		bounds := nk.NkLayoutSpaceBounds(ctx)
 
 		left = indent + marginSize
@@ -422,11 +421,11 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 		nk.NkStylePopStyleItem(ctx)
 		nk.NkStylePopFont(ctx)
 
-		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, bounds.W()-left-buttonSize*3-marginSize, bounds.H()))
+		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, bounds.W()-left-buttonSize*2-marginSize, bounds.H()))
 		if idx := int(nk.NkComboString(ctx, n.ItemNameList, int32(n.SelectedIndex), int32(len(n.Items)), 28, nk.NkVec2(bounds.W(), 400))); idx != n.SelectedIndex {
 			modified = lv.selectFaviewNode(img, n, idx) || modified
 		}
-		left += bounds.W() - left - buttonSize*3 - marginSize
+		left += bounds.W() - left - buttonSize*2 - marginSize
 
 		nk.NkStylePushFont(ctx, lv.symbolFontHandle)
 		nk.NkStylePushStyleItem(ctx, nkhelper.GetStyleButtonNormalPtr(ctx), nk.NkStyleItemColor(nk.Color{}))
@@ -442,12 +441,6 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 		nk.NkStylePopVec2(ctx)
 		nk.NkStylePopFloat(ctx)
 		nk.NkStylePopStyleItem(ctx)
-
-		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, buttonSize, bounds.H()))
-		if nk.NkButtonLabel(ctx, symbolClipboard) != 0 {
-			lv.copyFaviewNode(img, n)
-		}
-		left += buttonSize
 
 		nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, buttonSize, bounds.H()))
 		if nk.NkButtonLabel(ctx, symbolExport) != 0 {
@@ -516,15 +509,11 @@ func (lv *LayerView) selectFaviewNode(img *img.Image, n *img.FaviewNode, newSele
 	return m
 }
 
-func (lv *LayerView) copyFaviewNode(img *img.Image, n *img.FaviewNode) {
-	lv.CopyFaviewValue(*img.FilePath, n.FullName(), n.SelectedName(), "S"+prop.Encode(n.FullPath()+"~"+n.EncodedSelectedName()))
-}
-
 func (lv *LayerView) exportFaviewNode(img *img.Image, n *img.FaviewNode) {
 	fullPath := n.FullPath()
 	values := n.AllEncodedName()
 	for i := range values {
 		values[i] = "S" + prop.Encode(fullPath+"~"+values[i])
 	}
-	lv.ExportFaviewSlider(*img.FilePath, n.FullName(), n.AllName(), values)
+	lv.ExportFaviewSlider(*img.FilePath, n.FullName(), n.AllName(), values, n.SelectedIndex)
 }

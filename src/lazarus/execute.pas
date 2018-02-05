@@ -1,6 +1,7 @@
 unit Execute;
 
 {$mode objfpc}{$H+}
+{$CODEPAGE UTF-8}
 
 interface
 
@@ -27,13 +28,20 @@ type
     FWindow: THandle;
     FFilePath: UTF8String;
     FSliderName: UTF8String;
-    FNames: UTF8String;
-    FValues: UTF8String;
+    FNames: array of UTF8String;
+    FValues: array of UTF8String;
+    FSelectedIndex: integer;
+    procedure Copy();
+    procedure ExportByCSV(FileName: WideString);
+    procedure ExportByANM(FileName: WideString);
+    procedure ExportSlider();
+    function GetReadableSliderName(): UTF8String;
   protected
     procedure Execute; override;
   public
     constructor Create(Window: THandle; FilePath: UTF8String;
-      SliderName: UTF8String; Names: UTF8String; Values: UTF8String);
+      SliderName: UTF8String; Names: UTF8String; Values: UTF8String;
+      SelectedIndex: integer);
   end;
 
 implementation
@@ -84,14 +92,64 @@ end;
 
 { TExportFaviewSlider }
 
-procedure TExportFaviewSlider.Execute;
+procedure TExportFaviewSlider.Copy();
+begin
+  if not CopyToClipboard(FWindow, WideString(FValues[FSelectedIndex])) then
+    MessageBox(FWindow, 'could not open clipboard', 'PSDToolKit', MB_ICONERROR);
+end;
+
+procedure TExportFaviewSlider.ExportByCSV(FileName: WideString);
 var
-  N: integer;
-  PC: PChar;
+  I: integer;
+  F: TFileStreamW;
+begin
+  F := TFileStreamW.Create(FileName);
+  try
+    for I := Max(Low(FNames), Low(FValues)) to Min(High(FNames), High(FValues)) do
+    begin
+      WriteRawString(F, StringifyForCSV(FNames[I]));
+      WriteRawString(F, ',');
+      WriteRawString(F, StringifyForCSV(FValues[I]));
+      WriteRawString(F, #13#10);
+    end;
+  finally
+    F.Free;
+  end;
+end;
+
+procedure TExportFaviewSlider.ExportByANM(FileName: WideString);
+var
+  MinIndex, MaxIndex, I: integer;
   S: UTF8String;
   SS: ShiftJISString;
+  F: TFileStreamW;
+begin
+  F := TFileStreamW.Create(FileName);
+  try
+    S := GetReadableSliderName();
+    MinIndex := Max(Low(FNames), Low(FValues));
+    MaxIndex := Min(High(FNames), High(FValues));
+    S := Format('--track0:%s,1,%d,1,1'#13#10, [S, MaxIndex - MinIndex + 1]);
+    SS := S;
+    WriteRawString(F, SS);
+    WriteRawString(F, 'local values = {'#13#10);
+    for I := MinIndex to MaxIndex do
+    begin
+      S := '  ' + StringifyForLua(FValues[I]) + ', -- ' + FNames[I] + #13#10;
+      SS := S;
+      WriteRawString(F, SS);
+    end;
+    WriteRawString(F, '  nil'#13#10'}'#13#10);
+    WriteRawString(F, 'PSD:addstate(values[obj.track0])'#13#10);
+  finally
+    F.Free;
+  end;
+end;
+
+procedure TExportFaviewSlider.ExportSlider();
+var
+  S: UTF8String;
   FileName: WideString;
-  f: TFileStreamW;
 begin
   S := Sanitize(ChangeFileExt(ExtractFileName(Token('|', FFilePath)), '') +
     '-' + FSliderName + '.anm');
@@ -101,78 +159,137 @@ begin
     'AviUtl animation effect script(*.anm)'#0'*.anm'#0'CSV file(*.csv)'#0'*.csv'#0#0,
     1, WideString(S), 'anm', ExtractFilePath(GetDLLName()) + '..');
   case LowerCase(ExtractFileExt(FileName)) of
-    '.anm':
-    begin
-      f := TFileStreamW.Create(FileName);
-      try
-        N := 0;
-        S := FValues;
-        while True do
+    '.anm': ExportByANM(FileName);
+    '.csv': ExportByCSV(FileName);
+  end;
+end;
+
+function TExportFaviewSlider.GetReadableSliderName(): UTF8String;
+var
+  PC: PChar;
+begin
+  PC := StrRScan(PChar(FSliderName), '\');
+  if PC <> nil then
+  begin
+    Inc(PC);
+    Result := PC;
+  end
+  else
+    Result := FSliderName;
+end;
+
+procedure TExportFaviewSlider.Execute;
+const
+  HWND_MESSAGE = HWND(-3);
+var
+  I: integer;
+  PW: TExEditMultiParameterDialog;
+  FoundDialog: boolean;
+  Menu, DummyWindow: THandle;
+  WS: WideString;
+  Pt: TPoint;
+  wc: WNDCLASS;
+  ForeignThreadId: DWORD;
+begin
+  wc.style := 0;
+  wc.lpfnWndProc := @DefWindowProc;
+  wc.cbClsExtra := 0;
+  wc.cbWndExtra := 0;
+  wc.hInstance := hInstance;
+  wc.hIcon := 0;
+  wc.hCursor := 0;
+  wc.hbrBackground := 0;
+  wc.lpszMenuName := nil;
+  wc.lpszClassName := 'DummyWindow';
+  RegisterClass(wc);
+  DummyWindow := CreateWindow('DummyWindow', nil, WS_OVERLAPPEDWINDOW,
+    CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+    HWND_MESSAGE, 0, hInstance, nil);
+  try
+    FoundDialog := FindExEditMultiParameterDialog(PW);
+    Menu := CreatePopupMenu();
+    try
+      WS := '"' + WideString(FNames[FSelectedIndex]) +
+        '" をクリップボードにコピー';
+      AppendMenuW(Menu, MF_ENABLED or MF_STRING, 1000, PWideChar(WS));
+      AppendMenuW(Menu, MF_ENABLED or MF_SEPARATOR, 0, nil);
+
+      if FoundDialog and (Length(PW.Caption) > 0) then
+      begin
+        for I := Low(PW.Caption) to High(PW.Caption) do
         begin
-          Token(#0, S);
-          Inc(N);
-          if S = '' then
-            break;
+          WS := '"' + WideString(FNames[FSelectedIndex]) + '" を「' +
+            PW.Caption[I] + '」に割り当て';
+          AppendMenuW(Menu, MF_ENABLED or MF_STRING, 2000 + I, PWideChar(WS));
         end;
-        PC := StrRScan(PChar(FSliderName), '\');
-        if PC <> nil then
+        AppendMenuW(Menu, MF_ENABLED or MF_SEPARATOR, 1, nil);
+      end;
+
+      WS := 'スライダー "' + WideString(GetReadableSliderName()) +
+        '" 全体をファイルにエクスポート';
+      AppendMenuW(Menu, MF_ENABLED or MF_STRING, 1001, PWideChar(WS));
+
+      GetCursorPos(Pt);
+
+      ForeignThreadId := GetWindowThreadProcessId(FWindow, nil);
+      AttachThreadInput(GetCurrentThreadId(), ForeignThreadId, True);
+      try
+        SetForegroundWindow(DummyWindow);
+      finally
+        AttachThreadInput(GetCurrentThreadId(), ForeignThreadId, False);
+      end;
+      I := integer(TrackPopupMenu(Menu, TPM_TOPALIGN or TPM_LEFTALIGN or
+        TPM_RETURNCMD or TPM_RIGHTBUTTON, Pt.x, Pt.y, 0, DummyWindow, nil));
+      case I of
+        0:
         begin
-          Inc(PC);
-          S := PC;
-        end
+          OutputDebugString('Return 0');
+          Exit;
+        end;
+        1000: Copy();
+        1001: ExportSlider();
         else
-          S := FSliderName;
-        S := Format('--track0:%s,1,%d,1,1'#13#10, [S, N]);
-        SS := S;
-        WriteRawString(f, SS);
-        WriteRawString(f, 'local values = {'#13#10);
-        while True do
         begin
-          S := '  ' + StringifyForLua(Token(#0, FValues)) + ', -- ';
-          SS := S;
-          WriteRawString(f, SS);
-          S := StringifyForLua(Token(#0, FNames)) + #13#10;
-          SS := S;
-          WriteRawString(f, SS);
-          if FValues = '' then
-            break;
+          if (0 <= I - 2000) and (I - 2000 < Length(PW.Caption)) then
+          begin
+            WS := WideString(FValues[FSelectedIndex]);
+            SendMessageW(pw.Edit[I - 2000], WM_SETTEXT, 0, {%H-}LPARAM(PWideChar(WS)));
+          end;
         end;
-        WriteRawString(f, '  nil'#13#10'}'#13#10);
-        WriteRawString(f, 'PSD:addstate(values[obj.track0])'#13#10);
-      finally
-        f.Free;
       end;
+    finally
+      DestroyMenu(Menu);
     end;
-    '.csv':
-    begin
-      f := TFileStreamW.Create(FileName);
-      try
-        while True do
-        begin
-          WriteRawString(f, StringifyForCSV(Token(#0, FNames)));
-          WriteRawString(f, ',');
-          WriteRawString(f, StringifyForCSV(Token(#0, FValues)));
-          WriteRawString(f, #13#10);
-          if (FNames = '') and (FValues = '') then
-            break;
-        end;
-      finally
-        f.Free;
-      end;
-    end;
+  finally
+    DestroyWindow(DummyWindow);
   end;
 end;
 
 constructor TExportFaviewSlider.Create(Window: THandle; FilePath: UTF8String;
-  SliderName: UTF8String; Names: UTF8String; Values: UTF8String);
+  SliderName: UTF8String; Names: UTF8String; Values: UTF8String; SelectedIndex: integer);
+var
+  I: integer;
 begin
   inherited Create(False);
   FreeOnTerminate := True;
   FWindow := Window;
   FFilePath := FilePath;
   FSliderName := SliderName;
-  FNames := Names;
-  FValues := Values;
+  I := 0;
+  while Names <> '' do
+  begin
+    SetLength(FNames, I + 1);
+    FNames[I] := Token(#0, Names);
+    Inc(I);
+  end;
+  I := 0;
+  while Values <> '' do
+  begin
+    SetLength(FValues, I + 1);
+    FValues[I] := Token(#0, Values);
+    Inc(I);
+  end;
+  FSelectedIndex := SelectedIndex;
 end;
 
 end.
