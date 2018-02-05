@@ -32,6 +32,8 @@ type
     FValues: array of UTF8String;
     FSelectedIndex: integer;
     procedure Copy();
+    procedure CopySlider();
+    function SliderToLuaScript(): UTF8String;
     procedure ExportByCSV(FileName: WideString);
     procedure ExportByANM(FileName: WideString);
     procedure ExportSlider();
@@ -98,6 +100,31 @@ begin
     MessageBox(FWindow, 'could not open clipboard', 'PSDToolKit', MB_ICONERROR);
 end;
 
+procedure TExportFaviewSlider.CopySlider();
+begin
+  if not CopyToClipboard(FWindow, WideString(SliderToLuaScript())) then
+    MessageBox(FWindow, 'could not open clipboard', 'PSDToolKit', MB_ICONERROR);
+end;
+
+function TExportFaviewSlider.SliderToLuaScript(): UTF8String;
+var
+  MinIndex, MaxIndex, I: integer;
+begin
+  MinIndex := Max(Low(FNames), Low(FValues));
+  MaxIndex := Min(High(FNames), High(FValues));
+  Result := Format('--track0:%s,1,%d,1,1'#13#10,
+    [GetReadableSliderName(), MaxIndex - MinIndex + 1]);
+  Result := Result + 'local values = {'#13#10;
+  for I := MinIndex to MaxIndex do
+    if (Length(FValues[I]) > 2) and (FValues[I][2] = '.') then
+      Result := Result + '  ' + StringifyForLua(FValues[I]) + ',' + #13#10
+    else
+      Result := Result + '  ' + StringifyForLua(FValues[I]) + ', -- ' +
+        StringifyForLua(FNames[I]) + #13#10;
+  Result := Result + '  nil'#13#10'}'#13#10;
+  Result := Result + 'PSD:addstate(values[obj.track0])'#13#10;
+end;
+
 procedure TExportFaviewSlider.ExportByCSV(FileName: WideString);
 var
   I: integer;
@@ -119,28 +146,15 @@ end;
 
 procedure TExportFaviewSlider.ExportByANM(FileName: WideString);
 var
-  MinIndex, MaxIndex, I: integer;
   S: UTF8String;
   SS: ShiftJISString;
   F: TFileStreamW;
 begin
   F := TFileStreamW.Create(FileName);
   try
-    S := GetReadableSliderName();
-    MinIndex := Max(Low(FNames), Low(FValues));
-    MaxIndex := Min(High(FNames), High(FValues));
-    S := Format('--track0:%s,1,%d,1,1'#13#10, [S, MaxIndex - MinIndex + 1]);
+    S := SliderToLuaScript();
     SS := S;
     WriteRawString(F, SS);
-    WriteRawString(F, 'local values = {'#13#10);
-    for I := MinIndex to MaxIndex do
-    begin
-      S := '  ' + StringifyForLua(FValues[I]) + ', -- ' + FNames[I] + #13#10;
-      SS := S;
-      WriteRawString(F, SS);
-    end;
-    WriteRawString(F, '  nil'#13#10'}'#13#10);
-    WriteRawString(F, 'PSD:addstate(values[obj.track0])'#13#10);
   finally
     F.Free;
   end;
@@ -222,12 +236,15 @@ begin
             PW.Caption[I] + '」に割り当て';
           AppendMenuW(Menu, MF_ENABLED or MF_STRING, 2000 + I, PWideChar(WS));
         end;
-        AppendMenuW(Menu, MF_ENABLED or MF_SEPARATOR, 1, nil);
+        AppendMenuW(Menu, MF_ENABLED or MF_SEPARATOR, 0, nil);
       end;
 
       WS := 'スライダー "' + WideString(GetReadableSliderName()) +
-        '" 全体をファイルにエクスポート';
+        '" 全体をクリップボードにコピー';
       AppendMenuW(Menu, MF_ENABLED or MF_STRING, 1001, PWideChar(WS));
+      WS := 'スライダー "' + WideString(GetReadableSliderName()) +
+        '" 全体をファイルにエクスポート';
+      AppendMenuW(Menu, MF_ENABLED or MF_STRING, 1002, PWideChar(WS));
 
       GetCursorPos(Pt);
 
@@ -247,7 +264,8 @@ begin
           Exit;
         end;
         1000: Copy();
-        1001: ExportSlider();
+        1001: CopySlider();
+        1002: ExportSlider();
         else
         begin
           if (0 <= I - 2000) and (I - 2000 < Length(PW.Caption)) then
