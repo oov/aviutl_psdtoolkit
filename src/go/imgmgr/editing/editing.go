@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"image"
+	"image/png"
 	"math"
 	"path/filepath"
 	"time"
@@ -208,13 +209,24 @@ func (ed *Editing) SelectedImageThumbnailer() *Thumbnailer {
 }
 
 type serializeData struct {
-	Images []*img.ProjectState
+	Image     *img.ProjectState
+	Thumbnail []byte
 }
 
 func (ed *Editing) Serialize() (string, error) {
-	var srz serializeData
+	var srz []serializeData
 	for _, item := range ed.images {
-		srz.Images = append(srz.Images, item.Image.SerializeProject())
+		var thumb []byte
+		if item.Thumbnail != nil {
+			b := bytes.NewBufferString("")
+			if err := png.Encode(b, item.Thumbnail); err == nil {
+				thumb = b.Bytes()
+			}
+		}
+		srz = append(srz, serializeData{
+			Image:     item.Image.SerializeProject(),
+			Thumbnail: thumb,
+		})
 	}
 	b := bytes.NewBufferString("")
 	if err := json.NewEncoder(b).Encode(srz); err != nil {
@@ -228,20 +240,27 @@ func (ed *Editing) Deserialize(state string) error {
 		ed.Clear()
 		return nil
 	}
-	var srz serializeData
+	var srz []serializeData
 	if err := json.NewDecoder(bytes.NewReader([]byte(state))).Decode(&srz); err != nil {
 		return err
 	}
 	ed.Clear()
-	for _, ps := range srz.Images {
-		// TODO: update thumbnail
-		if err := ed.Add(ps.FilePath); err != nil {
-			return errors.Wrapf(err, "editing: cannot load %q", ps.FilePath)
+	for _, d := range srz {
+		if err := ed.Add(d.Image.FilePath); err != nil {
+			return errors.Wrapf(err, "editing: cannot load %q", d.Image.FilePath)
 		}
-		if err := ed.SelectedImage().DeserializeProject(ps); err != nil {
-			return errors.Wrapf(err, "editing: failed to deserialize on %q", ps.FilePath)
+		item := &ed.images[ed.SelectedIndex]
+		if len(d.Thumbnail) > 0 {
+			if img, err := png.Decode(bytes.NewReader(d.Thumbnail)); err == nil {
+				item.Thumbnail = image.NewNRGBA(img.Bounds())
+				draw.Draw(item.Thumbnail, item.Thumbnail.Rect, img, image.Point{}, draw.Over)
+			}
+		}
+		if err := item.Image.DeserializeProject(d.Image); err != nil {
+			return errors.Wrapf(err, "editing: failed to deserialize on %q", d.Image.FilePath)
 		}
 	}
+	ed.thumbnails = nil
 	return nil
 }
 
