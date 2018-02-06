@@ -66,7 +66,7 @@ func New(Srcs *source.Sources) *GUI {
 func (g *GUI) AddFile(path string) error {
 	// TODO: We do not want to rely on gc package.
 	gc.EnterCS()
-	go g.do(gc.LeaveCS)
+	go g.do(func() error { gc.LeaveCS(); return nil })
 
 	if err := g.edImg.Add(path); err != nil {
 		return err
@@ -76,9 +76,8 @@ func (g *GUI) AddFile(path string) error {
 }
 
 func (g *GUI) AddFileSync(path string) error {
-	var err error
-	g.do(func() {
-		err = g.AddFile(path)
+	err := g.do(func() error {
+		return g.AddFile(path)
 	})
 	if err != nil {
 		return err
@@ -87,11 +86,11 @@ func (g *GUI) AddFileSync(path string) error {
 }
 
 func (g *GUI) ClearFiles() error {
-	g.do(func() {
+	return g.do(func() error {
 		g.edImg.Clear()
 		g.changeSelectedImage()
+		return nil
 	})
-	return nil
 }
 
 func (g *GUI) Init(caption string, bgImg, mainFont, symbolFont []byte) error {
@@ -132,13 +131,18 @@ func (g *GUI) Init(caption string, bgImg, mainFont, symbolFont []byte) error {
 	return nil
 }
 
-func (g *GUI) do(f func()) {
-	done := make(chan struct{})
+func (g *GUI) do(f func() error) error {
+	done := make(chan error)
 	g.queue <- func() {
-		f()
-		done <- struct{}{}
+		defer func() {
+			if err := recover(); err != nil {
+				ods.Recover(err)
+				done <- errors.Errorf("unexpected  occurred: %v", err)
+			}
+		}()
+		done <- f()
 	}
-	<-done
+	return <-done
 }
 
 func (g *GUI) Main(exitCh <-chan struct{}) {
@@ -316,36 +320,46 @@ func (g *GUI) ReportError(err error) {
 
 func (g *GUI) ShowWindow() (uintptr, error) {
 	var h uintptr
-	g.do(func() {
+	err := g.do(func() error {
 		g.window.Show()
 		h = g.window.NativeWindow()
+		return nil
 	})
+	if err != nil {
+		return 0, err
+	}
 	return h, nil
 }
 
 func (g *GUI) Serialize() (string, error) {
 	var s string
-	var err error
-	g.do(func() {
+	err := g.do(func() error {
+		var err error
 		s, err = g.edImg.Serialize()
+		if err != nil {
+			return err
+		}
+		return nil
 	})
-	return s, err
+	if err != nil {
+		return "", err
+	}
+	return s, nil
 }
 
 func (g *GUI) Deserialize(state string) error {
-	var err error
-	g.do(func() {
-		err = g.edImg.Deserialize(state)
+	return g.do(func() error {
+		err := g.edImg.Deserialize(state)
 		if err == nil {
 			g.changeSelectedImage()
 		}
+		return err
 	})
-	return err
 }
 
 func (g *GUI) Touch() {
-	g.do(func() {
+	g.do(func() error {
 		g.edImg.Touch()
+		return nil
 	})
-
 }

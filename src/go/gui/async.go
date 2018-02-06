@@ -45,10 +45,13 @@ func updateRenderedImage(g *GUI, img *img.Image) {
 			return
 		}
 		ods.ODS("rendering: %dms", (time.Now().UnixNano()-s)/1e6)
-		g.do(func() {
+		if err = g.do(func() error {
 			g.mainView.SetRenderedImage(rgba)
 			g.thumbnailer.Update(rgba, g.do)
 			cancel()
-		})
+			return nil
+		}); err != nil {
+			ods.ODS("gui: failed to update rendered image: %v", err)
+		}
 	}()
 }

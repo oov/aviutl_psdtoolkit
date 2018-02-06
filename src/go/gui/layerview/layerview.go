@@ -59,21 +59,22 @@ func New(mainFontHandle, symbolFontHandle *nk.UserFont) (*LayerView, error) {
 	return lv, nil
 }
 
-func (lv *LayerView) UpdateLayerThumbnails(tree *composite.Tree, size int, doMain func(func())) {
+func (lv *LayerView) UpdateLayerThumbnails(tree *composite.Tree, size int, doMain func(func() error) error) {
 	lv.thumbnailChip = map[int]*nk.Image{}
 	lv.thumbnailSize = size
 	go func() {
 		s := time.Now().UnixNano()
 		rgba, ptMap, err := tree.ThumbnailSheet(context.Background(), size)
 		if err != nil {
-			doMain(func() {
+			doMain(func() error {
 				lv.ReportError(errors.Wrap(err, "layerview: failed to create thumbnail sheet"))
+				return nil
 			})
 			return
 		}
 		nrgba := rgbaToNRGBA(rgba)
 		ods.ODS("thumbnail: %dms", (time.Now().UnixNano()-s)/1e6)
-		doMain(func() {
+		if err = doMain(func() error {
 			lv.thumbnail.Update(nrgba)
 			for i, rect := range ptMap {
 				img := lv.thumbnail.SubImage(nk.NkRect(
@@ -84,7 +85,10 @@ func (lv *LayerView) UpdateLayerThumbnails(tree *composite.Tree, size int, doMai
 				))
 				lv.thumbnailChip[i] = &img
 			}
-		})
+			return nil
+		}); err != nil {
+			ods.ODS("layerview: failed to update thumbnail: %v", err)
+		}
 	}()
 }
 

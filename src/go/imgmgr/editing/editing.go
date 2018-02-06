@@ -61,7 +61,7 @@ func makeThumbnail(src image.Image) (*image.NRGBA, error) {
 	return r, nil
 }
 
-func (t *Thumbnailer) Update(img image.Image, doer func(func())) {
+func (t *Thumbnailer) Update(img image.Image, doer func(func() error) error) {
 	if t.t != nil {
 		t.t.Stop()
 	}
@@ -71,10 +71,13 @@ func (t *Thumbnailer) Update(img image.Image, doer func(func())) {
 			// TODO: report error
 			return
 		}
-		doer(func() {
+		if err = doer(func() error {
 			t.item.Thumbnail = thumb
 			t.ed.thumbnails = nil
-		})
+			return nil
+		}); err != nil {
+			// TODO: report error
+		}
 	})
 }
 
