@@ -402,6 +402,19 @@ func dump(n *Node, indent string) {
 }
 */
 
+func reencodeLayerName(s string) (string, error) {
+	var err error
+	ss := strings.Split(s, "/")
+	for i := range ss {
+		ss[i], err = decodeName(ss[i])
+		if err != nil {
+			return "", errors.Wrapf(err, "img: failed to decode layer name: %q", s)
+		}
+		ss[i] = encodeName(ss[i])
+	}
+	return strings.Join(ss, "/"), nil
+}
+
 func insert(root *Node, typ string, name string, data []string, mgr *LayerManager) error {
 	var warns warning
 	n, err := insertNodeRecursive(root, name)
@@ -412,6 +425,10 @@ func insert(root *Node, typ string, name string, data []string, mgr *LayerManage
 	case "item":
 		set := make([]bool, len(mgr.Flat))
 		for _, l := range data {
+			l, err = reencodeLayerName(l)
+			if err != nil {
+				return err
+			}
 			p := 0
 			for {
 				lp := strings.IndexByte(l[p:], '/')
@@ -439,6 +456,10 @@ func insert(root *Node, typ string, name string, data []string, mgr *LayerManage
 	case "filter":
 		set := make([]bool, len(mgr.Flat))
 		for _, l := range data {
+			l, err = reencodeLayerName(l)
+			if err != nil {
+				return err
+			}
 			p := 0
 			for {
 				lp := strings.IndexByte(l[p:], '/')
