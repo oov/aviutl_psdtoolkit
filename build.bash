@@ -65,6 +65,7 @@ popd
 
 # build PSDToolKit.exe
 pushd src/go
+rsrc -ico assets/data/icon.ico -arch=amd64 -o PSDToolKit.syso
 go.exe build -x -tags gdip -ldflags="-s" -o ../../bin/script/PSDToolKit/PSDToolKit.exe
 popd
 

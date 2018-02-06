@@ -5,3 +5,4 @@ src/lazarus/lib
 src/lazarus/ictalk/lib
 src/go/ver.go
 src/go/assets/bindata.go
+src/go/*.syso
