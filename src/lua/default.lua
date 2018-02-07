@@ -102,21 +102,18 @@ P.wav_exafinder = 0
 P.wav_examodifler_wav = function(exa, values, modifiers)
   exa:set("ao", "start", 1)
   exa:set("ao", "end", values.WAV_LEN)
-  exa:delete("ao", "length")
   exa:set("ao", "group", 1)
   exa:set("ao.0", "file", values.WAV_PATH)
 end
 P.wav_examodifler_lipsync = function(exa, values, modifiers)
   exa:set("vo", "start", 1)
   exa:set("vo", "end", values.WAV_LEN)
-  exa:delete("vo", "length")
   exa:set("vo", "group", 1)
   exa:set("vo.0", "param", "file=" .. modifiers.ENCODE_LUA_STRING(values.LIPSYNC_PATH))
 end
 P.wav_examodifler_subtitle = function(exa, values, modifiers)
   exa:set("vo", "start", 1)
   exa:set("vo", "end", values.SUBTITLE_LEN)
-  exa:delete("vo", "length")
   exa:set("vo", "group", P.wav_groupsubtitle and 1 or 0)
   exa:set("vo.0", "text", modifiers.ENCODE_TEXT(values.SUBTITLE))
 end
@@ -162,7 +159,6 @@ P.lab_exafinder = 0
 P.lab_examodifler = function(exa, values, modifiers)
   exa:set("vo", "start", values.START + 1)
   exa:set("vo", "end", values.END + 1)
-  exa:delete("vo", "length")
   exa:set("vo", "group", 1)
   exa:set("vo.0", "text", modifiers.ENCODE_TEXT(values.LIPSYNC))
 end
@@ -226,7 +222,6 @@ P.srt_exafinder = 0
 P.srt_examodifler = function(exa, values, modifiers)
   exa:set("vo", "start", values.START + 1)
   exa:set("vo", "end", values.END + 1)
-  exa:delete("vo", "length")
   exa:set("vo", "group", 1)
   exa:set("vo.0", "text", modifiers.ENCODE_TEXT(values.SUBTITLE))
 end

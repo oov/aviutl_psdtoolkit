@@ -104,7 +104,9 @@ function P.insertexa(destini, srcini, index, layer)
   destini:set(index, "layer", layer)
   destini:set(index, "overlay", 1)
   for _, key in ipairs(srcini:keys(prefix)) do
-    destini:set(index, key, srcini:get(prefix, key, ""))
+    if key ~= "length" then
+      destini:set(index, key, srcini:get(prefix, key, ""))
+    end
   end
   if prefix == "ao" then
     destini:set(index, "audio", 1)
