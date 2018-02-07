@@ -142,7 +142,7 @@ local function fire(state, v)
   return false
 end
 
-function P.resolvepath(filepath, finder)
+function P.resolvepath(filepath, finder, setting)
   if finder == 1 then
     return filepath:match("([^\\]+)[\\][^\\]+$")
   elseif finder == 2 then
@@ -154,7 +154,7 @@ function P.resolvepath(filepath, finder)
   elseif finder == 5 then
     return filepath:match("([^\\]+)%.[^.]+$"):match("^[^_]+_[^_]+_([^_]+)")
   elseif type(finder) == "function" then
-    return finder(filepath)
+    return finder(setting, filepath)
   end
   return nil
 end
@@ -209,12 +209,14 @@ function P.ondrop(files, state)
           if enc ~= "sjis" then
             subtitle = GCMZDrops.convertencoding(subtitle, enc, "sjis")
           end
+          -- 置換用処理を呼び出す
+          subtitle = setting:wav_subtitle_replacer(subtitle)
           -- 挿入モードが 2 の時はテキストをスクリプトとして整形する
           if setting.wav_insertmode == 2 then
             if subtitle:sub(-2) ~= "\r\n" then
               subtitle = subtitle .. "\r\n"
             end
-            subtitle = setting.wav_subtitle_prefix .. "\r\n" .. setting.wav_subtitle_escape(subtitle) .. setting.wav_subtitle_postfix
+            subtitle = setting.wav_subtitle_prefix .. "\r\n" .. setting:wav_subtitle_escape(subtitle) .. setting.wav_subtitle_postfix
           end
           values.SUBTITLE = subtitle
         end
@@ -247,25 +249,25 @@ function P.ondrop(files, state)
       oini:set("exedit", "audio_ch", proj.audio_ch)
 
       -- オブジェクトの挿入
-      local filepath = P.resolvepath(v.orgfilepath or v.filepath, setting.wav_exafinder)
+      local filepath = P.resolvepath(v.orgfilepath or v.filepath, setting.wav_exafinder, setting)
       local index = 0
       
       -- 音声用エイリアスを組み立て
       local aini = P.exaread(filepath, "wav")
-      setting.wav_examodifler_wav(aini, values, modifiers)
+      setting:wav_examodifler_wav(aini, values, modifiers)
       P.insertexa(oini, aini, index, index + 1)
       index = index + 1
 
       -- 口パク準備用エイリアスを組み立て
       local aini = P.exaread(filepath, "lipsync")
-      setting.wav_examodifler_lipsync(aini, values, modifiers)
+      setting:wav_examodifler_lipsync(aini, values, modifiers)
       P.insertexa(oini, aini, index, index + 1)
       index = index + 1
 
       -- 字幕用エイリアスを組み立て
       if values.SUBTITLE ~= "" then
         local aini = P.exaread(filepath, "subtitle")
-        setting.wav_examodifler_subtitle(aini, values, modifiers)
+        setting:wav_examodifler_subtitle(aini, values, modifiers)
         P.insertexa(oini, aini, index, index + 1)
         index = index + 1
       end

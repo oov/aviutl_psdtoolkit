@@ -26,51 +26,53 @@ P.wav_groupsubtitle = true
 P.wav_subtitlemargin = 0
 P.wav_subtitleencoding = "sjis"
 P.wav_exafinder = 0
-P.wav_examodifler_wav = function(exa, values, modifiers)
+function P:wav_examodifler_wav(exa, values, modifiers)
   exa:set("ao", "start", 1)
   exa:set("ao", "end", values.WAV_LEN)
   exa:set("ao", "group", 1)
   exa:set("ao.0", "file", values.WAV_PATH)
 end
-P.wav_examodifler_lipsync = function(exa, values, modifiers)
+function P:wav_examodifler_lipsync(exa, values, modifiers)
   exa:set("vo", "start", 1)
   exa:set("vo", "end", values.WAV_LEN)
   exa:set("vo", "group", 1)
   exa:set("vo.0", "param", "file=" .. modifiers.ENCODE_LUA_STRING(values.LIPSYNC_PATH))
 end
-P.wav_examodifler_subtitle = function(exa, values, modifiers)
+function P:wav_examodifler_subtitle(exa, values, modifiers)
   exa:set("vo", "start", 1)
   exa:set("vo", "end", values.SUBTITLE_LEN)
-  exa:set("vo", "group", P.wav_groupsubtitle and 1 or 0)
+  exa:set("vo", "group", self.wav_groupsubtitle and 1 or 0)
   exa:set("vo.0", "text", modifiers.ENCODE_TEXT(values.SUBTITLE))
 end
+function P:wav_subtitle_replacer(s) return s end
 P.wav_subtitle_prefix = '<?s=[==['
-P.wav_subtitle_escape = function(s) return s:gsub(']==]', ']==].."]==]"..[==[') end
+function P:wav_subtitle_escape(s) return s:gsub(']==]', ']==].."]==]"..[==[') end
 P.wav_subtitle_postfix = ']==];require("PSDToolKit").subtitle:set(s, obj, true);s=nil?>'
 
 P.lab_exafinder = 0
-P.lab_examodifler = function(exa, values, modifiers)
+function P:lab_examodifler(exa, values, modifiers)
   exa:set("vo", "start", values.START + 1)
   exa:set("vo", "end", values.END + 1)
   exa:set("vo", "group", 1)
   exa:set("vo.0", "text", modifiers.ENCODE_TEXT(values.LIPSYNC))
 end
 P.lab_lipsync_prefix = '<?l='
-P.lab_lipsync_escape = function(s) return GCMZDrops.encodeluastring(s) end
+function P:lab_lipsync_escape(s) return GCMZDrops.encodeluastring(s) end
 P.lab_lipsync_postfix = ';require("PSDToolKit").talk:setphoneme(obj,l);l=nil?>'
 
 P.srt_insertmode = 1
 P.srt_encoding = "utf8"
 P.srt_margin = 0
 P.srt_exafinder = 0
-P.srt_examodifler = function(exa, values, modifiers)
+function P:srt_examodifler(exa, values, modifiers)
   exa:set("vo", "start", values.START + 1)
   exa:set("vo", "end", values.END + 1)
   exa:set("vo", "group", 1)
   exa:set("vo.0", "text", modifiers.ENCODE_TEXT(values.SUBTITLE))
 end
+function P:srt_subtitle_replacer(s) return s end
 P.srt_subtitle_prefix = '<?s=[==['
-P.srt_subtitle_escape = function(s) return s:gsub(']==]', ']==].."]==]"..[==[') end
+function P:srt_subtitle_escape(s) return s:gsub(']==]', ']==].."]==]"..[==[') end
 P.srt_subtitle_postfix = ']==];require("PSDToolKit").subtitle:set(s, obj, true);s=nil?>'
 
 P.ictalk_firemode = 1

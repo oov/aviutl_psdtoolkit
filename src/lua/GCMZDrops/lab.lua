@@ -64,7 +64,7 @@ function P.ondrop(files, state)
       -- lab の内容に従ってテキストオブジェクトを挿入していく
       -- もし表示が被る場合は表示先のレイヤーも変える
       -- ただしそれでも結局正しく扱えないのであまり意味はないかも
-      local textbase = tostring(wavP.exaread(wavP.resolvepath(v.filepath, P.lab_exafinder), "lab"))
+      local textbase = tostring(wavP.exaread(wavP.resolvepath(v.filepath, setting.lab_exafinder, setting), "lab"))
       local values = {
         START = 0,
         END = 0,
@@ -78,7 +78,7 @@ function P.ondrop(files, state)
       local layers = {}
       local n = 0
       for i, t in ipairs(lab) do
-        values.LIPSYNC = setting.lab_lipsync_prefix .. setting.lab_lipsync_escape(t.p) .. setting.lab_lipsync_postfix
+        values.LIPSYNC = setting.lab_lipsync_prefix .. setting:lab_lipsync_escape(t.p) .. setting.lab_lipsync_postfix
         values.START = math.ceil(t.s * proj.rate / proj.scale)
         values.END = math.ceil(t.e * proj.rate / proj.scale) - 1
         local found = nil
@@ -96,7 +96,7 @@ function P.ondrop(files, state)
         end
 
         local aini = GCMZDrops.inistring(textbase)
-        setting.lab_examodifler(aini, values, modifiers)
+        setting:lab_examodifler(aini, values, modifiers)
         wavP.insertexa(oini, aini, n, found)
         n = n + 1
       end

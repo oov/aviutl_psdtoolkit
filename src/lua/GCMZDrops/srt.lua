@@ -110,7 +110,7 @@ function P.ondrop(files, state)
       -- SRT の内容に従ってテキストオブジェクトを挿入していく
       -- もし表示が被る場合は表示先のレイヤーも変える
       -- ただ、挿入モード1だと結局正しく扱えないのであまり意味はないかも
-      local textbase = tostring(wavP.exaread(wavP.resolvepath(v.filepath, setting.srt_exafinder), "srt"))
+      local textbase = tostring(wavP.exaread(wavP.resolvepath(v.filepath, setting.srt_exafinder, setting), "srt"))
       local values = {
         START = 0,
         END = 0,
@@ -125,12 +125,14 @@ function P.ondrop(files, state)
       local n = 0
       for i, t in ipairs(srt) do
         local subtitle = t.subtitle
+        -- 置換用処理を呼び出す
+        subtitle = setting:wav_subtitle_replacer(subtitle)
         -- 挿入モードが 1 の時はテキストをスクリプトとして整形する
         if setting.srt_insertmode == 1 then
           if subtitle:sub(-2) ~= "\r\n" then
             subtitle = subtitle .. "\r\n"
           end
-          subtitle = setting.srt_subtitle_prefix .. "\r\n" .. setting.srt_subtitle_escape(subtitle) .. setting.srt_subtitle_postfix
+          subtitle = setting.srt_subtitle_prefix .. "\r\n" .. setting:srt_subtitle_escape(subtitle) .. setting.srt_subtitle_postfix
         end
         values.SUBTITLE = subtitle
         values.START = math.floor(t.s * proj.rate / proj.scale)
@@ -150,7 +152,7 @@ function P.ondrop(files, state)
         end
 
         local aini = GCMZDrops.inistring(textbase)
-        setting.srt_examodifler(aini, values, modifiers)
+        setting:srt_examodifler(aini, values, modifiers)
         wavP.insertexa(oini, aini, n, found)
         n = n + 1
       end
