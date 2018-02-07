@@ -4,50 +4,6 @@ P.name = "LAB ファイルをインポート"
 
 P.priority = 0
 
--- 音素用のエイリアスファイル(*.exa)をどのように参照するか
--- この設定を使うと、ドロップされた *.lab ファイルの名前に応じて別のエイリアスファイルを使用できます。
--- エイリアスファイルは exa フォルダーの中に配置して下さい。
--- 該当するファイルが見つからない場合は exa\lab.exa が代わりに使用されます。
---   0 - 常に同じファイルを参照する
---     ドロップされたファイルに関わらず以下のエイリアスファイルが使用されます。
---       exa\lab.exa
---   1 - ファイルが入っているフォルダ名を元にする
---     例: ドロップされたファイルが C:\MyFolder\TKHS_Hello_World.lab の時
---       exa\MyFolder_lab.exa
---   2 - ファイル名を元にする
---     例: ドロップされたファイルが C:\MyFolder\TKHS_Hello_World.lab の時
---       exa\TKHS_Hello_World_lab.exa
---   3 - ファイル名の中で _ で区切られた最初の部分を元にする
---     例: ドロップされたファイルが C:\MyFolder\TKHS_Hello_World.lab の時
---       exa\TKHS_lab.exa
---   4 - ファイル名の中で _ で区切られた2つめの部分を元にする
---     例: ドロップされたファイルが C:\MyFolder\TKHS_Hello_World.lab の時
---       exa\Hello_lab.exa
---   5 - ファイル名の中で _ で区切られた3つめの部分を元にする
---     例: ドロップされたファイルが C:\MyFolder\TKHS_Hello_World.lab の時
---       exa\World_lab.exa
-P.exa_finder = 0
-
--- エイリアスファイルの改変処理
--- 一般的な用途では変更する必要はありません。
-P.exa_modifler_lab = function(exa, values, modifiers)
-  exa:set("vo", "start", values.START + 1)
-  exa:set("vo", "end", values.END + 1)
-  exa:delete("vo", "length")
-  exa:set("vo", "group", 1)
-  exa:set("vo.0", "text", modifiers.ENCODE_TEXT(values.TEXT))
-end
-
-P.text_prefix = '<?l='
-P.text_postfix = ';require("PSDToolKit").talk:setphoneme(obj,l);l=nil?>'
-P.text_escape = function(s)
-  return GCMZDrops.encodeluastring(s)
-end
-
--- ===========================================================
--- 設定　ここまで
--- ===========================================================
-
 local wavP = require("psdtoolkit_wav")
 
 function P.ondragenter(files, state)
@@ -87,6 +43,7 @@ function P.parse(filepath)
 end
 
 function P.ondrop(files, state)
+  local setting = wavP.loadsetting()
   for i, v in ipairs(files) do
     -- ファイルの拡張子が lab なら
     if v.filepath:match("[^.]+$"):lower() == "lab" then
@@ -107,11 +64,11 @@ function P.ondrop(files, state)
       -- lab の内容に従ってテキストオブジェクトを挿入していく
       -- もし表示が被る場合は表示先のレイヤーも変える
       -- ただしそれでも結局正しく扱えないのであまり意味はないかも
-      local textbase = tostring(wavP.exaread(wavP.resolvepath(v.filepath, P.exa_finder), "lab"))
+      local textbase = tostring(wavP.exaread(wavP.resolvepath(v.filepath, P.lab_exafinder), "lab"))
       local values = {
         START = 0,
         END = 0,
-        TEXT = ""
+        LIPSYNC = ""
       }
       local modifiers = {
         ENCODE_TEXT = function(v)
@@ -121,7 +78,7 @@ function P.ondrop(files, state)
       local layers = {}
       local n = 0
       for i, t in ipairs(lab) do
-        values.TEXT = P.text_prefix .. P.text_escape(t.p) .. P.text_postfix
+        values.LIPSYNC = setting.lab_lipsync_prefix .. setting.lab_lipsync_escape(t.p) .. setting.lab_lipsync_postfix
         values.START = math.ceil(t.s * proj.rate / proj.scale)
         values.END = math.ceil(t.e * proj.rate / proj.scale) - 1
         local found = nil
@@ -139,7 +96,7 @@ function P.ondrop(files, state)
         end
 
         local aini = GCMZDrops.inistring(textbase)
-        P.exa_modifler_lab(aini, values, modifiers)
+        setting.lab_examodifler(aini, values, modifiers)
         wavP.insertexa(oini, aini, n, found)
         n = n + 1
       end

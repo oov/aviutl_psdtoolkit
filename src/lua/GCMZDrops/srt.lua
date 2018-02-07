@@ -4,76 +4,6 @@ P.name = "SRT ファイルをインポート"
 
 P.priority = 0
 
--- ===========================================================
--- 設定　ここから
--- ===========================================================
-
--- 挿入モード
---   0 - 字幕データをテキストオブジェクトとして挿入
---   1 - 字幕データをテキストオブジェクトにスクリプトとして挿入
---
--- [挿入モード 1 の使い方]
---   挿入モード 1 では、そのままではテキストは表示されません。
---   ドロップによって挿入されたテキストオブジェクトよりも下に
---   [メディアオブジェクトの追加]→[PSDToolKit]→[テキスト　字幕表示用]
---   で表示用のテキストオブジェクトを追加することで表示されます。
---   装飾などの設定は全て表示用のテキストオブジェクト側で行います。
-P.insertmode = 1
-
--- SRTファイルの文字エンコーディング
--- "sjis" か "utf8" で指定
--- ※ただしどちらにしても挿入前に一旦 Shift_JIS に変換されます
-P.encoding = "utf8"
-
--- 字幕表示を延長
--- 秒で指定
-P.margin = 0
-
--- 字幕用のエイリアスファイル(*.exa)をどのように参照するか
--- この設定を使うと、ドロップされた *.srt ファイルの名前に応じて別のエイリアスファイルを使用できます。
--- エイリアスファイルは exa フォルダーの中に配置して下さい。
--- 該当するファイルが見つからない場合は exa\srt.exa が代わりに使用されます。
---   0 - 常に同じファイルを参照する
---     ドロップされたファイルに関わらず以下のエイリアスファイルが使用されます。
---       exa\srt.exa
---   1 - ファイルが入っているフォルダ名を元にする
---     例: ドロップされたファイルが C:\MyFolder\TKHS_Hello_World.srt の時
---       exa\MyFolder_srt.exa
---   2 - ファイル名を元にする
---     例: ドロップされたファイルが C:\MyFolder\TKHS_Hello_World.srt の時
---       exa\TKHS_Hello_World_srt.exa
---   3 - ファイル名の中で _ で区切られた最初の部分を元にする
---     例: ドロップされたファイルが C:\MyFolder\TKHS_Hello_World.srt の時
---       exa\TKHS_srt.exa
---   4 - ファイル名の中で _ で区切られた2つめの部分を元にする
---     例: ドロップされたファイルが C:\MyFolder\TKHS_Hello_World.srt の時
---       exa\Hello_srt.exa
---   5 - ファイル名の中で _ で区切られた3つめの部分を元にする
---     例: ドロップされたファイルが C:\MyFolder\TKHS_Hello_World.srt の時
---       exa\World_srt.exa
-P.exa_finder = 0
-
--- エイリアスファイルの改変処理
--- 一般的な用途では変更する必要はありません。
-P.exa_modifler_srt = function(exa, values, modifiers)
-  exa:set("vo", "start", values.START + 1)
-  exa:set("vo", "end", values.END + 1)
-  exa:delete("vo", "length")
-  exa:set("vo", "group", 1)
-  exa:set("vo.0", "text", modifiers.ENCODE_TEXT(values.TEXT))
-end
-
--- 挿入モード 1 の時に使用される接頭辞、接尾辞とエスケープ処理
-P.text_prefix = '<?s=[==['
-P.text_postfix = ']==];require("PSDToolKit").subtitle:set(s, obj, true);s=nil?>'
-P.text_escape = function(s)
-  return s:gsub("]==]", ']==].."]==]"..[==[')
-end
-
--- ===========================================================
--- 設定　ここまで
--- ===========================================================
-
 local wavP = require("psdtoolkit_wav")
 
 function P.ondragenter(files, state)
@@ -95,14 +25,15 @@ function P.ondragleave()
 end
 
 function P.parse(filepath)
+  local setting = wavP.loadsetting()
   local f, err = io.open(filepath, "rb")
   if f == nil then
     error(err)
   end
   local srt = f:read("*all")
   f:close()
-  if P.encoding ~= "sjis" then
-    srt = GCMZDrops.convertencoding(srt, P.encoding, "sjis")
+  if setting.srt_encoding ~= "sjis" then
+    srt = GCMZDrops.convertencoding(srt, setting.srt_encoding, "sjis")
   end
   if srt:sub(-1) ~= "\n" then
     srt = srt .. "\r\n"
@@ -110,7 +41,7 @@ function P.parse(filepath)
 
   local r = {}
   local id = nil
-  local text = ""
+  local subtitle = ""
   local startf = nil
   local endf = nil
   local maxendf = 0
@@ -133,19 +64,19 @@ function P.parse(filepath)
         end
       end
       if yet then
-        text = text .. line .. "\r\n"
+        subtitle = subtitle .. line .. "\r\n"
         yet = false
       end
     else
-      if (id ~= nil)and(text ~= "")and(startf ~= nil)and(endf ~= nil) then
-        endf = endf + P.margin
-        table.insert(r, {id=id, s=startf, e=endf, text=text})
+      if (id ~= nil)and(subtitle ~= "")and(startf ~= nil)and(endf ~= nil) then
+        endf = endf + setting.srt_margin
+        table.insert(r, {id=id, s=startf, e=endf, subtitle=subtitle})
         if maxendf < endf then
           maxendf = endf
         end
       end
       id = nil
-      text = ""
+      subtitle = ""
       startf = nil
       endf = nil
     end
@@ -158,6 +89,7 @@ function P.parse(filepath)
 end
 
 function P.ondrop(files, state)
+  local setting = wavP.loadsetting()
   for i, v in ipairs(files) do
     -- ファイルの拡張子が srt なら
     if v.filepath:match("[^.]+$"):lower() == "srt" then
@@ -178,11 +110,11 @@ function P.ondrop(files, state)
       -- SRT の内容に従ってテキストオブジェクトを挿入していく
       -- もし表示が被る場合は表示先のレイヤーも変える
       -- ただ、挿入モード1だと結局正しく扱えないのであまり意味はないかも
-      local textbase = tostring(wavP.exaread(wavP.resolvepath(v.filepath, P.exa_finder), "srt"))
+      local textbase = tostring(wavP.exaread(wavP.resolvepath(v.filepath, setting.srt_exafinder), "srt"))
       local values = {
         START = 0,
         END = 0,
-        TEXT = ""
+        SUBTITLE = ""
       }
       local modifiers = {
         ENCODE_TEXT = function(v)
@@ -192,15 +124,15 @@ function P.ondrop(files, state)
       local layers = {}
       local n = 0
       for i, t in ipairs(srt) do
-        local text = t.text
+        local subtitle = t.subtitle
         -- 挿入モードが 1 の時はテキストをスクリプトとして整形する
-        if P.insertmode == 1 then
-          if text:sub(-2) ~= "\r\n" then
-            text = text .. "\r\n"
+        if setting.srt_insertmode == 1 then
+          if subtitle:sub(-2) ~= "\r\n" then
+            subtitle = subtitle .. "\r\n"
           end
-          text = P.text_prefix .. "\r\n" .. P.text_escape(text) .. P.text_postfix
+          subtitle = setting.srt_subtitle_prefix .. "\r\n" .. setting.srt_subtitle_escape(subtitle) .. setting.srt_subtitle_postfix
         end
-        values.TEXT = text
+        values.SUBTITLE = subtitle
         values.START = math.floor(t.s * proj.rate / proj.scale)
         values.END = math.floor(t.e * proj.rate / proj.scale)
         local found = nil
@@ -218,7 +150,7 @@ function P.ondrop(files, state)
         end
 
         local aini = GCMZDrops.inistring(textbase)
-        P.exa_modifler_srt(aini, values, modifiers)
+        setting.srt_examodifler(aini, values, modifiers)
         wavP.insertexa(oini, aini, n, found)
         n = n + 1
       end

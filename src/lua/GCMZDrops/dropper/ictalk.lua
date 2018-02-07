@@ -2,39 +2,30 @@ local P = {}
 
 P.name = "Instant CTalk"
 
--- ”­“®ƒ‚[ƒh
---   0 - ‚½‚¾‚Ì *.wav ƒtƒ@ƒCƒ‹ƒhƒƒbƒv‚Æ‚µ‚Äˆ—‚·‚é
---   1 - ŒûƒpƒN€”õƒIƒuƒWƒFƒNƒg‚à¶¬‚·‚éBš–‹—pƒeƒLƒXƒg‚ğo—Í‚µ‚½ê‡‚Íš–‹ƒtƒ@ƒCƒ‹‚àì¬‚·‚é
-P.firemode = 1
-
--- ƒtƒ@ƒCƒ‹–¼ƒtƒH[ƒ}ƒbƒg
---   0 - ‚±‚ñ‚É‚¿‚Í.wav
---   1 - 180116_172059_‚±‚ñ‚É‚¿‚Í.wav
---   2 - ƒLƒƒƒ‰–¼_‚±‚ñ‚É‚¿‚Í.wav
---   3 - 180116_172059_ƒLƒƒƒ‰–¼_‚±‚ñ‚É‚¿‚Í.wav
-P.format = 3
+local wavP = require("psdtoolkit_wav")
 
 function P.oninitmenu()
   return "Instant CTalk"
 end
 
 function P.onselect(index, state)
-  local ret = require("ICTalk").open({parent=state.parent, format=P.format})
+  local setting = wavP.loadsetting()
+  local ret = require("ICTalk").open({parent=state.parent, format=setting.ictalk_format})
   if (ret ~= nil)and(ret.files ~= nil)and(#ret.files > 0) then
     local wave
     for i, v in ipairs(ret.files) do
-      -- ì¬‚µ‚½‚·‚×‚Ä‚Ìƒtƒ@ƒCƒ‹‚Íˆ—Š®—¹Œã‚Éíœ‚·‚é‚æ‚¤‚É“o˜^
+      -- ä½œæˆã—ãŸã™ã¹ã¦ã®ãƒ•ã‚¡ã‚¤ãƒ«ã¯å‡¦ç†å®Œäº†å¾Œã«å‰Šé™¤ã™ã‚‹ã‚ˆã†ã«ç™»éŒ²
       GCMZDrops.deleteonfinish(v)
       if v:match("[^.]+$"):lower() == "wav" then
         wave = v
       end
     end
     if wave ~= nil then
-      -- wav ‘}“ü‚Ì”­“®ƒ‚[ƒh‚ğí‚É 0 ‚Åã‘‚«‚µA
-      -- ƒVƒtƒgƒL[‚ğ‰Ÿ‚µ‚È‚ª‚çƒhƒƒbƒv‚µ‚½‚à‚Ì‚Æ‚µ‚Ä“Š‚°‚é‚±‚Æ‚Å wav ‘}“üˆ—‚ğ”­“®‚³‚¹‚é
-      -- ‚Ü‚½ Instant CTalk ‚©‚ço—Í‚µ‚½ƒeƒLƒXƒgƒtƒ@ƒCƒ‹‚Íí‚É Shift_JIS ‚È‚Ì‚ÅA‚»‚Ìİ’è‚àã‘‚«‚·‚é
-      state.shift = P.firemode == 1
-      return {{filepath=wave, overridefiremode=0, overridetextencoding="sjis"}}, state
+      -- wav æŒ¿å…¥æ™‚ã®ç™ºå‹•ãƒ¢ãƒ¼ãƒ‰ã‚’å¸¸ã« 0 ã§ä¸Šæ›¸ãã—ã€
+      -- ã‚·ãƒ•ãƒˆã‚­ãƒ¼ã‚’æŠ¼ã—ãªãŒã‚‰ãƒ‰ãƒ­ãƒƒãƒ—ã—ãŸã‚‚ã®ã¨ã—ã¦æŠ•ã’ã‚‹ã“ã¨ã§ wav æŒ¿å…¥å‡¦ç†ã‚’ç™ºå‹•ã•ã›ã‚‹
+      -- ã¾ãŸ Instant CTalk ã‹ã‚‰å‡ºåŠ›ã—ãŸãƒ†ã‚­ã‚¹ãƒˆãƒ•ã‚¡ã‚¤ãƒ«ã¯å¸¸ã« Shift_JIS ãªã®ã§ã€ãã®è¨­å®šã‚‚ä¸Šæ›¸ãã™ã‚‹
+      state.shift = setting.ictalk_firemode == 1
+      return {{filepath=wave, overridefiremode=0, overridesubtitleencoding="sjis"}}, state
     end
   end
   return nil
