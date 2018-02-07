@@ -1,7 +1,7 @@
--- このファイルは AviUtl のテキストオブジェクトやスクリプト制御フィルタで
--- require("PSDToolKit") をした時に読み込まれるファイル
--- このファイルが読み込まれるということは正しいファイルが読み込めていないので、
--- 一旦キャッシュを無効化しパスを通した上で改めて読み込む
+-- ���̃t�@�C���� AviUtl �̃e�L�X�g�I�u�W�F�N�g��X�N���v�g����t�B���^��
+-- require("PSDToolKit") ���������ɓǂݍ��܂��t�@�C��
+-- ���̃t�@�C�����ǂݍ��܂��Ƃ������Ƃ͐������t�@�C�����ǂݍ��߂Ă��Ȃ��̂ŁA
+-- ��U�L���b�V���𖳌������p�X��ʂ�����ŉ��߂ēǂݍ���
 package.loaded["PSDToolKit"] = nil
 local origpath = package.path
 package.path = obj.getinfo("script_path") .. "PSDToolKit\\?.lua"

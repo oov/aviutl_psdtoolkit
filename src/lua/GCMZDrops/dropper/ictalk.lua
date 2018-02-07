@@ -14,16 +14,16 @@ function P.onselect(index, state)
   if (ret ~= nil)and(ret.files ~= nil)and(#ret.files > 0) then
     local wave
     for i, v in ipairs(ret.files) do
-      -- ä½œæˆã—ãŸã™ã¹ã¦ã®ãƒ•ã‚¡ã‚¤ãƒ«ã¯å‡¦ç†å®Œäº†å¾Œã«å‰Šé™¤ã™ã‚‹ã‚ˆã†ã«ç™»éŒ²
+      -- ì¬‚µ‚½‚·‚×‚Ä‚Ìƒtƒ@ƒCƒ‹‚Íˆ—Š®—¹Œã‚Éíœ‚·‚é‚æ‚¤‚É“o˜^
       GCMZDrops.deleteonfinish(v)
       if v:match("[^.]+$"):lower() == "wav" then
         wave = v
       end
     end
     if wave ~= nil then
-      -- wav æŒ¿å…¥æ™‚ã®ç™ºå‹•ãƒ¢ãƒ¼ãƒ‰ã‚’å¸¸ã« 0 ã§ä¸Šæ›¸ãã—ã€
-      -- ã‚·ãƒ•ãƒˆã‚­ãƒ¼ã‚’æŠ¼ã—ãªãŒã‚‰ãƒ‰ãƒ­ãƒƒãƒ—ã—ãŸã‚‚ã®ã¨ã—ã¦æŠ•ã’ã‚‹ã“ã¨ã§ wav æŒ¿å…¥å‡¦ç†ã‚’ç™ºå‹•ã•ã›ã‚‹
-      -- ã¾ãŸ Instant CTalk ã‹ã‚‰å‡ºåŠ›ã—ãŸãƒ†ã‚­ã‚¹ãƒˆãƒ•ã‚¡ã‚¤ãƒ«ã¯å¸¸ã« Shift_JIS ãªã®ã§ã€ãã®è¨­å®šã‚‚ä¸Šæ›¸ãã™ã‚‹
+      -- wav ‘}“ü‚Ì”­“®ƒ‚[ƒh‚ğí‚É 0 ‚Åã‘‚«‚µA
+      -- ƒVƒtƒgƒL[‚ğ‰Ÿ‚µ‚È‚ª‚çƒhƒƒbƒv‚µ‚½‚à‚Ì‚Æ‚µ‚Ä“Š‚°‚é‚±‚Æ‚Å wav ‘}“üˆ—‚ğ”­“®‚³‚¹‚é
+      -- ‚Ü‚½ Instant CTalk ‚©‚ço—Í‚µ‚½ƒeƒLƒXƒgƒtƒ@ƒCƒ‹‚Íí‚É Shift_JIS ‚È‚Ì‚ÅA‚»‚Ìİ’è‚àã‘‚«‚·‚é
       state.shift = setting.ictalk_firemode == 1
       return {{filepath=wave, overridefiremode=0, overridesubtitleencoding="sjis"}}, state
     end

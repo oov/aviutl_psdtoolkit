@@ -7,7 +7,7 @@ local function print(obj, msg)
   obj.setfont("MS UI Gothic", 16, 0, "0xffffff", "0x000000")
   obj.load("text", "<s,,B>" .. msg)
   obj.draw()
-  -- ãƒ†ã‚­ã‚¹ãƒˆã®ã¼ã‚„ã‘é˜²æ­¢
+  -- ƒeƒLƒXƒg‚Ì‚Ú‚â‚¯–h~
   obj.cx = obj.w % 2 == 1 and 0.5 or 0
   obj.cy = obj.h % 2 == 1 and 0.5 or 0
 end
@@ -93,16 +93,16 @@ end
 
 local Blinker = {}
 
--- ç¬ãã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚¿ãƒ¼
--- patterns - {'é–‰ã˜', 'ã»ã¼é–‰ã˜', 'åŠé–‹ã', 'ã»ã¼é–‹ã', 'é–‹ã'} ã®ãƒ‘ã‚¿ãƒ¼ãƒ³ãŒå…¥ã£ãŸé…åˆ—ï¼ˆã»ã¼é–‰ã˜ã€åŠç›®ã€ã»ã¼é–‹ãã¯çœç•¥å¯ï¼‰
--- interval - ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³é–“éš”
--- speed - ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³é€Ÿåº¦
--- offset - ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³é–‹å§‹ä½ç½®
+-- u‚«ƒAƒjƒ[ƒ^[
+-- patterns - {'•Â‚¶', '‚Ù‚Ú•Â‚¶', '”¼ŠJ‚«', '‚Ù‚ÚŠJ‚«', 'ŠJ‚«'} ‚Ìƒpƒ^[ƒ“‚ª“ü‚Á‚½”z—ñi‚Ù‚Ú•Â‚¶A”¼–ÚA‚Ù‚ÚŠJ‚«‚ÍÈ—ª‰Âj
+-- interval - ƒAƒjƒ[ƒVƒ‡ƒ“ŠÔŠu
+-- speed - ƒAƒjƒ[ƒVƒ‡ƒ“‘¬“x
+-- offset - ƒAƒjƒ[ƒVƒ‡ƒ“ŠJnˆÊ’u
 function Blinker.new(patterns, interval, speed, offset)
   if #patterns > 3 then
-    -- 3ã‚³ãƒä»¥ä¸Šã‚ã‚‹ãªã‚‰å…ˆé ­ã«ã€Œã»ã¼é–‹ãã€ç›¸å½“ã®ã‚‚ã®ã‚’æŒ¿å…¥ã—ã¦
-    -- é–‹ãâ†’ã»ã¼é–‹ãâ†’é–‰ã˜â†’ã»ã¼é–‰ã˜â†’åŠç›®â†’ã»ã¼é–‹ãâ†’é–‹ãã€€ã®ã‚ˆã†ã«
-    -- é–‰ã˜å§‹ã‚ã‚‹ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã®ç›´å¾Œã€é–‰ã˜ã«ç§»è¡Œã™ã‚‹ã‚ˆã†ã«ã™ã‚‹
+    -- 3ƒRƒ}ˆÈã‚ ‚é‚È‚çæ“ª‚Éu‚Ù‚ÚŠJ‚«v‘Š“–‚Ì‚à‚Ì‚ğ‘}“ü‚µ‚Ä
+    -- ŠJ‚«¨‚Ù‚ÚŠJ‚«¨•Â‚¶¨‚Ù‚Ú•Â‚¶¨”¼–Ú¨‚Ù‚ÚŠJ‚«¨ŠJ‚«@‚Ì‚æ‚¤‚É
+    -- •Â‚¶n‚ß‚éƒAƒjƒ[ƒVƒ‡ƒ“‚Ì’¼ŒãA•Â‚¶‚ÉˆÚs‚·‚é‚æ‚¤‚É‚·‚é
     table.insert(patterns, 1, patterns[#patterns-1])
   end
   return setmetatable({
@@ -129,10 +129,10 @@ end
 
 local LipSyncSimple = {}
 
--- å£ãƒ‘ã‚¯ï¼ˆé–‹é–‰ã®ã¿ï¼‰
--- patterns - {'é–‰ã˜', 'ã»ã¼é–‰ã˜', 'åŠé–‹ã', 'ã»ã¼é–‹ã', 'é–‹ã'} ã®ãƒ‘ã‚¿ãƒ¼ãƒ³ãŒå…¥ã£ãŸé…åˆ—ï¼ˆã»ã¼é–‰ã˜ã€åŠç›®ã€ã»ã¼é–‹ãã¯çœç•¥å¯ï¼‰
--- speed - ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³é€Ÿåº¦
--- layerindex - ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³å¯¾è±¡ã®æº–å‚™ãƒ¬ã‚¤ãƒ¤ãƒ¼ç•ªå·
+-- ŒûƒpƒNiŠJ•Â‚Ì‚İj
+-- patterns - {'•Â‚¶', '‚Ù‚Ú•Â‚¶', '”¼ŠJ‚«', '‚Ù‚ÚŠJ‚«', 'ŠJ‚«'} ‚Ìƒpƒ^[ƒ“‚ª“ü‚Á‚½”z—ñi‚Ù‚Ú•Â‚¶A”¼–ÚA‚Ù‚ÚŠJ‚«‚ÍÈ—ª‰Âj
+-- speed - ƒAƒjƒ[ƒVƒ‡ƒ“‘¬“x
+-- layerindex - ƒAƒjƒ[ƒVƒ‡ƒ“‘ÎÛ‚Ì€”õƒŒƒCƒ„[”Ô†
 function LipSyncSimple.new(patterns, speed, layerindex)
   return setmetatable({
     patterns = patterns,
@@ -154,8 +154,8 @@ function LipSyncSimple:getstate(psd, obj)
 
   local stat = LipSyncSimple.states[self.layerindex] or {frame = obj.frame-1, n = 0}
   if stat.frame >= obj.frame or stat.frame + obj.framerate < obj.frame then
-    -- å·»ãæˆ»ã£ã¦ã„ãŸã‚Šã€ã‚ã¾ã‚Šã«å…ˆã«é€²ã‚“ã§ã„ã‚‹ã‚ˆã†ãªã‚‰ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³ã¯ãƒªã‚»ãƒƒãƒˆã™ã‚‹
-    -- ãƒ—ãƒ¬ãƒ“ãƒ¥ãƒ¼ã§ã‚³ãƒé£›ã³ã™ã‚‹å ´åˆã¯æ­£ã—ã„æŒ™å‹•ã‚’ç¤ºã›ãªã„ã®ã§ã€1ç§’ã®çŒ¶äºˆã‚’æŒãŸã›ã‚‹
+    -- Šª‚«–ß‚Á‚Ä‚¢‚½‚èA‚ ‚Ü‚è‚Éæ‚Éi‚ñ‚Å‚¢‚é‚æ‚¤‚È‚çƒAƒjƒ[ƒVƒ‡ƒ“‚ÍƒŠƒZƒbƒg‚·‚é
+    -- ƒvƒŒƒrƒ…[‚ÅƒRƒ}”ò‚Ñ‚·‚éê‡‚Í³‚µ‚¢‹““®‚ğ¦‚¹‚È‚¢‚Ì‚ÅA1•b‚Ì—P—\‚ğ‚½‚¹‚é
     stat.n = 0
   end
   if volume >= 1.0 then
@@ -176,10 +176,10 @@ end
 
 local LipSyncLab = {}
 
--- å£ãƒ‘ã‚¯ï¼ˆã‚ã„ã†ãˆãŠï¼‰
--- patterns - {'a'='ã‚', 'e'='ãˆ', 'i'='ã„', 'o'='ãŠ','u'='ã†', 'N'='ã‚“'}
--- mode - å­éŸ³ã®å‡¦ç†ãƒ¢ãƒ¼ãƒ‰
--- layerindex - ã‚¢ãƒ‹ãƒ¡ãƒ¼ã‚·ãƒ§ãƒ³å¯¾è±¡ã®æº–å‚™ãƒ¬ã‚¤ãƒ¤ãƒ¼ç•ªå·
+-- ŒûƒpƒNi‚ ‚¢‚¤‚¦‚¨j
+-- patterns - {'a'='‚ ', 'e'='‚¦', 'i'='‚¢', 'o'='‚¨','u'='‚¤', 'N'='‚ñ'}
+-- mode - q‰¹‚Ìˆ—ƒ‚[ƒh
+-- layerindex - ƒAƒjƒ[ƒVƒ‡ƒ“‘ÎÛ‚Ì€”õƒŒƒCƒ„[”Ô†
 function LipSyncLab.new(patterns, mode, layerindex)
   if patterns.A == nil then patterns.A = patterns.a end
   if patterns.E == nil then patterns.E = patterns.e end
@@ -200,14 +200,14 @@ function LipSyncLab:getstate(psd, obj)
   local pat = self.patterns
   local ts = self.talkstates:get(self.layerindex)
   if ts == nil or ts.used then
-    -- ãƒ‡ãƒ¼ã‚¿ãŒè¦‹ã¤ã‹ã‚‰ãªã‹ã£ãŸã‚Šä½¿ç”¨æ¸ˆã¿ãƒ‡ãƒ¼ã‚¿ã ã£ãŸå ´åˆã¯é–‰ã˜çŠ¶æ…‹ã«ã™ã‚‹
+    -- ƒf[ƒ^‚ªŒ©‚Â‚©‚ç‚È‚©‚Á‚½‚èg—pÏ‚İƒf[ƒ^‚¾‚Á‚½ê‡‚Í•Â‚¶ó‘Ô‚É‚·‚é
     return pat.N
   end
   ts.used = true
 
   if ts.cur == "" then
-    -- éŸ³ç´ æƒ…å ±ãŒãªã„æ™‚ã¯éŸ³é‡ã«å¿œã˜ã¦ã€Œã‚ã€ã®å½¢ã‚’ä½¿ã†
-    -- ï¼ˆlab ãƒ•ã‚¡ã‚¤ãƒ«ã‚’ä½¿ã‚ãšã«ã€Œå£ãƒ‘ã‚¯ã€€ã‚ã„ã†ãˆãŠã€ã‚’ä½¿ã£ã¦ã„ã‚‹å ´åˆã®æªç½®ï¼‰
+    -- ‰¹‘fî•ñ‚ª‚È‚¢‚Í‰¹—Ê‚É‰‚¶‚Äu‚ v‚ÌŒ`‚ğg‚¤
+    -- ilab ƒtƒ@ƒCƒ‹‚ğg‚í‚¸‚ÉuŒûƒpƒN@‚ ‚¢‚¤‚¦‚¨v‚ğg‚Á‚Ä‚¢‚éê‡‚Ì‘[’uj
     if ts.volume >= 1.0 then
       return pat.a
     end
@@ -215,58 +215,58 @@ function LipSyncLab:getstate(psd, obj)
   end
 
   if ts:curisvowel() ~= 0 then
-    -- æ¯éŸ³ã¯è¨­å®šã•ã‚ŒãŸå½¢ã‚’ãã®ã¾ã¾ä½¿ã†
+    -- •ê‰¹‚Íİ’è‚³‚ê‚½Œ`‚ğ‚»‚Ì‚Ü‚Üg‚¤
     return pat[ts.cur]
   end
 
   if self.mode == 0 then
-    -- å­éŸ³å‡¦ç†ã‚¿ã‚¤ãƒ—0 -> å…¨ã¦ã€Œã‚“ã€
+    -- q‰¹ˆ—ƒ^ƒCƒv0 -> ‘S‚Äu‚ñv
     return pat.N
   elseif self.mode == 1 then
-    -- å­éŸ³å‡¦ç†ã‚¿ã‚¤ãƒ—1 -> å£ã‚’é–‰ã˜ã‚‹å­éŸ³ä»¥å¤–ã¯å‰å¾Œã®æ¯éŸ³ã®å½¢ã‚’å¼•ãç¶™ã
+    -- q‰¹ˆ—ƒ^ƒCƒv1 -> Œû‚ğ•Â‚¶‚éq‰¹ˆÈŠO‚Í‘OŒã‚Ì•ê‰¹‚ÌŒ`‚ğˆø‚«Œp‚®
     if ts.cur == "pau" or ts.cur == "N" or ts.cur == "m" or ts.cur == "p" or ts.cur == "b" or ts.cur == "v" then
-      -- pau / ã‚“ / å­éŸ³ï¼ˆã¾ãƒ»ã±ãƒ»ã°ãƒ»ãƒ´è¡Œï¼‰
+      -- pau / ‚ñ / q‰¹i‚ÜE‚ÏE‚ÎEƒ”sj
       return pat.N
     end
-    -- å‡¦ç†ã•ã‚Œãªã‹ã£ãŸå…¨ã¦ã®å­éŸ³ã®ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆå‡¦ç†
-    -- éš£æ¥ã™ã‚‹å‰å¾Œã®æ¯éŸ³ã®å½¢ã‚’å¼•ãç¶™ã
+    -- ˆ—‚³‚ê‚È‚©‚Á‚½‘S‚Ä‚Ìq‰¹‚ÌƒfƒtƒHƒ‹ƒgˆ—
+    -- —×Ú‚·‚é‘OŒã‚Ì•ê‰¹‚ÌŒ`‚ğˆø‚«Œp‚®
     if ts.progress < 0.5 then
-      -- å‰åŠã¯å‰ã®æ¯éŸ³ã‚’å¼•ãç¶™ã
+      -- ‘O”¼‚Í‘O‚Ì•ê‰¹‚ğˆø‚«Œp‚®
       if ts:previsvowel() ~= 0 and ts.prev_end == ts.cur_start then
         return pat[ts.prev]
       end
     else
-      -- å¾ŒåŠã¯å¾Œã‚ã®æ¯éŸ³ã‚’å…ˆè¡Œã•ã›ã‚‹
+      -- Œã”¼‚ÍŒã‚ë‚Ì•ê‰¹‚ğæs‚³‚¹‚é
       if ts:nextisvowel() ~= 0 and ts.next_start == ts.cur_end then
         return pat[ts.next]
       end
     end
     return pat.N
   elseif self.mode == 2 then
-    -- å­éŸ³å‡¦ç†ã‚¿ã‚¤ãƒ—2 -> å£ã‚’é–‰ã˜ã‚‹å­éŸ³ä»¥å¤–ã¯å‰å¾Œã®æ¯éŸ³ã®å½¢ã‚ˆã‚Šå°ã•ã„ã‚‚ã®ã§è£œé–“
+    -- q‰¹ˆ—ƒ^ƒCƒv2 -> Œû‚ğ•Â‚¶‚éq‰¹ˆÈŠO‚Í‘OŒã‚Ì•ê‰¹‚ÌŒ`‚æ‚è¬‚³‚¢‚à‚Ì‚Å•âŠÔ
     if ts.cur == "pau" or ts.cur == "N" or ts.cur == "m" or ts.cur == "p" or ts.cur == "b" or ts.cur == "v" then
-      -- pau / ã‚“ / å­éŸ³ï¼ˆã¾ãƒ»ã±ãƒ»ã°ãƒ»ãƒ´è¡Œï¼‰
+      -- pau / ‚ñ / q‰¹i‚ÜE‚ÏE‚ÎEƒ”sj
       return pat.N
     end
     if ts.cur == "cl" then
-      -- ä¿ƒéŸ³ï¼ˆã£ï¼‰
+      -- ‘£‰¹i‚Áj
       if ts.progress < 0.5 then
-        -- ã²ã¨ã¤å‰ãŒæ¯éŸ³ã§ã€ã‹ã¤é€£ç¶šã—ãŸå ´æ‰€ã«å­˜åœ¨ã—ã¦ã„ã‚‹ãªã‚‰å‰åŠã¯ãã®æ¯éŸ³ã®å½¢ã‚’å¼•ãç¶™ã
+        -- ‚Ğ‚Æ‚Â‘O‚ª•ê‰¹‚ÅA‚©‚Â˜A‘±‚µ‚½êŠ‚É‘¶İ‚µ‚Ä‚¢‚é‚È‚ç‘O”¼‚Í‚»‚Ì•ê‰¹‚ÌŒ`‚ğˆø‚«Œp‚®
         if ts:previsvowel() ~= 0 and ts.prev_end == ts.cur_start then
           return pat[ts.prev]
         end
         return pat.N
       else
-        -- å¾ŒåŠã¯ã€Œã†ã€ã®å½¢ã§å¼•ãç¶™ã
+        -- Œã”¼‚Íu‚¤v‚ÌŒ`‚Åˆø‚«Œp‚®
         return pat.u
       end
     end
-    -- å‡¦ç†ã•ã‚Œãªã‹ã£ãŸå…¨ã¦ã®å­éŸ³ã®ãƒ‡ãƒ•ã‚©ãƒ«ãƒˆå‡¦ç†
-    -- éš£æ¥ã™ã‚‹å‰å¾Œã®æ¯éŸ³ã«ä¾å­˜ã—ã¦å½¢ã‚’æ±ºå®šã™ã‚‹
+    -- ˆ—‚³‚ê‚È‚©‚Á‚½‘S‚Ä‚Ìq‰¹‚ÌƒfƒtƒHƒ‹ƒgˆ—
+    -- —×Ú‚·‚é‘OŒã‚Ì•ê‰¹‚ÉˆË‘¶‚µ‚ÄŒ`‚ğŒˆ’è‚·‚é
     if ts.progress < 0.5 then
-      -- å‰åŠã¯å‰ã®æ¯éŸ³ã‚’å¼•ãç¶™ã
+      -- ‘O”¼‚Í‘O‚Ì•ê‰¹‚ğˆø‚«Œp‚®
       if ts:previsvowel() ~= 0 and ts.prev_end == ts.cur_start then
-        -- å‰ã®æ¯éŸ³ã‚ˆã‚Šãªã‚‹ã¹ãå°ã•ã„é–‹ã‘æ–¹ã«ãªã‚‹ã‚ˆã†ã«
+        -- ‘O‚Ì•ê‰¹‚æ‚è‚È‚é‚×‚­¬‚³‚¢ŠJ‚¯•û‚É‚È‚é‚æ‚¤‚É
         if ts.prev == "a" or ts.prev == "A" then
           return pat.o
         elseif ts.prev == "i" or ts.prev == "I" then
@@ -277,9 +277,9 @@ function LipSyncLab:getstate(psd, obj)
       end
       return pat.N
     else
-      -- å¾ŒåŠã¯å¾Œã‚ã®æ¯éŸ³ã‚’å…ˆè¡Œã•ã›ã‚‹
+      -- Œã”¼‚ÍŒã‚ë‚Ì•ê‰¹‚ğæs‚³‚¹‚é
       if ts:nextisvowel() ~= 0 and ts.next_start == ts.cur_end then
-        -- å‰ã®æ¯éŸ³ã‚ˆã‚Šãªã‚‹ã¹ãå°ã•ã„é–‹ã‘æ–¹ã«ãªã‚‹ã‚ˆã†ã«
+        -- ‘O‚Ì•ê‰¹‚æ‚è‚È‚é‚×‚­¬‚³‚¢ŠJ‚¯•û‚É‚È‚é‚æ‚¤‚É
         if ts.next == "a" or ts.next == "A" then
           return pat.o
         elseif ts.next == "i" or ts.next == "I" then
@@ -518,7 +518,7 @@ function SubtitleStates:messtep(obj, index, opt)
   if opt.halign == 0 then
     obj.cx = -obj.w*0.5
   elseif opt.halign == 1 then
-    -- ä¸­å¤®å¯„ã›ã¯å¥‡æ•°ã®æ™‚ã«ãƒœã‚±ã¦ã—ã¾ã†ã®ã§ 0.5px ãšã‚‰ã™
+    -- ’†‰›Šñ‚¹‚ÍŠï”‚Ì‚Éƒ{ƒP‚Ä‚µ‚Ü‚¤‚Ì‚Å 0.5px ‚¸‚ç‚·
     if obj.w % 2 == 1 then
       obj.cx = obj.cx + 0.5
     end
@@ -528,7 +528,7 @@ function SubtitleStates:messtep(obj, index, opt)
   if opt.valign == 0 then
     obj.cy = -obj.h*0.5
   elseif opt.valign == 1 then
-    -- ä¸­å¤®å¯„ã›ã¯å¥‡æ•°ã®æ™‚ã«ãƒœã‚±ã¦ã—ã¾ã†ã®ã§ 0.5px ãšã‚‰ã™
+    -- ’†‰›Šñ‚¹‚ÍŠï”‚Ì‚Éƒ{ƒP‚Ä‚µ‚Ü‚¤‚Ì‚Å 0.5px ‚¸‚ç‚·
     if obj.h % 2 == 1 then
       obj.cy = obj.cy + 0.5
     end
