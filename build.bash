@@ -3,7 +3,7 @@
 mkdir bin bin/PSDToolKit bin/script bin/script/PSDToolKit bin/script/PSDToolKit/exa bin/GCMZDrops bin/GCMZDrops/dropper
 
 # copy readme
-sed 's/\r$//' README.md | sed 's/$/\r/' > bin/README.txt
+sed 's/\r$//' README.md | sed 's/$/\r/' > bin/PSDToolKit.txt
 
 # update version string
 VERSION='v0.1.3'
