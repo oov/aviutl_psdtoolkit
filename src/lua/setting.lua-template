@@ -5,13 +5,7 @@
 local P = {} -- これは消さないこと
 
 
-
-
-P.wav_firemode = 0
--- setting-default.lua を参考にこういうのを書くことで、設定変更できます。
-
-
-
+-- この辺に設定を書く
 
 
 return P -- これは消さないこと
