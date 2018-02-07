@@ -1,7 +1,7 @@
 -- このファイルの名前を `setting.lua` に変更して設定を書き足すことで、
 -- PSDToolKit における一部の振る舞いを変更することが可能です。
 -- 使い方の詳しい解説はこちらを参照してください。
--- URL
+-- https://github.com/oov/aviutl_psdtoolkit/wiki/Setting
 local P = {} -- これは消さないこと
 
 
