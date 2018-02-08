@@ -81,7 +81,7 @@ begin
       end;
     end;
   end;
-  MessageBoxW(FWindow, 'Target not found.', 'PSDToolKit', MB_ICONERROR);
+  MessageBoxW(FWindow, '「設定」ボタンが見つかりませんでした。'#13#10#13#10'「送る」ボタンを使用するためには、拡張編集側で設定を書き込みたいオブジェクトのプロパティを表示し「設定」ボタンが見える状態にしておく必要があります。', 'PSDToolKit', MB_ICONERROR);
 end;
 
 constructor TSendEditingImageStateToExEdit.Create(Window: THandle; S: UTF8String);
