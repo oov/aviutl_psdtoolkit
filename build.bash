@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mkdir bin bin/PSDToolKit bin/script bin/script/PSDToolKit bin/script/PSDToolKit/exa bin/GCMZDrops bin/GCMZDrops/dropper
+mkdir -p bin/PSDToolKit bin/script/PSDToolKit/exa bin/GCMZDrops/dropper
 
 # copy readme
 sed 's/\r$//' README.md | sed 's/$/\r/' > bin/PSDToolKit.txt
@@ -61,15 +61,15 @@ sed 's/\r$//' 'src/lua/exa/srt.exa' | sed 's/$/\r/' > 'bin/script/PSDToolKit/exa
 sed 's/\r$//' 'src/lua/exa/lab.exa' | sed 's/$/\r/' > 'bin/script/PSDToolKit/exa/lab.exa'
 
 # build src/go/assets/bindata.go
-pushd src/go/assets
+pushd src/go/assets > /dev/null
 go.exe generate
-popd
+popd > /dev/null
 
 # build PSDToolKit.exe
-pushd src/go
+pushd src/go > /dev/null
 rsrc.exe -ico assets/datasrc/icon.ico -arch=amd64 -o PSDToolKit.syso
 go.exe build -x -tags gdip -ldflags="-s" -o ../../bin/script/PSDToolKit/PSDToolKit.exe
-popd
+popd > /dev/null
 
 # build lazarus projects
 cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/PSDToolKitBridge.lpi
@@ -82,7 +82,7 @@ cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/ictalk/ictalk.lpi
 # cp ../aviutl_gcmzdrops/bin/GCMZDrops/*.lua bin/GCMZDrops/
 
 # install
-# mkdir aviutl/PSDToolKit aviutl/script aviutl/script/PSDToolKit aviutl/script/PSDToolKit/exa aviutl/GCMZDrops aviutl/GCMZDrops/dropper
+# mkdir -p aviutl/PSDToolKit aviutl/script/PSDToolKit/exa aviutl/GCMZDrops/dropper
 # cp bin/*.auf aviutl/
 # cp bin/PSDToolKit/* aviutl/PSDToolKit/
 # cp bin/script/* aviutl/script/
