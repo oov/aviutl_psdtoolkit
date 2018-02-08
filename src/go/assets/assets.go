@@ -1,3 +1,3 @@
-//go:generate go-bindata -pkg assets -prefix data -ignore ohruri/|symbols/ data
+//go:generate go-bindata -pkg assets -prefix data data
 
 package assets
