@@ -33,7 +33,7 @@ type
     FSelectedIndex: integer;
     procedure Copy();
     procedure CopySlider();
-    function SliderToLuaScript(): UTF8String;
+    function SliderToLuaScript(const ForSJIS: boolean): UTF8String;
     procedure ExportByCSV(FileName: WideString);
     procedure ExportByANM(FileName: WideString);
     procedure ExportSlider();
@@ -102,13 +102,15 @@ end;
 
 procedure TExportFaviewSlider.CopySlider();
 begin
-  if not CopyToClipboard(FWindow, WideString(SliderToLuaScript())) then
+  if not CopyToClipboard(FWindow, WideString(SliderToLuaScript(False))) then
     MessageBox(FWindow, 'could not open clipboard', 'PSDToolKit', MB_ICONERROR);
 end;
 
-function TExportFaviewSlider.SliderToLuaScript(): UTF8String;
+function TExportFaviewSlider.SliderToLuaScript(const ForSJIS: boolean): UTF8String;
 var
   MinIndex, MaxIndex, I: integer;
+  SS: ShiftJISString;
+  U8: UTF8String;
 begin
   MinIndex := Max(Low(FNames), Low(FValues));
   MaxIndex := Min(High(FNames), High(FValues));
@@ -116,8 +118,18 @@ begin
     [GetReadableSliderName(), MaxIndex - MinIndex + 1]);
   Result := Result + 'local values = {'#13#10;
   for I := MinIndex to MaxIndex do
-    if (Length(FValues[I]) > 2) and (FValues[I][2] = '.') then
-      Result := Result + '  ' + StringifyForLua(FValues[I]) + ',' + #13#10
+    if (Length(FValues[I]) > 2) and (FValues[I][2] = '.') then begin
+      if ForSJIS then begin
+        SS := FValues[I];
+        SetLength(U8, Length(SS));
+        Move(SS[1], U8[1], Length(SS));
+        U8 := StringifyForLua(U8);
+        SetLength(SS, Length(U8));
+        Move(U8[1], SS[1], Length(U8));
+        Result := Result + '  ' + UTF8String(SS) + ',' + #13#10;
+      end else
+        Result := Result + '  ' + StringifyForLua(FValues[I]) + ',' + #13#10;
+    end
     else
       Result := Result + '  ' + StringifyForLua(FValues[I]) + ', -- ' +
         StringifyForLua(FNames[I]) + #13#10;
@@ -152,7 +164,7 @@ var
 begin
   F := TFileStreamW.Create(FileName);
   try
-    S := SliderToLuaScript();
+    S := SliderToLuaScript(True);
     SS := S;
     WriteRawString(F, SS);
   finally
