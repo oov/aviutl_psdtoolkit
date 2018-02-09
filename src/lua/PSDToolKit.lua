@@ -194,8 +194,6 @@ function LipSyncLab.new(patterns, mode, layerindex)
   }, {__index = LipSyncLab})
 end
 
-LipSyncLab.states = {}
-
 function LipSyncLab:getstate(psd, obj)
   local pat = self.patterns
   local ts = self.talkstates:get(self.layerindex)
