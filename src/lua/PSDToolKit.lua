@@ -411,37 +411,23 @@ function TalkStates.new()
 end
 
 function TalkStates:set(obj, srcfile, locut, hicut, threshold)
-  if srcfile == nil then
-    local n, samplerate, buf = obj.getaudio(nil, "audiobuffer", "spectrum", 32)
-    local t = TalkState.new(obj.frame, obj.time, obj.totalframe, obj.totaltime)
-    t:setvolume(buf, samplerate, locut, hicut, threshold)
+  local ext = srcfile:sub(-4):lower()
+  if ext ~= ".wav" and ext ~= ".lab" then
     self.states[obj.layer] = t
-    return
+    error("unsupported file: " .. srcfile)
   end
 
-  local ext = string.lower(string.sub(srcfile, -4))
-  if ext == ".wav" then
-    local n, samplerate, buf = obj.getaudio(nil, srcfile, "spectrum", 32)
-    local t = TalkState.new(obj.frame, obj.time, obj.totalframe, obj.totaltime)
+  local t = TalkState.new(obj.frame, obj.time, obj.totalframe, obj.totaltime)
+  local wavfile = string.sub(srcfile, 1, #srcfile - 3) .. "wav"
+  if ext == ".wav" or fileexists(wavfile) then
+    local n, samplerate, buf = obj.getaudio(nil, wavfile, "spectrum", 32)
     t:setvolume(buf, samplerate, locut, hicut, threshold)
-    self.states[obj.layer] = t
-    return
-  elseif ext == ".lab" then
-    local t = TalkState.new(obj.frame, obj.time, obj.totalframe, obj.totaltime)
-    t:setphoneme(srcfile, obj.time)
-    local wavfile = string.sub(srcfile, 1, #srcfile - 3) .. "wav"
-    if fileexists(wavfile) then
-      local n, samplerate, buf = obj.getaudio(nil, wavfile, "spectrum", 32)
-      t:setvolume(buf, samplerate, locut, hicut, threshold)
-    else
-      t.volume = (p ~= nil and #p.cur > 0) and 1 or 0
-    end
-    self.states[obj.layer] = t
-    return
   end
-
-  -- TODO: report error?
-  self.states[obj.layer] = nil
+  local labfile = string.sub(srcfile, 1, #srcfile - 3) .. "lab"
+  if ext == ".lab" or fileexists(labfile) then
+    t:setphoneme(labfile, obj.time)
+  end
+  self.states[obj.layer] = t
 end
 
 function TalkStates:setphoneme(obj, phonemestr)

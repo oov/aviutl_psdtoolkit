@@ -21,7 +21,6 @@ local P = {}
 
 P.wav_firemode = 0
 P.wav_insertmode = 2
-P.wav_uselab = true
 P.wav_groupsubtitle = true
 P.wav_subtitlemargin = 0
 P.wav_subtitleencoding = "sjis"

@@ -222,22 +222,6 @@ function P.ondrop(files, state)
         end
       end
       
-      if setting.wav_uselab then
-        -- *.lab があるか探すために *.wav の拡張子部分を差し替える
-        -- もし orgfilepath があるならそっちの名前を元に探さなければならない
-        local labfilepath = changefileext(v.orgfilepath or v.filepath, "lab")
-        if fileexists(labfilepath) then
-          if GCMZDrops.needcopy(labfilepath) then
-            -- もし見つかった場所が恒久的に利用できる場所ではない場合は
-            -- avoiddup.lua の機能で安全地帯にファイルをコピーする
-            local newlabfilepath, created = require("avoiddup").getfile(labfilepath)
-            values.LIPSYNC_PATH = newlabfilepath
-          else
-            values.LIPSYNC_PATH = labfilepath
-          end
-        end
-      end
-
       -- exo ファイルのヘッダ部分を組み立て
       local oini = GCMZDrops.inistring("")
       oini:set("exedit", "width", proj.width)
