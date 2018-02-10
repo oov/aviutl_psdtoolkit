@@ -360,7 +360,7 @@ function TalkState:setvolume(buf, samplerate, locut, hicut, threshold)
   if d > 0 then
     v = v / d
   end
-  self.volume = v
+  self.volume = v / threshold
   self.threshold = threshold
 end
 
