@@ -69,15 +69,3 @@ if m0 ~= "" then table.insert(m, m0) end
 if #m > 0 then
   PSD:addstate(PSDToolKit.Blinker.new(m, obj.track0, obj.track1, obj.track2))
 end
-
-@口パク準備
---track0:ローカット,1,16000,100,1
---track1:ハイカット,1,16000,1000,1
---track2:しきい値,1,2000,20,1
---file:
-tonumber(nil)
-local PSDToolKit = require("PSDToolKit")
-if file ~= nil and file ~= "" then
-  PSDToolKit.talk:set(obj, file, obj.track0, obj.track1, obj.track2)
-end
-file = nil
