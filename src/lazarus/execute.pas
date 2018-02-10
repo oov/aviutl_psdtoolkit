@@ -107,20 +107,28 @@ begin
 end;
 
 function TExportFaviewSlider.SliderToLuaScript(): UTF8String;
+  function Value(const I: integer; const Comma: boolean): UTF8String;
+  const
+    C: array[boolean] of UTF8String = ('', ',');
+  begin
+    if (Length(FValues[I]) > 2) and (FValues[I][2] = '.') then
+      Result := '  ' + StringifyForLua(FValues[I]) + C[Comma]
+    else
+      Result := '  ' + StringifyForLua(FValues[I]) + C[Comma] + ' -- ' + FNames[I];
+  end;
+
 var
   MinIndex, MaxIndex, I: integer;
 begin
   MinIndex := Max(Low(FNames), Low(FValues));
   MaxIndex := Min(High(FNames), High(FValues));
-  Result := Format('--track0:%s,1,%d,1,1'#13#10,
+  Result := Format('--track0:%s,0,%d,0,1'#13#10,
     [GetReadableSliderName(), MaxIndex - MinIndex + 1]);
   Result := Result + 'local values = {'#13#10;
-  for I := MinIndex to MaxIndex do
-    if (Length(FValues[I]) > 2) and (FValues[I][2] = '.') then
-      Result := Result + '  [[' + FValues[I] + ']],' + #13#10
-    else
-      Result := Result + '  [[' + FValues[I] + ']], -- ' + FNames[I] + #13#10;
-  Result := Result + '  nil'#13#10'}'#13#10;
+  for I := MinIndex to MaxIndex - 1 do
+    Result := Result + Value(I, True) + #13#10;
+  Result := Result + Value(MaxIndex, False) + #13#10;
+  Result := Result + '}'#13#10;
   Result := Result + 'PSD:addstate(values[obj.track0])'#13#10;
 end;
 
@@ -255,11 +263,7 @@ begin
       I := integer(TrackPopupMenu(Menu, TPM_TOPALIGN or TPM_LEFTALIGN or
         TPM_RETURNCMD or TPM_RIGHTBUTTON, Pt.x, Pt.y, 0, DummyWindow, nil));
       case I of
-        0:
-        begin
-          OutputDebugString('Return 0');
-          Exit;
-        end;
+        0: Exit;
         1000: Copy();
         1001: CopySlider();
         1002: ExportSlider();
