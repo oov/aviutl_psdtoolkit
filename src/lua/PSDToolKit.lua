@@ -464,32 +464,6 @@ function SubtitleState:mes(obj)
   obj.mes(self.text)
 end
 
-function SubtitleState:messtep(obj, opt)
-  self.used = true
-  obj.setfont(opt.fontname, opt.fontsize, opt.fontdecoration, opt.fontcolor, opt.fontdecorationcolor)
-  obj.load("text", self.text, opt.speed, self.time)
-  if opt.halign == 0 then
-    obj.cx = -obj.w*0.5
-  elseif opt.halign == 1 then
-    -- 中央寄せは奇数の時にボケてしまうので 0.5px ずらす
-    if obj.w % 2 == 1 then
-      obj.cx = obj.cx + 0.5
-    end
-  elseif opt.halign == 2 then
-    obj.cx = obj.w*0.5
-  end
-  if opt.valign == 0 then
-    obj.cy = -obj.h*0.5
-  elseif opt.valign == 1 then
-    -- 中央寄せは奇数の時にボケてしまうので 0.5px ずらす
-    if obj.h % 2 == 1 then
-      obj.cy = obj.cy + 0.5
-    end
-  elseif opt.valign == 2 then
-    obj.cy = obj.h*0.5
-  end
-end
-
 local SubtitleStates = {}
 
 function SubtitleStates.new()
@@ -519,15 +493,6 @@ function SubtitleStates:mes(index, obj)
     return nil
   end
   s:mes(obj)
-  return s
-end
-
-function SubtitleStates:messtep(index, obj, opt)
-  local s = self:get(index)
-  if s == nil or s.used then
-    return nil
-  end
-  s:messtep(obj, opt)
   return s
 end
 
