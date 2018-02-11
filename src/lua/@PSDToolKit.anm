@@ -69,3 +69,36 @@ if m0 ~= "" then table.insert(m, m0) end
 if #m > 0 then
   PSD:addstate(PSDToolKit.Blinker.new(m, obj.track0, obj.track1, obj.track2))
 end
+
+@字幕表示フェード
+--track0:速さ(秒),0,1,0.1,0.01
+--track1:間隔(秒),0,1,0.03,0.01
+--track2:拡大率,0,100,1,0.01
+--track3:X座標,-100,100,4,0.01
+--check0:フェードアウトはシンプル,1
+if subtitle == nil then
+  return
+end
+local sofs = obj.index * obj.track1
+local sl = sofs
+local sr = sl + obj.track0
+local sp = subtitle.time < sl and 0 or subtitle.time > sr and 1 or (subtitle.time - sl)/(sr - sl)
+local eofs = obj.check0 and 0 or (obj.index * obj.track1)
+local el = subtitle.totaltime - eofs - obj.track0
+local er = el + obj.track0
+local ep = subtitle.time < el and 0 or subtitle.time > er and 1 or (subtitle.time - el)/(er - el)
+local prog = sp * (1 - ep)
+if prog <= 0 then
+  obj.alpha = 0
+  return
+end
+if prog >= 1 then
+  return
+end
+if ep > 0 and obj.check0 then
+  obj.alpha = obj.alpha * prog
+  return
+end
+obj.alpha = obj.alpha * prog
+obj.zoom = obj.zoom * prog + (obj.zoom * obj.track2) * (1 - prog)
+obj.ox = obj.ox * prog + (obj.ox + obj.track3) * (1 - prog)
