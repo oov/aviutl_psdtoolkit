@@ -46,7 +46,7 @@ end
 function P:wav_subtitle_replacer(s) return s end
 P.wav_subtitle_prefix = '<?s=[==['
 function P:wav_subtitle_escape(s) return s:gsub(']==]', ']==].."]==]"..[==[') end
-P.wav_subtitle_postfix = ']==];require("PSDToolKit").subtitle:set(s, obj, true);s=nil?>'
+P.wav_subtitle_postfix = ']==];require("PSDToolKit").subtitle:set(s,obj,true);s=nil?>'
 
 P.lab_exafinder = 0
 function P:lab_examodifler(exa, values, modifiers)
@@ -72,7 +72,7 @@ end
 function P:srt_subtitle_replacer(s) return s end
 P.srt_subtitle_prefix = '<?s=[==['
 function P:srt_subtitle_escape(s) return s:gsub(']==]', ']==].."]==]"..[==[') end
-P.srt_subtitle_postfix = ']==];require("PSDToolKit").subtitle:set(s, obj, true);s=nil?>'
+P.srt_subtitle_postfix = ']==];require("PSDToolKit").subtitle:set(s,obj,true);s=nil?>'
 
 P.ictalk_firemode = 1
 P.ictalk_format = 3
