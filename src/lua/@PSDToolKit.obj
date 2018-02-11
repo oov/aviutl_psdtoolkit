@@ -26,7 +26,7 @@ file = nil
 --track3:装飾タイプ,0,4,0,1
 --dialog:フォント名,local name="MS UI Gothic";文字色/col,local c1=0xffffff;影・縁取り色/col,local c2=0x000000;横位置(0-2),local ha=0;縦位置(0-2),local va=0
 local PSDToolKit = require("PSDToolKit")
-PSDToolKit.subtitle:messtep(obj, obj.track0, {
+subtitle=PSDToolKit.subtitle:messtep(obj.track0, obj, {
   speed = obj.track2,
   fontname = name,
   fontsize = obj.track1,
