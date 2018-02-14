@@ -5,64 +5,8 @@ PSDToolKit は AviUtl の拡張編集プラグイン上で PSD ファイルを�
 動作には 64bit Windows が、快適な動作には十分な CPU 速度とメモリが必要です。  
 動作確認は AviUtl version 1.00 / 拡張編集 version 0.92 のみで行っています。
 
-このツールキットは以下のコンポーネントで構成されています。
+更新履歴は CHANGELOG を参照してください。
 
-- PSDToolKit.auf - AviUtl 用のプラグイン
-  - メニューに「ウィンドウを表示（デフォルトショートカットキー `Ctrl+W`）」を追加
-- AudioMixer.auf - AviUtl 用のプラグイン
-  - 拡張編集で使える「チャンネルストリップ」オーディオフィルタを追加
-  - 拡張編集で使える「Aux1 チャンネルストリップ」オーディオフィルタを追加
-  - 内部的に使用する「マスターチャンネルストリップ」を追加（常時有効）
-- GCMZDrops.auf - AviUtl 用のプラグイン
-  - 拡張編集ウィンドウにファイルを投げつけた時の挙動を拡張するためのプラグイン
-  - [別の場所で単独配布しているもの](https://github.com/oov/aviutl_GCMZDrops)を同梱しています
-- script/PSDToolKit/PSDToolKit.dll - AviUtl 用の Lua プラグイン
-  - PSDToolKit.exe を使用した PSD ファイルの描画
-  - PSDToolKit.exe からの要求に応じたクリップボード操作、エクスポートなど
-  - 画像キャッシュ機構
-- script/PSDToolKit/PSDToolKit.exe - PSD ファイル処理用プログラム
-  - PSDToolKit.dll が使用します
-  - 手動で起動しても基本的にはなにもできません
-- script/PSDToolKit/@PSDToolKit.anm - AviUtl 用のアニメーション効果スクリプトセット
-  - Assign
-  - オブジェクト描画
-  - パーツ差し替え
-  - 口パク
-  - 目パチ
-  - 口パク準備
-- script/PSDToolKit/@PSDToolKit.obj - AviUtl 用のカスタムオブジェクトスクリプトセット
-  - 口パク準備
-- script/PSDToolKit/PSDToolKitLib.lua - Lua で行うメイン処理が書かれたファイル
-  - PSDToolKit.dll を使用した PSD ファイルの描画
-  - 周波数帯域を指定したトーク中判定
-  - lab ファイルによる音素判定
-- PSDToolKit/*.exa - 機能を探しやすくするための AviUtl 用エイリアスファイル
-  - PSDToolKitオブジェクト
-  - オブジェクト描画
-  - テキスト　字幕表示用・文字送り
-  - テキスト　字幕表示用
-  - パーツ差し替え
-  - 口パク　あいうえお
-  - 口パク　開閉のみ
-  - 口パク準備
-  - 目パチ
-- GCMZDrops/*.lua - ごちゃまぜドロップス用スクリプトファイルなど
-  - ごちゃまぜドロップスに同梱されているファイル
-    - _entrypoint.lua
-    - avoiddup.lua
-    - example.lua
-    - generic.lua
-    - textsjis.lua
-    - dropper/example.lua
-  - PSDToolKit 用のスクリプトファイル
-    - psdtoolkit_psd.lua - 拡張編集ウィンドウに PSD ファイルをドロップ可能にする
-    - psdtoolkit_wav.lua - シフトキーを押しながら *.wav ファイルをドロップで口パク準備なども自動生成
-    - psdtoolkit_srt.lua - 字幕ファイル(*.srt) をドロップでテキストオブジェクトを自動生成
-    - psdtoolkit_lab.lua - ラベルファイル(*.lab) をドロップでテキストオブジェクトを自動生成
-    - dropper/psdtoolkit_ictalk.lua - Instant CTalk（CeVIO API による簡易的な音声作成ツール）
-    - dropper/ICTalk.dll - Instant CTalk のダイアログ表示を行うための Lua プラグイン
-
-更新履歴は CHANGELOG などを参照してください。  
 https://github.com/oov/aviutl_psdtoolkit/blob/master/CHANGELOG.md
 
 ## 注意事項
@@ -72,18 +16,22 @@ PSDToolKit を使用したこと及び使用しなかったことによるいか
 
 これに同意できない場合、あなたは PSDToolKit を使用することができません。
 
-## インストール／アンインストール
+## ダウンロード
 
-README.txt 以外を exedit.auf がある場所と同じ場所にコピーすればインストール完了です。
+以下の URL からダウンロードできます。
 
-アンインストールは exedit.auf がある場所にある PSDToolKit.auf, AudioMixer.auf, GCMZDrops.auf と、同じ場所にある PSDToolKit フォルダー、GCMZDrops フォルダー、そして script フォルダー内の PSDToolKit フォルダーを削除すれば完了です。
+https://github.com/oov/aviutl_psdtoolkit/releases
+
+## 使い方
+
+ダウンロードしたファイルに同梱されている `PSDToolKitDocs/index.html` を参照してください。
 
 ## バイナリのビルドについて
 
 Windows Subsystem for Linux 上で `./build.bash` を行うと必要なファイルがビルドできます。
 なお、リポジトリは GOPATH 上にある前提でコードが書かれています。
 
-ソースコードのコンパイルには Go 1.9.2 windows/amd64、Lazarus 1.8.0 for Windows 32bit が必要です。  
+ソースコードのコンパイルには Go 1.10rc1 windows/amd64、Lazarus 1.8.0 for Windows 32bit が必要です。  
 Lazarus は C:\lazarus にインストールされているのを想定しています。
 Go から利用している Nuklear は現状 fork 版 ( https://github.com/oov/nuklear/tree/forme ) が必要です。
 
