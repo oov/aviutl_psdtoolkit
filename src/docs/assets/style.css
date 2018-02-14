@@ -1,0 +1,165 @@
+body {
+    font-family: sans-serif;
+    color: #333;
+    line-height: 1.8;
+}
+
+#ptk-outer {
+    width: 1160px;
+    margin: 0 auto;
+}
+
+#ptk-outer>footer {
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    padding: 1em 0;
+    margin: 8em auto 0;
+    font-size: 75%;
+}
+
+#ptk-outer>footer>dl {
+    text-align: center;
+}
+
+#ptk-outer>footer>dl>dt,
+#ptk-outer>footer>dl>dd {
+    margin: 0;
+    padding: 0;
+    display: inline;
+}
+
+#ptk-outer>footer>dl>dt {
+    margin-left: 1em;
+}
+
+#ptk-menu {
+    position: fixed;
+    font-size: 80%;
+    width: 300px;
+    margin: 0 auto 0 0;
+}
+
+#ptk-menu h1 {
+    display: none;
+}
+
+#ptk-menu ul {
+    padding: 0 0 0 1em;
+    list-style-type: none;
+}
+
+#ptk-menu>ul {
+    padding: 0;
+}
+
+#ptk-main {
+    width: 900px;
+    margin: 0 0 0 auto;
+}
+
+#TOC ul {
+    list-style-type: none;
+    padding: 0 0 0 2em;
+}
+
+#TOC>ul {
+    padding: 0;
+}
+
+h1 {
+    border-bottom: 0.2em #ddd solid;
+    margin: 0;
+}
+
+h2 {
+    border-bottom: 0.1em #ddd solid;
+    margin: 2rem 0;
+}
+
+h3,
+h4 {
+    margin: 4rem 0 1em;
+}
+
+h5 {
+    margin: 2rem 0 1em;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    display: block;
+}
+
+table th,
+table td {
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+}
+
+table tr {
+    background-color: #fff;
+    border-top: 1px solid #ccc;
+}
+
+table tr:nth-child(2n) {
+    background-color: #f8f8f8;
+}
+
+table th,
+table tr td:nth-child(1),
+table tr td:nth-child(1) code {
+    white-space: nowrap;
+}
+
+a:link {
+    text-decoration: none;
+    color: #3f4fef;
+}
+
+a:hover {
+    text-decoration: underline;
+    color: #1f3fef;
+}
+
+a:visited {
+    color: #3f4fef;
+}
+
+code {
+    background-color: #f0f0f0;
+    padding: 0.3em;
+    border-radius: 4px;
+}
+
+pre {
+    background-color: #f0f0f0;
+    padding: 0.75em;
+    border-radius: 4px;
+}
+
+pre>code {
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+}
+
+code span.an,
+code span.co,
+code span.cv,
+code span.do,
+code span.in,
+code span.wa {
+    font-style: normal;
+}
+
+@media screen and (max-width: 1200px) {
+    #ptk-outer,
+    #ptk-menu,
+    #ptk-main {
+        width: 100%;
+    }
+    #ptk-menu {
+        position: static;
+    }
+}
