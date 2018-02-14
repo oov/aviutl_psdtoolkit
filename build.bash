@@ -90,9 +90,9 @@ cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/ictalk/ictalk.lpi
 # cp bin/*.auf aviutl/
 # cp bin/*.auo aviutl/
 # cp bin/*.exe aviutl/
-# cp bin/PSDToolKit/* aviutl/PSDToolKit/
-# cp bin/script/* aviutl/script/
-# cp bin/script/PSDToolKit/* aviutl/script/PSDToolKit/
-# cp bin/script/PSDToolKit/exa/* aviutl/script/PSDToolKit/exa/
-# cp bin/GCMZDrops/* aviutl/GCMZDrops/
-# cp bin/GCMZDrops/dropper/* aviutl/GCMZDrops/dropper/
+# cp bin/PSDToolKit/*.* aviutl/PSDToolKit/
+# cp bin/script/*.* aviutl/script/
+# cp bin/script/PSDToolKit/*.* aviutl/script/PSDToolKit/
+# cp bin/script/PSDToolKit/exa/*.* aviutl/script/PSDToolKit/exa/
+# cp bin/GCMZDrops/*.* aviutl/GCMZDrops/
+# cp bin/GCMZDrops/dropper/*.* aviutl/GCMZDrops/dropper/
