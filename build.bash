@@ -80,9 +80,15 @@ cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/ictalk/ictalk.lpi
 # cp ../aviutl_gcmzdrops/bin/*.auf bin/
 # cp ../aviutl_gcmzdrops/bin/GCMZDrops/*.lua bin/GCMZDrops/
 
+# copy RamPreview release version
+# cp ../aviutl_rampreview/bin/ZRamPreview.* bin/
+# cp ../aviutl_rampreview/bin/script/Extram.dll bin/script/
+
 # install
 # mkdir -p aviutl/PSDToolKit aviutl/script/PSDToolKit/exa aviutl/GCMZDrops/dropper
 # cp bin/*.auf aviutl/
+# cp bin/*.auo aviutl/
+# cp bin/*.exe aviutl/
 # cp bin/PSDToolKit/* aviutl/PSDToolKit/
 # cp bin/script/* aviutl/script/
 # cp bin/script/PSDToolKit/* aviutl/script/PSDToolKit/
