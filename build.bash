@@ -77,8 +77,9 @@ cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/AudioMixerPlugin.lpi
 cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/ictalk/ictalk.lpi
 
 # copy GCMZDrops release version
-# cp ../aviutl_gcmzdrops/bin/*.auf bin/
+# cp ../aviutl_gcmzdrops/bin/GCMZDrops.* bin/
 # cp ../aviutl_gcmzdrops/bin/GCMZDrops/*.lua bin/GCMZDrops/
+# cp ../aviutl_gcmzdrops/bin/GCMZDrops/dropper/*.lua bin/GCMZDrops/dropper/
 
 # copy RamPreview release version
 # cp ../aviutl_rampreview/bin/ZRamPreview.* bin/
