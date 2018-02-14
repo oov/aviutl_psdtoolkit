@@ -55,7 +55,7 @@ if #m > 0 then
 end
 
 @目パチ
---track0:間隔,0,1000,120,1
+--track0:間隔(秒),0,60,4,0.01
 --track1:速さ,1,100,1,1
 --track2:オフセット,0,10000,0,1
 --dialog:開き,local m0="";ほぼ開き,local m1="";半開き,local m2="";ほぼ閉じ,local m3="";閉じ,local m4="";

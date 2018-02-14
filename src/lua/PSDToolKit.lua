@@ -95,7 +95,7 @@ local Blinker = {}
 
 -- 瞬きアニメーター
 -- patterns - {'閉じ', 'ほぼ閉じ', '半開き', 'ほぼ開き', '開き'} のパターンが入った配列（ほぼ閉じ、半目、ほぼ開きは省略可）
--- interval - アニメーション間隔
+-- interval - アニメーション間隔(秒)
 -- speed - アニメーション速度
 -- offset - アニメーション開始位置
 function Blinker.new(patterns, interval, speed, offset)
@@ -114,9 +114,10 @@ function Blinker.new(patterns, interval, speed, offset)
 end
 
 function Blinker:getstate(psd, obj)
-  local basetime = obj.frame + self.interval + self.offset
-  local blink = basetime % self.interval
-  local blink2 = (basetime + self.speed*#self.patterns*2) % (self.interval * 5)
+  local interval = self.interval * obj.framerate + self.speed * #self.patterns*2;
+  local basetime = obj.frame + interval + self.offset
+  local blink = basetime % interval
+  local blink2 = (basetime + self.speed*#self.patterns) % (interval * 5)
   for i, v in ipairs(self.patterns) do
     local l = self.speed*i
     local r = l + self.speed
