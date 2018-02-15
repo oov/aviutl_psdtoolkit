@@ -83,9 +83,9 @@ local patterns = {
   "S.お気に入り/*目パチ/目~ほぼ開き",
   "S.お気に入り/*目パチ/目~開き"
 }
-local interval = 120 -- 間隔
-local speed    = 1   -- 速さ
-local offset   = 0   -- オフセット
+local interval = 4 -- 間隔(秒)
+local speed    = 1 -- 速さ
+local offset   = 0 -- オフセット
 local blinker = require("PSDToolKit").Blinker.new(patterns, interval, speed, offset)
 PSD:addstate(blinker)
 ```
@@ -435,7 +435,7 @@ local values = {
   require("PSDToolKit").Blinker.new({
     "S.お気に入り/*テスト/目~つぶり",
     "S.お気に入り/*テスト/目~通常"
-  }, 120, 3, 0),
+  }, 4, 3, 0),
   "S.お気に入り/*テスト/目~つぶり",
   "S.お気に入り/*テスト/目~ぐるぐる",
   "S.お気に入り/*テスト/目~にっこり",
@@ -446,7 +446,7 @@ PSD:addstate(values[obj.track0])
 
 元々存在していない項目を追加しているので、`--track0` の行にあるスライダーの最大値も `5` に書き換えています。
 
-このようにすれば、スライダーを `1` にした時は「間隔 120 / 速さ 3 / オフセット 0」した目パチとして動作し、それ以外は目の切り替えとして機能します。
+このようにすれば、スライダーを `1` にした時は「間隔(秒) 4 / 速さ 3 / オフセット 0」した目パチとして動作し、それ以外は目の切り替えとして機能します。
 
 ## スライダーに口パクを割り当てる
 
