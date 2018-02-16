@@ -207,15 +207,27 @@ begin
 
       SendMessageW(FParamsLabel, WM_SETFONT, WPARAM(FFont), 0);
 
-      FTimerID := SetTimer(Window, 1, 40, nil);
+      FTimerID := 0;
     end;
     WM_FILTER_EXIT:
     begin
       SendMessageW(FIDCombo, WM_SETFONT, 0, 0);
       SendMessageW(FParamsLabel, WM_SETFONT, 0, 0);
-      KillTimer(Window, FTimerID);
+      if FTimerID <> 0 then begin
+        KillTimer(Window, FTimerID);
+        FTimerID := 0;
+      end;
       DeleteObject(FFont);
       FFont := 0;
+    end;
+    WM_FILTER_CHANGE_WINDOW:
+    begin
+      if FTimerID <> 0 then begin
+        KillTimer(Window, FTimerID);
+        FTimerID := 0;
+      end;
+      if IsWindowVisible(Window) then
+        FTimerID := SetTimer(Window, 1, 40, nil);
     end;
     WM_FILTER_SAVE_START: FSaving := True;
     WM_FILTER_SAVE_END: FSaving := False;
