@@ -8,6 +8,7 @@ sed 's/\r$//' README.md | sed 's/$/\r/' > bin/PSDToolKit.txt
 # update version string
 VERSION='v0.2beta'
 GITHASH=`git rev-parse --short HEAD`
+echo -n "$VERSION ( $GITHASH )" > "VERSION"
 cat << EOS | sed 's/\r$//' | sed 's/$/\r/' > 'src/lazarus/ver.pas'
 unit Ver;
 
