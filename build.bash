@@ -67,7 +67,7 @@ popd > /dev/null
 # build PSDToolKit.exe
 pushd src/go > /dev/null
 rsrc.exe -ico assets/datasrc/icon.ico -arch=amd64 -o PSDToolKit.syso
-go.exe build -x -tags gdip -ldflags="-s" -o ../../bin/script/PSDToolKit/PSDToolKit.exe
+env.exe CGO_LDFLAGS_ALLOW="-Wl,--allow-multiple-definition" go.exe build -x -tags gdip -ldflags="-s" -o ../../bin/script/PSDToolKit/PSDToolKit.exe
 popd > /dev/null
 
 # build lazarus projects
