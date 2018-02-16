@@ -318,6 +318,7 @@ var
   IT: TChannelStripMap.TIterator;
   Strip: TChannelStrip;
   Processed: boolean;
+  //Freq, Start, Finish: Int64;
 begin
   Result := True;
 
@@ -375,7 +376,8 @@ begin
   end;
 
   FLastFrame := fpip^.Frame;
-
+  //QueryPerformanceFrequency(Freq);
+  //QueryPerformanceCounter(Start);
   // for mix
   // 1. write to the mix buffer from the original stream
   if len > Length(FMixBuf) then
@@ -508,6 +510,8 @@ begin
     Inc(p);
     Inc(pMixBuf);
   end;
+  //QueryPerformanceCounter(Finish);
+  //OutputDebugString(PChar(Format('%0.3fms', [(Finish - Start) * 1000 / Freq])));
 end;
 
 procedure TAudioMixer.UpdateParamsView;
