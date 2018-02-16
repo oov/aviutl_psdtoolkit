@@ -213,6 +213,8 @@ begin
 end;
 
 procedure TRbjEQFilter.ProcessReplacing(Input: psingle; sampleframes: integer);
+const
+  Denom = 1e-24;
 var
   I, Ch, Stride: integer;
   LastOut, i1, i2, o1, o2: single;
@@ -234,7 +236,8 @@ begin
       i2 := i1;
       i1 := Inp^;
       o2 := o1;
-      o1 := LastOut;
+      o1 := LastOut + Denom;
+      o1 := o1 - Denom;
       Inp^ := LastOut;
       Inc(Inp, Stride);
     end;
