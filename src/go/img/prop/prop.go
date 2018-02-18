@@ -27,10 +27,22 @@ var damemojiRev = [42]string{
 }
 
 var rune64 = [64]rune{
-	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
-	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
 	'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L', 'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z',
+	'a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k', 'l', 'm', 'n', 'o', 'p', 'q', 'r', 's', 't', 'u', 'v', 'w', 'x', 'y', 'z',
+	'0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
 	'-', '_',
+}
+
+func escapeRune(runes []rune, r rune) []rune {
+	b := make([]byte, 0, 4)
+	for r > 0x80 {
+		b = append(b, byte(r))
+		r >>= 8
+	}
+	b = append(b, byte(r))
+	runes = append(runes, '%', rune('t'+len(b)-1))
+	runes = append(runes, []rune(base64.RawURLEncoding.EncodeToString(b))...)
+	return runes
 }
 
 func Encode(s string) string {
@@ -46,12 +58,9 @@ func Encode(s string) string {
 			escaped = append(escaped, '%', 'x', rune64[idx])
 			continue
 		}
-		ch := string(r)
-		if _, err := encoder.String(ch); err != nil {
-			// this char seems is not available in Shift_JIS.
-			b64 := base64.RawURLEncoding.EncodeToString([]byte(ch))
-			escaped = append(escaped, '%', 'u', rune64[len(b64)])
-			escaped = append(escaped, []rune(b64)...)
+		if _, err := encoder.String(string(r)); err != nil {
+			// this rune is not available in Shift_JIS.
+			escaped = escapeRune(escaped, r)
 			continue
 		}
 		escaped = append(escaped, r)
@@ -60,14 +69,14 @@ func Encode(s string) string {
 }
 
 func rune64ToInt(r byte) int {
-	if '0' <= r && r <= '9' {
-		return int(r - '0')
+	if 'A' <= r && r <= 'Z' {
+		return int(r - 'A')
 	}
 	if 'a' <= r && r <= 'z' {
-		return int(10 + r - 'a')
+		return int(26 + r - 'a')
 	}
-	if 'A' <= r && r <= 'Z' {
-		return int(36 + r - 'A')
+	if '0' <= r && r <= '9' {
+		return int(52 + r - '0')
 	}
 	if r == '-' {
 		return 62
@@ -94,11 +103,16 @@ func unescape(s string) string {
 					i += 2
 					continue
 				}
-			case 'u':
-				if ln := rune64ToInt(s[i+2]); ln != -1 && i+2+ln < l {
-					if b, err := base64.RawURLEncoding.DecodeString(s[i+3 : i+3+ln]); err == nil {
-						r = append(r, b...)
-						i += 2 + ln
+			case 't', 'u', 'v', 'w':
+				if encoded := base64.RawURLEncoding.EncodedLen(int(s[i+1] - 't' + 1)); i+1+encoded < l {
+					if b, err := base64.RawURLEncoding.DecodeString(s[i+2 : i+2+encoded]); err == nil {
+						var rn rune
+						for i := len(b) - 1; i >= 0; i-- {
+							rn <<= 8
+							rn |= rune(b[i])
+						}
+						r = append(r, string(rn)...)
+						i += 1 + encoded
 						continue
 					}
 				}
