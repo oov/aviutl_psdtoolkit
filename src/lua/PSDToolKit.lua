@@ -134,11 +134,13 @@ local LipSyncSimple = {}
 -- patterns - {'閉じ', 'ほぼ閉じ', '半開き', 'ほぼ開き', '開き'} のパターンが入った配列（ほぼ閉じ、半目、ほぼ開きは省略可）
 -- speed - アニメーション速度
 -- layerindex - アニメーション対象の準備レイヤー番号
-function LipSyncSimple.new(patterns, speed, layerindex)
+-- alwaysapply - 口パク準備のデータがなくても閉じを適用する
+function LipSyncSimple.new(patterns, speed, layerindex, alwaysapply)
   return setmetatable({
     patterns = patterns,
     speed = speed,
     layerindex = layerindex,
+    alwaysapply = alwaysapply,
     talkstates = P.talk
   }, {__index = LipSyncSimple})
 end
@@ -148,9 +150,11 @@ LipSyncSimple.states = {}
 function LipSyncSimple:getstate(psd, obj)
   local volume = 0
   local ts = self.talkstates:get(self.layerindex)
+  local found = false
   if ts ~= nil and not ts.used then
     volume = ts.volume
     ts.used = true
+    found = true
   end
 
   local stat = LipSyncSimple.states[self.layerindex] or {frame = obj.frame-1, n = 0}
@@ -172,6 +176,9 @@ function LipSyncSimple:getstate(psd, obj)
   end
   stat.frame = obj.frame
   LipSyncSimple.states[self.layerindex] = stat
+  if not found and not self.alwaysapply then
+    return ""
+  end
   return self.patterns[math.floor(stat.n / self.speed) + 1]
 end
 
@@ -181,7 +188,8 @@ local LipSyncLab = {}
 -- patterns - {'a'='あ', 'e'='え', 'i'='い', 'o'='お','u'='う', 'N'='ん'}
 -- mode - 子音の処理モード
 -- layerindex - アニメーション対象の準備レイヤー番号
-function LipSyncLab.new(patterns, mode, layerindex)
+-- alwaysapply - 口パク準備のデータがなくても閉じを適用する
+function LipSyncLab.new(patterns, mode, layerindex, alwaysapply)
   if patterns.A == nil then patterns.A = patterns.a end
   if patterns.E == nil then patterns.E = patterns.e end
   if patterns.I == nil then patterns.I = patterns.i end
@@ -191,6 +199,7 @@ function LipSyncLab.new(patterns, mode, layerindex)
     patterns = patterns,
     mode = mode,
     layerindex = layerindex,
+    alwaysapply = alwaysapply,
     talkstates = P.talk
   }, {__index = LipSyncLab})
 end
@@ -200,7 +209,7 @@ function LipSyncLab:getstate(psd, obj)
   local ts = self.talkstates:get(self.layerindex)
   if ts == nil or ts.used then
     -- データが見つからなかったり使用済みデータだった場合は閉じ状態にする
-    return pat.N
+    return self.alwaysapply and pat.N or ""
   end
   ts.used = true
 

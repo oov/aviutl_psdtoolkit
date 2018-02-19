@@ -34,14 +34,16 @@ end
 @口パク あいうえお
 --track2:子音処理,0,2,0,1
 --track3:準備レイヤ,1,100,1,1
+--check0:口パク準備がなくても有効,1
 --dialog:あ,local a="";い,local i="";う,local u="";え,local e="";お,local o="";ん,local n="";
 local PSDToolKit = require("PSDToolKit")
 local m = {a=a, e=e, i=i, o=o, u=u, N=n}
-PSD:addstate(PSDToolKit.LipSyncLab.new(m, obj.track2, obj.track3))
+PSD:addstate(PSDToolKit.LipSyncLab.new(m, obj.track2, obj.track3, obj.check0))
 
 @口パク 開閉のみ
 --track0:速さ,1,100,1,1
 --track3:準備レイヤ,1,100,1,1
+--check0:口パク準備がなくても有効,1
 --dialog:開き,local m0="";ほぼ開き,local m1="";半開き,local m2="";ほぼ閉じ,local m3="";閉じ,local m4="";
 local PSDToolKit = require("PSDToolKit")
 local m = {}
@@ -51,7 +53,7 @@ if m2 ~= "" then table.insert(m, m2) end
 if m1 ~= "" then table.insert(m, m1) end
 if m0 ~= "" then table.insert(m, m0) end
 if #m > 0 then
-  PSD:addstate(PSDToolKit.LipSyncSimple.new(m, obj.track0, obj.track3))
+  PSD:addstate(PSDToolKit.LipSyncSimple.new(m, obj.track0, obj.track3, obj.check0))
 end
 
 @目パチ
