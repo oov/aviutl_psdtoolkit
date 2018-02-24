@@ -14,6 +14,9 @@ $if(keywords)$
   <meta name="keywords" content="$for(keywords)$$keywords$$sep$, $endfor$" />
 $endif$
   <title>$if(title-prefix)$$title-prefix$ – $endif$$pagetitle$</title>
+$for(script)$
+  <script src="$script$"></script>
+$endfor$
   <style type="text/css">
 $if(quotes)$
       q { quotes: "“" "”" "‘" "’"; }

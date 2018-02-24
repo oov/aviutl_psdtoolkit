@@ -57,6 +57,27 @@ body {
     margin: 0 0 0 auto;
 }
 
+.ptk-script-builder {
+    background-color: #f7f7f7;
+    border: 1px solid #ddd;
+    overflow: auto;
+    padding: 8px 16px;
+}
+
+.ptk-script-builder dl>dt {
+    clear: left;
+    float: left;
+    width: 7em;
+}
+
+.ptk-script-builder dl>dd {
+    margin: 0 0 0 7em;
+}
+
+.ptk-script-builder dl>dd>input {
+    width: 32em;
+}
+
 #TOC ul {
     list-style-type: none;
     padding: 0 0 0 2em;

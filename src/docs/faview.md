@@ -88,9 +88,30 @@ local patterns = {
 local interval = 4 -- 間隔(秒)
 local speed    = 1 -- 速さ
 local offset   = 0 -- オフセット
-local blinker = require("PSDToolKit").Blinker.new(patterns, interval, speed, offset)
-PSD:addstate(blinker)
+local blinker = require("PSDToolKit").Blinker.new(patterns, interval, speed, offset) -- 目パチオブジェクトを生成
+
+PSD:addstate(blinker) -- 生成したオブジェクトをグローバル変数 PSD に割り当てる
 ```
+
+以下のフォームを使うと、上記のコードで生成する目パチオブジェクトと同等のものを自動生成できます。
+
+<form id="blinker-builder" class="ptk-script-builder">
+<dl>
+<dt>開き</dt><dd><input type="text" name="m4" autocomplete="off" placeholder="例: S.お気に入り/*目パチ/目~開き"></dd>
+<dt>ほぼ開き</dt><dd><input type="text" name="m3" autocomplete="off" placeholder="例: S.お気に入り/*目パチ/目~ほぼ開き"></dd>
+<dt>半開き</dt><dd><input type="text" name="m2" autocomplete="off" placeholder="例: S.お気に入り/*目パチ/目~半開き"></dd>
+<dt>ほぼ閉じ</dt><dd><input type="text" name="m1" autocomplete="off" placeholder="例: S.お気に入り/*目パチ/目~ほぼ閉じ"></dd>
+<dt>閉じ</dt><dd><input type="text" name="m0" autocomplete="off" placeholder="例: S.お気に入り/*目パチ/目~閉じ"></dd>
+</dl>
+<dl>
+<dt>間隔(秒)</dt><dd><input type="text" name="interval" autocomplete="off" value="4" placeholder="例: 4"></dd>
+<dt>速さ</dt><dd><input type="text" name="speed" autocomplete="off" value="1" placeholder="例: 1"></dd>
+<dt>オフセット</dt><dd><input type="text" name="offset" autocomplete="off" value="0" placeholder="例: 0"></dd>
+</dl>
+<dl>
+<dt>出力</dt><dd><input type="text" name="output" value="" readonly="readonly"></dd><dd><button type="button" name="copy">クリップボードにコピー</button></dd>
+</dl>
+</form>
 
 # 口パク（リップシンク）を設定する
 
@@ -144,16 +165,37 @@ AviUtl のプレビュー再生は描画が間に合わない時はコマ飛び�
 local patterns = {
   "S.お気に入り/*口パク/口~閉じ",
   "S.お気に入り/*口パク/口~ほぼ閉じ",
-  "S.お気に入り/*口パク/口~半目",
+  "S.お気に入り/*口パク/口~半開き",
   "S.お気に入り/*口パク/口~ほぼ開き",
   "S.お気に入り/*口パク/口~開き"
 }
-local layer = 1 -- 口パク準備
 local speed = 1 -- 速さ
+local layerindex = 1 -- 口パク準備
 local alwaysapply = true -- 口パク準備がなくても有効
-local lipsync = require("PSDToolKit").LipSyncSimple.new(patterns, speed, layer, alwaysapply)
-PSD:addstate(lipsync)
+local lipsync = require("PSDToolKit").LipSyncSimple.new(patterns, speed, layerindex, alwaysapply) -- 口パクオブジェクトを生成
+
+PSD:addstate(lipsync) -- 生成したオブジェクトをグローバル変数 PSD に割り当てる
 ```
+
+以下のフォームを使うと、上記のコードで生成する口パクオブジェクトと同等のものを自動生成できます。
+
+<form id="lipsyncsimple-builder" class="ptk-script-builder">
+<dl>
+<dt>開き</dt><dd><input type="text" name="m4" autocomplete="off" placeholder="例: S.お気に入り/*口パク/口~開き"></dd>
+<dt>ほぼ開き</dt><dd><input type="text" name="m3" autocomplete="off" placeholder="例: S.お気に入り/*口パク/口~ほぼ開き"></dd>
+<dt>半開き</dt><dd><input type="text" name="m2" autocomplete="off" placeholder="例: S.お気に入り/*口パク/口~半開き"></dd>
+<dt>ほぼ閉じ</dt><dd><input type="text" name="m1" autocomplete="off" placeholder="例: S.お気に入り/*口パク/口~ほぼ閉じ"></dd>
+<dt>閉じ</dt><dd><input type="text" name="m0" autocomplete="off" placeholder="例: S.お気に入り/*口パク/口~閉じ"></dd>
+</dl>
+<dl>
+<dt>速さ</dt><dd><input type="text" name="speed" autocomplete="off" value="1" placeholder="例: 1"></dd>
+<dt>口パク準備</dt><dd><input type="text" name="layerindex" autocomplete="off" value="1" placeholder="例: 1"></dd>
+<dt>オプション</dt><dd><label><input type="checkbox" name="alwaysapply" autocomplete="off" value="1" checked="checked">口パク準備がなくても有効</label></dd>
+</dl>
+<dl>
+<dt>出力</dt><dd><input type="text" name="output" value="" readonly="readonly"></dd><dd><button type="button" name="copy">クリップボードにコピー</button></dd>
+</dl>
+</form>
 
 ## 口パク あいうえお
 
@@ -198,12 +240,34 @@ local patterns = {
   o = "S.お気に入り/*口パク/口~お",
   N = "S.お気に入り/*口パク/口~ん"
 }
-local layer = 1 -- 口パク準備
-local mode = 1 -- 子音処理
+local mode = 0 -- 子音処理
+local layerindex = 1 -- 口パク準備
 local alwaysapply = true -- 口パク準備がなくても有効
-local lipsync = require("PSDToolKit").LipSyncLab.new(patterns, mode, layer, alwaysapply)
-PSD:addstate(lipsync)
+local lipsync = require("PSDToolKit").LipSyncLab.new(patterns, mode, layerindex, alwaysapply) -- 口パクオブジェクトを生成
+
+PSD:addstate(lipsync) -- 生成したオブジェクトをグローバル変数 PSD に割り当てる
 ```
+
+以下のフォームを使うと、上記のコードで生成する口パクオブジェクトと同等のものを自動生成できます。
+
+<form id="lipsynclab-builder" class="ptk-script-builder">
+<dl>
+<dt>あ</dt><dd><input type="text" name="a" autocomplete="off" placeholder="例: S.お気に入り/*口パク/口~あ"></dd>
+<dt>い</dt><dd><input type="text" name="i" autocomplete="off" placeholder="例: S.お気に入り/*口パク/口~い"></dd>
+<dt>う</dt><dd><input type="text" name="u" autocomplete="off" placeholder="例: S.お気に入り/*口パク/口~う"></dd>
+<dt>え</dt><dd><input type="text" name="e" autocomplete="off" placeholder="例: S.お気に入り/*口パク/口~え"></dd>
+<dt>お</dt><dd><input type="text" name="o" autocomplete="off" placeholder="例: S.お気に入り/*口パク/口~お"></dd>
+<dt>ん</dt><dd><input type="text" name="N" autocomplete="off" placeholder="例: S.お気に入り/*口パク/口~ん"></dd>
+</dl>
+<dl>
+<dt>子音処理</dt><dd><input type="text" name="mode" autocomplete="off" value="0" placeholder="例: 0"></dd>
+<dt>口パク準備</dt><dd><input type="text" name="layerindex" autocomplete="off" value="1" placeholder="例: 1"></dd>
+<dt>オプション</dt><dd><label><input type="checkbox" name="alwaysapply" autocomplete="off" value="1" checked="checked">口パク準備がなくても有効</label></dd>
+</dl>
+<dl>
+<dt>出力</dt><dd><input type="text" name="output" value="" readonly="readonly"></dd><dd><button type="button" name="copy">クリップボードにコピー</button></dd>
+</dl>
+</form>
 
 ### もっと柔軟に Lua スクリプトから制御する
 
@@ -360,7 +424,9 @@ local values = {
 PSD:addstate(values[obj.track0])
 ```
 
-ここで出てくる `track0` というのが重要で、拡張編集では縦に並んだスライダーのそれぞれに `track0`/`track1`/`track2`/`track3` という名前を付けています。
+まず、1行目にある `--track0:目,0,4,0,1` はそれぞれ `--track0:項目名,最小値,最大値,初期値,移動量` という役割になっており、上の例では項目が全部で４つあるため最大値が `4` になっており、もし選択できる項目をひとつ増やす場合は `5` に書き換える必要があります。
+
+そして先頭にある `track0` というのが重要で、拡張編集では縦に並んだスライダーのそれぞれに `track0`/`track1`/`track2`/`track3` という名前を付けています。
 
 ![`track0`/`track1`/`track2`/`track3`](assets/faview-export-track.png)
 
@@ -448,10 +514,7 @@ PSD:addstate(values[obj.track1])
 ```lua
 --track0:目,0,5,0,1
 local values = {
-  require("PSDToolKit").Blinker.new({
-    "S.お気に入り/*テスト/目~つぶり",
-    "S.お気に入り/*テスト/目~通常"
-  }, 4, 3, 0),
+  require("PSDToolKit").Blinker.new({"S.お気に入り/*テスト/目~つぶり","S.お気に入り/*テスト/目~通常"},4,3,0),
   "S.お気に入り/*テスト/目~つぶり",
   "S.お気に入り/*テスト/目~ぐるぐる",
   "S.お気に入り/*テスト/目~にっこり",
@@ -460,9 +523,12 @@ local values = {
 PSD:addstate(values[obj.track0])
 ```
 
-元々存在していない項目を追加しているので、`--track0` の行にあるスライダーの最大値も `5` に書き換えています。
+元々存在していない項目を先頭に追加しているので、`--track0` の行にあるスライダーの最大値も `5` に書き換えています。
 
-このようにすれば、スライダーを `1` にした時は「間隔(秒) 4 / 速さ 3 / オフセット 0」した目パチとして動作し、それ以外は目の切り替えとして機能します。
+このようにすれば、スライダーを `1` にした時は「間隔(秒) 4 / 速さ 3 / オフセット 0」に設定した目パチとして動作し、それ以外は目の切り替えとして機能します。
+
+また、この目パチ用の項目は [口パク 開閉のみ を Lua スクリプトから使う](#口パク_開閉のみ_を_Lua_スクリプトから使う) にある入力用フォームを使えば簡単に作ることができます。  
+もちろん口パクに関しても入力用フォームを使うことで、同じように簡単に組み立てることができます。
 
 ## スライダーに口パクを割り当てる
 
@@ -475,10 +541,7 @@ PSD:addstate(values[obj.track0])
 ```lua
 --track0:くち,0,5,0,1
 local values = {
-  require("PSDToolKit").LipSyncSimple.new({
-    "S.お気に入り/*テスト/くち~ムー",
-    "S.お気に入り/*テスト/くち~ワ"
-  }, 3, layer),
+  require("PSDToolKit").LipSyncSimple.new({"S.お気に入り/*テスト/くち~ムー","S.お気に入り/*テスト/くち~ワ"},3,layer,true),
   "S.お気に入り/*テスト/くち~あー！",
   "S.お気に入り/*テスト/くち~ふぇー",
   "S.お気に入り/*テスト/くち~ムー",
