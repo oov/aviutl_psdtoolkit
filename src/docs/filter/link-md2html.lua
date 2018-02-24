@@ -10,7 +10,7 @@ return {
       local text = ""
       pandoc.walk_block(elem, {
         Code = function(elm)
-          text = text .. elm.text
+          text = text .. elm.text:gsub(" ", "_")
           return elm
         end,
         Space = function(elm)
