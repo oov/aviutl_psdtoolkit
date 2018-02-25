@@ -157,21 +157,25 @@ function LipSyncSimple:getstate(psd, obj)
     found = true
   end
 
-  local stat = LipSyncSimple.states[self.layerindex] or {frame = obj.frame-1, n = 0}
+  local stat = LipSyncSimple.states[self.layerindex] or {frame = obj.frame-1, n = -1, pat = 0}
   if stat.frame >= obj.frame or stat.frame + obj.framerate < obj.frame then
     -- 巻き戻っていたり、あまりに先に進んでいるようならアニメーションはリセットする
     -- プレビューでコマ飛びする場合は正しい挙動を示せないので、1秒の猶予を持たせる
-    stat.n = 0
+    stat.n = -1
+    stat.pat = 0
   end
-  if volume >= 1.0 then
-    stat.n = stat.n + 1
-    if stat.n > #self.patterns * self.speed - 1 then
-      stat.n = #self.patterns * self.speed - 1
-    end
-  else
-    stat.n = stat.n - 1
-    if stat.n < 0 then
-      stat.n = 0
+  stat.n = stat.n + 1
+  if stat.n >= self.speed then
+    if volume >= 1.0 then
+      if stat.pat < #self.patterns - 1 then
+        stat.pat = stat.pat + 1
+        stat.n = 0
+      end
+    else
+      if stat.pat > 0 then
+        stat.pat = stat.pat - 1
+        stat.n = 0
+      end
     end
   end
   stat.frame = obj.frame
@@ -179,7 +183,7 @@ function LipSyncSimple:getstate(psd, obj)
   if not found and not self.alwaysapply then
     return ""
   end
-  return self.patterns[math.floor(stat.n / self.speed) + 1]
+  return self.patterns[stat.pat + 1]
 end
 
 local LipSyncLab = {}
