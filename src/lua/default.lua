@@ -23,6 +23,7 @@ P.wav_insertmode = 2
 P.wav_groupsubtitle = true
 P.wav_subtitlemargin = 0
 P.wav_subtitleencoding = "sjis"
+P.wav_mpslider = 0
 P.wav_exafinder = 0
 function P:wav_examodifler_wav(exa, values, modifiers)
   exa:set("ao", "start", 1)
@@ -35,6 +36,33 @@ function P:wav_examodifler_lipsync(exa, values, modifiers)
   exa:set("vo", "end", values.WAV_LEN)
   exa:set("vo", "group", 1)
   exa:set("vo.0", "param", "file=" .. modifiers.ENCODE_LUA_STRING(values.LIPSYNC_PATH))
+end
+function P:wav_examodifler_mpslider(exa, values, modifiers)
+  exa:set("vo", "start", 1)
+  exa:set("vo", "end", values.WAV_LEN)
+  exa:set("vo", "group", 1)
+  for i = 0, self.wav_mpslider-1 do
+    local key = "vo." .. i
+    exa:set(key, "_name", i == 0 and "カスタムオブジェクト" or "アニメーション効果")
+    exa:set(key, "track0", "0.00")
+    exa:set(key, "track1", "0.00")
+    exa:set(key, "track2", "0.00")
+    exa:set(key, "track3", "0.00")
+    exa:set(key, "check0", "0")
+    exa:set(key, "type", "0")
+    exa:set(key, "filter", "2")
+    exa:set(key, "name", "多目的スライダー@PSDToolKit")
+    exa:set(key, "param", "")
+  end
+  local key = "vo." .. self.wav_mpslider
+  exa:set(key, "_name", "標準描画")
+  exa:set(key, "X", "0.0")
+  exa:set(key, "Y", "0.0")
+  exa:set(key, "Z", "0.0")
+  exa:set(key, "拡大率", "100.00")
+  exa:set(key, "透明度", "0.0")
+  exa:set(key, "回転", "0.00")
+  exa:set(key, "blend", "0")
 end
 function P:wav_examodifler_subtitle(exa, values, modifiers)
   exa:set("vo", "start", 1)

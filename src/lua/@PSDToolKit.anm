@@ -15,7 +15,7 @@ PSD.scale = obj.track1/100
 PSD.offsetx = obj.track2
 PSD.offsety = obj.track3
 -- グローバル変数 mpslider に値が入っているなら多目的スライダーを割り当て
-if mpslider ~= nil and mpslider ~= 0 then
+if mpslider ~= nil then
   PSD.valueholder = PSDToolKit.valueholder:get(mpslider)
 end
 mpslider = nil
@@ -31,10 +31,7 @@ if not ok then require("PSDToolKit").print(obj, msg) end
 @パーツ差し替え
 --track0:パーツ,0,16,0,1
 --dialog:1,p1="";2,p2="";3,p3="";4,p4="";5,p5="";6,p6="";7,p7="";8,p8="";9,p9="";10,p10="";11,p11="";12,p12="";13,p13="";14,p14="";15,p15="";16,p16="";
-if idx > 0 then
-  local m = {p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16}
-  PSD:addstate(m, idx)
-end
+PSD:addstate({p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16}, obj.track0)
 
 @口パク あいうえお
 --track2:子音処理,0,2,0,1

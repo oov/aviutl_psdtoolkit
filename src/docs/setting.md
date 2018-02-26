@@ -107,6 +107,16 @@ P.wav_subtitleencoding = "sjis"
 `"sjis"`|文字エンコーディングが `Shift_JIS` であるものとして読み込みます
 `"utf8"`|文字エンコーディングが `UTF-8` であるものとして読み込みます。ただし内部で `Shift_JIS` に変換されるため `Shift_JIS` にない文字は使えません
 
+### `P.wav_mpslider`
+
+`*.wav` ファイルを投げ込んだ時に、同時に `多目的スライダー` をいくつ生成するかを指定します。
+
+`0` を指定した場合は１つも生成されません。
+
+```lua
+P.wav_mpslider = 0
+```
+
 ### `P.wav_exafinder`
 
 `*.wav` ファイルを投げ込んだ時に使用される `*.exa` ファイルの検索方法を設定します。
@@ -114,7 +124,7 @@ P.wav_subtitleencoding = "sjis"
 この設定を使うと、拡張編集に投げ込んだ `*.wav` のファイル名などに応じて `*.exa` ファイル（エイリアスファイル）を切り替えることができます。
 
 エイリアスファイル作成は拡張編集のタイムライン上でエイリアス化したいオブジェクトを右クリックして `エイリアスの作成` から行います。出てきたウィンドウにある `エイリアス名` に適当な名前を入れると `aviutl.exe` と同じ場所に `入力した名前.exa` というファイルが作成されるので、そのファイルを `exa` フォルダーの中に配置して下さい。  
-なお複雑なエイリアスファイルを作った場合などには [`P:wav_examodifler_wav`/`P:wav_examodifler_lipsync`/`P:wav_examodifler_subtitle`](#P:wav_examodifler_wav/P:wav_examodifler_lipsync/P:wav_examodifler_subtitle) の設定も変更する必要があるかも知れません。
+なお複雑なエイリアスファイルを作った場合などには [`P:wav_examodifler_wav`/`P:wav_examodifler_lipsync`/`P:wav_examodifler_mpslider`/`P:wav_examodifler_subtitle`](#P:wav_examodifler_wav/P:wav_examodifler_lipsync/P:wav_examodifler_mpslider/P:wav_examodifler_subtitle) の設定も変更する必要があるかも知れません。
 
 ```lua
 P.wav_exafinder = 0
@@ -132,7 +142,7 @@ P.wav_exafinder = 0
 
 ※上記ルールで該当するファイルが見つからない場合は `wav.exa` / `lipsync.exa` / `subtitle.exa` が代わりに使用されます。
 
-### `P:wav_examodifler_wav`/`P:wav_examodifler_lipsync`/`P:wav_examodifler_subtitle`
+### `P:wav_examodifler_wav`/`P:wav_examodifler_lipsync`/`P:wav_examodifler_mpslider`/`P:wav_examodifler_subtitle`
 
 `*.wav` ファイルを投げ込んだ時の `*.exa` ファイル改変内容を設定します。
 
@@ -152,6 +162,33 @@ function P:wav_examodifler_lipsync(exa, values, modifiers)
   exa:set("vo", "end", values.WAV_LEN)
   exa:set("vo", "group", 1)
   exa:set("vo.0", "param", "file=" .. modifiers.ENCODE_LUA_STRING(values.LIPSYNC_PATH))
+end
+function P:wav_examodifler_mpslider(exa, values, modifiers)
+  exa:set("vo", "start", 1)
+  exa:set("vo", "end", values.WAV_LEN)
+  exa:set("vo", "group", 1)
+  for i = 1, self.wav_mpslider do
+    local key = "vo." .. (i - 1)
+    exa:set(key, "_name", i == 1 and "カスタムオブジェクト" or "アニメーション効果")
+    exa:set(key, "track0", "0.00")
+    exa:set(key, "track1", "0.00")
+    exa:set(key, "track2", "0.00")
+    exa:set(key, "track3", "0.00")
+    exa:set(key, "check0", "0")
+    exa:set(key, "type", "0")
+    exa:set(key, "filter", "2")
+    exa:set(key, "name", "多目的スライダー@PSDToolKit")
+    exa:set(key, "param", "")
+  end
+  local key = "vo." .. self.wav_mpslider
+  exa:set(key, "_name", "標準描画")
+  exa:set(key, "X", "0.0")
+  exa:set(key, "Y", "0.0")
+  exa:set(key, "Z", "0.0")
+  exa:set(key, "拡大率", "100.00")
+  exa:set(key, "透明度", "0.0")
+  exa:set(key, "回転", "0.00")
+  exa:set(key, "blend", "0")
 end
 function P:wav_examodifler_subtitle(exa, values, modifiers)
   exa:set("vo", "start", 1)

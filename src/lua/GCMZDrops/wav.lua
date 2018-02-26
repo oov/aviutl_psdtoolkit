@@ -248,6 +248,14 @@ function P.ondrop(files, state)
       P.insertexa(oini, aini, index, index + 1)
       index = index + 1
 
+      -- 多目的スライダーを組み立て
+      if setting.wav_mpslider > 0 then
+        local aini = GCMZDrops.inistring("")
+        setting:wav_examodifler_mpslider(aini, values, modifiers)
+        P.insertexa(oini, aini, index, index + 1)
+        index = index + 1
+      end
+
       -- 字幕用エイリアスを組み立て
       if values.SUBTITLE ~= "" then
         local aini = P.exaread(filepath, "subtitle")
