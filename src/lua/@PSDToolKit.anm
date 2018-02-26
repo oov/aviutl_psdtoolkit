@@ -124,3 +124,38 @@ end
 obj.alpha = obj.alpha * prog
 obj.zoom = obj.zoom * prog + (obj.zoom * obj.track2) * (1 - prog)
 obj.ox = obj.ox * prog + (obj.ox + obj.track3) * (1 - prog)
+
+@‰ñ“]‚µ‚Ä“oê
+--track0:‘¬‚³(•b),-1,1,0.10,0.01
+--track1:ŠÔŠu(•b),0,1,0.03,0.01
+local p, v = obj.track0 > 0 and 1 or 0, 90
+if subobj ~= nil then
+  if obj.track0 > 0 then
+    p = (obj.track0-subobj.time+obj.index*obj.track1)/obj.track0
+  else
+    p = (obj.track0-subobj.time+subobj.totaltime-(obj.num-obj.index-1)*obj.track1)/obj.track0
+    v = -v
+  end
+  if p <= 0 then
+    p = 0
+  elseif p >= 1 then
+    p = 1
+  end
+end
+obj.ry = obj.ry * (1 - p) + (obj.ry + v) * p
+
+@‚Ú‚æ‚ñ
+--track0:’·‚³(•b),0,5,0.30,0.01
+--track1:ŠÔŠu(•b),0,1,0.03,0.01
+--track2:‘¬‚³(•b),0.01,1,0.1,0.01
+--track3:ƒTƒCƒY,0.01,1,0.05,0.01
+local p, scale = obj.track0 > 0 and 1 or 0, 0
+if subobj ~= nil then
+  p = (obj.track0-subobj.time+obj.index*obj.track1)/obj.track0
+  scale = math.sin(math.pi*(subobj.time-obj.index*obj.track1)/obj.track2)*obj.track3
+end
+if p <= 0 or p >= 1 then
+  scale = 0
+end
+obj.zoom = obj.zoom + scale * p
+obj.oy = obj.oy - (obj.h * obj.zoom - obj.h) * 0.5
