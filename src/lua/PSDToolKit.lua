@@ -49,7 +49,9 @@ function PSDState.new(id)
 end
 
 function PSDState:addstate(layer)
-  table.insert(self.layer, layer)
+  if layer ~= nil and layer ~= "" then
+    table.insert(self.layer, layer)
+  end
 end
 
 function PSDState:render(obj)
