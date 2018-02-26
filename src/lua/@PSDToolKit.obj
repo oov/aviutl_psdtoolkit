@@ -18,3 +18,5 @@ if file ~= nil and file ~= "" then
 end
 LIPSYNC = nil
 file = nil
+obj.load("framebuffer",0,0,1,1)
+obj.alpha = 0
