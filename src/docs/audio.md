@@ -159,7 +159,7 @@ PSDToolKit が提供する `字幕準備` と `字幕表示` という概念に�
 
 `字幕表示` で字幕を表示すると拡張編集側が用意した `obj.time`/`obj.frame`/`obj.totaltime`/`obj.totalframe` が本来欲しい値とは異なってしまうため、これらを利用した `アニメーション効果` などは意図した動作にはならなくなってしまいます。
 
-しかし `字幕表示` では代わりに `subtitle.time`/`subtitle.frame`/`subtitle.totaltime`/`subtitle.totalframe` を用意しており、代わりにこれを使うことによって `アニメーション効果` は通常通りに実現可能です。
+しかし `字幕表示` では代わりに `subobj.time`/`subobj.frame`/`subobj.totaltime`/`subobj.totalframe` を用意しており、代わりにこれを使うことによって `アニメーション効果` は通常通りに実現可能です。
 
 そのデモンストレーション用として、PSDToolKit には `字幕表示フェード` という `アニメーション効果` が付属しています。
 
