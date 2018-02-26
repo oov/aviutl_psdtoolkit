@@ -149,7 +149,7 @@ obj.ry = obj.ry * (1 - p) + (obj.ry + v) * p
 --track1:ŠÔŠu(•b),0,1,0.03,0.01
 --track2:‘¬‚³(•b),0.01,1,0.1,0.01
 --track3:ƒTƒCƒY,0.01,1,0.05,0.01
-local p, scale = obj.track0 > 0 and 1 or 0, 0
+local p, scale = 0, 0
 if subobj ~= nil then
   p = (obj.track0-subobj.time+obj.index*obj.track1)/obj.track0
   scale = math.sin(math.pi*(subobj.time-obj.index*obj.track1)/obj.track2)*obj.track3
