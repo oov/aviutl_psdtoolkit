@@ -17,6 +17,9 @@ PSD.offsety = obj.track3
 -- グローバル変数 mpslider に値が入っているなら多目的スライダーを割り当て
 if mpslider ~= nil then
   PSD.valueholder = PSDToolKit.valueholder:get(mpslider)
+  subobj = PSD.valueholder
+else
+  subobj = nil
 end
 mpslider = nil
 if obj.check0 then
@@ -91,11 +94,12 @@ require("PSDToolKit").valueholder:set(
 --track2:拡大率,0,100,1,0.01
 --track3:X座標,-100,100,4,0.01
 --check0:フェードアウトはシンプル,1
-if subtitle == nil then
+if subobj == nil then
+  obj.alpha = 0
   return
 end
-local time = subtitle.time
-local totaltime = subtitle.totaltime
+local time = subobj.time
+local totaltime = subobj.totaltime
 
 local sofs = obj.index * obj.track1
 local sl = sofs
