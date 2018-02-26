@@ -129,7 +129,7 @@ begin
     Result := Result + Value(I, True) + #13#10;
   Result := Result + Value(MaxIndex, False) + #13#10;
   Result := Result + '}'#13#10;
-  Result := Result + 'PSD:addstate(values[obj.track0])'#13#10;
+  Result := Result + 'PSD:addstate(values, obj.track0)'#13#10;
 end;
 
 procedure TExportFaviewSlider.ExportByCSV(FileName: WideString);

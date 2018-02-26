@@ -14,6 +14,11 @@ if l ~= nil and l ~= "" then PSD:addstate(l); l = nil end
 PSD.scale = obj.track1/100
 PSD.offsetx = obj.track2
 PSD.offsety = obj.track3
+-- グローバル変数 mpslider に値が入っているなら多目的スライダーを割り当て
+if mpslider ~= nil and mpslider ~= 0 then
+  PSD.valueholder = PSDToolKit.valueholder:get(mpslider)
+end
+mpslider = nil
 if obj.check0 then
   local ok, msg = pcall(PSD.render, PSD, obj)
   if not ok then PSDToolKit.print(obj, msg) end
@@ -26,9 +31,9 @@ if not ok then require("PSDToolKit").print(obj, msg) end
 @パーツ差し替え
 --track0:パーツ,0,16,0,1
 --dialog:1,p1="";2,p2="";3,p3="";4,p4="";5,p5="";6,p6="";7,p7="";8,p8="";9,p9="";10,p10="";11,p11="";12,p12="";13,p13="";14,p14="";15,p15="";16,p16="";
-if obj.track0 > 0 then
+if idx > 0 then
   local m = {p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16}
-  PSD:addstate(m[obj.track0])
+  PSD:addstate(m, idx)
 end
 
 @口パク あいうえお
@@ -71,6 +76,17 @@ if m0 ~= "" then table.insert(m, m0) end
 if #m > 0 then
   PSD:addstate(PSDToolKit.Blinker.new(m, obj.track0, obj.track1, obj.track2))
 end
+
+@多目的スライダー
+--track0:,0,100,0,1
+--track1:,0,100,0,1
+--track2:,0,100,0,1
+--track3:,0,100,0,1
+require("PSDToolKit").valueholder:set(
+  obj.layer,
+  {obj.track0, obj.track1, obj.track2, obj.track3},
+  obj
+)
 
 @字幕表示フェード
 --track0:速さ(秒),0,1,0.10,0.01

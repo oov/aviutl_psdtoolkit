@@ -44,13 +44,28 @@ function PSDState.new(id)
     scale = 1,
     offsetx = 0,
     offsety = 0,
+    valueholder = nil,
     rendered = false
   }, {__index = PSDState})
 end
 
-function PSDState:addstate(layer)
-  if layer ~= nil and layer ~= "" then
-    table.insert(self.layer, layer)
+function PSDState:addstate(layer, index)
+  -- index が指定されていない場合は layer の内容を直接追加
+  if index == nil then
+    if layer ~= nil and layer ~= "" then
+      table.insert(self.layer, layer)
+    end
+    return
+  end
+
+  -- index が指定されている場合は layer 内の項目のひとつを割り当てるが、
+  -- もし valueholder が存在する場合は index を上書きする
+  if self.valueholder ~= nil then
+    index = self.valueholder:get(index, 0)
+  end
+  -- 値が範囲外でなければ割り当て
+  if 0 < index and index <= #layer then
+    table.insert(self.layer, layer[index])
   end
 end
 
@@ -512,8 +527,72 @@ function SubtitleStates:mes(index, obj)
   return s
 end
 
+local ValueHolder = {}
+
+function ValueHolder.new(frame, time, totalframe, totaltime)
+  return setmetatable({
+    used = false,
+    index = 1,
+    values = {},
+    frame = frame,
+    time = time,
+    totalframe = totalframe,
+    totaltime = totaltime
+  }, {__index = ValueHolder})
+end
+
+function ValueHolder:add(value)
+  table.insert(self.values, value)
+end
+
+function ValueHolder:get(defvalue, unusedvalue)
+  if (self.index < 1)or(self.index > #self.values) then
+    return defvalue
+  end
+  local v = self.values[self.index]
+  self.index = self.index + 1
+  if v == unusedvalue then
+    return defvalue
+  end
+  return v
+end
+
+local ValueHolderStates = {}
+
+function ValueHolderStates.new()
+  return setmetatable({
+    states = {}
+  }, {__index = ValueHolderStates})
+end
+
+function ValueHolderStates:set(index, values, obj)
+  local vh = self.states[index]
+  if vh == nil or vh.used or vh.frame ~= obj.frame then
+    vh = ValueHolder.new(
+      obj.frame,
+      obj.time,
+      obj.totalframe,
+      obj.totaltime
+    )
+    self.states[index] = vh
+  end
+  for i in ipairs(values) do
+    vh:add(values[i])
+  end
+end
+
+function ValueHolderStates:get(index)
+  local vh = self.states[index]
+  if vh == nil or vh.used then
+    return nil
+  end
+  vh.used = true
+  return vh
+end
+
 P.talk = TalkStates.new()
 P.subtitle = SubtitleStates.new()
+P.valueholder = ValueHolderStates.new()
 
 P.print = print
 P.PSDState = PSDState
