@@ -14,7 +14,7 @@ if p == 0 then
 elseif p == 1 then
   return
 end
-if ep > 0 and obj.check0 then
+if ep < 1 and obj.check0 then
   obj.alpha = obj.alpha * p
   return
 end
@@ -22,27 +22,49 @@ obj.alpha = obj.alpha * p
 obj.zoom = obj.zoom * p + (obj.zoom * obj.track2) * (1 - p)
 obj.ox = obj.ox * p + (obj.ox + obj.track3) * (1 - p)
 
-@âÒì]ÇµÇƒìoèÍ
+@äÓñ{ìoèÍ
 --track0:ë¨Ç≥(ïb),-1,1,0.10,0.01
 --track1:ä‘äu(ïb),0,1,0.03,0.01
-local p, v = obj.track0 > 0 and 1 or 0, 90
+--track2:ìßñæìx,0,1,1,0.01
+--dialog:x/chk,local x=1;y/chk,local y=0;rx,local rx=0;ry,local ry=0;rz,local rz=0;
+local p
 if obj.track0 > 0 then
   p = math.max(0, math.min(1, (obj.track0-subobj.time+obj.index*obj.track1)/obj.track0))
 else
-  p = math.max(0, math.min(1, (obj.track0+subobj.totaltime-subobj.time-(obj.num-obj.index-1)*obj.track1)/obj.track0))
-  v = -v
+  p = subobj.notfound and 1 or math.max(0, math.min(1, (obj.track0+subobj.totaltime-subobj.time-(obj.num-obj.index-1)*obj.track1)/obj.track0))
 end
-obj.ry = obj.ry * (1 - p) + (obj.ry + v) * p
+if obj.track2 ~= 1 then
+  obj.alpha = obj.alpha * (1 - p) + obj.track2 * p
+end
+if x == 1 and y == 1 then
+  obj.zoom = obj.zoom * (1 - p)
+elseif x == 1 then
+  obj.aspect = obj.aspect * (1 - p) + p
+elseif y == 1 then
+  obj.aspect = obj.aspect * (1 - p) + -1 * p
+end
+obj.rx = obj.rx * (1 - p) + rx * p
+obj.ry = obj.ry * (1 - p) + ry * p
+obj.rz = obj.rz * (1 - p) + rz * p
 
 @Ç⁄ÇÊÇÒ
 --track0:í∑Ç≥(ïb),0,5,0.30,0.01
 --track1:ä‘äu(ïb),0,1,0.03,0.01
 --track2:ë¨Ç≥(ïb),0.01,1,0.1,0.01
---track3:ÉTÉCÉY,0.01,1,0.05,0.01
+--track3:ÉTÉCÉY,0.01,0.5,0.05,0.01
+--dialog:â°à íu(0-2),local ax=1;ècà íu(0-2),local ay=2;
 local p = math.max(0, math.min(1, (obj.track0-subobj.time+obj.index*obj.track1)/obj.track0))
 if p == 0 or p == 1 then
   return
 end
 local scale = math.sin(math.pi*(subobj.time-obj.index*obj.track1)/obj.track2)
+local z = obj.zoom
 obj.zoom = obj.zoom + scale * obj.track3 * p
-obj.oy = obj.oy - (obj.h * obj.zoom - obj.h) * 0.5
+if ax ~= 1 then
+  local ofs = (obj.w * obj.zoom - obj.w * z) * 0.5
+  obj.ox = obj.ox + (ax == 0 and ofs or -ofs)
+end
+if ay ~= 1 then
+  local ofs = (obj.h * obj.zoom - obj.h * z) * 0.5
+  obj.oy = obj.oy + (ay == 0 and ofs or -ofs)
+end
