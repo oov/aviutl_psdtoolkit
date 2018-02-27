@@ -1,0 +1,68 @@
+@ÉtÉFÅ[Éh
+--track0:ë¨Ç≥(ïb),0,1,0.10,0.01
+--track1:ä‘äu(ïb),0,1,0.01,0.01
+--track2:ägëÂó¶,0,100,1,0.01
+--track3:Xç¿ïW,-100,100,4,0.01
+--check0:ÉtÉFÅ[ÉhÉAÉEÉgÇÕÉVÉìÉvÉã,1
+if subobj.notfound then
+  obj.alpha = 0
+  return
+end
+local time = subobj.time
+local totaltime = subobj.totaltime
+
+local sofs = obj.index * obj.track1
+local sl = sofs
+local sr = sl + obj.track0
+local sp = time < sl and 0 or time > sr and 1 or (time - sl)/(sr - sl)
+local eofs = obj.check0 and 0 or (obj.index * obj.track1)
+local el = totaltime - eofs - obj.track0
+local er = el + obj.track0
+local ep = time < el and 0 or time > er and 1 or (time - el)/(er - el)
+local prog = sp * (1 - ep)
+if prog <= 0 then
+  obj.alpha = 0
+  return
+end
+if prog >= 1 then
+  return
+end
+if ep > 0 and obj.check0 then
+  obj.alpha = obj.alpha * prog
+  return
+end
+obj.alpha = obj.alpha * prog
+obj.zoom = obj.zoom * prog + (obj.zoom * obj.track2) * (1 - prog)
+obj.ox = obj.ox * prog + (obj.ox + obj.track3) * (1 - prog)
+
+@âÒì]ÇµÇƒìoèÍ
+--track0:ë¨Ç≥(ïb),-1,1,0.10,0.01
+--track1:ä‘äu(ïb),0,1,0.03,0.01
+local p, v = obj.track0 > 0 and 1 or 0, 90
+if obj.track0 > 0 then
+  p = (obj.track0-subobj.time+obj.index*obj.track1)/obj.track0
+else
+  p = (obj.track0-subobj.time+subobj.totaltime-(obj.num-obj.index-1)*obj.track1)/obj.track0
+  v = -v
+end
+if p <= 0 then
+  p = 0
+elseif p >= 1 then
+  p = 1
+end
+obj.ry = obj.ry * (1 - p) + (obj.ry + v) * p
+
+@Ç⁄ÇÊÇÒ
+--track0:í∑Ç≥(ïb),0,5,0.30,0.01
+--track1:ä‘äu(ïb),0,1,0.03,0.01
+--track2:ë¨Ç≥(ïb),0.01,1,0.1,0.01
+--track3:ÉTÉCÉY,0.01,1,0.05,0.01
+local p = (obj.track0-subobj.time+obj.index*obj.track1)/obj.track0
+local scale
+if p <= 0 or p >= 1 then
+  scale = 0
+else
+  scale = math.sin(math.pi*(subobj.time-obj.index*obj.track1)/obj.track2)*obj.track3
+end
+obj.zoom = obj.zoom + scale * p
+obj.oy = obj.oy - (obj.h * obj.zoom - obj.h) * 0.5

@@ -46,6 +46,7 @@ sed 's/\r$//' 'src/lua/PSDToolKit.lua' | sed 's/$/\r/' > 'bin/script/PSDToolKit/
 sed 's/\r$//' 'src/lua/PSDToolKitIndex.lua' | sed 's/$/\r/' > 'bin/script/PSDToolKit.lua'
 sed 's/\r$//' 'src/lua/@PSDToolKit.anm' | sed 's/$/\r/' > 'bin/script/PSDToolKit/@PSDToolKit.anm'
 sed 's/\r$//' 'src/lua/@PSDToolKit.obj' | sed 's/$/\r/' > 'bin/script/PSDToolKit/@PSDToolKit.obj'
+sed 's/\r$//' 'src/lua/@subobj.anm' | sed 's/$/\r/' > 'bin/script/PSDToolKit/@subobj.anm'
 sed 's/\r$//' 'src/lua/default.lua' | sed 's/$/\r/' > 'bin/script/PSDToolKit/default.lua'
 sed 's/\r$//' 'src/lua/setting.lua-template' | sed 's/$/\r/' > 'bin/script/PSDToolKit/setting.lua-template'
 

@@ -521,7 +521,7 @@ end
 function SubtitleStates:mes(index, obj)
   local s = self:get(index)
   if s == nil or s.used then
-    return nil
+    return P.emptysubobj
   end
   s:mes(obj)
   return s
@@ -593,6 +593,8 @@ end
 P.talk = TalkStates.new()
 P.subtitle = SubtitleStates.new()
 P.valueholder = ValueHolderStates.new()
+
+P.emptysubobj = {frame = 0, time = 0, totalframe = 1, totaltime = 1, notfound = true}
 
 P.print = print
 P.PSDState = PSDState
