@@ -180,6 +180,34 @@ func (ipc *IPC) ExportFaviewSlider(filePath, sliderName string, names, values []
 	return err
 }
 
+func (ipc *IPC) ExportLayerNames(filePath string, names, values []string, selectedIndex int) error {
+	var err error
+	ipc.do(func() {
+		fmt.Print("EXLN")
+		ods.ODS("  FilePath: %s", filePath)
+		if err = writeString(filePath); err != nil {
+			return
+		}
+		if err = writeString(strings.Join(names, "\x00")); err != nil {
+			return
+		}
+		if err = writeString(strings.Join(values, "\x00")); err != nil {
+			return
+		}
+		if err = writeInt32(int32(selectedIndex)); err != nil {
+			return
+		}
+	})
+	if err != nil {
+		return err
+	}
+	ods.ODS("wait EXLN reply...")
+	err = <-ipc.reply
+	ods.ODS("wait EXLN reply ok")
+	ipc.replyDone <- struct{}{}
+	return err
+}
+
 func (ipc *IPC) Abort(err error) {
 	ipc.queue <- nil
 	writeReply(err)

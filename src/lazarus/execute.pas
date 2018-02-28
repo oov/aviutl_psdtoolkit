@@ -9,6 +9,7 @@ uses
   Classes;
 
 type
+  TSiblingIndices = array of integer;
   { TSendEditingImageStateToExEdit }
 
   TSendEditingImageStateToExEdit = class(TThread)
@@ -46,10 +47,276 @@ type
       SelectedIndex: integer);
   end;
 
+  { TExportLayerNames }
+
+  TExportLayerNames = class(TThread)
+  private
+    FWindow: THandle;
+    FFilePath: UTF8String;
+    FNames: array of UTF8String;
+    FValues: array of UTF8String;
+    FSelectedIndex: integer;
+    function FindSiblings(const S: UTF8String): TSiblingIndices;
+    function GetParentLayerName(const S: UTF8String): UTF8String;
+    function ToReadable(const S: UTF8String): UTF8String;
+    procedure Copy();
+    procedure CopySiblings();
+    function SiblingsToLuaScript(): UTF8String;
+    procedure ExportByCSV(FileName: WideString);
+    procedure ExportByANM(FileName: WideString);
+    procedure ExportSiblings();
+  protected
+    procedure Execute; override;
+  public
+    constructor Create(Window: THandle; FilePath: UTF8String;
+      Names, Values: UTF8String; SelectedIndex: integer);
+  end;
+
 implementation
 
 uses
   Windows, SysUtils, Find, Util;
+
+const
+  HWND_MESSAGE = HWND(-3);
+
+{ TExportLayerNames }
+
+function TExportLayerNames.FindSiblings(const S: UTF8String): TSiblingIndices;
+var
+  Parent: UTF8String;
+  I, N, ParentLen: integer;
+begin
+  Parent := GetParentLayerName(S) + '/';
+  ParentLen := Length(Parent);
+  N := StrCount(PChar(Parent), '/');
+  for I := Low(FNames) to High(FNames) do begin
+    if Length(FNames[I]) <= ParentLen then
+      continue;
+    if not CompareMem(@Parent[1], @FNames[I][1], ParentLen) then
+      continue;
+    if StrCount(PChar(FNames[I]), '/') <> N then
+      continue;
+    SetLength(Result, Length(Result) + 1);
+    Result[Length(Result)-1] := I;
+  end;
+end;
+
+function TExportLayerNames.GetParentLayerName(const S: UTF8String): UTF8String;
+var
+  P, PC: PChar;
+begin
+  P := PChar(S);
+  PC := StrRScan(P, '/');
+  if PC = nil then begin
+    Result := '';
+    Exit;
+  end;
+  Result := System.Copy(S, 1, PC - P);
+end;
+
+function TExportLayerNames.ToReadable(const S: UTF8String): UTF8String;
+var
+  P, PC: PChar;
+begin
+  P := PChar(S);
+  PC := StrRScan(P, '/');
+  if PC = nil then begin
+    Result := DecodePercentEncoding(S);
+    Exit;
+  end;
+  Result := DecodePercentEncoding(UTF8String(PC + 1));
+end;
+
+procedure TExportLayerNames.Copy();
+begin
+  if not CopyToClipboard(FWindow, WideString(FValues[FSelectedIndex])) then
+    MessageBox(FWindow, 'could not open clipboard', 'PSDToolKit', MB_ICONERROR);
+end;
+
+procedure TExportLayerNames.CopySiblings();
+begin
+  if not CopyToClipboard(FWindow, WideString(SiblingsToLuaScript())) then
+    MessageBox(FWindow, 'could not open clipboard', 'PSDToolKit', MB_ICONERROR);
+end;
+
+function TExportLayerNames.SiblingsToLuaScript(): UTF8String;
+var
+  Siblings: TSiblingIndices;
+  I: integer;
+begin
+  Siblings := FindSiblings(FNames[FSelectedIndex]);
+  Result := Format('--track0:%s,0,%d,0,1'#13#10,
+    [StringReplace(ToReadable(GetParentLayerName(FNames[FSelectedIndex])), ',', '_', [rfReplaceAll]), Length(Siblings)]);
+  Result := Result + 'local values = {'#13#10;
+  for I := Low(Siblings) to High(Siblings) do
+    Result := Result + '  ' + StringifyForLua(FValues[Siblings[I]]) + ','#13#10;
+  Result := Result + '}'#13#10;
+  Result := Result + 'PSD:addstate(values, obj.track0)'#13#10;
+end;
+
+procedure TExportLayerNames.ExportByCSV(FileName: WideString);
+var
+  I: integer;
+  Siblings: TSiblingIndices;
+  F: TFileStreamW;
+begin
+  Siblings := FindSiblings(FNames[FSelectedIndex]);
+  F := TFileStreamW.Create(FileName);
+  try
+    for I := Low(Siblings) to High(Siblings) do
+    begin
+      WriteRawString(F, StringifyForCSV(ToReadable(FNames[Siblings[I]])));
+      WriteRawString(F, ',');
+      WriteRawString(F, StringifyForCSV(FValues[Siblings[I]]));
+      WriteRawString(F, #13#10);
+    end;
+  finally
+    F.Free;
+  end;
+end;
+
+procedure TExportLayerNames.ExportByANM(FileName: WideString);
+var
+  SS: ShiftJISString;
+  F: TFileStreamW;
+begin
+  F := TFileStreamW.Create(FileName);
+  try
+    SS := SiblingsToLuaScript();
+    WriteRawString(F, SS);
+  finally
+    F.Free;
+  end;
+end;
+
+procedure TExportLayerNames.ExportSiblings();
+var
+  S: UTF8String;
+  FileName: WideString;
+begin
+  S := Sanitize(ChangeFileExt(ExtractFileName(Token('|', FFilePath)), '') +
+    '-' + ToReadable(GetParentLayerName(FNames[FSelectedIndex])) + '.anm');
+  S := StringReplace(S, '\', '_', [rfReplaceAll]);
+  S := StringReplace(S, '@', '_', [rfReplaceAll]);
+  FileName := SaveDialog(FWindow, 'Save SimpleView slider as file',
+    'AviUtl animation effect script(*.anm)'#0'*.anm'#0'CSV file(*.csv)'#0'*.csv'#0#0,
+    1, WideString(S), 'anm', ExtractFilePath(GetDLLName()) + '..');
+  case LowerCase(ExtractFileExt(FileName)) of
+    '.anm': ExportByANM(FileName);
+    '.csv': ExportByCSV(FileName);
+  end;
+end;
+
+procedure TExportLayerNames.Execute;
+var
+  I: integer;
+  PW: TExEditMultiParameterDialog;
+  FoundDialog: boolean;
+  Menu, DummyWindow: THandle;
+  Name, WS: WideString;
+  Pt: TPoint;
+  wc: WNDCLASS;
+  ForeignThreadId: DWORD;
+begin
+  wc.style := 0;
+  wc.lpfnWndProc := @DefWindowProc;
+  wc.cbClsExtra := 0;
+  wc.cbWndExtra := 0;
+  wc.hInstance := hInstance;
+  wc.hIcon := 0;
+  wc.hCursor := 0;
+  wc.hbrBackground := 0;
+  wc.lpszMenuName := nil;
+  wc.lpszClassName := 'DummyWindow';
+  RegisterClass(wc);
+  DummyWindow := CreateWindow('DummyWindow', nil, WS_OVERLAPPEDWINDOW,
+    CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
+    HWND_MESSAGE, 0, hInstance, nil);
+  try
+    FoundDialog := FindExEditMultiParameterDialog(PW);
+    Menu := CreatePopupMenu();
+    try
+      Name := WideString(ToReadable(FNames[FSelectedIndex]));
+      WS := '"' + Name + '" をクリップボードにコピー';
+      AppendMenuW(Menu, MF_ENABLED or MF_STRING, 1000, PWideChar(WS));
+      AppendMenuW(Menu, MF_ENABLED or MF_SEPARATOR, 0, nil);
+
+      if FoundDialog and (Length(PW.Caption) > 0) then
+      begin
+        for I := Low(PW.Caption) to High(PW.Caption) do
+        begin
+          WS := '"' + Name + '" を「' + PW.Caption[I] + '」に割り当て';
+          AppendMenuW(Menu, MF_ENABLED or MF_STRING, 2000 + I, PWideChar(WS));
+        end;
+        AppendMenuW(Menu, MF_ENABLED or MF_SEPARATOR, 0, nil);
+      end;
+
+      WS := '"' + Name +
+        '" と同じ階層のレイヤー全てをクリップボードにコピー';
+      AppendMenuW(Menu, MF_ENABLED or MF_STRING, 1001, PWideChar(WS));
+      WS := '"' + Name +
+        '" と同じ階層のレイヤー全てをファイルにエクスポート';
+      AppendMenuW(Menu, MF_ENABLED or MF_STRING, 1002, PWideChar(WS));
+
+      GetCursorPos(Pt);
+
+      ForeignThreadId := GetWindowThreadProcessId(FWindow, nil);
+      AttachThreadInput(GetCurrentThreadId(), ForeignThreadId, True);
+      try
+        SetForegroundWindow(DummyWindow);
+      finally
+        AttachThreadInput(GetCurrentThreadId(), ForeignThreadId, False);
+      end;
+      I := integer(TrackPopupMenu(Menu, TPM_TOPALIGN or TPM_LEFTALIGN or
+        TPM_RETURNCMD or TPM_RIGHTBUTTON, Pt.x, Pt.y, 0, DummyWindow, nil));
+      case I of
+        0: Exit;
+        1000: Copy();
+        1001: CopySiblings();
+        1002: ExportSiblings();
+        else
+        begin
+          if (0 <= I - 2000) and (I - 2000 < Length(PW.Caption)) then
+          begin
+            WS := WideString(FValues[FSelectedIndex]);
+            SendMessageW(pw.Edit[I - 2000], WM_SETTEXT, 0, {%H-}LPARAM(PWideChar(WS)));
+          end;
+        end;
+      end;
+    finally
+      DestroyMenu(Menu);
+    end;
+  finally
+    DestroyWindow(DummyWindow);
+  end;
+end;
+
+constructor TExportLayerNames.Create(Window: THandle; FilePath: UTF8String;
+  Names, Values: UTF8String; SelectedIndex: integer);
+var
+  I: integer;
+begin
+  inherited Create(False);
+  FreeOnTerminate := True;
+  FWindow := Window;
+  FFilePath := FilePath;
+  I := 0;
+  while Names <> '' do
+  begin
+    SetLength(FNames, I + 1);
+    FNames[I] := Token(#0, Names);
+    Inc(I);
+  end;
+  I := 0;
+  while Values <> '' do
+  begin
+    SetLength(FValues, I + 1);
+    FValues[I] := Token(#0, Values);
+    Inc(I);
+  end;
+  FSelectedIndex := SelectedIndex;
+end;
 
 { TSendEditingImageStateToExEdit }
 
@@ -107,24 +374,16 @@ begin
 end;
 
 function TExportFaviewSlider.SliderToLuaScript(): UTF8String;
-  function Value(const I: integer): UTF8String;
-  begin
-    if (Length(FValues[I]) > 2) and (FValues[I][2] = '.') then
-      Result := '  ' + StringifyForLua(FValues[I]) + ','
-    else
-      Result := '  ' + StringifyForLua(FValues[I]) + ', -- ' + FNames[I];
-  end;
-
 var
   MinIndex, MaxIndex, I: integer;
 begin
   MinIndex := Max(Low(FNames), Low(FValues));
   MaxIndex := Min(High(FNames), High(FValues));
   Result := Format('--track0:%s,0,%d,0,1'#13#10,
-    [GetReadableSliderName(), MaxIndex - MinIndex + 1]);
+    [StringReplace(GetReadableSliderName(), ',', '_', [rfReplaceAll]), MaxIndex - MinIndex + 1]);
   Result := Result + 'local values = {'#13#10;
   for I := MinIndex to MaxIndex do
-    Result := Result + Value(I) + #13#10;
+    Result := Result + '  ' + StringifyForLua(FValues[I]) + ','#13#10;
   Result := Result + '}'#13#10;
   Result := Result + 'PSD:addstate(values, obj.track0)'#13#10;
 end;
@@ -195,8 +454,6 @@ begin
 end;
 
 procedure TExportFaviewSlider.Execute;
-const
-  HWND_MESSAGE = HWND(-3);
 var
   I: integer;
   PW: TExEditMultiParameterDialog;

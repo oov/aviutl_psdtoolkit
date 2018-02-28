@@ -22,6 +22,7 @@ type
     procedure OnRequest(Sender: TObject; const Command: UTF8String);
     procedure OnReceiveEditingImageState();
     procedure OnReceiveExportFaviewSlider();
+    procedure OnReceiveExportLayerNames();
     procedure EnterCS(CommandName: string);
     procedure LeaveCS(CommandName: string);
   public
@@ -305,6 +306,7 @@ begin
   case Command of
     'EDIS': OnReceiveEditingImageState();
     'EXFS': OnReceiveExportFaviewSlider();
+    'EXLN': OnReceiveExportLayerNames();
     else
     begin
       WriteUInt32(FRemoteProcess.Input, Length(UnknownCommandErr) or $80000000);
@@ -342,13 +344,32 @@ begin
   Names := FReceiver.ReadString();
   Values := FReceiver.ReadString();
   SelectedIndex := FReceiver.ReadInt32();
-  ODS('  -> SliderName: %s / Names: %s / Values: %s / SelectedIndex: %d', [SliderName, Names, Values, SelectedIndex]);
+  ODS('  -> SliderName: %s / Names LEN: %d / Values LEN: %d / SelectedIndex: %d', [SliderName, Length(Names), Length(Values), SelectedIndex]);
   EnterCS('EXFS');
   try
     WriteUInt32(FRemoteProcess.Input, $80000000);
     TExportFaviewSlider.Create(FPSDToolWindow, FilePath, SliderName, Names, Values, SelectedIndex);
   finally
     LeaveCS('EXFS');
+  end;
+end;
+
+procedure TPSDToolKitBridge.OnReceiveExportLayerNames();
+var
+  FilePath, Names, Values: UTF8String;
+  SelectedIndex: integer;
+begin
+  FilePath := FReceiver.ReadString();
+  Names := FReceiver.ReadString();
+  Values := FReceiver.ReadString();
+  SelectedIndex := FReceiver.ReadInt32();
+  ODS('  -> Names LEN: %d / Values LEN: %d / SelectedIndex: %d', [Length(Names), Length(Values), SelectedIndex]);
+  EnterCS('EXLN');
+  try
+    WriteUInt32(FRemoteProcess.Input, $80000000);
+    TExportLayerNames.Create(FPSDToolWindow, FilePath, Names, Values, SelectedIndex);
+  finally
+    LeaveCS('EXLN');
   end;
 end;
 

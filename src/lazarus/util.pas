@@ -25,6 +25,8 @@ function SaveDialog(const Window: THandle; const Title: WideString;
   DefFileName: WideString = ''; DefExt: WideString = '';
   InitialDir: WideString = ''): WideString;
 function CopyToClipboard(const hwnd: THandle; const S: WideString): boolean;
+function DecodePercentEncoding(const S: RawByteString): RawByteString;
+function StrCount(const S, Delimiter: PChar): integer;
 
 function Token(const Delimiter: UTF8String; var s: UTF8String): UTF8String;
 function GetDLLName(): WideString;
@@ -144,6 +146,65 @@ begin
   end;
   CloseClipboard();
   Result := True;
+end;
+
+function DecodePercentEncoding(const S: RawByteString): RawByteString;
+const
+  Table: array[byte] of byte = (
+    $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0,
+    $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0,
+    $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0,
+    $0, $1, $2, $3, $4, $5, $6, $7, $8, $9, $0, $0, $0, $0, $0, $0,
+    $0, $a, $b, $c, $d, $e, $f, $0, $0, $0, $0, $0, $0, $0, $0, $0,
+    $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0,
+    $0, $a, $b, $c, $d, $e, $f, $0, $0, $0, $0, $0, $0, $0, $0, $0,
+    $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0,
+    $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0,
+    $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0,
+    $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0,
+    $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0,
+    $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0,
+    $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0,
+    $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0,
+    $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0, $0);
+var
+  Src, EndPos, Dest: PByte;
+begin
+  SetLength(Result, Length(S));
+  Dest := @Result[1];
+  Src := @S[1];
+  EndPos := Src + Length(S);
+  while (Src < EndPos) do
+  begin
+    if (Src^ = $25) and (Src + 2 < EndPos) then
+    begin
+      Dest^ := (Table[(Src + 1)^] shl 4) or Table[(Src + 2)^];
+      Inc(Src, 3);
+    end
+    else
+    begin
+      Dest^ := Src^;
+      Inc(Src);
+    end;
+    Inc(Dest);
+  end;
+  SetLength(Result, Dest - @Result[1]);
+end;
+
+function StrCount(const S, Delimiter: PChar): integer;
+var
+  SS: PChar;
+begin
+  SS := S;
+  Result := 0;
+  while True do
+  begin
+    SS := StrPos(SS, Delimiter);
+    if SS = nil then
+      break;
+    Inc(Result);
+    Inc(SS);
+  end;
 end;
 
 function Token(const Delimiter: UTF8String; var S: UTF8String): UTF8String;

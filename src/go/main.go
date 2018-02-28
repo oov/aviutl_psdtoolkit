@@ -49,6 +49,7 @@ func main() {
 	ipcm.GCing = g.Touch
 	g.SendEditingImageState = ipcm.SendEditingImageState
 	g.ExportFaviewSlider = ipcm.ExportFaviewSlider
+	g.ExportLayerNames = ipcm.ExportLayerNames
 	g.DropFiles = func(filenames []string) {
 		if err := g.AddFile(extractPSDAndPFV(filenames)); err != nil {
 			g.ReportError(err)

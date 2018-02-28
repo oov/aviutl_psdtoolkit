@@ -42,6 +42,7 @@ type LayerView struct {
 
 	ReportError        func(error)
 	ExportFaviewSlider func(path, sliderName string, names, values []string, selectedIndex int)
+	ExportLayerNames   func(path string, names, values []string, selectedIndex int)
 }
 
 func New(mainFontHandle, symbolFontHandle *nk.UserFont) (*LayerView, error) {
@@ -173,9 +174,7 @@ func drawTextMiddle(canvas *nk.CommandBuffer, rect nk.Rect, s string, font *nk.U
 	nk.NkDrawText(canvas, r, s, int32(len(s)), font, nk.Color{}, col)
 }
 
-func (lv *LayerView) layerTreeItem(ctx *nk.Context, indent, thumbSize float32, thumb *nk.Image, visible, forceVisible bool, l *composite.Layer) (clicked bool, ctrl bool) {
-	clicked = false
-	ctrl = false
+func (lv *LayerView) layerTreeItem(ctx *nk.Context, indent, thumbSize float32, thumb *nk.Image, visible, forceVisible bool, l *composite.Layer) (clicked int, ctrl bool) {
 	const (
 		visibleSize  = 24
 		collapseSize = 24
@@ -214,7 +213,7 @@ func (lv *LayerView) layerTreeItem(ctx *nk.Context, indent, thumbSize float32, t
 	var rect nk.Rect
 	state := nk.NkWidget(&rect, ctx)
 	if state == 0 {
-		return false, false
+		return 0, false
 	}
 
 	canvas := nk.NkWindowGetCanvas(ctx)
@@ -223,7 +222,12 @@ func (lv *LayerView) layerTreeItem(ctx *nk.Context, indent, thumbSize float32, t
 	if state != nk.WidgetRom {
 		if !forceVisible && nk.NkWidgetIsHovered(ctx) != 0 {
 			bg.SetA(32)
-			clicked = nk.NkInputIsMousePressed(ctx.Input(), nk.ButtonLeft) != 0
+			if nk.NkInputIsMousePressed(ctx.Input(), nk.ButtonLeft) != 0 {
+				clicked |= 1
+			}
+			if nk.NkInputIsMousePressed(ctx.Input(), nk.ButtonRight) != 0 {
+				clicked |= 2
+			}
 			ctrl = nk.NkInputIsKeyDown(ctx.Input(), nk.KeyCtrl) != 0
 		}
 	}
@@ -279,14 +283,23 @@ func (lv *LayerView) layoutLayer(ctx *nk.Context, img *img.Image, indent float32
 	_, forceVisible := img.Layers.ForceVisible[l.SeqID]
 	thumb, _ := lv.thumbnailChip[l.SeqID]
 	nk.NkLayoutSpaceBegin(ctx, nk.Static, 28, 3)
-	if clicked, ctrl := lv.layerTreeItem(ctx, indent, float32(lv.thumbnailSize), thumb, visible, forceVisible, l); clicked {
-		if ctrl {
-			modified = img.Layers.SetVisibleExclusive(l.SeqID, !l.Visible, img.Flip) || modified
-		} else {
-			modified = img.Layers.SetVisible(l.SeqID, !l.Visible, img.Flip) || modified
-		}
-		for r := l.Parent; r.SeqID != composite.SeqIDRoot; r = r.Parent {
-			modified = img.Layers.SetVisible(r.SeqID, true, img.Flip) || modified
+	if clicked, ctrl := lv.layerTreeItem(ctx, indent, float32(lv.thumbnailSize), thumb, visible, forceVisible, l); clicked != 0 {
+		if clicked&1 == 1 {
+			if ctrl {
+				modified = img.Layers.SetVisibleExclusive(l.SeqID, !l.Visible, img.Flip) || modified
+			} else {
+				modified = img.Layers.SetVisible(l.SeqID, !l.Visible, img.Flip) || modified
+			}
+			for r := l.Parent; r.SeqID != composite.SeqIDRoot; r = r.Parent {
+				modified = img.Layers.SetVisible(r.SeqID, true, img.Flip) || modified
+			}
+		} else if clicked&2 == 2 {
+			names := img.Layers.GetFullPathLayerNames()
+			values := make([]string, len(names))
+			for i := range names {
+				values[i] = "v1" + prop.Encode(names[i])
+			}
+			lv.ExportLayerNames(*img.FilePath, names, values, img.Layers.GetFlatIndex(l))
 		}
 	}
 	nk.NkLayoutSpaceEnd(ctx)

@@ -492,6 +492,27 @@ type deserializingState struct {
 	Priority int
 }
 
+func (m *LayerManager) GetFullPathLayerNames() []string {
+	tmpMap := map[int]string{}
+	for fullpath, fi := range m.FullPath {
+		tmpMap[fi] = fullpath
+	}
+	r := make([]string, len(m.Flat))
+	for i := range m.Flat {
+		r[i] = tmpMap[i]
+	}
+	return r
+}
+
+func (m *LayerManager) GetFlatIndex(l *composite.Layer) int {
+	for fidx, mi := range m.Flat {
+		if mi == l.SeqID {
+			return fidx
+		}
+	}
+	return -1
+}
+
 func (m *LayerManager) Deserialize(s string, flip Flip, pfv *PFV) (bool, Flip, error) {
 	layers := make(map[int]*deserializingState, len(m.Flat))
 	n := make([]deserializingState, len(m.Flat))
@@ -552,6 +573,23 @@ func (m *LayerManager) Deserialize(s string, flip Flip, pfv *PFV) (bool, Flip, e
 					i++
 				}
 			}
+		case "v0", "v1":
+			if len(line) < 5 || line[2] != '.' {
+				ods.ODS("unexpected format: %q. skipped.", line)
+				continue
+			}
+			ln, err := prop.Decode(line[2:])
+			if err != nil {
+				ods.ODS("%q is not a valid layer name. skipped. %v", line[2:], err)
+				continue
+			}
+			idx, ok := m.FullPath[ln]
+			if !ok {
+				ods.ODS("layer %q is not found. skipped.", ln)
+				continue
+			}
+			n[idx].Visible = line[1] == '1'
+			n[idx].Priority = priority + 1
 		case "F.", "F_":
 			if pfv == nil {
 				ods.ODS("do not have favorite data. skipped.")

@@ -52,6 +52,7 @@ type GUI struct {
 
 	SendEditingImageState func(path, state string) error
 	ExportFaviewSlider    func(path, sliderName string, names, values []string, selectedIndex int) error
+	ExportLayerNames      func(path string, names, values []string, selectedIndex int) error
 	DropFiles             func(filenames []string)
 }
 
@@ -116,6 +117,11 @@ func (g *GUI) Init(caption string, bgImg, mainFont, symbolFont []byte) error {
 	g.layerView.ExportFaviewSlider = func(path, sliderName string, names, values []string, selectedIndex int) {
 		if err := g.ExportFaviewSlider(path, sliderName, names, values, selectedIndex); err != nil {
 			g.ReportError(errors.Wrap(err, "gui: cannot export faview slider"))
+		}
+	}
+	g.layerView.ExportLayerNames = func(path string, names, values []string, selectedIndex int) {
+		if err := g.ExportLayerNames(path, names, values, selectedIndex); err != nil {
+			g.ReportError(errors.Wrap(err, "gui: cannot export layer names"))
 		}
 	}
 
