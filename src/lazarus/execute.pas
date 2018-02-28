@@ -107,14 +107,12 @@ begin
 end;
 
 function TExportFaviewSlider.SliderToLuaScript(): UTF8String;
-  function Value(const I: integer; const Comma: boolean): UTF8String;
-  const
-    C: array[boolean] of UTF8String = ('', ',');
+  function Value(const I: integer): UTF8String;
   begin
     if (Length(FValues[I]) > 2) and (FValues[I][2] = '.') then
-      Result := '  ' + StringifyForLua(FValues[I]) + C[Comma]
+      Result := '  ' + StringifyForLua(FValues[I]) + ','
     else
-      Result := '  ' + StringifyForLua(FValues[I]) + C[Comma] + ' -- ' + FNames[I];
+      Result := '  ' + StringifyForLua(FValues[I]) + ', -- ' + FNames[I];
   end;
 
 var
@@ -125,9 +123,8 @@ begin
   Result := Format('--track0:%s,0,%d,0,1'#13#10,
     [GetReadableSliderName(), MaxIndex - MinIndex + 1]);
   Result := Result + 'local values = {'#13#10;
-  for I := MinIndex to MaxIndex - 1 do
-    Result := Result + Value(I, True) + #13#10;
-  Result := Result + Value(MaxIndex, False) + #13#10;
+  for I := MinIndex to MaxIndex do
+    Result := Result + Value(I) + #13#10;
   Result := Result + '}'#13#10;
   Result := Result + 'PSD:addstate(values, obj.track0)'#13#10;
 end;
