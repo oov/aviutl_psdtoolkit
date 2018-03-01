@@ -1,5 +1,5 @@
 [vo]
-length=256
+length=64
 [vo.0]
 _name=アニメーション効果
 track0=1.00
