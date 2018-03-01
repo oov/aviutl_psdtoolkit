@@ -19,11 +19,12 @@
 local P = {}
 
 P.wav_firemode = 0
+P.wav_lipsync = true
+P.wav_mpslider = 0
 P.wav_insertmode = 2
 P.wav_groupsubtitle = true
 P.wav_subtitlemargin = 0
 P.wav_subtitleencoding = "sjis"
-P.wav_mpslider = 0
 P.wav_exafinder = 0
 function P:wav_examodifler_wav(exa, values, modifiers)
   exa:set("ao", "start", 1)

@@ -243,10 +243,12 @@ function P.ondrop(files, state)
       index = index + 1
 
       -- 口パク準備用エイリアスを組み立て
-      local aini = P.exaread(filepath, "lipsync")
-      setting:wav_examodifler_lipsync(aini, values, modifiers)
-      P.insertexa(oini, aini, index, index + 1)
-      index = index + 1
+      if setting.wav_lipsync then
+        local aini = P.exaread(filepath, "lipsync")
+        setting:wav_examodifler_lipsync(aini, values, modifiers)
+        P.insertexa(oini, aini, index, index + 1)
+        index = index + 1
+      end
 
       -- 多目的スライダーを組み立て
       if setting.wav_mpslider > 0 then
