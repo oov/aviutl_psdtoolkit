@@ -53,16 +53,10 @@ PSDToolKit を使用したこと及び使用しなかったことによるいか
   - 手動で起動しても基本的にはなにもできません
 - script/PSDToolKit/@PSDToolKit.anm
   - アニメーション効果スクリプト
-  - Assign
-  - オブジェクト描画
-  - パーツ差し替え
-  - 口パク あいうえお
-  - 口パク 開閉のみ
-  - 目パチ
-  - 字幕表示フェード
 - script/PSDToolKit/@PSDToolKit.obj
   - カスタムオブジェクトスクリプト
-  - 口パク準備
+- script/PSDToolKit/@subobj.anm
+  - アニメーション効果スクリプト
 - script/PSDToolKit/PSDToolKit.lua
   - PSDToolKit のメイン処理が書かれたファイル
 - script/PSDToolKit/setting.lua-template
@@ -78,6 +72,8 @@ PSDToolKit を使用したこと及び使用しなかったことによるいか
   - 口パク　あいうえお
   - 口パク　開閉のみ
   - 口パク準備
+  - 多目的スライダー
+  - 字幕準備
   - 目パチ
 - GCMZDrops/*.lua
   - ごちゃまぜドロップス用スクリプトファイル
