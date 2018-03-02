@@ -68,7 +68,9 @@ type
     DynAttack: single;
     DynRelease: single;
     Aux1Send: single;
+    Aux1SendPan: single;
     PostGain: single;
+    Pan: single;
   end;
 
   TAuxParams = record
@@ -108,8 +110,10 @@ begin
   Result.DynRelease := single(values[10]) / 10000.0 * 0.82;
 
   Result.Aux1Send := sliderToDB(values[11] / 10000.0);
+  Result.Aux1SendPan := single(values[12]) / 10000.0;
 
-  Result.PostGain := sliderToDB(values[12] / 10000.0);
+  Result.PostGain := sliderToDB(values[13] / 10000.0);
+  Result.Pan := single(values[14]) / 10000.0;
 end;
 
 function AuxParams(const values: PInteger): TAuxParams;
@@ -147,9 +151,11 @@ begin
   Result := Result + #13#10;
   Result := Result + '[Aux1 Send]'#13#10;
   Result := Result + Format('  Gain      %0.2f dB'#13#10, [Strip.CurrentAux1Send]);
+  Result := Result + Format('  Pan       %0.2f'#13#10, [Strip.CurrentAux1SendPan]);
   Result := Result + #13#10;
   Result := Result + '[Post Gain]'#13#10;
   Result := Result + Format('  Gain      %0.2f dB'#13#10, [Strip.CurrentPostGain]);
+  Result := Result + Format('  Pan       %0.2f'#13#10, [Strip.CurrentPan]);
 end;
 
 {
@@ -284,7 +290,9 @@ begin
   Strip.DynAttack := prms.DynAttack;
   Strip.DynRelease := prms.DynRelease;
   Strip.Aux1Send := prms.Aux1Send;
+  Strip.Aux1SendPan := prms.Aux1SendPan;
   Strip.PostGain := prms.PostGain;
+  Strip.Pan := prms.Pan;
   Strip.Fresh := True;
   Strip.Buffer.Write(fpip^.AudioP^, len * SizeOf(smallint));
   FillChar(fpip^.AudioP^, len * SizeOf(smallint), 0);
@@ -313,7 +321,7 @@ var
   i, j, len: integer;
   p: PSmallint;
   pMixBuf, pAux1Buf, pTempBuf: PSingle;
-  Duration, SampleRate, Gain, v: single;
+  Duration, SampleRate, Gain, GainL, GainR, v: single;
   finfo: TFileInfo;
   IT: TChannelStripMap.TIterator;
   Strip: TChannelStrip;
@@ -427,47 +435,95 @@ begin
 
         Gain := Power(10, Strip.CurrentPreGain / 20);
         pTempBuf := @FTempBuf[0];
-        j := j shr 1;
-        for i := 0 to j - 1 do
+        j := (j shr 1) div fpip^.AudioCh;
+        for i := 0 to j * fpip^.AudioCh - 1 do
         begin
           pTempBuf^ := single(p^) * ToSingle * Gain;
           Inc(p);
           Inc(pTempBuf);
         end;
 
-        pTempBuf := @FTempBuf[0];
-        Strip.ProcessEffects(pTempBuf, fpip^.AudioN);
-        Gain := Power(10, Strip.CurrentPostGain / 20);
-        for i := 0 to j - 1 do
-        begin
-          pTempBuf^ := pTempBuf^ * Gain;
-          Inc(pTempBuf);
-        end;
+        Strip.ProcessEffects(@FTempBuf[0], fpip^.AudioN);
 
-        pMixBuf := @FMixBuf[0];
-        pTempBuf := @FTempBuf[0];
         if Strip.Aux1Send > -96 then
         begin
-          Gain := Power(10, Strip.Aux1Send / 20);
+          pTempBuf := @FTempBuf[0];
           pAux1Buf := @FAux1Buf[0];
-          for i := 0 to j - 1 do
+          Gain := Power(10, Strip.Aux1Send / 20);
+          if fpip^.AudioCh = 2 then
           begin
-            pAux1Buf^ := pAux1Buf^ + pTempBuf^ * Gain;
-            pMixBuf^ := pMixBuf^ + pTempBuf^;
-            Inc(pMixBuf);
-            Inc(pAux1Buf);
-            Inc(pTempBuf);
-          end;
+            if Strip.Aux1SendPan <= 0 then
+              v := Strip.Aux1SendPan + 1.0
+            else
+              v := Strip.Aux1SendPan;
+            GainL := cos(v * PI * 0.5);
+            GainR := sin(v * PI * 0.5);
+            if Strip.Aux1SendPan <= 0 then
+              for i := 0 to j - 1 do
+              begin
+                v := (pTempBuf + 1)^;
+                (pAux1Buf + 0)^ := (pAux1Buf + 0)^ + ((pTempBuf + 0)^ + v * GainL) * Gain;
+                (pAux1Buf + 1)^ := (pAux1Buf + 1)^ + (v * GainR) * Gain;
+                Inc(pTempBuf, 2);
+                Inc(pAux1Buf, 2);
+              end
+            else
+              for i := 0 to j - 1 do
+              begin
+                v := (pTempBuf + 0)^;
+                (pAux1Buf + 0)^ := (pAux1Buf + 0)^ + (v * GainL) * Gain;
+                (pAux1Buf + 1)^ := (pAux1Buf + 1)^ + ((pTempBuf + 1)^ + v * GainR) * Gain;
+                Inc(pTempBuf, 2);
+                Inc(pAux1Buf, 2);
+              end
+          end
+          else
+            for i := 0 to j * fpip^.AudioCh - 1 do
+            begin
+              pAux1Buf^ := pAux1Buf^ + pTempBuf^ * Gain;
+              Inc(pTempBuf);
+              Inc(pAux1Buf);
+            end;
+        end;
+
+        pTempBuf := @FTempBuf[0];
+        pMixBuf := @FMixBuf[0];
+        Gain := Power(10, Strip.CurrentPostGain / 20);
+        if fpip^.AudioCh = 2 then
+        begin
+          if Strip.CurrentPan <= 0 then
+            v := Strip.CurrentPan + 1.0
+          else
+            v := Strip.CurrentPan;
+          GainL := cos(v * PI * 0.5);
+          GainR := sin(v * PI * 0.5);
+          if Strip.CurrentPan <= 0 then
+            for i := 0 to j - 1 do
+            begin
+              v := (pTempBuf + 1)^;
+              (pMixBuf + 0)^ := (pMixBuf + 0)^ + ((pTempBuf + 0)^ + v * GainL) * Gain;
+              (pMixBuf + 1)^ := (pMixBuf + 1)^ + (v * GainR) * Gain;
+              Inc(pTempBuf, 2);
+              Inc(pMixBuf, 2);
+            end
+          else
+            for i := 0 to j - 1 do
+            begin
+              v := (pTempBuf + 0)^;
+              (pMixBuf + 0)^ := (pMixBuf + 0)^ + (v * GainL) * Gain;
+              (pMixBuf + 1)^ := (pMixBuf + 1)^ + ((pTempBuf + 1)^ + v * GainR) * Gain;
+              Inc(pTempBuf, 2);
+              Inc(pMixBuf, 2);
+            end
         end
         else
-        begin
-          for i := 0 to j - 1 do
+          for i := 0 to j * fpip^.AudioCh - 1 do
           begin
-            pMixBuf^ := pMixBuf^ + pTempBuf^;
-            Inc(pMixBuf);
+            pTempBuf^ := pMixBuf^ + pTempBuf^ * Gain;
             Inc(pTempBuf);
+            Inc(pMixBuf);
           end;
-        end;
+
         FStrips.Items[IT.Data.Key] := Strip;
       until not IT.Next;
     finally
@@ -549,7 +605,7 @@ constructor TAudioMixer.Create;
 const
   ChannelStripPluginName = #$83#$60#$83#$83#$83#$93#$83#$6C#$83#$8B#$83#$58#$83#$67#$83#$8A#$83#$62#$83#$76; // チャンネルストリップ
   ChannelStripPluginInfo = ChannelStripPluginName + ' ' + Version;
-  ChannelStripTrackN = 13;
+  ChannelStripTrackN = 15;
   ChannelStripTrackName: array[0..ChannelStripTrackN - 1] of PChar =
     (
     'ID',
@@ -564,15 +620,17 @@ const
     'C Attack',
     'C Release',
     'Aux1Send',
-    #$8F#$6F#$97#$CD#$89#$B9#$97#$CA // 出力音量
+    'Aux1SPan',
+    #$8F#$6F#$97#$CD#$89#$B9#$97#$CA, // 出力音量
+    #$8D#$B6#$89#$45 // 左右
     );
   ChannelStripTrackDefault: array[0..ChannelStripTrackN - 1] of integer =
-    (-1, 0, 0, 200, 0, 3000, 0, 6000, 0, 1800, 5500, -10000, 0);
+    (-1, 0, 0, 200, 0, 3000, 0, 6000, 0, 1800, 5500, -10000, 0, 0, 0);
   ChannelStripTrackS: array[0..ChannelStripTrackN - 1] of integer =
-    (-1, -10000, 0, 1, -10000, 1, -10000, 0, 0, 0, 0, -10000, -10000);
+    (-1, -10000, 0, 1, -10000, 1, -10000, 0, 0, 0, 0, -10000, -10000, -10000, -10000);
   ChannelStripTrackE: array[0..ChannelStripTrackN - 1] of integer =
     (100, 10000, 500, 24000, 10000, 24000, 10000, 10000, 10000, 10000,
-    10000, 10000, 10000);
+    10000, 10000, 10000, 10000, 10000);
 
   Aux1ChannelStripPluginName =
     'Aux1 '#$83#$60#$83#$83#$83#$93#$83#$6C#$83#$8B#$83#$58#$83#$67#$83#$8A#$83#$62#$83#$76;
@@ -603,7 +661,7 @@ begin
     FILTER_FLAG_ALWAYS_ACTIVE or FILTER_FLAG_AUDIO_FILTER or
     FILTER_FLAG_WINDOW_SIZE or FILTER_FLAG_EX_INFORMATION;
   FChannelStripEntry.X := 240 or FILTER_WINDOW_SIZE_CLIENT;
-  FChannelStripEntry.Y := 500 or FILTER_WINDOW_SIZE_CLIENT;
+  FChannelStripEntry.Y := 540 or FILTER_WINDOW_SIZE_CLIENT;
   FChannelStripEntry.Name := ChannelStripPluginName;
   FChannelStripEntry.Information := ChannelStripPluginInfo;
   FChannelStripEntry.TrackN := ChannelStripTrackN;
@@ -660,6 +718,7 @@ begin
   ODS('    Attack:    %s us', [FLimiter.AttackDisp]);
   ODS('    Release:   %s ms', [FLimiter.ReleaseDisp]);
   ODS('    Limiter:   %s dB', [FLimiter.LimiterDisp]);
+  ODS('    Output:    %s dB', [FLimiter.OutputDisp]);
   }
 
   FAux1Strip := TAuxChannelStrip.Create();

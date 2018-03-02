@@ -38,9 +38,14 @@ type
 
     FCurrentAux1Send: single;
     FAux1Send: single;
+    FCurrentAux1SendPan: single;
+    FAux1SendPan: single;
 
     FCurrentPostGain: single;
     FPostGain: single;
+
+    FCurrentPan: single;
+    FPan: single;
   public
     constructor Create();
     destructor Destroy(); override;
@@ -73,9 +78,14 @@ type
 
     property CurrentAux1Send: single read FCurrentAux1Send write FCurrentAux1Send;
     property Aux1Send: single read FAux1Send write FAux1Send;
+    property CurrentAux1SendPan: single read FCurrentAux1SendPan write FCurrentAux1SendPan;
+    property Aux1SendPan: single read FAux1SendPan write FAux1SendPan;
 
     property CurrentPostGain: single read FCurrentPostGain write FCurrentPostGain;
     property PostGain: single read FPostGain write FPostGain;
+
+    property CurrentPan: single read FCurrentPan write FCurrentPan;
+    property Pan: single read FPan write FPan;
   end;
 
   { TIntegerHash }
@@ -123,8 +133,15 @@ begin
   FDynAttack := 0.18;
   FDynRelease := 0.55;
 
+  FAux1Send := 0;
+  FCurrentAux1Send := 0;
+  FAux1SendPan := 0;
+  FCurrentAux1SendPan := 0;
+
   FPostGain := 0;
   FCurrentPostGain := 0;
+  FPan := 0;
+  FCurrentPan := 0;
 end;
 
 destructor TChannelStrip.Destroy;
@@ -197,10 +214,21 @@ begin
     FCurrentAux1Send := FAux1Send;
     Result := True;
   end;
+  if FCurrentAux1SendPan <> FAux1SendPan then
+  begin
+    FCurrentAux1SendPan := FAux1SendPan;
+    Result := True;
+  end;
 
   if FCurrentPostGain <> FPostGain then
   begin
     FCurrentPostGain := FPostGain;
+    Result := True;
+  end;
+
+  if FCurrentPan <> FPan then
+  begin
+    FCurrentPan := FPan;
     Result := True;
   end;
 end;
