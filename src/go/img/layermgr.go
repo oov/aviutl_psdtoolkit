@@ -609,13 +609,19 @@ func (m *LayerManager) Deserialize(s string, flip Flip, pfv *PFV) (bool, Flip, e
 				ods.ODS("favorite node %q not found. skipped.", s)
 				continue
 			}
-			f, v := fn.RawState()
-			for i, pass := range f {
-				if !pass {
-					continue
+			if f, v := fn.RawState(); f == nil {
+				for i, visible := range v {
+					n[i].Visible = visible
+					n[i].Priority = priority + 1
 				}
-				n[i].Visible = v[i]
-				n[i].Priority = priority + 1
+			} else {
+				for i, pass := range f {
+					if !pass {
+						continue
+					}
+					n[i].Visible = v[i]
+					n[i].Priority = priority + 1
+				}
 			}
 		case "S.", "S_":
 			if pfv == nil {
