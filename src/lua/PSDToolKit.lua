@@ -164,12 +164,8 @@ LipSyncSimple.states = {}
 
 function LipSyncSimple:getstate(psd, obj)
   local volume = 0
-  local ts = psd.talkstate
-  local found = false
-  if ts ~= nil and not ts.used then
-    volume = ts.volume
-    ts.used = true
-    found = true
+  if psd.talkstate ~= nil then
+    volume = psd.talkstate.volume
   end
 
   local stat = LipSyncSimple.states[obj.layer] or {frame = obj.frame-1, n = -1, pat = 0}
@@ -195,7 +191,7 @@ function LipSyncSimple:getstate(psd, obj)
   end
   stat.frame = obj.frame
   LipSyncSimple.states[obj.layer] = stat
-  if not found and not self.alwaysapply then
+  if psd.talkstate == nil and not self.alwaysapply then
     return ""
   end
   return self.patterns[stat.pat + 1]
@@ -223,11 +219,10 @@ end
 function LipSyncLab:getstate(psd, obj)
   local pat = self.patterns
   local ts = psd.talkstate
-  if ts == nil or ts.used then
-    -- データが見つからなかったり使用済みデータだった場合は閉じ状態にする
+  if ts == nil then
+    -- データが見つからなかった場合は閉じ状態にする
     return self.alwaysapply and pat.N or ""
   end
-  ts.used = true
 
   if ts.cur == "" then
     -- 音素情報がない時は音量に応じて「あ」の形を使う
@@ -466,7 +461,12 @@ function TalkStates:setphoneme(obj, phonemestr)
 end
 
 function TalkStates:get(index)
-  return self.states[index]
+  local ts = self.states[index]
+  if ts == nil or ts.used then
+    return nil
+  end
+  ts.used = true
+  return ts
 end
 
 local SubtitleState = {}
@@ -486,7 +486,6 @@ function SubtitleState.new(text, frame, time, totalframe, totaltime, unescape)
 end
 
 function SubtitleState:mes(obj)
-  self.used = true
   obj.mes(self.text)
 end
 
@@ -518,6 +517,7 @@ function SubtitleStates:mes(index, obj)
   if s == nil or s.used then
     return P.emptysubobj
   end
+  s.used = true
   s:mes(obj)
   return s
 end
