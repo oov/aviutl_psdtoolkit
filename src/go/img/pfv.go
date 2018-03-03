@@ -173,10 +173,12 @@ func cloneNode(src, dest *Node) {
 	dest.Open = src.Open
 	dest.FilterSetting = src.FilterSetting
 	dest.Setting = src.Setting
+	if src.Children != nil {
+		dest.Children = []Node{}
+	}
 	for i := range src.Children {
 		dest.Children = append(dest.Children, Node{
-			Parent:   dest,
-			Children: []Node{},
+			Parent: dest,
 		})
 		cloneNode(&src.Children[i], &dest.Children[i])
 	}
@@ -190,8 +192,7 @@ func (pfv *PFV) Clone() (*PFV, error) {
 	other := &PFV{
 		Setting: make(map[string]string),
 		Root: Node{
-			Name:     pfv.Root.Name,
-			Children: []Node{},
+			Name: pfv.Root.Name,
 		},
 	}
 	for k, v := range pfv.Setting {
