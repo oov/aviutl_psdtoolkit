@@ -53,6 +53,10 @@ func Encode(s string) string {
 	escaped := make([]rune, 0, len(runes)+1)
 	escaped = append(escaped, '.')
 	for _, r := range runes {
+		if r == '\\' {
+			escaped = append(escaped, '%', 'y')
+			continue
+		}
 		if idx, found := damemoji[r]; found {
 			// escape damemoji to %xN
 			escaped = append(escaped, '%', 'x', rune64[idx])
@@ -95,7 +99,11 @@ func unescape(s string) string {
 			r = append(r, s[i])
 			continue
 		}
-		if i+2 < l {
+		if i+1 < l && s[i+1] == 'y' {
+			r = append(r, '\\')
+			i++
+			continue
+		} else if i+2 < l {
 			switch s[i+1] {
 			case 'x':
 				if idx := rune64ToInt(s[i+2]); 0 <= idx && idx < len(damemojiRev) {
