@@ -60,12 +60,12 @@ width=]] .. proj.width .. "\r\n" .. [[
 height=]] .. proj.height .. "\r\n" .. [[
 rate=]] .. proj.rate .. "\r\n" .. [[
 scale=]] .. proj.scale .. "\r\n" .. [[
-length=256
+length=64
 audio_rate=]] .. proj.audio_rate .. "\r\n" .. [[
 audio_ch=]] .. proj.audio_ch .. "\r\n" .. [[
 [0]
 start=1
-end=256
+end=64
 layer=1
 overlay=1
 camera=0
@@ -80,16 +80,16 @@ B=0
 I=0
 type=0
 autoadjust=0
-soft=1
+soft=0
 monospace=0
 align=0
 spacing_x=0
 spacing_y=0
-precision=1
+precision=0
 color=ffffff
 color2=000000
 font=MS UI Gothic
-text=]] .. GCMZDrops.encodeexotext(filename) .. "\r\n" .. [[
+text=]] .. GCMZDrops.encodeexotext(filename .. "\r\n<?\r\nlipsync = 0    -- 口パク準備\r\nmpslider = 0    -- 多目的スライダー\r\n?>") .. "\r\n" .. [[
 [0.1]
 _name=アニメーション効果
 track0=0.00

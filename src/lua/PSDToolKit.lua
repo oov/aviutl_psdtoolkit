@@ -45,7 +45,8 @@ function PSDState.new(id)
     offsetx = 0,
     offsety = 0,
     valueholder = nil,
-    rendered = false
+    talkstate = nil,
+    rendered = false,
   }, {__index = PSDState})
 end
 
@@ -150,15 +151,12 @@ local LipSyncSimple = {}
 -- 口パク（開閉のみ）
 -- patterns - {'閉じ', 'ほぼ閉じ', '半開き', 'ほぼ開き', '開き'} のパターンが入った配列（ほぼ閉じ、半目、ほぼ開きは省略可）
 -- speed - アニメーション速度
--- layerindex - アニメーション対象の準備レイヤー番号
 -- alwaysapply - 口パク準備のデータがなくても閉じを適用する
-function LipSyncSimple.new(patterns, speed, layerindex, alwaysapply)
+function LipSyncSimple.new(patterns, speed, alwaysapply)
   return setmetatable({
     patterns = patterns,
     speed = speed,
-    layerindex = layerindex,
     alwaysapply = alwaysapply,
-    talkstates = P.talk
   }, {__index = LipSyncSimple})
 end
 
@@ -166,7 +164,7 @@ LipSyncSimple.states = {}
 
 function LipSyncSimple:getstate(psd, obj)
   local volume = 0
-  local ts = self.talkstates:get(self.layerindex)
+  local ts = psd.talkstate
   local found = false
   if ts ~= nil and not ts.used then
     volume = ts.volume
@@ -174,7 +172,7 @@ function LipSyncSimple:getstate(psd, obj)
     found = true
   end
 
-  local stat = LipSyncSimple.states[self.layerindex] or {frame = obj.frame-1, n = -1, pat = 0}
+  local stat = LipSyncSimple.states[obj.layer] or {frame = obj.frame-1, n = -1, pat = 0}
   if stat.frame >= obj.frame or stat.frame + obj.framerate < obj.frame then
     -- 巻き戻っていたり、あまりに先に進んでいるようならアニメーションはリセットする
     -- プレビューでコマ飛びする場合は正しい挙動を示せないので、1秒の猶予を持たせる
@@ -196,7 +194,7 @@ function LipSyncSimple:getstate(psd, obj)
     end
   end
   stat.frame = obj.frame
-  LipSyncSimple.states[self.layerindex] = stat
+  LipSyncSimple.states[obj.layer] = stat
   if not found and not self.alwaysapply then
     return ""
   end
@@ -208,9 +206,8 @@ local LipSyncLab = {}
 -- 口パク（あいうえお）
 -- patterns - {'a'='あ', 'e'='え', 'i'='い', 'o'='お','u'='う', 'N'='ん'}
 -- mode - 子音の処理モード
--- layerindex - アニメーション対象の準備レイヤー番号
 -- alwaysapply - 口パク準備のデータがなくても閉じを適用する
-function LipSyncLab.new(patterns, mode, layerindex, alwaysapply)
+function LipSyncLab.new(patterns, mode, alwaysapply)
   if patterns.A == nil then patterns.A = patterns.a end
   if patterns.E == nil then patterns.E = patterns.e end
   if patterns.I == nil then patterns.I = patterns.i end
@@ -219,15 +216,13 @@ function LipSyncLab.new(patterns, mode, layerindex, alwaysapply)
   return setmetatable({
     patterns = patterns,
     mode = mode,
-    layerindex = layerindex,
     alwaysapply = alwaysapply,
-    talkstates = P.talk
   }, {__index = LipSyncLab})
 end
 
 function LipSyncLab:getstate(psd, obj)
   local pat = self.patterns
-  local ts = self.talkstates:get(self.layerindex)
+  local ts = psd.talkstate
   if ts == nil or ts.used then
     -- データが見つからなかったり使用済みデータだった場合は閉じ状態にする
     return self.alwaysapply and pat.N or ""
