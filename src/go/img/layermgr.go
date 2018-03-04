@@ -529,7 +529,8 @@ func (m *LayerManager) Deserialize(s string, flip Flip, pfv *PFV) (bool, Flip, e
 		switch line[:2] {
 		case "L.":
 			if len(line) != 3 {
-				return false, FlipNone, errors.New("img: unknown flip parameter")
+				ods.ODS("unknown flip parameter: %q. skipped.", line[2:])
+				continue
 			}
 			fl := int(line[2] - '0')
 			if 0 <= fl && fl <= 3 {

@@ -89,10 +89,10 @@ precision=0
 color=ffffff
 color2=000000
 font=MS UI Gothic
-text=]] .. GCMZDrops.encodeexotext("<?-- " .. filename .. " \r\n-- 追加設定\r\nlipsync = 0    -- 口パク準備のレイヤー番号\r\nmpslider = 0    -- 多目的スライダーのレイヤー番号\r\n?>") .. "\r\n" .. [[
+text=]] .. GCMZDrops.encodeexotext("<?-- " .. filename .. " \r\n-- 追加設定\r\nlipsync = 0    -- 口パク準備のレイヤー番号\r\nmpslider = 0    -- 多目的スライダーのレイヤー番号\r\nscene = 0    -- シーン番号\r\n?>") .. "\r\n" .. [[
 [0.1]
 _name=アニメーション効果
-track0=0.00
+track0=-1.00
 track1=100.00
 track2=0.00
 track3=0.00
