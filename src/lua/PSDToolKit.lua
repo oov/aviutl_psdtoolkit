@@ -21,8 +21,8 @@ local function getpixeldata(obj, width, height)
     height = maxh
   end
   obj.setoption("drawtarget", "tempbuffer", width, height)
-  obj.copybuffer("obj", "tmp")
-  return obj.getpixeldata()
+  obj.load("tempbuffer")
+  return obj.getpixeldata("work")
 end
 
 local function fileexists(filepath)
@@ -70,6 +70,11 @@ function PSDState:addstate(layer, index)
   end
 end
 
+function PSDState:adjustcenter(obj)
+  obj.cx = obj.w % 2 == 1 and 0.5 or 0
+  obj.cy = obj.h % 2 == 1 and 0.5 or 0
+end
+
 function PSDState:render(obj)
   if self.rendered then
     error("already rendered")
@@ -92,21 +97,26 @@ function PSDState:render(obj)
   end
   local PSDToolKitBridge = require("PSDToolKitBridge")
   local modified, width, height = PSDToolKitBridge.setprops(self.id, self.file, self)
+  local cacheid = "cache:"..self.id.." "..self.file
   if not modified then
+    if obj.copybuffer("obj", cacheid) then
+      self:adjustcenter(obj)
+      return
+    end
     local data, w, h = getpixeldata(obj, width, height)
-    if pcall(PSDToolKitBridge.getcache, "cache:"..self.id.." "..self.file, data, w * 4 * h) then
+    if pcall(PSDToolKitBridge.getcache, cacheid, data, w * 4 * h) then
       obj.putpixeldata(data)
-      obj.cx = w % 2 == 1 and 0.5 or 0
-      obj.cy = h % 2 == 1 and 0.5 or 0
+      obj.copybuffer(cacheid, "obj")
+      self:adjustcenter(obj)
       return
     end
   end
   local data, w, h = getpixeldata(obj, width, height)
   PSDToolKitBridge.draw(self.id, self.file, data, w, h)
-  PSDToolKitBridge.putcache("cache:"..self.id.." "..self.file, data, w * 4 * h, false)
+  PSDToolKitBridge.putcache(cacheid, data, w * 4 * h, false)
   obj.putpixeldata(data)
-  obj.cx = w % 2 == 1 and 0.5 or 0
-  obj.cy = h % 2 == 1 and 0.5 or 0
+  obj.copybuffer(cacheid, "obj")
+  self:adjustcenter(obj)
 end
 
 local Blinker = {}

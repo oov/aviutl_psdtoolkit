@@ -34,6 +34,8 @@ mpslider = nil
 if obj.check0 then
   local ok, msg = pcall(PSD.render, PSD, obj)
   if not ok then PSDToolKit.print(obj, msg) end
+else
+  obj.load("framebuffer",0,0,1,1)
 end
 
 @オブジェクト描画
