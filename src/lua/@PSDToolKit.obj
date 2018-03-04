@@ -8,15 +8,15 @@
 tonumber(nil)
 local PSDToolKit = require("PSDToolKit")
 if file ~= nil and file ~= "" then
+  local ls = LIPSYNC ~= nil and LIPSYNC[obj.layer]
   PSDToolKit.talk:set(
     obj,
     file,
-    LIPSYNC ~= nil and LIPSYNC.locut or obj.track0,
-    LIPSYNC ~= nil and LIPSYNC.hicut or obj.track1,
-    LIPSYNC ~= nil and LIPSYNC.threshold or obj.track2
+    ls ~= nil and ls.locut or obj.track0,
+    ls ~= nil and ls.hicut or obj.track1,
+    ls ~= nil and ls.threshold or obj.track2
   )
 end
-LIPSYNC = nil
 file = nil
 
 @多目的スライダー
