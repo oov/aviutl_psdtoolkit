@@ -325,9 +325,7 @@ begin
   EnterCS('EDIS');
   try
     WriteUInt32(FRemoteProcess.Input, $80000000);
-    TSendEditingImageStateToExEdit.Create(FPSDToolWindow,
-      UTF8String(Format('f=%s;l=%s;', [StringifyForLua(FilePath),
-      StringifyForLua(State)])));
+    TSendEditingImageStateToExEdit.Create(FPSDToolWindow, FilePath, State);
   finally
     LeaveCS('EDIS');
   end;

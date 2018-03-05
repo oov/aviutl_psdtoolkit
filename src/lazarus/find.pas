@@ -9,17 +9,10 @@ uses
   Windows;
 
 type
-  TExEditWindow = record
-    Window: THandle;
-    Config: THandle;
-  end;
-
-  TExEditParameterDialog = record
+  TExEditMultiLineText = record
     Window: THandle;
     Edit: THandle;
     EditText: WideString;
-    OK: THandle;
-    Cancel: THandle;
   end;
 
   TExEditMultiParameterDialog = record
@@ -30,9 +23,7 @@ type
     Cancel: THandle;
   end;
 
-function IsExEditWindowExists(): boolean;
-function FindExEditWindow(out w: TExEditWindow): boolean;
-function FindExEditParameterDialog(out pw: TExEditParameterDialog): boolean;
+function FindExEditMultiLineText(out W: TExEditMultiLineText; const IncludeText: WideString): boolean;
 function FindExEditMultiParameterDialog(out pw: TExEditMultiParameterDialog): boolean;
 
 implementation
@@ -86,17 +77,6 @@ begin
   end;
 end;
 
-function GetComboBoxSelectedItem(h: THandle): WideString;
-var
-  idx, len: WPARAM;
-begin
-  idx := SendMessageW(h, CB_GETCURSEL, 0, 0);
-  len := SendMessageW(h, CB_GETLBTEXTLEN, idx, 0);
-  SetLength(Result, len+1);
-  SendMessageW(h, CB_GETLBTEXT, idx, {%H-}LPARAM(@Result[1]));
-  Result := PWideChar(Result);
-end;
-
 function GetControlText(h: THandle): WideString;
 var
   len: WPARAM;
@@ -107,80 +87,10 @@ begin
   Result := PWideChar(Result);
 end;
 
-function FindPSDToolKitSelectedComboBox(Parent: THandle): THandle;
+function FindExEditMultiLineText(out W: TExEditMultiLineText; const IncludeText: WideString): boolean;
 var
-  h: THandle;
-  s: WideString;
-begin
-  h := 0;
-  Result := 0;
-  while Result = 0 do
-  begin
-    h := FindControl(Parent, h, 'ComboBox', nil);
-    if h = 0 then
-      Exit;
-    if not IsWindowVisible(h) then
-      continue;
-    s := GetComboBoxSelectedItem(h);
-    if Pos(WideString('Assign@PSDToolKit'), s) = Length(s) - 16 then
-      Result := h;
-  end;
-end;
-
-function FindSiblingControl(Parent, ComboBox: THandle;
-  ControlClass: WideString): THandle;
-var
-  h: THandle;
-  WindowRect, ComboBoxRect, TargetRect: TRect;
-begin
-  Result := 0;
-  if not GetClientRect(Parent, @WindowRect) then
-    Exit;
-  if not GetWindowRect(ComboBox, @ComboBoxRect) then
-    Exit;
-  if not ScreenToClient(Parent, ComboBoxRect.TopLeft) then
-    Exit;
-  if not ScreenToClient(Parent, ComboBoxRect.BottomRight) then
-    Exit;
-  TargetRect.TopLeft := ComboBoxRect.TopLeft;
-  TargetRect.BottomRight := TPoint.Create(WindowRect.Right -
-    ComboBoxRect.Left, ComboBOxRect.Bottom);
-  h := 0;
-  while Result = 0 do
-  begin
-    h := FindControl(Parent, h, ControlClass, @TargetRect);
-    if h = 0 then
-      Exit;
-    if not IsWindowVisible(h) then
-      continue;
-    if (ControlClass = 'Button') and ((GetWindowLong(h, GWL_STYLE) and BS_CHECKBOX) =
-      BS_CHECKBOX) then
-      continue;
-    Result := h;
-  end;
-end;
-
-function IsExEditWindowExists(): boolean;
-var
-  h: THandle;
-  pid, mypid: DWORD;
-begin
-  Result := False;
-  mypid := GetCurrentProcessId();
-  h := 0;
-  while not Result do
-  begin
-    h := FindWindowExA(0, h, 'ExtendedFilterClass', nil);
-    if h = 0 then
-      Exit;
-    GetWindowThreadProcessId(h, @pid);
-    Result := pid = mypid;
-  end;
-end;
-
-function FindExEditWindow(out w: TExEditWindow): boolean;
-var
-  h, Window, ComboBox: THandle;
+  h, Window, Edit: THandle;
+  EditText: WideString;
   pid, mypid: DWORD;
 begin
   Result := False;
@@ -200,82 +110,27 @@ begin
       Window := h;
   end;
 
-  ComboBox := FindPSDToolKitSelectedComboBox(Window);
-  if ComboBox <> 0 then
-    w.Config := FindSiblingControl(Window, ComboBox, 'Button');
-  w.Window := Window;
-  Result := True;
-end;
-
-function FindExEditParameterDialog(out pw: TExEditParameterDialog): boolean;
-var
-  h, Dialog, Edit, OK, Cancel: THandle;
-  pid, mypid, id: DWORD;
-  EditText: WideString;
-begin
-  Result := False;
-
-  mypid := GetCurrentProcessId();
-  h := 0;
-  Dialog := 0;
-  while Dialog = 0 do
-  begin
-    h := FindWindowExA(0, h, '#32770', nil);
-    if h = 0 then
-      Exit;
-    GetWindowThreadProcessId(h, @pid);
-    if not IsWindowVisible(h) then
-      continue;
-    if pid = mypid then
-      Dialog := h;
-  end;
-
   h := 0;
   Edit := 0;
   while Edit = 0 do
   begin
-    h := FindControl(Dialog, h, 'Edit', nil);
+    h := FindControl(Window, h, 'Edit', nil);
     if h = 0 then
       Exit;
     if not IsWindowVisible(h) then
+      continue;
+    if (GetWindowLong(h, GWL_STYLE) and ES_MULTILINE + ES_WANTRETURN) <>
+          ES_MULTILINE + ES_WANTRETURN then
       continue;
     EditText := GetControlText(h);
+    if Pos(IncludeText, EditText) = 0 then
+      continue;
     Edit := h;
   end;
-
-  h := 0;
-  OK := 0;
-  while OK = 0 do
-  begin
-    h := FindControl(Dialog, h, 'Button', nil);
-    if h = 0 then
-      Exit;
-    if not IsWindowVisible(h) then
-      continue;
-    id := GetWindowLong(h, GWL_ID);
-    if id = idOk then
-      OK := h;
-  end;
-
-  h := 0;
-  Cancel := 0;
-  while Cancel = 0 do
-  begin
-    h := FindControl(Dialog, h, 'Button', nil);
-    if h = 0 then
-      Exit;
-    if not IsWindowVisible(h) then
-      continue;
-    id := GetWindowLong(h, GWL_ID);
-    if id = idCancel then
-      Cancel := h;
-  end;
+  w.Window := Window;
+  w.Edit := Edit;
+  w.EditText := EditText;
   Result := True;
-  pw.Window := Dialog;
-  pw.Edit := Edit;
-  pw.EditText := EditText;
-  pw.OK := OK;
-  pw.Cancel := Cancel;
 end;
 
 function FindExEditMultiParameterDialog(out pw: TExEditMultiParameterDialog): boolean;

@@ -31,7 +31,6 @@ const version = "$VERSION ( $GITHASH )"
 EOS
 
 # copy alias files
-sed 's/\r$//' 'src/exa/NewObject.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/PSDToolKitオブジェクト.exa'
 sed 's/\r$//' 'src/exa/Render.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/オブジェクト描画.exa'
 sed 's/\r$//' 'src/exa/Override.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/パーツ差し替え.exa'
 sed 's/\r$//' 'src/exa/Blink.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/目パチ.exa'

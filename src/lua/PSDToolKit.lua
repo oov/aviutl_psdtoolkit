@@ -36,11 +36,38 @@ end
 
 local PSDState = {}
 
-function PSDState.new(id)
-  return setmetatable({
+-- スクリプトから呼び出す用
+function PSDState.init(obj, o)
+  local r = PSDState.new(
+    (o.scene or 0)*1000+obj.layer,
+    o.ptkf ~= "" and o.ptkf or nil,
+    {
+      layer = o.ptkl ~= "" and o.ptkl or nil,
+      lipsync = o.lipsync ~= 0 and o.lipsync or nil,
+      mpslider = o.mpslider ~= 0 and o.mpslider or nil,
+    }
+  )
+  -- 何も出力しないと直後のアニメーション効果以外適用されないため
+  -- それに対するワークアラウンド
+  mes(" ")
+  return r, r.valueholder or P.emptysubobj
+end
+
+-- PSDオブジェクト
+-- id - 固有識別番号
+-- file - PSDファイルへのパス
+-- opt - 追加の設定項目
+-- opt には以下のようなオブジェクトを渡す
+-- {
+--   layer = "レイヤーの初期状態",
+--   lipsync = 2,
+--   mpslider = 3,
+-- }
+function PSDState.new(id, file, opt)
+  local self = setmetatable({
     id = id,
-    file = "",
-    layer = {},
+    file = file,
+    layer = {opt.layer or "L.0"},
     scale = 1,
     offsetx = 0,
     offsety = 0,
@@ -48,6 +75,13 @@ function PSDState.new(id)
     talkstate = nil,
     rendered = false,
   }, {__index = PSDState})
+  if opt.lipsync ~= nil then
+    self.talkstate = P.talk:get(opt.lipsync)
+  end
+  if opt.mpslider ~= nil then
+    self.valueholder = P.valueholder:get(opt.mpslider)
+  end
+  return self
 end
 
 function PSDState:addstate(layer, index)
@@ -79,7 +113,7 @@ function PSDState:render(obj)
   if self.rendered then
     error("already rendered")
   end
-  if self.file == "" then
+  if self.file == nil then
     error("no image")
   end
   self.rendered = true

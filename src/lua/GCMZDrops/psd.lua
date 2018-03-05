@@ -89,7 +89,7 @@ precision=0
 color=ffffff
 color2=000000
 font=MS UI Gothic
-text=]] .. GCMZDrops.encodeexotext("<?-- " .. filename .. " \r\n-- 追加設定\r\nlipsync = 0    -- 口パク準備のレイヤー番号\r\nmpslider = 0    -- 多目的スライダーのレイヤー番号\r\nscene = 0    -- シーン番号\r\n?>") .. "\r\n" .. [[
+text=]] .. GCMZDrops.encodeexotext("<?-- " .. filename .. " \r\n\r\no={ -- オプション設定\r\nlipsync = 0,    -- 口パク準備のレイヤー番号\r\nmpslider = 0,    -- 多目的スライダーのレイヤー番号\r\nscene = 0,    -- シーン番号\r\n\r\n-- 以下は書き換えないでください\r\nptkf=" .. P.encodelua(filepath) .. ",ptkl=\"\"}PSD,subobj=require(\"PSDToolKit\").PSDState.init(obj,o)?>") .. "\r\n" .. [[
 [0.1]
 _name=アニメーション効果
 track0=-1.00
@@ -99,8 +99,8 @@ track3=0.00
 check0=100
 type=0
 filter=2
-name=Assign@PSDToolKit
-param=]] .. "f=" .. P.encodelua(filepath) .. ';l="L.0";' .. "\r\n" .. [[
+name=オブジェクト描画@PSDToolKit
+param=
 [0.2]
 _name=標準描画
 X=0.0

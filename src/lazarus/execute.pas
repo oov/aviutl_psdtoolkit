@@ -15,11 +15,12 @@ type
   TSendEditingImageStateToExEdit = class(TThread)
   private
     FWindow: THandle;
+    FFilePath: UTF8String;
     FState: UTF8String;
   protected
     procedure Execute; override;
   public
-    constructor Create(Window: THandle; S: UTF8String);
+    constructor Create(const Window: THandle; const FilePath, State: UTF8String);
   end;
 
   { TExportFaviewSlider }
@@ -318,45 +319,60 @@ begin
   FSelectedIndex := SelectedIndex;
 end;
 
+function ModifyLuaString(var S: WideString; const Name: WideString; const Value: UTF8String): boolean;
+var
+  P, StartPos, EndPos: PWideChar;
+begin
+  Result := False;
+  P := PWideChar(S);
+  StartPos := StrPos(P, PWideChar(Name+'="'));
+  if not Assigned(StartPos) then
+    Exit;
+  EndPos := StartPos + Length(Name) + 2;
+  while True do
+  begin
+    EndPos := StrScan(EndPos, '"');
+    if not Assigned(EndPos) then
+      Exit;
+    if (EndPos-1)^ <> '\' then
+      break;
+    Inc(EndPos);
+  end;
+  S := Copy(S, 1, StartPos - P) + Name + '=' + WideString(StringifyForLua(Value)) + Copy(S, 1 + (EndPos - P) + 1, Length(S) - (EndPos - P) - 1);
+  Result := True;
+end;
+
 { TSendEditingImageStateToExEdit }
 
 procedure TSendEditingImageStateToExEdit.Execute;
 var
-  w: TExEditWindow;
-  pw: TExEditParameterDialog;
-  ws: WideString;
-  n: DWORD;
+  W: TExEditMultiLineText;
+  Src: WideString;
 begin
-  ws := WideString(FState);
-  if FindExEditParameterDialog(pw) then
-  begin
-    SendMessageW(pw.Edit, WM_SETTEXT, 0, {%H-}LPARAM(PWideChar(ws)));
-    Exit;
+  try
+    if not FindExEditMultiLineText(W, 'ptkf="') then
+      raise Exception.Create('設定の送信先になるテキスト入力欄が見つかりませんでした。'#13#10#13#10'「送る」ボタンを使用するためには、拡張編集側で設定を書き込みたいオブジェクトのプロパティを表示し、テキスト入力欄を見える状態にしておく必要があります。');
+
+    Src := W.EditText;
+    if not ModifyLuaString(Src, 'ptkf', FFilePath) then
+      raise Exception.Create('テキスト入力欄から書き換え対象テキスト「ptkf="～"」が見つかりませんでした。');
+    if not ModifyLuaString(Src, 'ptkl', FState) then
+      raise Exception.Create('テキスト入力欄から書き換え対象テキスト「ptkl="～"」が見つかりませんでした。');
+    SendMessageW(W.Edit, WM_SETTEXT, 0, {%H-}LPARAM(PWideChar(Src)));
+    SendMessageW(W.Window, WM_COMMAND, MAKELONG(GetDlgCtrlID(w.Edit), EN_CHANGE), W.Edit);
+  except
+    on E: Exception do
+      MessageBoxW(FWindow, PWideChar(WideString(E.Message)), 'PSDToolKit', MB_ICONERROR);
   end;
-  if FindExEditWindow(w) and (w.Config <> 0) then
-  begin
-    PostMessage(w.Config, BM_CLICK, 0, 0);
-    n := GetTickCount() + 3000;
-    while n > GetTickCount() do
-    begin
-      Sleep(0);
-      if FindExEditParameterDialog(pw) then
-      begin
-        SendMessageW(pw.Edit, WM_SETTEXT, 0, {%H-}LPARAM(PWideChar(ws)));
-        PostMessage(pw.OK, BM_CLICK, 0, 0);
-        Exit;
-      end;
-    end;
-  end;
-  MessageBoxW(FWindow, '「設定」ボタンが見つかりませんでした。'#13#10#13#10'「送る」ボタンを使用するためには、拡張編集側で設定を書き込みたいオブジェクトのプロパティを表示し「設定」ボタンが見える状態にしておく必要があります。', 'PSDToolKit', MB_ICONERROR);
 end;
 
-constructor TSendEditingImageStateToExEdit.Create(Window: THandle; S: UTF8String);
+constructor TSendEditingImageStateToExEdit.Create(const Window: THandle; const FilePath, State: UTF8String);
 begin
   inherited Create(False);
   FreeOnTerminate := True;
   FWindow := Window;
-  FState := S;
+  FFilePath := FilePath;
+  FState := State;
 end;
 
 { TExportFaviewSlider }
