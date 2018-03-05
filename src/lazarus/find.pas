@@ -23,7 +23,8 @@ type
     Cancel: THandle;
   end;
 
-function FindExEditMultiLineText(out W: TExEditMultiLineText; const IncludeText: WideString): boolean;
+function FindExEditMultiLineText(out W: TExEditMultiLineText;
+  const IncludeText: WideString): boolean;
 function FindExEditMultiParameterDialog(out pw: TExEditMultiParameterDialog): boolean;
 
 implementation
@@ -82,12 +83,13 @@ var
   len: WPARAM;
 begin
   len := SendMessageW(h, WM_GETTEXTLENGTH, 0, 0);
-  SetLength(Result, len+1);
-  SendMessageW(h, WM_GETTEXT, len+1, {%H-}LPARAM(@Result[1]));
+  SetLength(Result, len + 1);
+  SendMessageW(h, WM_GETTEXT, len + 1, {%H-}LPARAM(@Result[1]));
   Result := PWideChar(Result);
 end;
 
-function FindExEditMultiLineText(out W: TExEditMultiLineText; const IncludeText: WideString): boolean;
+function FindExEditMultiLineText(out W: TExEditMultiLineText;
+  const IncludeText: WideString): boolean;
 var
   h, Window, Edit: THandle;
   EditText: WideString;
@@ -120,7 +122,7 @@ begin
     if not IsWindowVisible(h) then
       continue;
     if (GetWindowLong(h, GWL_STYLE) and ES_MULTILINE + ES_WANTRETURN) <>
-          ES_MULTILINE + ES_WANTRETURN then
+      ES_MULTILINE + ES_WANTRETURN then
       continue;
     EditText := GetControlText(h);
     if Pos(IncludeText, EditText) = 0 then
@@ -243,7 +245,8 @@ begin
     L.Sort(@EditListCompare);
     SetLength(pw.Edit, Length(EditCaption));
     SetLength(pw.Caption, Length(EditCaption));
-    for I := Low(EditCaption) to High(EditCaption) do begin
+    for I := Low(EditCaption) to High(EditCaption) do
+    begin
       P := L.Items[I];
       pw.Edit[I] := P^.Edit;
       pw.Caption[I] := GetControlText(P^.Caption);

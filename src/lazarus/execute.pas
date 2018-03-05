@@ -91,7 +91,8 @@ begin
   Parent := GetParentLayerName(S) + '/';
   ParentLen := Length(Parent);
   N := StrCount(PChar(Parent), '/');
-  for I := Low(FNames) to High(FNames) do begin
+  for I := Low(FNames) to High(FNames) do
+  begin
     if Length(FNames[I]) <= ParentLen then
       continue;
     if not CompareMem(@Parent[1], @FNames[I][1], ParentLen) then
@@ -99,7 +100,7 @@ begin
     if StrCount(PChar(FNames[I]), '/') <> N then
       continue;
     SetLength(Result, Length(Result) + 1);
-    Result[Length(Result)-1] := I;
+    Result[Length(Result) - 1] := I;
   end;
 end;
 
@@ -109,7 +110,8 @@ var
 begin
   P := PChar(S);
   PC := StrRScan(P, '/');
-  if PC = nil then begin
+  if PC = nil then
+  begin
     Result := '';
     Exit;
   end;
@@ -122,7 +124,8 @@ var
 begin
   P := PChar(S);
   PC := StrRScan(P, '/');
-  if PC = nil then begin
+  if PC = nil then
+  begin
     Result := DecodePercentEncoding(S);
     Exit;
   end;
@@ -148,7 +151,8 @@ var
 begin
   Siblings := FindSiblings(FNames[FSelectedIndex]);
   Result := Format('--track0:%s,0,%d,0,1'#13#10,
-    [StringReplace(ToReadable(GetParentLayerName(FNames[FSelectedIndex])), ',', '_', [rfReplaceAll]), Length(Siblings)]);
+    [StringReplace(ToReadable(GetParentLayerName(FNames[FSelectedIndex])),
+    ',', '_', [rfReplaceAll]), Length(Siblings)]);
   Result := Result + 'local values = {'#13#10;
   for I := Low(Siblings) to High(Siblings) do
     Result := Result + '  ' + StringifyForLua(FValues[Siblings[I]]) + ','#13#10;
@@ -319,13 +323,14 @@ begin
   FSelectedIndex := SelectedIndex;
 end;
 
-function ModifyLuaString(var S: WideString; const Name: WideString; const Value: UTF8String): boolean;
+function ModifyLuaString(var S: WideString; const Name: WideString;
+  const Value: UTF8String): boolean;
 var
   P, StartPos, EndPos: PWideChar;
 begin
   Result := False;
   P := PWideChar(S);
-  StartPos := StrPos(P, PWideChar(Name+'="'));
+  StartPos := StrPos(P, PWideChar(Name + '="'));
   if not Assigned(StartPos) then
     Exit;
   EndPos := StartPos + Length(Name) + 2;
@@ -334,11 +339,12 @@ begin
     EndPos := StrScan(EndPos, '"');
     if not Assigned(EndPos) then
       Exit;
-    if (EndPos-1)^ <> '\' then
+    if (EndPos - 1)^ <> '\' then
       break;
     Inc(EndPos);
   end;
-  S := Copy(S, 1, StartPos - P) + Name + '=' + WideString(StringifyForLua(Value)) + Copy(S, 1 + (EndPos - P) + 1, Length(S) - (EndPos - P) - 1);
+  S := Copy(S, 1, StartPos - P) + Name + '=' + WideString(StringifyForLua(Value)) +
+    Copy(S, 1 + (EndPos - P) + 1, Length(S) - (EndPos - P) - 1);
   Result := True;
 end;
 
@@ -351,22 +357,27 @@ var
 begin
   try
     if not FindExEditMultiLineText(W, 'ptkf="') then
-      raise Exception.Create('設定の送信先になるテキスト入力欄が見つかりませんでした。'#13#10#13#10'「送る」ボタンを使用するためには、拡張編集側で設定を書き込みたいオブジェクトのプロパティを表示し、テキスト入力欄を見える状態にしておく必要があります。');
+      raise Exception.Create(
+        '設定の送信先になるテキスト入力欄が見つかりませんでした。'#13#10#13#10'「送る」ボタンを使用するためには、拡張編集側で設定を書き込みたいオブジェクトのプロパティを表示し、テキスト入力欄を見える状態にしておく必要があります。');
 
     Src := W.EditText;
     if not ModifyLuaString(Src, 'ptkf', FFilePath) then
-      raise Exception.Create('テキスト入力欄から書き換え対象テキスト「ptkf="～"」が見つかりませんでした。');
+      raise Exception.Create(
+        'テキスト入力欄から書き換え対象テキスト「ptkf="～"」が見つかりませんでした。');
     if not ModifyLuaString(Src, 'ptkl', FState) then
-      raise Exception.Create('テキスト入力欄から書き換え対象テキスト「ptkl="～"」が見つかりませんでした。');
+      raise Exception.Create(
+        'テキスト入力欄から書き換え対象テキスト「ptkl="～"」が見つかりませんでした。');
     SendMessageW(W.Edit, WM_SETTEXT, 0, {%H-}LPARAM(PWideChar(Src)));
-    SendMessageW(W.Window, WM_COMMAND, MAKELONG(GetDlgCtrlID(w.Edit), EN_CHANGE), W.Edit);
+    SendMessageW(W.Window, WM_COMMAND, MAKELONG(GetDlgCtrlID(w.Edit),
+      EN_CHANGE), W.Edit);
   except
     on E: Exception do
       MessageBoxW(FWindow, PWideChar(WideString(E.Message)), 'PSDToolKit', MB_ICONERROR);
   end;
 end;
 
-constructor TSendEditingImageStateToExEdit.Create(const Window: THandle; const FilePath, State: UTF8String);
+constructor TSendEditingImageStateToExEdit.Create(const Window: THandle;
+  const FilePath, State: UTF8String);
 begin
   inherited Create(False);
   FreeOnTerminate := True;
@@ -396,7 +407,8 @@ begin
   MinIndex := Max(Low(FNames), Low(FValues));
   MaxIndex := Min(High(FNames), High(FValues));
   Result := Format('--track0:%s,0,%d,0,1'#13#10,
-    [StringReplace(GetReadableSliderName(), ',', '_', [rfReplaceAll]), MaxIndex - MinIndex + 1]);
+    [StringReplace(GetReadableSliderName(), ',', '_', [rfReplaceAll]),
+    MaxIndex - MinIndex + 1]);
   Result := Result + 'local values = {'#13#10;
   for I := MinIndex to MaxIndex do
     Result := Result + '  ' + StringifyForLua(FValues[I]) + ','#13#10;
