@@ -31,14 +31,9 @@ const version = "$VERSION ( $GITHASH )"
 EOS
 
 # copy alias files
-sed 's/\r$//' 'src/exa/Render.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/オブジェクト描画.exa'
-sed 's/\r$//' 'src/exa/Override.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/パーツ差し替え.exa'
-sed 's/\r$//' 'src/exa/Blink.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/目パチ.exa'
 sed 's/\r$//' 'src/exa/TalkDetector.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/口パク準備.exa'
-sed 's/\r$//' 'src/exa/TalkDetectorSetting.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/口パク準備 一括設定.exa'
-sed 's/\r$//' 'src/exa/LipSync.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/口パク　開閉のみ.exa'
-sed 's/\r$//' 'src/exa/LipSyncVowels.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/口パク　あいうえお.exa'
-sed 's/\r$//' 'src/exa/Subtitle.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/テキスト　字幕表示用.exa'
+sed 's/\r$//' 'src/exa/TalkDetectorSetting.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/口パク準備 設定上書き.exa'
+sed 's/\r$//' 'src/exa/Subtitle.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/字幕表示.exa'
 sed 's/\r$//' 'src/exa/PrepSubtitle.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/字幕準備.exa'
 sed 's/\r$//' 'src/exa/MultiPurposeSlider.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/多目的スライダー.exa'
 
