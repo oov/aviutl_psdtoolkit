@@ -8,8 +8,8 @@ local function print(obj, msg)
   obj.load("text", "<s,,B>" .. msg)
   obj.draw()
   -- テキストのぼやけ防止
-  obj.cx = obj.w % 2 == 1 and 0.5 or 0
-  obj.cy = obj.h % 2 == 1 and 0.5 or 0
+  obj.ox = obj.w % 2 == 1 and 0.5 or 0
+  obj.oy = obj.h % 2 == 1 and 0.5 or 0
 end
 
 local function getpixeldata(obj, width, height)
@@ -105,8 +105,8 @@ function PSDState:addstate(layer, index)
 end
 
 function PSDState:adjustcenter(obj)
-  obj.cx = obj.w % 2 == 1 and 0.5 or 0
-  obj.cy = obj.h % 2 == 1 and 0.5 or 0
+  obj.ox = obj.w % 2 == 1 and 0.5 or 0
+  obj.oy = obj.h % 2 == 1 and 0.5 or 0
 end
 
 function PSDState:render(obj)
