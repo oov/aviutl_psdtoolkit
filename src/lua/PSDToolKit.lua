@@ -8,8 +8,8 @@ local function print(obj, msg)
   obj.load("text", "<s,,B>" .. msg)
   obj.draw()
   -- ƒeƒLƒXƒg‚Ì‚Ú‚â‚¯–hŽ~
-  obj.cx = obj.w % 2 == 1 and 0.5 or 0
-  obj.cy = obj.h % 2 == 1 and 0.5 or 0
+  obj.ox = obj.w % 2 == 1 and 0.5 or 0
+  obj.oy = obj.h % 2 == 1 and 0.5 or 0
 end
 
 local function getpixeldata(obj, width, height)
@@ -95,8 +95,8 @@ function PSDState:render(obj)
     local data, w, h = getpixeldata(obj, width, height)
     if pcall(PSDToolKitBridge.getcache, "cache:"..self.id.." "..self.file, data, w * 4 * h) then
       obj.putpixeldata(data)
-      obj.cx = w % 2 == 1 and 0.5 or 0
-      obj.cy = h % 2 == 1 and 0.5 or 0
+      obj.ox = w % 2 == 1 and 0.5 or 0
+      obj.oy = h % 2 == 1 and 0.5 or 0
       return
     end
   end
@@ -104,8 +104,8 @@ function PSDState:render(obj)
   PSDToolKitBridge.draw(self.id, self.file, data, w, h)
   PSDToolKitBridge.putcache("cache:"..self.id.." "..self.file, data, w * 4 * h, false)
   obj.putpixeldata(data)
-  obj.cx = w % 2 == 1 and 0.5 or 0
-  obj.cy = h % 2 == 1 and 0.5 or 0
+  obj.ox = w % 2 == 1 and 0.5 or 0
+  obj.oy = h % 2 == 1 and 0.5 or 0
 end
 
 local Blinker = {}
