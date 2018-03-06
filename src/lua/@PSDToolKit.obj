@@ -8,7 +8,7 @@
 tonumber(nil)
 local PSDToolKit = require("PSDToolKit")
 if file ~= nil and file ~= "" then
-  local ls = LIPSYNC ~= nil and LIPSYNC[obj.layer]
+  local ls = LIPSYNC ~= nil and LIPSYNC[obj.layer] or nil
   PSDToolKit.talk:set(
     obj,
     file,
