@@ -10,9 +10,11 @@ function P.loadsetting()
   end
   local origpath = package.path
   package.path = GCMZDrops.scriptdir() .. "..\\script\\PSDToolKit\\?.lua"
+  local ok, gui = pcall(require, "setting-gui")
+  if not ok then gui = {} end
   local ok, user = pcall(require, "setting")
   if not ok then user = {} end
-  P.setting = setmetatable(user, {__index = require("default")})
+  P.setting = setmetatable(user, {__index = setmetatable(gui, {__index = require("default")})})
   package.path = origpath
   return P.setting
 end

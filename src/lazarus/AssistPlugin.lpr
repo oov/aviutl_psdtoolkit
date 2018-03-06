@@ -7,7 +7,9 @@ uses
   AviUtl,
   lua,
   AssistMain,
-  PSDToolKitAssist;
+  PSDToolKitAssist,
+  SettingDialog,
+  Util;
 
 exports
   GetFilterTableList;

@@ -33,7 +33,7 @@ type
 implementation
 
 uses
-  lua, SysUtils, Ver;
+  lua, SysUtils, SettingDialog, Ver;
 
 type
   ShiftJISString = type ansistring(932);
@@ -114,6 +114,59 @@ begin
     begin
       s := 'ウィンドウの表示中にエラーが発生しました。'#13#10#13#10 + E.Message;
       MessageBoxW(FindExEditWindow(), PWideChar(s), 'PSDToolKit', MB_ICONERROR);
+    end;
+  end;
+end;
+
+procedure ShowSetting();
+  function GetBasePath(): WideString;
+  begin
+    SetLength(Result, MAX_PATH);
+    GetModuleFileNameW(hInstance, @Result[1], MAX_PATH);
+    Result := ExtractFileDir(PWideChar(Result)) + '\script\PSDToolKit\';
+  end;
+var
+  BasePath, S: WideString;
+  SJIS: ShiftJISString;
+  L: Plua_state;
+begin
+  if MainDLLInstance = 0 then
+    Exit;
+  try
+    L := lua_newstate(@LuaAllocator, nil);
+    if L = nil then
+      raise Exception.Create('failed to execute lua_newstate');
+    try
+      luaL_openlibs(L);
+      BasePath := GetBasePath();
+      lua_getglobal(L, 'package');
+      SJIS := ShiftJISString(BasePath + '?.lua');
+      lua_pushlstring(L, @SJIS[1], Length(SJIS));
+      lua_setfield(L, -2, 'path');
+      SJIS := ShiftJISString(BasePath + '?.dll');
+      lua_pushlstring(L, @SJIS[1], Length(SJIS));
+      lua_setfield(L, -2, 'cpath');
+      lua_pop(L, 1);
+      lua_getglobal(L, 'require');
+      lua_pushstring(L, 'setting-gui');
+      if lua_pcall(L, 1, 1, 0) <> 0 then
+      begin
+        lua_pop(L, 2);
+        lua_newtable(L);
+      end;
+      lua_pushinteger(L, FindExEditWindow());
+      lua_setfield(L, -2, 'parent');
+      lua_pushstring(L, PChar(UTF8String(BasePath + 'setting-gui.lua')));
+      lua_setfield(L, -2, 'filepath');
+      ShowSettingDialog(L);
+    finally
+      lua_close(L);
+    end;
+  except
+    on E: Exception do
+    begin
+      S := '環境設定ウィンドウの表示中にエラーが発生しました。'#13#10#13#10 + E.Message;
+      MessageBoxW(FindExEditWindow(), PWideChar(S), 'PSDToolKit', MB_ICONERROR);
     end;
   end;
 end;
@@ -232,8 +285,10 @@ begin
   case Msg of
     WM_FILTER_COMMAND:
     begin
-      if WP = 1 then
-        ShowGUI();
+      case WP of
+        1: ShowGUI();
+        2: ShowSetting();
+      end;
     end;
     WM_FILTER_FILE_OPEN: ClearFiles();
     WM_FILTER_FILE_CLOSE: ClearFiles();
@@ -272,6 +327,7 @@ type
   ShiftJISString = type ansistring(932);
 const
   ShowGUICaption: WideString = 'ウィンドウを表示';
+  SettingCaption: WideString = '環境設定';
   ExEditNameANSI = #$8a#$67#$92#$a3#$95#$d2#$8f#$57; // '拡張編集'
   ExEditVersion = ' version 0.92 ';
   HWND_MESSAGE = HWND(-3);
@@ -338,6 +394,8 @@ begin
     HWND_MESSAGE, 0, fp^.DLLHInst, nil);
   fp^.ExFunc^.AddMenuItem(fp, PChar(ShiftJISString(ShowGUICaption)),
     FWindow, 1, VK_W, ADD_MENU_ITEM_FLAG_KEY_CTRL);
+  fp^.ExFunc^.AddMenuItem(fp, PChar(ShiftJISString(SettingCaption)),
+    FWindow, 2, 0, 0);
   fp^.Hwnd := FWindow;
 end;
 

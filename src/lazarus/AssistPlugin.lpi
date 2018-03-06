@@ -31,7 +31,7 @@
         <FormatVersion Value="1"/>
       </local>
     </RunParams>
-    <Units Count="4">
+    <Units Count="6">
       <Unit0>
         <Filename Value="AssistPlugin.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -50,6 +50,16 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="PSDToolKitAssist"/>
       </Unit3>
+      <Unit4>
+        <Filename Value="settingdialog.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="SettingDialog"/>
+      </Unit4>
+      <Unit5>
+        <Filename Value="util.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="Util"/>
+      </Unit5>
     </Units>
   </ProjectOptions>
   <CompilerOptions>
