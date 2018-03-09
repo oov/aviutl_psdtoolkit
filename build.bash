@@ -32,6 +32,7 @@ EOS
 
 # copy alias files
 sed 's/\r$//' 'src/exa/TalkDetector.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/口パク準備.exa'
+sed 's/\r$//' 'src/exa/Phoneme.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/口パク準備（音素のみ）.exa'
 sed 's/\r$//' 'src/exa/TalkDetectorSetting.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/口パク準備 設定上書き.exa'
 sed 's/\r$//' 'src/exa/Subtitle.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/字幕表示.exa'
 sed 's/\r$//' 'src/exa/PrepSubtitle.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/字幕準備.exa'
@@ -40,6 +41,7 @@ sed 's/\r$//' 'src/exa/MultiPurposeSlider.exa' | sed 's/$/\r/' > 'bin/PSDToolKit
 # copy script files
 sed 's/\r$//' 'src/lua/PSDToolKit.lua' | sed 's/$/\r/' > 'bin/script/PSDToolKit/PSDToolKit.lua'
 sed 's/\r$//' 'src/lua/PSDToolKitIndex.lua' | sed 's/$/\r/' > 'bin/script/PSDToolKit.lua'
+sed 's/\r$//' 'src/lua/@PSD.anm' | sed 's/$/\r/' > 'bin/script/PSDToolKit/@PSD.anm'
 sed 's/\r$//' 'src/lua/@PSDToolKit.anm' | sed 's/$/\r/' > 'bin/script/PSDToolKit/@PSDToolKit.anm'
 sed 's/\r$//' 'src/lua/@PSDToolKit.obj' | sed 's/$/\r/' > 'bin/script/PSDToolKit/@PSDToolKit.obj'
 sed 's/\r$//' 'src/lua/@subobj.anm' | sed 's/$/\r/' > 'bin/script/PSDToolKit/@subobj.anm'

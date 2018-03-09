@@ -358,7 +358,7 @@ begin
   try
     if not FindExEditMultiLineText(W, 'ptkf="') then
       raise Exception.Create(
-        '設定の送信先になるテキスト入力欄が見つかりませんでした。'#13#10#13#10'「送る」ボタンを使用するためには、拡張編集側で設定を書き込みたいオブジェクトのプロパティを表示し、テキスト入力欄を見える状態にしておく必要があります。');
+        '設定の送信先になるテキスト入力欄が見つかりませんでした。'#13#10#13#10'「送る」ボタンを使用するためにはPSDファイルオブジェクトのプロパティを表示し、テキスト入力欄を見える状態にしておく必要があります。');
 
     Src := W.EditText;
     if not ModifyLuaString(Src, 'ptkf', FFilePath) then

@@ -1,5 +1,5 @@
 [ao]
-length=256
+length=64
 [ao.0]
 _name=音声ファイル
 再生位置=0.00

@@ -99,7 +99,7 @@ track3=0.00
 check0=100
 type=0
 filter=2
-name=オブジェクト描画@PSDToolKit
+name=描画@PSD
 param=
 [0.2]
 _name=標準描画
