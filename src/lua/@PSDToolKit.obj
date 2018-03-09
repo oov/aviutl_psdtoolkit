@@ -16,6 +16,9 @@ if file ~= nil and file ~= "" then
     ls ~= nil and ls.hicut or obj.track1,
     ls ~= nil and ls.threshold or obj.track2
   )
+  if ls ~= nil then
+    LIPSYNC[obj.layer] = nil
+  end
 end
 file = nil
 
