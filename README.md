@@ -24,7 +24,7 @@ https://github.com/oov/aviutl_psdtoolkit/releases
 
 ## 使い方
 
-ダウンロードしたファイルに同梱されている `PSDToolKitDocs/index.html` を参照してください。
+ダウンロードしたファイルに同梱されている `PSDToolKit説明書.html` を参照してください。
 
 ## バイナリのビルドについて
 
