@@ -220,6 +220,7 @@ function LipSyncSimple:getstate(psd, obj)
     stat.pat = 0
   end
   stat.n = stat.n + 1
+  stat.frame = obj.frame
   if stat.n >= self.speed then
     if volume >= 1.0 then
       if stat.pat < #self.patterns - 1 then
@@ -233,7 +234,6 @@ function LipSyncSimple:getstate(psd, obj)
       end
     end
   end
-  stat.frame = obj.frame
   LipSyncSimple.states[obj.layer] = stat
   if psd.talkstate == nil and not self.alwaysapply then
     return ""
@@ -260,6 +260,8 @@ function LipSyncLab.new(patterns, mode, alwaysapply)
   }, {__index = LipSyncLab})
 end
 
+LipSyncLab.states = {}
+
 function LipSyncLab:getstate(psd, obj)
   local pat = self.patterns
   local ts = psd.talkstate
@@ -277,36 +279,39 @@ function LipSyncLab:getstate(psd, obj)
     return pat.N
   end
 
-  if ts:curisvowel() ~= 0 then
-    -- 母音は設定された形をそのまま使う
-    return pat[ts.cur]
-  end
-
   if self.mode == 0 then
     -- 子音処理タイプ0 -> 全て「ん」
+    if ts:curisvowel() ~= 0 then
+      -- 母音は設定された形をそのまま使う
+      return pat[ts.cur]
+    end
     return pat.N
   elseif self.mode == 1 then
-    -- 子音処理タイプ1 -> 口を閉じる子音以外は前後の母音の形を引き継ぐ
-    if ts.cur == "pau" or ts.cur == "N" or ts.cur == "m" or ts.cur == "p" or ts.cur == "b" or ts.cur == "v" then
-      -- pau / ん / 子音（ま・ぱ・ば・ヴ行）
-      return pat.N
+    -- 子音処理タイプ1 -> 口を閉じる子音以外は前の母音を引き継ぐ
+    local stat = LipSyncLab.states[obj.layer] or {frame = obj.frame-1, p = "N"}
+    if stat.frame >= obj.frame or stat.frame + obj.framerate < obj.frame then
+      -- 巻き戻っていたり、あまりに先に進んでいるようならアニメーションはリセットする
+      -- プレビューでコマ飛びする場合は正しい挙動を示せないので、1秒の猶予を持たせる
+      stat.p = "N"
     end
-    -- 処理されなかった全ての子音のデフォルト処理
-    -- 隣接する前後の母音の形を引き継ぐ
-    if ts.progress < 0.5 then
-      -- 前半は前の母音を引き継ぐ
-      if ts:previsvowel() ~= 0 and ts.prev_end == ts.cur_start then
-        return pat[ts.prev]
-      end
+    stat.frame = obj.frame
+    if ts:curisvowel()  == 1 then
+      -- 母音は設定された形をそのまま使う（無声化母音は除外）
+      stat.p = ts.cur
+    elseif ts.cur == "pau" or ts.cur == "N" or ts.cur == "cl" then
+      -- pau / ん / 促音（っ）
+      stat.p = "N"
     else
-      -- 後半は後ろの母音を先行させる
-      if ts:nextisvowel() ~= 0 and ts.next_start == ts.cur_end then
-        return pat[ts.next]
-      end
+      -- それ以外の子音ではそのまま引き継ぐ
     end
-    return pat.N
+    LipSyncLab.states[obj.layer] = stat
+    return pat[stat.p]
   elseif self.mode == 2 then
     -- 子音処理タイプ2 -> 口を閉じる子音以外は前後の母音の形より小さいもので補間
+    if ts:curisvowel() ~= 0 then
+      -- 母音は設定された形をそのまま使う
+      return pat[ts.cur]
+    end
     if ts.cur == "pau" or ts.cur == "N" or ts.cur == "m" or ts.cur == "p" or ts.cur == "b" or ts.cur == "v" then
       -- pau / ん / 子音（ま・ぱ・ば・ヴ行）
       return pat.N
