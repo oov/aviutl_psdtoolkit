@@ -64,6 +64,19 @@ float text_width(void *p, void *s, int len) {
 	struct nk_user_font *f = p;
 	return f->width(f->userdata, f->height, s, len);
 }
+
+int is_pressed(void *p, int key) {
+	struct nk_input *input = p;
+	char *text = input->keyboard.text;
+	int len = input->keyboard.text_len;
+	for (int i = 0; i < len; ++i, ++text) {
+		if (*text == key) {
+			input->keyboard.text_len = 0;
+			return 1;
+		}
+	}
+	return 0;
+}
 */
 import "C"
 
@@ -111,4 +124,8 @@ func FontHeight(p *nk.UserFont) float32 {
 
 func TextWidth(p *nk.UserFont, s string) float32 {
 	return float32(C.text_width(unsafe.Pointer(p.Ref()), unsafe.Pointer(&[]byte(s)[0]), C.int(len(s))))
+}
+
+func IsPressed(ctx *nk.Context, key int) bool {
+	return C.is_pressed(unsafe.Pointer(ctx.Input().Ref()), C.int(key)) != 0
 }

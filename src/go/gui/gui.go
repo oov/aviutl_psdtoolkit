@@ -228,7 +228,7 @@ func (g *GUI) update() {
 				rgn := nk.NkWindowGetContentRegion(ctx)
 
 				nk.NkLayoutRowDynamic(ctx, float32(topPaneHeight-padding), 3)
-				if nk.NkButtonLabel(ctx, "送る") != 0 {
+				if nk.NkButtonLabel(ctx, "送る") != 0 || nkhelper.IsPressed(ctx, 19) { // 19 = ^S
 					g.sendEditingImage()
 				}
 				fx, fy := g.img.FlipX(), g.img.FlipY()
