@@ -73,10 +73,12 @@ function PSDState.new(id, file, opt)
     offsety = 0,
     valueholder = nil,
     talkstate = nil,
+    talkstateindex = nil,
     rendered = false,
   }, {__index = PSDState})
   if opt.lipsync ~= nil then
     self.talkstate = P.talk:get(opt.lipsync)
+    self.talkstateindex = opt.lipsync
   end
   if opt.mpslider ~= nil then
     self.valueholder = P.valueholder:get(opt.mpslider)
@@ -176,6 +178,9 @@ function Blinker.new(patterns, interval, speed, offset)
 end
 
 function Blinker:getstate(psd, obj)
+  if #self.patterns < 2 then
+    error("目パチには少なくとも「開き」「閉じ」のパターン設定が必要です")
+  end
   local interval = self.interval * obj.framerate + self.speed * #self.patterns*2;
   local basetime = obj.frame + interval + self.offset
   local blink = basetime % interval
@@ -207,6 +212,12 @@ end
 LipSyncSimple.states = {}
 
 function LipSyncSimple:getstate(psd, obj)
+  if #self.patterns < 2 then
+    error("口パクには少なくとも「開き」「閉じ」のパターン設定が必要です")
+  end
+  if psd.talkstateindex == nil then
+    error("口パク準備があるレイヤー番号を指定してください")
+  end
   local volume = 0
   if psd.talkstate ~= nil then
     volume = psd.talkstate.volume
@@ -264,6 +275,12 @@ LipSyncLab.states = {}
 
 function LipSyncLab:getstate(psd, obj)
   local pat = self.patterns
+  if pat.a == nil or pat.e == nil or pat.i == nil or pat.o == nil or pat.u == nil or pat.N == nil then
+    error("口パクには「あ」「い」「う」「え」「お」「ん」全てのパターン設定が必要です")
+  end
+  if psd.talkstateindex == nil then
+    error("口パク準備があるレイヤー番号を指定してください")
+  end
   local ts = psd.talkstate
   if ts == nil then
     -- データが見つからなかった場合は閉じ状態にする

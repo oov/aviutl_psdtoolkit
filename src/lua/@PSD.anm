@@ -21,7 +21,14 @@ PSD:addstate({a, b, c, d, e, f, g, h}, obj.track0)
 --track2:子音処理,0,2,1,1
 --check0:口パク準備がなくても有効,1
 --dialog:あ,a="";い,i="";う,u="";え,e="";お,o="";ん,n="";
-PSD:addstate(require("PSDToolKit").LipSyncLab.new({a=a, e=e, i=i, o=o, u=u, N=n}, obj.track2, obj.check0))
+PSD:addstate(require("PSDToolKit").LipSyncLab.new({
+  a=a ~= "" and a or nil,
+  e=e ~= "" and e or nil,
+  i=i ~= "" and i or nil,
+  o=o ~= "" and o or nil,
+  u=u ~= "" and u or nil,
+  N=n ~= "" and n or nil,
+}, obj.track2, obj.check0))
 
 @口パク 開閉のみ
 --track0:速さ,1,100,1,1
@@ -33,9 +40,7 @@ if d ~= "" then table.insert(m, d) end
 if c ~= "" then table.insert(m, c) end
 if b ~= "" then table.insert(m, b) end
 if a ~= "" then table.insert(m, a) end
-if #m > 0 then
-  PSD:addstate(require("PSDToolKit").LipSyncSimple.new(m, obj.track0, obj.check0))
-end
+PSD:addstate(require("PSDToolKit").LipSyncSimple.new(m, obj.track0, obj.check0))
 
 @目パチ
 --track0:間隔(秒),0,60,4,0.01
@@ -48,6 +53,4 @@ if d ~= "" then table.insert(m, d) end
 if c ~= "" then table.insert(m, c) end
 if b ~= "" then table.insert(m, b) end
 if a ~= "" then table.insert(m, a) end
-if #m > 0 then
-  PSD:addstate(require("PSDToolKit").Blinker.new(m, obj.track0, obj.track1, obj.track2))
-end
+PSD:addstate(require("PSDToolKit").Blinker.new(m, obj.track0, obj.track1, obj.track2))
