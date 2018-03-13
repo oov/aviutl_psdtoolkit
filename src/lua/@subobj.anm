@@ -47,6 +47,35 @@ obj.rx = obj.rx * (1 - p) + rx * p
 obj.ry = obj.ry * (1 - p) + ry * p
 obj.rz = obj.rz * (1 - p) + rz * p
 
+@ëäëŒà⁄ìÆ
+--track0:ë¨Ç≥(ïb),0,1,0.30,0.01
+--track1:ä‘äu(ïb),0,1,0.03,0.01
+--track2:ìßñæìx,0,1,1,0.01
+--dialog:X,local x=50;Y,local y=0;Z,local z=0;â¡ë¨/chk,local a=0;å∏ë¨/chk,local b=1;ìoèÍ/chk,local ein=1;ëﬁèÍ/chk,local eout=1;
+if subobj.notfound then
+  obj.alpha = obj.alpha * obj.track2
+  return
+end
+local eofs = (obj.num-obj.index-1)*obj.track1
+local sp = ein == 0 and 1 or 1 - math.max(0, math.min(1, (obj.track0-subobj.time+obj.index*obj.track1)/obj.track0))
+local ep = eout == 0 and 1 or math.max(0, math.min(1, (subobj.totaltime-subobj.time-eofs)/obj.track0))
+local p = sp * ep
+local function easein(p) return p*p end
+local function easeout(p) return p*(2-p) end
+if p ~= 0 and p ~= 1 then
+  if a == 1 and b == 1 then
+    p = p < 0.5 and easein(p * 2) * 0.5 or easeout((p - 0.5) * 2) * 0.5 + 0.5
+  elseif a == 1 then
+    p = sp < 1 and easein(p) or easeout(p)
+  elseif b == 1 then
+    p = sp < 1 and easeout(p) or easein(p)
+  end
+end
+obj.alpha = obj.alpha * p + obj.alpha * obj.track2 * (1 - p)
+obj.ox = obj.ox * (1 - p) + (obj.ox + x) * p
+obj.oy = obj.oy * (1 - p) + (obj.oy + y) * p
+obj.oz = obj.oz * (1 - p) + (obj.oz + z) * p
+
 @Ç⁄ÇÊÇÒ
 --track0:í∑Ç≥(ïb),0,5,0.30,0.01
 --track1:ä‘äu(ïb),0,1,0.03,0.01
