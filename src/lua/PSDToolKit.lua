@@ -50,7 +50,16 @@ function PSDState.init(obj, o)
   -- 何も出力しないと直後のアニメーション効果以外適用されないため
   -- それに対するワークアラウンド
   mes(" ")
-  return r, r.valueholder or P.emptysubobj
+
+  local subobj
+  if o.mpslider ~= 0 then
+    subobj = r.valueholder or P.emptysubobj
+  elseif o.lipsync ~= 0 then
+    subobj = r.talkstate ~= nil and r.talkstate.threshold ~= -1 and r.talkstate or P.emptysubobj
+  else
+    subobj = P.emptysubobj
+  end
+  return r, subobj
 end
 
 -- PSDオブジェクト
@@ -399,7 +408,7 @@ function TalkState.new(frame, time, totalframe, totaltime)
     totalframe = totalframe,
     totaltime = totaltime,
     volume = 0,
-    threshold = 1,
+    threshold = -1,
     progress = 0,
     cur = "",
     cur_start = 0,
