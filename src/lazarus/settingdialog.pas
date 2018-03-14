@@ -65,12 +65,19 @@ begin
 end;
 
 const
-  ID_CHECKBOX_GENERATE_LIPSYNCPREP = 100;
-  ID_CHECKBOX_GENERATE_MPSLIDER = 101;
-  ID_CHECKBOX_GENERATE_SUBTITLEPREP = 102;
-  ID_COMBOBOX_NUMOFMPSLIDER = 1001;
-  ID_CHECKBOX_SUBTITLEGROUP = 1002;
-  ID_COMBOBOX_SUBTITLEENCODING = 1003;
+  ID_LIPSYNC_GENERATE = 100;
+  ID_MPSLIDER_GENERATE = 101;
+  ID_SUBTITLE_GENERATE = 102;
+  ID_LIPSYNC_GROUP_ID = 1000;
+  ID_LIPSYNC_OFFSET = 1001;
+  ID_MPSLIDER_NUMBER = 2000;
+  ID_MPSLIDER_GROUP_ID = 2001;
+  ID_MPSLIDER_MARGIN_LEFT = 2002;
+  ID_MPSLIDER_MARGIN_RIGHT = 2003;
+  ID_SUBTITLE_ENCODING = 3000;
+  ID_SUBTITLE_GROUP_ID = 3001;
+  ID_SUBTITLE_MARGIN_LEFT = 3002;
+  ID_SUBTITLE_MARGIN_RIGHT = 3003;
 
 type
   { TSettingDialog }
@@ -79,29 +86,49 @@ type
   protected
     function WndProc(Hwnd: HWND; Message: UINT; WP: WPARAM; LP: LPARAM): LRESULT;
   private
-    FGenerateLipSyncPrep: boolean;
-    FGenerateSubtitlePrep: boolean;
-    FNumOfMPSlider: integer;
+    FLipsyncGenerate: boolean;
+    FLipsyncGroupId: integer;
+    FLipsyncOffset: integer;
+    FMPSliderGenerate: boolean;
+    FMPSliderGroupId: integer;
+    FMPSliderMarginLeft: integer;
+    FMPSliderMarginRight: integer;
+    FMPSliderNumber: integer;
+    FSubtitleGenerate: boolean;
     FSubtitleEncoding: integer;
-    FSubtitleGrouping: boolean;
+    FSubtitleGroupId: integer;
+    FSubtitleMarginLeft: integer;
+    FSubtitleMarginRight: integer;
     FWindow: THandle;
     FSuspendedWindows: THandleDynArray;
     function GetControl(const ControlId: integer): THandle;
     function GetCheck(const ControlId: integer): boolean;
     procedure SetCheck(const ControlId: integer; const Value: boolean);
+    function GetText(const ControlId: integer): WideString;
+    procedure SetText(const ControlId: integer; const Value: WideString);
 
     procedure InitDialog();
     procedure FinalDialog();
   public
     constructor Create();
     destructor Destroy(); override;
-    property GenerateLipSyncPrep: boolean read FGenerateLipSyncPrep
-      write FGenerateLipSyncPrep;
-    property NumOfMPSlider: integer read FNumOfMPSlider write FNumOfMPSlider;
-    property GenerateSubtitlePrep: boolean read FGenerateSubtitlePrep
-      write FGenerateSubtitlePrep;
-    property SubtitleGrouping: boolean read FSubtitleGrouping write FSubtitleGrouping;
+    property LipsyncGenerate: boolean read FLipsyncGenerate write FLipsyncGenerate;
+    property LipsyncGroupId: integer read FLipsyncGroupId write FLipsyncGroupId;
+    property LipsyncOffset: integer read FLipsyncOffset write FLipsyncOffset;
+    property MPSliderGenerate: boolean read FMPSliderGenerate write FMPSliderGenerate;
+    property MPSliderNumber: integer read FMPSliderNumber write FMPSliderNumber;
+    property MPSliderGroupId: integer read FMPSliderGroupId write FMPSliderGroupId;
+    property MPSliderMarginLeft: integer read FMPSliderMarginLeft
+      write FMPSliderMarginLeft;
+    property MPSliderMarginRight: integer read FMPSliderMarginRight
+      write FMPSliderMarginRight;
+    property SubtitleGenerate: boolean read FSubtitleGenerate write FSubtitleGenerate;
     property SubtitleEncoding: integer read FSubtitleEncoding write FSubtitleEncoding;
+    property SubtitleGroupId: integer read FSubtitleGroupId write FSubtitleGroupId;
+    property SubtitleMarginLeft: integer read FSubtitleMarginLeft
+      write FSubtitleMarginLeft;
+    property SubtitleMarginRight: integer read FSubtitleMarginRight
+      write FSubtitleMarginRight;
   end;
 
 var
@@ -138,6 +165,21 @@ const
   state: array[boolean] of WPARAM = (BST_UNCHECKED, BST_CHECKED);
 begin
   SendMessageW(GetControl(ControlId), BM_SETCHECK, state[Value], 0);
+end;
+
+function TSettingDialog.GetText(const ControlId: integer): WideString;
+var
+  h: THandle;
+begin
+  h := GetControl(ControlId);
+  SetLength(Result, GetWindowTextLengthW(h) + 1);
+  GetWindowTextW(h, @Result[1], Length(Result));
+  SetLength(Result, Length(Result) - 1);
+end;
+
+procedure TSettingDialog.SetText(const ControlId: integer; const Value: WideString);
+begin
+  SetWindowTextW(GetControl(ControlId), PWideChar(Value));
 end;
 
 function TSettingDialog.WndProc(Hwnd: HWND; Message: UINT; WP: WPARAM;
@@ -184,11 +226,14 @@ begin
 
   SetWindowTextW(FWindow, 'PSDToolKit 環境設定');
 
-  SetCheck(ID_CHECKBOX_GENERATE_LIPSYNCPREP, FGenerateLipSyncPrep);
-  SetCheck(ID_CHECKBOX_GENERATE_MPSLIDER, FNumOfMPSlider > 0);
-  SetCheck(ID_CHECKBOX_GENERATE_SUBTITLEPREP, FGenerateSubtitlePrep);
+  SetCheck(ID_LIPSYNC_GENERATE, FLipsyncGenerate);
+  SetCheck(ID_MPSLIDER_GENERATE, FMPSliderGenerate);
+  SetCheck(ID_SUBTITLE_GENERATE, FSubtitleGenerate);
 
-  H := GetControl(ID_COMBOBOX_NUMOFMPSLIDER);
+  SetText(ID_LIPSYNC_GROUP_ID, WideString(IntToStr(FLipsyncGroupId)));
+  SetText(ID_LIPSYNC_OFFSET, WideString(IntToStr(FLipsyncOffset)));
+
+  H := GetControl(ID_MPSLIDER_NUMBER);
   for I := 1 to 11 do
   begin
     WS := WideString(IntToStr(I * 4));
@@ -196,34 +241,43 @@ begin
   end;
   GetWindowRect(H, Rect);
   SetWindowPos(H, 0, 0, 0, Rect.Width, 300, SWP_NOMOVE or SWP_NOZORDER);
-  if FNumOfMPSlider = 0 then
-    SendMessageW(H, CB_SETCURSEL, 1, 0)
-  else
-    SendMessageW(H, CB_SETCURSEL, FNumOfMPSlider - 1, 0);
+  SendMessageW(H, CB_SETCURSEL, FMPSliderNumber, 0);
+  SetText(ID_MPSLIDER_GROUP_ID, WideString(IntToStr(FMPSliderGroupId)));
+  SetText(ID_MPSLIDER_MARGIN_LEFT, WideString(IntToStr(FMPSliderMarginLeft)));
+  SetText(ID_MPSLIDER_MARGIN_RIGHT, WideString(IntToStr(FMPSliderMarginRight)));
 
-  SetCheck(ID_CHECKBOX_SUBTITLEGROUP, FSubtitleGrouping);
-  H := GetControl(ID_COMBOBOX_SUBTITLEENCODING);
+  H := GetControl(ID_SUBTITLE_ENCODING);
   SendMessageW(H, CB_ADDSTRING, 0, {%H-}LPARAM(PWideChar('Shift_JIS')));
   SendMessageW(H, CB_ADDSTRING, 0, {%H-}LPARAM(PWideChar('UTF-8')));
   GetWindowRect(H, Rect);
   SetWindowPos(H, 0, 0, 0, Rect.Width, 300, SWP_NOMOVE or SWP_NOZORDER);
   SendMessageW(H, CB_SETCURSEL, FSubtitleEncoding, 0);
+  SetText(ID_SUBTITLE_GROUP_ID, WideString(IntToStr(FSubtitleGroupId)));
+  SetText(ID_SUBTITLE_MARGIN_LEFT, WideString(IntToStr(FSubtitleMarginLeft)));
+  SetText(ID_SUBTITLE_MARGIN_RIGHT, WideString(IntToStr(FSubtitleMarginRight)));
 end;
 
 procedure TSettingDialog.FinalDialog();
 begin
   EnableFamilyWindows(FSuspendedWindows);
 
-  FGenerateLipSyncPrep := GetCheck(ID_CHECKBOX_GENERATE_LIPSYNCPREP);
-  if GetCheck(ID_CHECKBOX_GENERATE_MPSLIDER) = False then
-    FNumOfMPSlider := 0
-  else
-    FNumOfMPSlider := SendMessageW(GetControl(ID_COMBOBOX_NUMOFMPSLIDER),
-      CB_GETCURSEL, 0, 0) + 1;
-  FGenerateSubtitlePrep := GetCheck(ID_CHECKBOX_GENERATE_SUBTITLEPREP);
-  FSubtitleGrouping := GetCheck(ID_CHECKBOX_SUBTITLEGROUP);
-  FSubtitleEncoding := SendMessageW(GetControl(ID_COMBOBOX_SUBTITLEENCODING),
+  FLipsyncGenerate := GetCheck(ID_LIPSYNC_GENERATE);
+  FMPSliderGenerate := GetCheck(ID_MPSLIDER_GENERATE);
+  FSubtitleGenerate := GetCheck(ID_SUBTITLE_GENERATE);
+
+  FLipsyncGroupId := StrToIntDef(string(GetText(ID_LIPSYNC_GROUP_ID)), 1);
+  FLipsyncOffset := StrToIntDef(string(GetText(ID_LIPSYNC_OFFSET)), 0);
+
+  FMPSliderNumber := SendMessageW(GetControl(ID_MPSLIDER_NUMBER), CB_GETCURSEL, 0, 0);
+  FMPSliderGroupId := StrToIntDef(string(GetText(ID_MPSLIDER_GROUP_ID)), 1);
+  FMPSliderMarginLeft := StrToIntDef(string(GetText(ID_MPSLIDER_MARGIN_LEFT)), 0);
+  FMPSliderMarginRight := StrToIntDef(string(GetText(ID_MPSLIDER_MARGIN_RIGHT)), 0);
+
+  FSubtitleEncoding := SendMessageW(GetControl(ID_SUBTITLE_ENCODING),
     CB_GETCURSEL, 0, 0);
+  FSubtitleGroupId := StrToIntDef(string(GetText(ID_SUBTITLE_GROUP_ID)), 1);
+  FSubtitleMarginLeft := StrToIntDef(string(GetText(ID_SUBTITLE_MARGIN_LEFT)), 0);
+  FSubtitleMarginRight := StrToIntDef(string(GetText(ID_SUBTITLE_MARGIN_RIGHT)), 0);
 end;
 
 constructor TSettingDialog.Create();
@@ -256,33 +310,68 @@ begin
   try
     lua_getfield(L, -1, 'wav_lipsync');
     if lua_isnil(L, -1) then
-      Dialog.GenerateLipSyncPrep := False
+      Dialog.LipsyncGenerate := False
     else
-      Dialog.GenerateLipSyncPrep := lua_toboolean(L, -1);
+      Dialog.LipsyncGenerate := lua_tointeger(L, -1) <> 0;
     lua_pop(L, 1);
 
     lua_getfield(L, -1, 'wav_mpslider');
     if lua_isnil(L, -1) then
-      Dialog.NumOfMPSlider := 0
+      Dialog.MPSliderGenerate := False
     else
-      Dialog.NumOfMPSlider := lua_tointeger(L, -1);
+      Dialog.MPSliderGenerate := lua_tointeger(L, -1) > 0;
     lua_pop(L, 1);
 
-    lua_getfield(L, -1, 'wav_insertmode');
+    lua_getfield(L, -1, 'wav_subtitle');
     if lua_isnil(L, -1) then
-      Dialog.GenerateSubtitlePrep := False
+      Dialog.SubtitleGenerate := False
     else
-      Dialog.GenerateSubtitlePrep := lua_tointeger(L, -1) <> 0;
+      Dialog.SubtitleGenerate := lua_tointeger(L, -1) <> 0;
     lua_pop(L, 1);
 
-    lua_getfield(L, -1, 'wav_groupsubtitle');
+    lua_getfield(L, -1, 'wav_lipsync_group');
     if lua_isnil(L, -1) then
-      Dialog.SubtitleGrouping := True
+      Dialog.LipsyncGroupId := 1
     else
-      Dialog.SubtitleGrouping := lua_toboolean(L, -1);
+      Dialog.LipsyncGroupId := lua_tointeger(L, -1);
     lua_pop(L, 1);
 
-    lua_getfield(L, -1, 'wav_subtitleencoding');
+    lua_getfield(L, -1, 'wav_lipsync_offset');
+    if lua_isnil(L, -1) then
+      Dialog.LipsyncOffset := 0
+    else
+      Dialog.LipsyncOffset := lua_tointeger(L, -1);
+    lua_pop(L, 1);
+
+    lua_getfield(L, -1, 'wav_mpslider');
+    if lua_isnil(L, -1) then
+      Dialog.MPSliderNumber := 1
+    else
+      Dialog.MPSliderNumber := lua_tointeger(L, -1) - 1;
+    lua_pop(L, 1);
+
+    lua_getfield(L, -1, 'wav_mpslider_group');
+    if lua_isnil(L, -1) then
+      Dialog.MPSliderGroupId := 1
+    else
+      Dialog.MPSliderGroupId := lua_tointeger(L, -1);
+    lua_pop(L, 1);
+
+    lua_getfield(L, -1, 'wav_mpslider_margin_left');
+    if lua_isnil(L, -1) then
+      Dialog.MPSliderMarginLeft := 0
+    else
+      Dialog.MPSliderMarginLeft := lua_tointeger(L, -1);
+    lua_pop(L, 1);
+
+    lua_getfield(L, -1, 'wav_mpslider_margin_right');
+    if lua_isnil(L, -1) then
+      Dialog.MPSliderMarginRight := 0
+    else
+      Dialog.MPSliderMarginRight := lua_tointeger(L, -1);
+    lua_pop(L, 1);
+
+    lua_getfield(L, -1, 'wav_subtitle_encoding');
     if lua_isnil(L, -1) then
       Dialog.SubtitleEncoding := 0
     else
@@ -294,22 +383,63 @@ begin
     end;
     lua_pop(L, 1);
 
+    lua_getfield(L, -1, 'wav_subtitle_group');
+    if lua_isnil(L, -1) then
+      Dialog.SubtitleGroupId := 1
+    else
+      Dialog.SubtitleGroupId := lua_tointeger(L, -1);
+    lua_pop(L, 1);
+
+    lua_getfield(L, -1, 'wav_subtitle_margin_left');
+    if lua_isnil(L, -1) then
+      Dialog.SubtitleMarginLeft := 0
+    else
+      Dialog.SubtitleMarginLeft := lua_tointeger(L, -1);
+    lua_pop(L, 1);
+
+    lua_getfield(L, -1, 'wav_subtitle_margin_right');
+    if lua_isnil(L, -1) then
+      Dialog.SubtitleMarginRight := 0
+    else
+      Dialog.SubtitleMarginRight := lua_tointeger(L, -1);
+    lua_pop(L, 1);
+
     if DialogBoxParamW(hInstance, 'SETTINGDIALOG', Parent, @WndProcTrampoline,
       LPARAM(Dialog)) = idOk then
     begin
       SL := TStringList.Create;
       try
         SL.Add('local P = {}');
-        if Dialog.GenerateLipSyncPrep then
-          SL.Add('P.wav_lipsync = true');
-        if Dialog.NumOfMPSlider > 0 then
-          SL.Add('P.wav_mpslider = ' + IntToStr(Dialog.NumOfMPSlider));
-        if Dialog.GenerateSubtitlePrep then
-          SL.Add('P.wav_insertmode = 2');
-        if not Dialog.SubtitleGrouping then
-          SL.Add('P.wav_groupsubtitle = false');
+        if Dialog.LipsyncGenerate then
+          SL.Add('P.wav_lipsync = 1');
+        if Dialog.LipsyncGroupId <> 1 then
+          SL.Add('P.wav_lipsync_group = ' + IntToStr(Dialog.LipsyncGroupId));
+        if Dialog.LipsyncOffset <> 0 then
+          SL.Add('P.wav_lipsync_offset = ' + IntToStr(Dialog.LipsyncOffset));
+
+        if Dialog.MPSliderGenerate then
+          SL.Add('P.wav_mpslider = ' + IntToStr(Dialog.MPSliderNumber + 1));
+        if Dialog.MPSliderGroupId <> 1 then
+          SL.Add('P.wav_mpslider_group = ' + IntToStr(Dialog.MPSliderGroupId));
+        if Dialog.MPSliderMarginLeft <> 0 then
+          SL.Add('P.wav_mpslider_margin_left = ' + IntToStr(Dialog.MPSliderMarginLeft));
+        if Dialog.MPSliderMarginRight <> 0 then
+          SL.Add('P.wav_mpslider_margin_right = ' +
+            IntToStr(Dialog.MPSliderMarginRight));
+
+
+        if Dialog.SubtitleGenerate then
+          SL.Add('P.wav_subtitle = 2');
         if Dialog.SubtitleEncoding <> 0 then
-          SL.Add('P.wav_subtitleencoding = "utf8"');
+          SL.Add('P.wav_subtitle_encoding = "utf8"');
+        if Dialog.SubtitleGroupId <> 1 then
+          SL.Add('P.wav_subtitle_group = ' + IntToStr(Dialog.SubtitleGroupId));
+        if Dialog.SubtitleMarginLeft <> 0 then
+          SL.Add('P.wav_subtitle_margin_left = ' + IntToStr(Dialog.SubtitleMarginLeft));
+        if Dialog.SubtitleMarginRight <> 0 then
+          SL.Add('P.wav_subtitle_margin_right = ' +
+            IntToStr(Dialog.SubtitleMarginRight));
+
         SL.Add('return P');
 
         FS := TFileStreamW.Create(WideString(FilePath));

@@ -32,8 +32,8 @@ function P.parse(filepath)
   end
   local srt = f:read("*all")
   f:close()
-  if setting.srt_encoding ~= "sjis" then
-    srt = GCMZDrops.convertencoding(srt, setting.srt_encoding, "sjis")
+  if setting.srt_encoding ~= "utf8" then
+    srt = GCMZDrops.convertencoding(srt, setting.srt_encoding, "utf8")
   end
   if srt:sub(-1) ~= "\n" then
     srt = srt .. "\r\n"
@@ -118,7 +118,7 @@ function P.ondrop(files, state)
       }
       local modifiers = {
         ENCODE_TEXT = function(v)
-          return GCMZDrops.encodeexotext(v)
+          return GCMZDrops.encodeexotextutf8(v)
         end
       }
       local layers = {}

@@ -1,6 +1,6 @@
 local P = {}
 
-P.name = "Shift キーを押しながら *.wav をドロップで「口パク準備」を挿入"
+P.name = "Shift キーを押しながら *.wav をドロップで追加のオブジェクトを生成"
 
 P.priority = 0
 
@@ -166,78 +166,111 @@ function P.ondrop(files, state)
   for i, v in ipairs(files) do
     -- ファイルの拡張子が wav で発動モードの条件を満たしていたら
     if (v.filepath:match("[^.]+$"):lower() == "wav") and fire(state, v) then
-      -- プロジェクトとファイルの情報を取得する
-      local proj = GCMZDrops.getexeditfileinfo()
-      local fi = GCMZDrops.getfileinfo(v.filepath)
-
       -- テンプレート用変数を準備
       local values = {
-        SUBTITLE = "",
-        SUBTITLE_LEN = 0,
-        WAV_LEN = 0,
+        WAV_START = 1,
+        WAV_END = 1,
         WAV_PATH = v.filepath,
-        LIPSYNC_PATH = v.filepath
+        LIPSYNC_START = 1,
+        LIPSYNC_END = 1,
+        LIPSYNC_PATH = v.filepath,
+        MPSLIDER_START = 1,
+        MPSLIDER_END = 1,
+        SUBTITLE_START = 1,
+        SUBTITLE_END = 1,
+        SUBTITLE_TEXT = "",
       }
       local modifiers = {
         ENCODE_TEXT = function(v)
-          return GCMZDrops.encodeexotext(v)
+          return GCMZDrops.encodeexotextutf8(v)
         end,
         ENCODE_LUA_STRING = function(v)
           v = GCMZDrops.convertencoding(v, "sjis", "utf8")
           v = GCMZDrops.encodeluastring(v)
           v = GCMZDrops.convertencoding(v, "utf8", "sjis")
           return v
-        end
+        end,
       }
 
-      -- 音声が現在のプロジェクトで何フレーム分あるのかを計算する
-      values.WAV_LEN = math.ceil((fi.audio_samples / proj.audio_rate) * proj.rate / proj.scale)
-      values.SUBTITLE_LEN = values.WAV_LEN + setting.wav_subtitlemargin
+      -- プロジェクトとファイルの情報を取得する
+      local proj = GCMZDrops.getexeditfileinfo()
+      local fi = GCMZDrops.getfileinfo(v.filepath)
 
-      if setting.wav_insertmode > 0 then
+      -- 音声が現在のプロジェクトで何フレーム分あるのかを計算する
+      local wavlen = math.ceil((fi.audio_samples / proj.audio_rate) * proj.rate / proj.scale)
+
+      -- 長さを反映
+      values.WAV_END = values.WAV_END + wavlen
+      values.LIPSYNC_END = values.LIPSYNC_END + wavlen
+      values.MPSLIDER_END = values.MPSLIDER_END + wavlen
+      values.SUBTITLE_END = values.SUBTITLE_END + wavlen
+
+      -- オフセットとマージンを反映
+      values.LIPSYNC_START = values.LIPSYNC_START + setting.wav_lipsync_offset
+      values.LIPSYNC_END = values.LIPSYNC_END + setting.wav_lipsync_offset
+      values.MPSLIDER_START = values.MPSLIDER_START - setting.wav_mpslider_margin_left
+      values.MPSLIDER_END = values.MPSLIDER_END + setting.wav_mpslider_margin_right
+      values.SUBTITLE_START = values.SUBTITLE_START - setting.wav_subtitle_margin_left
+      values.SUBTITLE_END = values.SUBTITLE_END + setting.wav_subtitle_margin_right
+
+      -- マイナス方向に進んでしまった分を戻す
+      local ofs = math.min(values.LIPSYNC_START, values.MPSLIDER_START, values.SUBTITLE_START) - 1
+      values.WAV_START = values.WAV_START - ofs
+      values.WAV_END = values.WAV_END - ofs
+      values.LIPSYNC_START = values.LIPSYNC_START - ofs
+      values.LIPSYNC_END = values.LIPSYNC_END - ofs
+      values.MPSLIDER_START = values.MPSLIDER_START - ofs
+      values.MPSLIDER_END = values.MPSLIDER_END - ofs
+      values.SUBTITLE_START = values.SUBTITLE_START - ofs
+      values.SUBTITLE_END = values.SUBTITLE_END - ofs
+
+      if setting.wav_subtitle > 0 then
         -- *.txt があるか探すために *.wav の拡張子部分を差し替える
         -- もし orgfilepath があるならそっちの名前を元に探さなければならない
         local txtfilepath = changefileext(v.orgfilepath or v.filepath, "txt")
         local subtitle = fileread(txtfilepath)
         if subtitle ~= nil then
-          -- 文字エンコーディングが Shift_JIS 以外の時は Shift_JIS へ変換する
-          -- TODO: GCMZDrops.encodeexotext で UTF-8 の受け入れを可能に
-          local enc = setting.wav_subtitleencoding
+          -- 文字エンコーディングが UTF-8 以外の時は UTF-8 へ変換する
+          local enc = setting.wav_subtitle_encoding
           if v.overridesubtitleencoding ~= nil then
             -- 他のスクリプトから overridesubtitleencoding 属性を追加されていた場合は
             -- 設定内容に関わらずそちらの文字エンコーディングを採用する
             enc = v.overridesubtitleencoding
           end
-          if enc ~= "sjis" then
-            subtitle = GCMZDrops.convertencoding(subtitle, enc, "sjis")
+          if enc ~= "utf8" then
+            subtitle = GCMZDrops.convertencoding(subtitle, enc, "utf8")
+          end
+          -- BOM があるなら除去する
+          if subtitle:sub(1, 3) == "\239\187\191" then
+            subtitle = subtitle:sub(4)
           end
           -- 置換用処理を呼び出す
           subtitle = setting:wav_subtitle_replacer(subtitle)
-          -- 挿入モードが 2 の時はテキストをスクリプトとして整形する
-          if setting.wav_insertmode == 2 then
+          -- setting.wav_subtitle が 2 の時はテキストをスクリプトとして整形する
+          if setting.wav_subtitle == 2 then
             if subtitle:sub(-2) ~= "\r\n" then
               subtitle = subtitle .. "\r\n"
             end
             subtitle = setting.wav_subtitle_prefix .. "\r\n" .. setting:wav_subtitle_escape(subtitle) .. setting.wav_subtitle_postfix
           end
-          values.SUBTITLE = subtitle
+          values.SUBTITLE_TEXT = subtitle
         end
       end
-      
+
       -- exo ファイルのヘッダ部分を組み立て
       local oini = GCMZDrops.inistring("")
       oini:set("exedit", "width", proj.width)
       oini:set("exedit", "height", proj.height)
       oini:set("exedit", "rate", proj.rate)
       oini:set("exedit", "scale", proj.scale)
-      oini:set("exedit", "length", (values.WAV_LEN < values.SUBTITLE_LEN) and values.SUBTITLE_LEN or values.WAV_LEN)
+      oini:set("exedit", "length", math.max(values.WAV_END, values.LIPSYNC_END, values.MPSLIDER_END, values.SUBTITLE_END))
       oini:set("exedit", "audio_rate", proj.audio_rate)
       oini:set("exedit", "audio_ch", proj.audio_ch)
 
       -- オブジェクトの挿入
       local filepath = P.resolvepath(v.orgfilepath or v.filepath, setting.wav_exafinder, setting)
       local index = 0
-      
+
       -- 音声用エイリアスを組み立て
       local aini = P.exaread(filepath, "wav")
       setting:wav_examodifler_wav(aini, values, modifiers)
@@ -245,7 +278,7 @@ function P.ondrop(files, state)
       index = index + 1
 
       -- 口パク準備用エイリアスを組み立て
-      if setting.wav_lipsync then
+      if setting.wav_lipsync == 1 then
         local aini = P.exaread(filepath, "lipsync")
         setting:wav_examodifler_lipsync(aini, values, modifiers)
         P.insertexa(oini, aini, index, index + 1)
@@ -261,7 +294,7 @@ function P.ondrop(files, state)
       end
 
       -- 字幕用エイリアスを組み立て
-      if values.SUBTITLE ~= "" then
+      if values.SUBTITLE_TEXT ~= "" then
         local aini = P.exaread(filepath, "subtitle")
         setting:wav_examodifler_subtitle(aini, values, modifiers)
         P.insertexa(oini, aini, index, index + 1)
