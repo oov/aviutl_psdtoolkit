@@ -14,6 +14,7 @@ import (
 	"github.com/pkg/errors"
 
 	"github.com/oov/aviutl_psdtoolkit/src/go/img"
+	"github.com/oov/aviutl_psdtoolkit/src/go/warn"
 	"github.com/oov/psd/composite"
 )
 
@@ -96,7 +97,7 @@ func (s *Sources) load(filePath string) (*Source, error) {
 		defer f2.Close()
 		pf, err = img.NewPFV(f2, lm)
 		if err != nil {
-			if img.IsWarning(err) {
+			if _, ok := err.(warn.Warning); ok {
 				s.Logger.Println(err)
 			} else {
 				return nil, errors.Wrap(err, "source: cannot parse the pfv file")

@@ -8,6 +8,7 @@ import (
 
 	"github.com/oov/aviutl_psdtoolkit/src/go/img/prop"
 	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
+	"github.com/oov/aviutl_psdtoolkit/src/go/warn"
 	"github.com/oov/psd/composite"
 )
 
@@ -708,7 +709,7 @@ func (m *LayerManager) SerializeSafe() map[string]SerializedData {
 }
 
 func (m *LayerManager) DeserializeSafe(state map[string]SerializedData) error {
-	var warns warning
+	var wr warn.Warning
 	for fullPath, d := range state {
 		if idx, ok := m.FullPath[fullPath]; ok {
 			l := m.Mapped[m.Flat[idx]]
@@ -717,11 +718,11 @@ func (m *LayerManager) DeserializeSafe(state map[string]SerializedData) error {
 				l.FolderOpen = d.FolderOpen
 			}
 		} else {
-			warns = append(warns, errors.Errorf("img: layer %q not found", fullPath))
+			wr = append(wr, errors.Errorf("img: layer %q not found", fullPath))
 		}
 	}
-	if warns != nil {
-		return warns
+	if wr != nil {
+		return wr
 	}
 	return nil
 }

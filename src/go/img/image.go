@@ -8,7 +8,7 @@ import (
 	"github.com/disintegration/gift"
 	"github.com/pkg/errors"
 
-	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
+	"github.com/oov/aviutl_psdtoolkit/src/go/warn"
 	"github.com/oov/downscale"
 	"github.com/oov/psd/composite"
 )
@@ -180,25 +180,24 @@ func (img *Image) SerializeProject() *ProjectState {
 }
 
 func (img *Image) DeserializeProject(state *ProjectState) error {
-	var warn warning
+	var wr warn.Warning
 	img.Flip = state.Flip
 	if err := img.Layers.DeserializeSafe(state.Layer); err != nil {
-		if w, ok := err.(warning); ok {
-			warn = append(warn, w...)
+		if w, ok := err.(warn.Warning); ok {
+			wr = append(wr, w...)
 		} else {
 			return errors.Wrap(err, "Image.DeserializeProject: failed to deserialize")
 		}
 	}
 	if err := img.PFV.Deserialize(state.PFV); err != nil {
-		if w, ok := err.(warning); ok {
-			warn = append(warn, w...)
+		if w, ok := err.(warn.Warning); ok {
+			wr = append(wr, w...)
 		} else {
 			return errors.Wrap(err, "Image.DeserializeProject: failed to deserialize")
 		}
 	}
-	if warn != nil {
-		// TODO: error handling
-		ods.ODS("WARN: %v", warn)
+	if wr != nil {
+		return wr
 	}
 	return nil
 }

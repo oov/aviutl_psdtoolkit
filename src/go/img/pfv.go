@@ -7,24 +7,9 @@ import (
 	"time"
 
 	"github.com/pkg/errors"
+
+	"github.com/oov/aviutl_psdtoolkit/src/go/warn"
 )
-
-type warning []error
-
-func (e warning) Error() string {
-	var b []byte
-	b = append(b, "there were some warnings:\n"...)
-	for _, s := range e {
-		b = append(b, s.Error()...)
-		b = append(b, '\n')
-	}
-	return string(b)
-}
-
-func IsWarning(err error) bool {
-	_, ok := err.(warning)
-	return ok
-}
 
 type PFV struct {
 	Setting    map[string]string
@@ -92,7 +77,7 @@ func NewPFV(r io.Reader, mgr *LayerManager) (*PFV, error) {
 		},
 	}
 
-	var warns warning
+	var wr warn.Warning
 
 	header := true
 	var name, typ string
@@ -111,8 +96,8 @@ func NewPFV(r io.Reader, mgr *LayerManager) (*PFV, error) {
 				header = false
 			} else {
 				if err = insert(&p.Root, typ, name, data, mgr); err != nil {
-					if w, ok := err.(warning); ok {
-						warns = append(warns, w...)
+					if w, ok := err.(warn.Warning); ok {
+						wr = append(wr, w...)
 					} else {
 						return nil, err
 					}
@@ -135,11 +120,11 @@ func NewPFV(r io.Reader, mgr *LayerManager) (*PFV, error) {
 				continue
 			}
 			if s[0], err = decodeName(s[0]); err != nil {
-				warns = append(warns, errors.Errorf("img: %q could not decode, skipped: %v", s[0], err))
+				wr = append(wr, errors.Errorf("img: %q could not decode, skipped: %v", s[0], err))
 				continue
 			}
 			if s[1], err = decodeName(s[1]); err != nil {
-				warns = append(warns, errors.Errorf("img: %q could not decode, skipped: %v", s[0], err))
+				wr = append(wr, errors.Errorf("img: %q could not decode, skipped: %v", s[0], err))
 				continue
 			}
 			p.Setting[s[0]] = s[1]
@@ -152,8 +137,8 @@ func NewPFV(r io.Reader, mgr *LayerManager) (*PFV, error) {
 	}
 	if len(data) > 0 {
 		if err = insert(&p.Root, typ, name, data, mgr); err != nil {
-			if w, ok := err.(warning); ok {
-				warns = append(warns, w...)
+			if w, ok := err.(warn.Warning); ok {
+				wr = append(wr, w...)
 			} else {
 				return nil, err
 			}
@@ -162,8 +147,8 @@ func NewPFV(r io.Reader, mgr *LayerManager) (*PFV, error) {
 	if err := registerFaview(p); err != nil {
 		return nil, errors.Wrap(err, "img: unexpected error")
 	}
-	if warns != nil {
-		return p, warns
+	if wr != nil {
+		return p, wr
 	}
 	return p, nil
 }
@@ -225,7 +210,7 @@ func (pfv *PFV) serializeNode() map[string]PFVNodeSerializedData {
 }
 
 func (pfv *PFV) deserializeNode(data map[string]PFVNodeSerializedData) error {
-	var e warning
+	var wr warn.Warning
 	for fullPath, d := range data {
 		n, err := pfv.FindNode(fullPath, false)
 		if err != nil {
@@ -234,11 +219,11 @@ func (pfv *PFV) deserializeNode(data map[string]PFVNodeSerializedData) error {
 		if n != nil {
 			n.Open = d.Open
 		} else {
-			e = append(e, errors.Errorf("img: node %q is not found", fullPath))
+			wr = append(wr, errors.Errorf("img: node %q is not found", fullPath))
 		}
 	}
-	if e != nil {
-		return e
+	if wr != nil {
+		return wr
 	}
 	return nil
 }
@@ -265,7 +250,7 @@ func (pfv *PFV) serializeFaviewNode() map[string]PFVFaviewNodeSerializedData {
 }
 
 func (pfv *PFV) deserializeFaviewNode(data map[string]PFVFaviewNodeSerializedData) error {
-	var e warning
+	var wr warn.Warning
 	for fullPath, d := range data {
 		fn, err := pfv.FindFaviewNode(fullPath, false)
 		if err != nil {
@@ -279,11 +264,11 @@ func (pfv *PFV) deserializeFaviewNode(data map[string]PFVFaviewNodeSerializedDat
 				}
 			}
 		} else {
-			e = append(e, errors.Errorf("img: faview node %q is not found", fullPath))
+			wr = append(wr, errors.Errorf("img: faview node %q is not found", fullPath))
 		}
 	}
-	if e != nil {
-		return e
+	if wr != nil {
+		return wr
 	}
 	return nil
 }
@@ -304,11 +289,11 @@ func (pfv *PFV) Serialize() PFVSerializedData {
 }
 
 func (pfv *PFV) Deserialize(data PFVSerializedData) error {
-	var e warning
+	var wr warn.Warning
 	if data.Node != nil {
 		if err := pfv.deserializeNode(data.Node); err != nil {
-			if de, ok := err.(warning); ok {
-				e = append(e, de...)
+			if w, ok := err.(warn.Warning); ok {
+				wr = append(wr, w...)
 			} else {
 				return errors.Wrap(err, "img: failed to deserialize node")
 			}
@@ -316,15 +301,15 @@ func (pfv *PFV) Deserialize(data PFVSerializedData) error {
 	}
 	if data.FaviewNode != nil {
 		if err := pfv.deserializeFaviewNode(data.FaviewNode); err != nil {
-			if de, ok := err.(warning); ok {
-				e = append(e, de...)
+			if w, ok := err.(warn.Warning); ok {
+				wr = append(wr, w...)
 			} else {
 				return errors.Wrap(err, "img: failed to deserialize faview node")
 			}
 		}
 	}
-	if e != nil {
-		return e
+	if wr != nil {
+		return wr
 	}
 	return nil
 }
@@ -417,7 +402,7 @@ func reencodeLayerName(s string) (string, error) {
 }
 
 func insert(root *Node, typ string, name string, data []string, mgr *LayerManager) error {
-	var warns warning
+	var wr warn.Warning
 	n, err := insertNodeRecursive(root, name)
 	if err != nil {
 		return err
@@ -436,7 +421,7 @@ func insert(root *Node, typ string, name string, data []string, mgr *LayerManage
 				if lp == -1 {
 					idx, ok := mgr.FullPath[l]
 					if !ok {
-						warns = append(warns, errors.Errorf("img: layer %q not found", l))
+						wr = append(wr, errors.Errorf("img: layer %q not found", l))
 						break
 					}
 					set[idx] = true
@@ -444,7 +429,7 @@ func insert(root *Node, typ string, name string, data []string, mgr *LayerManage
 				}
 				idx, ok := mgr.FullPath[l[:lp+p]]
 				if !ok {
-					warns = append(warns, errors.Errorf("img: layer %q not found", l[:lp+p]))
+					wr = append(wr, errors.Errorf("img: layer %q not found", l[:lp+p]))
 					break
 				}
 				set[idx] = true
@@ -467,7 +452,7 @@ func insert(root *Node, typ string, name string, data []string, mgr *LayerManage
 				if lp == -1 {
 					idx, ok := mgr.FullPath[l]
 					if !ok {
-						warns = append(warns, errors.Errorf("img: layer %q not found", l))
+						wr = append(wr, errors.Errorf("img: layer %q not found", l))
 						break
 					}
 					set[idx] = true
@@ -475,7 +460,7 @@ func insert(root *Node, typ string, name string, data []string, mgr *LayerManage
 				}
 				idx, ok := mgr.FullPath[l[:lp+p]]
 				if !ok {
-					warns = append(warns, errors.Errorf("img: layer %q not found", l[:lp+p]))
+					wr = append(wr, errors.Errorf("img: layer %q not found", l[:lp+p]))
 					break
 				}
 				set[idx] = true
@@ -486,8 +471,8 @@ func insert(root *Node, typ string, name string, data []string, mgr *LayerManage
 	default:
 		return errors.New("img: unexpected pfv node type: " + typ)
 	}
-	if warns != nil {
-		return warns
+	if wr != nil {
+		return wr
 	}
 	return nil
 }
