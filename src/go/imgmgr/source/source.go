@@ -89,19 +89,18 @@ func (s *Sources) load(filePath string) (*Source, error) {
 	lm := img.NewLayerManager(root)
 
 	var pf *img.PFV
+	var wr warn.Warning
 	if len(files) > 1 {
 		f2, err := os.Open(filepath.Join(filepath.Dir(files[0]), files[1]))
 		if err != nil {
 			return nil, errors.Wrap(err, "source: cannot open the pfv file")
 		}
 		defer f2.Close()
-		pf, err = img.NewPFV(f2, lm)
+		pf, wr, err = img.NewPFV(f2, lm)
 		if err != nil {
-			if _, ok := err.(warn.Warning); ok {
-				s.Logger.Println(err)
-			} else {
-				return nil, errors.Wrap(err, "source: cannot parse the pfv file")
-			}
+			return nil, errors.Wrap(err, "source: cannot parse the pfv file")
+		} else if wr != nil {
+			s.Logger.Println(wr)
 		}
 	}
 

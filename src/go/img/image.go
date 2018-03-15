@@ -179,25 +179,18 @@ func (img *Image) SerializeProject() *ProjectState {
 	}
 }
 
-func (img *Image) DeserializeProject(state *ProjectState) error {
+func (img *Image) DeserializeProject(state *ProjectState) (warn.Warning, error) {
 	var wr warn.Warning
 	img.Flip = state.Flip
-	if err := img.Layers.DeserializeSafe(state.Layer); err != nil {
-		if w, ok := err.(warn.Warning); ok {
-			wr = append(wr, w...)
-		} else {
-			return errors.Wrap(err, "Image.DeserializeProject: failed to deserialize")
-		}
+	if w, err := img.Layers.DeserializeSafe(state.Layer); err != nil {
+		return wr, errors.Wrap(err, "Image.DeserializeProject: failed to deserialize")
+	} else if w != nil {
+		wr = append(wr, w...)
 	}
-	if err := img.PFV.Deserialize(state.PFV); err != nil {
-		if w, ok := err.(warn.Warning); ok {
-			wr = append(wr, w...)
-		} else {
-			return errors.Wrap(err, "Image.DeserializeProject: failed to deserialize")
-		}
+	if w, err := img.PFV.Deserialize(state.PFV); err != nil {
+		return wr, errors.Wrap(err, "Image.DeserializeProject: failed to deserialize")
+	} else if w != nil {
+		wr = append(wr, w...)
 	}
-	if wr != nil {
-		return wr
-	}
-	return nil
+	return wr, nil
 }

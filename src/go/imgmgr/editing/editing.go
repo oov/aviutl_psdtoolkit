@@ -17,6 +17,7 @@ import (
 	"github.com/oov/aviutl_psdtoolkit/src/go/img"
 	"github.com/oov/aviutl_psdtoolkit/src/go/imgmgr/source"
 	"github.com/oov/aviutl_psdtoolkit/src/go/nkhelper"
+	"github.com/oov/aviutl_psdtoolkit/src/go/warn"
 	"github.com/oov/downscale"
 )
 
@@ -248,9 +249,11 @@ func (ed *Editing) Deserialize(state string) error {
 		return err
 	}
 	ed.Clear()
+	var wr warn.Warning
 	for _, d := range srz {
 		if err := ed.Add(d.Image.FilePath); err != nil {
-			return errors.Wrapf(err, "editing: cannot load %q", d.Image.FilePath)
+			wr = append(wr, errors.Wrapf(err, "editing: cannot load %q", d.Image.FilePath))
+			continue
 		}
 		item := &ed.images[ed.SelectedIndex]
 		if len(d.Thumbnail) > 0 {
@@ -259,9 +262,14 @@ func (ed *Editing) Deserialize(state string) error {
 				draw.Draw(item.Thumbnail, item.Thumbnail.Rect, img, image.Point{}, draw.Over)
 			}
 		}
-		if err := item.Image.DeserializeProject(d.Image); err != nil {
-			return errors.Wrapf(err, "editing: failed to deserialize on %q", d.Image.FilePath)
+		if w, err := item.Image.DeserializeProject(d.Image); err != nil {
+			wr = append(wr, errors.Wrapf(err, "editing: failed to deserialize on %q", d.Image.FilePath))
+		} else if w != nil {
+			wr = append(wr, w...)
 		}
+	}
+	if wr != nil {
+		ed.Srcs.Logger.Println(wr)
 	}
 	ed.thumbnails = nil
 	return nil

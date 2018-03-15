@@ -708,7 +708,7 @@ func (m *LayerManager) SerializeSafe() map[string]SerializedData {
 	return v
 }
 
-func (m *LayerManager) DeserializeSafe(state map[string]SerializedData) error {
+func (m *LayerManager) DeserializeSafe(state map[string]SerializedData) (warn.Warning, error) {
 	var wr warn.Warning
 	for fullPath, d := range state {
 		if idx, ok := m.FullPath[fullPath]; ok {
@@ -721,8 +721,5 @@ func (m *LayerManager) DeserializeSafe(state map[string]SerializedData) error {
 			wr = append(wr, errors.Errorf("img: layer %q not found", fullPath))
 		}
 	}
-	if wr != nil {
-		return wr
-	}
-	return nil
+	return wr, nil
 }

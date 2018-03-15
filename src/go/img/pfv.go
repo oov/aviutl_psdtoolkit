@@ -57,16 +57,17 @@ func (n *Node) RawState() (filter, visibility []bool) {
 	return nil, n.Setting
 }
 
-func NewPFV(r io.Reader, mgr *LayerManager) (*PFV, error) {
+func NewPFV(r io.Reader, mgr *LayerManager) (*PFV, warn.Warning, error) {
+	var wr warn.Warning
 	sc := bufio.NewScanner(r)
 	if !sc.Scan() {
-		return nil, errors.New("img: pfv header not found")
+		return nil, wr, errors.New("img: pfv header not found")
 	}
 	if err := sc.Err(); err != nil {
-		return nil, errors.Wrap(err, "img: unexpected error")
+		return nil, wr, errors.Wrap(err, "img: unexpected error")
 	}
 	if sc.Text() != "[PSDToolFavorites-v1]" {
-		return nil, errors.New("img: found unexpected string")
+		return nil, wr, errors.New("img: found unexpected string")
 	}
 
 	p := &PFV{
@@ -77,11 +78,10 @@ func NewPFV(r io.Reader, mgr *LayerManager) (*PFV, error) {
 		},
 	}
 
-	var wr warn.Warning
-
 	header := true
 	var name, typ string
 	var data []string
+	var w warn.Warning
 	var err error
 	for sc.Scan() {
 		t := sc.Text()
@@ -95,12 +95,10 @@ func NewPFV(r io.Reader, mgr *LayerManager) (*PFV, error) {
 				}
 				header = false
 			} else {
-				if err = insert(&p.Root, typ, name, data, mgr); err != nil {
-					if w, ok := err.(warn.Warning); ok {
-						wr = append(wr, w...)
-					} else {
-						return nil, err
-					}
+				if w, err = insert(&p.Root, typ, name, data, mgr); err != nil {
+					return nil, wr, err
+				} else if w != nil {
+					wr = append(wr, w...)
 				}
 			}
 			t = t[2:]
@@ -133,24 +131,19 @@ func NewPFV(r io.Reader, mgr *LayerManager) (*PFV, error) {
 		}
 	}
 	if err := sc.Err(); err != nil {
-		return nil, errors.Wrap(err, "img: unexpected error")
+		return nil, wr, errors.Wrap(err, "img: unexpected error")
 	}
 	if len(data) > 0 {
-		if err = insert(&p.Root, typ, name, data, mgr); err != nil {
-			if w, ok := err.(warn.Warning); ok {
-				wr = append(wr, w...)
-			} else {
-				return nil, err
-			}
+		if w, err = insert(&p.Root, typ, name, data, mgr); err != nil {
+			return nil, wr, err
+		} else if w != nil {
+			wr = append(wr, w...)
 		}
 	}
 	if err := registerFaview(p); err != nil {
-		return nil, errors.Wrap(err, "img: unexpected error")
+		return nil, wr, errors.Wrap(err, "img: unexpected error")
 	}
-	if wr != nil {
-		return p, wr
-	}
-	return p, nil
+	return p, wr, nil
 }
 
 func cloneNode(src, dest *Node) {
@@ -209,12 +202,12 @@ func (pfv *PFV) serializeNode() map[string]PFVNodeSerializedData {
 	return m
 }
 
-func (pfv *PFV) deserializeNode(data map[string]PFVNodeSerializedData) error {
+func (pfv *PFV) deserializeNode(data map[string]PFVNodeSerializedData) (warn.Warning, error) {
 	var wr warn.Warning
 	for fullPath, d := range data {
 		n, err := pfv.FindNode(fullPath, false)
 		if err != nil {
-			return err
+			return wr, err
 		}
 		if n != nil {
 			n.Open = d.Open
@@ -222,10 +215,7 @@ func (pfv *PFV) deserializeNode(data map[string]PFVNodeSerializedData) error {
 			wr = append(wr, errors.Errorf("img: node %q is not found", fullPath))
 		}
 	}
-	if wr != nil {
-		return wr
-	}
-	return nil
+	return wr, nil
 }
 
 type PFVFaviewNodeSerializedData struct {
@@ -249,12 +239,12 @@ func (pfv *PFV) serializeFaviewNode() map[string]PFVFaviewNodeSerializedData {
 	return m
 }
 
-func (pfv *PFV) deserializeFaviewNode(data map[string]PFVFaviewNodeSerializedData) error {
+func (pfv *PFV) deserializeFaviewNode(data map[string]PFVFaviewNodeSerializedData) (warn.Warning, error) {
 	var wr warn.Warning
 	for fullPath, d := range data {
 		fn, err := pfv.FindFaviewNode(fullPath, false)
 		if err != nil {
-			return err
+			return wr, err
 		}
 		if fn != nil {
 			for i := range fn.Items {
@@ -267,10 +257,7 @@ func (pfv *PFV) deserializeFaviewNode(data map[string]PFVFaviewNodeSerializedDat
 			wr = append(wr, errors.Errorf("img: faview node %q is not found", fullPath))
 		}
 	}
-	if wr != nil {
-		return wr
-	}
-	return nil
+	return wr, nil
 }
 
 type PFVSerializedData struct {
@@ -288,30 +275,23 @@ func (pfv *PFV) Serialize() PFVSerializedData {
 	}
 }
 
-func (pfv *PFV) Deserialize(data PFVSerializedData) error {
+func (pfv *PFV) Deserialize(data PFVSerializedData) (warn.Warning, error) {
 	var wr warn.Warning
 	if data.Node != nil {
-		if err := pfv.deserializeNode(data.Node); err != nil {
-			if w, ok := err.(warn.Warning); ok {
-				wr = append(wr, w...)
-			} else {
-				return errors.Wrap(err, "img: failed to deserialize node")
-			}
+		if w, err := pfv.deserializeNode(data.Node); err != nil {
+			return wr, errors.Wrap(err, "img: failed to deserialize node")
+		} else if w != nil {
+			wr = append(wr, w...)
 		}
 	}
 	if data.FaviewNode != nil {
-		if err := pfv.deserializeFaviewNode(data.FaviewNode); err != nil {
-			if w, ok := err.(warn.Warning); ok {
-				wr = append(wr, w...)
-			} else {
-				return errors.Wrap(err, "img: failed to deserialize faview node")
-			}
+		if w, err := pfv.deserializeFaviewNode(data.FaviewNode); err != nil {
+			return wr, errors.Wrap(err, "img: failed to deserialize faview node")
+		} else if w != nil {
+			wr = append(wr, w...)
 		}
 	}
-	if wr != nil {
-		return wr
-	}
-	return nil
+	return wr, nil
 }
 
 func (pfv *PFV) FindNode(fullPath string, ignoreRootName bool) (*Node, error) {
@@ -401,11 +381,11 @@ func reencodeLayerName(s string) (string, error) {
 	return strings.Join(ss, "/"), nil
 }
 
-func insert(root *Node, typ string, name string, data []string, mgr *LayerManager) error {
+func insert(root *Node, typ string, name string, data []string, mgr *LayerManager) (warn.Warning, error) {
 	var wr warn.Warning
 	n, err := insertNodeRecursive(root, name)
 	if err != nil {
-		return err
+		return wr, err
 	}
 	switch typ {
 	case "item":
@@ -413,7 +393,7 @@ func insert(root *Node, typ string, name string, data []string, mgr *LayerManage
 		for _, l := range data {
 			l, err = reencodeLayerName(l)
 			if err != nil {
-				return err
+				return wr, err
 			}
 			p := 0
 			for {
@@ -444,7 +424,7 @@ func insert(root *Node, typ string, name string, data []string, mgr *LayerManage
 		for _, l := range data {
 			l, err = reencodeLayerName(l)
 			if err != nil {
-				return err
+				return wr, err
 			}
 			p := 0
 			for {
@@ -469,12 +449,9 @@ func insert(root *Node, typ string, name string, data []string, mgr *LayerManage
 		}
 		n.FilterSetting = set
 	default:
-		return errors.New("img: unexpected pfv node type: " + typ)
+		return wr, errors.New("img: unexpected pfv node type: " + typ)
 	}
-	if wr != nil {
-		return wr
-	}
-	return nil
+	return wr, nil
 }
 
 func insertNodeRecursive(root *Node, name string) (*Node, error) {
