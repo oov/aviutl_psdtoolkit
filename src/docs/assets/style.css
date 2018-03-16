@@ -44,6 +44,7 @@ body {
 }
 
 #ptk-menu ul {
+    font-weight: normal;
     padding: 0 0 0 1em;
     list-style-type: none;
 }
@@ -52,9 +53,24 @@ body {
     padding: 0;
 }
 
+#ptk-menu.ptk-selected-index .ptk-menu-item-index,
+#ptk-menu.ptk-selected-tutorial .ptk-menu-item-tutorial,
+#ptk-menu.ptk-selected-pfv .ptk-menu-item-pfv,
+#ptk-menu.ptk-selected-gcmzdrops .ptk-menu-item-gcmzdrops,
+#ptk-menu.ptk-selected-preview .ptk-menu-item-preview,
+#ptk-menu.ptk-selected-setting .ptk-menu-item-setting,
+#ptk-menu.ptk-selected-faq .ptk-menu-item-faq,
+#ptk-menu.ptk-selected-obj .ptk-menu-item-obj,
+#ptk-menu.ptk-selected-psd .ptk-menu-item-psd,
+#ptk-menu.ptk-selected-subobj .ptk-menu-item-subobj,
+#ptk-menu.ptk-selected-prep .ptk-menu-item-prep,
+#ptk-menu.ptk-selected-audio .ptk-menu-item-audio {
+    font-weight: bold;
+}
+
 #ptk-main {
     width: 900px;
-    margin: 0 0 0 auto;
+    margin: 0 0 100vh auto;
 }
 
 .ptk-script-builder {
@@ -145,6 +161,10 @@ a:hover {
 
 a:visited {
     color: #3f4fef;
+}
+
+img {
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.33);
 }
 
 code {

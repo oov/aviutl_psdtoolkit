@@ -100,7 +100,7 @@ BlinkerBuilder.prototype.getOutput = function () {
 };
 
 function LipSyncSimpleBuilder(form) {
-    BuilderBase.call(this, form, ['m0', 'm1', 'm2', 'm3', 'm4', 'speed', 'layerindex', 'alwaysapply']);
+    BuilderBase.call(this, form, ['m0', 'm1', 'm2', 'm3', 'm4', 'speed', 'alwaysapply']);
 }
 LipSyncSimpleBuilder.prototype = Object.create(BuilderBase.prototype);
 LipSyncSimpleBuilder.prototype.constructor = LipSyncSimpleBuilder;
@@ -118,13 +118,12 @@ LipSyncSimpleBuilder.prototype.getOutput = function () {
         return '';
     }
     var speed = this.get('speed');
-    var layerindex = this.get('layerindex');
     var alwaysapply = this.get('alwaysapply') ? 'true' : 'false';
-    return 'require("PSDToolKit").LipSyncSimple.new({"' + patterns.join('","') + '"},' + speed + ',' + layerindex + ',' + alwaysapply + ')';
+    return 'require("PSDToolKit").LipSyncSimple.new({"' + patterns.join('","') + '"},' + speed + ',' + alwaysapply + ')';
 };
 
 function LipSyncLabBuilder(form) {
-    BuilderBase.call(this, form, ['a', 'i', 'u', 'e', 'o', 'N', 'mode', 'layerindex', 'alwaysapply']);
+    BuilderBase.call(this, form, ['a', 'i', 'u', 'e', 'o', 'N', 'mode', 'alwaysapply']);
 }
 LipSyncLabBuilder.prototype = Object.create(BuilderBase.prototype);
 LipSyncLabBuilder.prototype.constructor = LipSyncLabBuilder;
@@ -139,9 +138,8 @@ LipSyncLabBuilder.prototype.getOutput = function () {
         return '';
     }
     var mode = this.get("mode");
-    var layerindex = this.get("layerindex");
     var alwaysapply = this.get("alwaysapply") ? 'true' : 'false';
-    return 'require("PSDToolKit").LipSyncLab.new({a="' + a + '",i="' + i + '",u="' + u + '",e="' + e + '",o="' + o + '",N="' + N + '"},' + mode + ',' + layerindex + ',' + alwaysapply + ')';
+    return 'require("PSDToolKit").LipSyncLab.new({a="' + a + '",i="' + i + '",u="' + u + '",e="' + e + '",o="' + o + '",N="' + N + '"},' + mode + ',' + alwaysapply + ')';
 };
 
 var blinkerBuilder = null;

@@ -40,11 +40,40 @@ $endfor$
 </head>
 <body>
 <div id="ptk-outer">
-<div id="ptk-menu">
+<div id="ptk-menu" class="ptk-selected-$curpage$">
+  <ul>
+    <li class="ptk-menu-item-index"><a href="index.html">はじめに</a></li>
+    <li class="ptk-menu-item-tutorial"><a href="tutorial.html">チュートリアル</a></li>
+    <li class="ptk-menu-item-pfv"><a href="pfv.html">PSDTool のお気に入りを使う</a></li>
+    <li class="ptk-menu-item-gcmzdrops"><a href="gcmzdrops.html">ドラッグ＆ドロップ拡張</a></li>
+    <li class="ptk-menu-item-preview"><a href="preview.html">プレビューとコマ落ち</a></li>
+    <li class="ptk-menu-item-setting"><a href="setting.html">設定</a></li>
+    <li class="ptk-menu-item-faq"><a href="faq.html">よくある質問</a></li>
+    <li class="ptk-menu-item-obj ptk-menu-item-psd ptk-menu-item-subobj ptk-menu-item-prep ptk-menu-item-audio">オブジェクトリファレンス
+      <ul>
+        <li class="ptk-menu-item-obj"><a href="obj.html">独自のオブジェクト</a>
+          <ul>
+            <li><a href="obj.html#PSD_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.AA.E3.83.96.E3.82.B8.E3.82.A7.E3.82.AF.E3.83.88">PSD ファイルオブジェクト</a></li>
+            <li><a href="obj.html#.E5.AD.97.E5.B9.95.E8.A1.A8.E7.A4.BA">字幕表示</a></li>
+          </ul>
+        </li>
+        <li class="ptk-menu-item-psd"><a href="psd.html">PSD アニメーション効果</a>
+          <ul>
+            <li><a href="psd.html#.E7.9B.AE.E3.83.91.E3.83.81.40PSD">目パチ</a> | <a href="psd.html#.E7.9B.AE.E3.83.91.E3.83.81_.E3.82.92_Lua_.E3.82.B9.E3.82.AF.E3.83.AA.E3.83.97.E3.83.88.E3.81.8B.E3.82.89.E4.BD.BF.E3.81.86">フォーム</a></li>
+            <li><a href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E9.96.8B.E9.96.89.E3.81.AE.E3.81.BF.40PSD">口パク 開閉のみ</a> | <a href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E9.96.8B.E9.96.89.E3.81.AE.E3.81.BF_.E3.82.92_Lua_.E3.82.B9.E3.82.AF.E3.83.AA.E3.83.97.E3.83.88.E3.81.8B.E3.82.89.E4.BD.BF.E3.81.86">フォーム</a></li>
+            <li><a href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E3.81.82.E3.81.84.E3.81.86.E3.81.88.E3.81.8A.40PSD">口パク あいうえお</a> | <a href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E3.81.82.E3.81.84.E3.81.86.E3.81.88.E3.81.8A_.E3.82.92_Lua_.E3.82.B9.E3.82.AF.E3.83.AA.E3.83.97.E3.83.88.E3.81.8B.E3.82.89.E4.BD.BF.E3.81.86">フォーム</a></li>
+          </ul>
+        </li>
+        <li class="ptk-menu-item-subobj"><a href="subobj.html">subobj アニメーション効果</a></li>
+        <li class="ptk-menu-item-prep"><a href="prep.html">準備オブジェクト</a></li>
+        <li class="ptk-menu-item-audio"><a href="audio.html">音声フィルタ</a></li>
+      </ul>
+    </li>
+  </ul>
+</div>
 $for(include-before)$
 $include-before$
 $endfor$
-</div>
 <div id="ptk-main">
 $if(title)$
 <header>

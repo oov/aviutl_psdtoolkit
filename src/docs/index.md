@@ -23,82 +23,66 @@ PSDToolKit を使用したこと及び使用しなかったことによるいか
   - README
 - PSDToolKit.auf
   - メニューに「ウィンドウを表示（デフォルトショートカットキー `Ctrl+W`）」を追加
+  - メニューに「環境設定」を追加
   - プロジェクトファイルへの編集中 PSD データの保存／読み込み
 - AudioMixer.auf
   - 拡張編集で使える「チャンネルストリップ」オーディオフィルタを追加
   - 拡張編集で使える「Aux1 チャンネルストリップ」オーディオフィルタを追加
   - 内部的に使用する「マスターチャンネルストリップ」を追加（常時有効）
-- GCMZDrops.auf
+- GCMZDrops.auf  
+GCMZDrops.txt  
+GCMZDrops/_entrypoint.lua  
+GCMZDrops/avoiddup.lua  
+GCMZDrops/example.lua  
+GCMZDrops/generic.lua  
+GCMZDrops/textsjis.lua  
+GCMZDrops/dropper/example.lua
   - 拡張編集ウィンドウへのファイルドロップを拡張する「ごちゃまぜドロップス」プラグイン
   - [別の場所で単独配布しているもの](https://github.com/oov/aviutl_GCMZDrops)を同梱しています
-- GCMZDrops.txt
-  - 同上
-- ZRamPreview.auf
+- ZRamPreview.auf  
+ZRamPreview.auo  
+ZRamPreview.exe  
+ZRamPreview.txt  
+script/Extram.dll  
   - RAMプレビューを実現する「拡張編集RAMプレビュー」プラグイン
   - [別の場所で単独配布しているもの](https://github.com/oov/aviutl_rampreview)を同梱しています
-- ZRamPreview.auo
-  - 同上
-- ZRamPreview.exe
-  - 同上
-- ZRamPreview.txt
-  - 同上
-- script/Extram.dll
-  - 同上
-- script/PSDToolKit/PSDToolKitBridge.dll
-  - PSDToolKit.exe を使用した PSD ファイルの描画
-  - PSDToolKit.exe からの要求に応じたクリップボード操作、エクスポートなど
-  - 画像キャッシュ機構
-- script/PSDToolKit/PSDToolKit.exe
-  - PSDToolKitBridge.dll が使用します
-  - 手動で起動しても基本的にはなにもできません
-- script/PSDToolKit/@PSDToolKit.anm
-  - アニメーション効果スクリプト
-- script/PSDToolKit/@PSDToolKit.obj
-  - カスタムオブジェクトスクリプト
-- script/PSDToolKit/@subobj.anm
-  - アニメーション効果スクリプト
-- script/PSDToolKit/PSDToolKit.lua
-  - PSDToolKit のメイン処理が書かれたファイル
+- script/PSDToolKit/PSDToolKitBridge.dll  
+script/PSDToolKit/PSDToolKit.exe
+  - PSD ファイルの描画など
+  - exe を手動で起動しても基本的にはなにもできません
+- script/PSDToolKit/@PSDToolKit.anm  
+script/PSDToolKit/@PSDToolKit.obj  
+script/PSDToolKit/@PSD.anm  
+script/PSDToolKit/@subobj.anm  
+script/PSDToolKit/PSDToolKit.lua  
+script/PSDToolKit/default.lua
+  - 拡張編集用のスクリプト
 - script/PSDToolKit/setting.lua-template
   - 設定カスタマイズ用のテンプレート
-- script/PSDToolKit/default.lua
-  - 設定のデフォルト値
-- PSDToolKit/*.exa
-  - 機能を探しやすくするための AviUtl 用エイリアスファイル
-  - PSDToolKitオブジェクト
-  - オブジェクト描画
-  - テキスト　字幕表示用
-  - パーツ差し替え
-  - 口パク　あいうえお
-  - 口パク　開閉のみ
-  - 口パク準備
-  - 多目的スライダー
-  - 字幕準備
-  - 目パチ
-- GCMZDrops/*.lua
-  - ごちゃまぜドロップス用スクリプトファイル
-  - ごちゃまぜドロップスに同梱されているファイル
-    - _entrypoint.lua
-    - avoiddup.lua
-    - example.lua
-    - generic.lua
-    - textsjis.lua
-    - dropper/example.lua
-  - PSDToolKit 用のスクリプトファイル
-    - psdtoolkit_psd.lua
-      - 拡張編集ウィンドウに PSD ファイルをドロップ可能にする
-    - psdtoolkit_wav.lua
-      - *.wav ファイルをドロップで口パク準備や字幕準備を自動生成
-    - psdtoolkit_srt.lua
-      - *.srt ファイルをドロップで字幕準備を自動生成
-    - psdtoolkit_lab.lua
-      - *.lab ファイルをドロップで口パク準備を自動生成
-    - dropper/psdtoolkit_ictalk.lua
-      - Instant CTalk（CeVIO API による簡易的な音声作成ツール）
-    - dropper/ICTalk.dll
-      - Instant CTalk のダイアログ表示を行うための Lua プラグイン
-- PSDToolKitDocs/*
+- PSDToolKit/口パク準備 設定上書き.exa  
+PSDToolKit/口パク準備.exa  
+PSDToolKit/口パク準備（音素のみ）.exa  
+PSDToolKit/多目的スライダー.exa  
+PSDToolKit/字幕準備.exa  
+PSDToolKit/字幕表示.exa
+  - 各種オブジェクトを作成するためのエイリアスファイル
+- GCMZDrops/psdtoolkit_psd.lua  
+GCMZDrops/psdtoolkit_psd.lua  
+GCMZDrops/psdtoolkit_wav.lua  
+GCMZDrops/psdtoolkit_srt.lua  
+GCMZDrops/psdtoolkit_lab.lua  
+GCMZDrops/dropper/psdtoolkit_ictalk.lua  
+GCMZDrops/dropper/ICTalk.dll
+  - ごちゃまぜドロップス用ファイル
+- PSDToolKit説明書.html  
+PSDToolKitDocs/*
   - ドキュメント
+
+# このドキュメント内で使用されている画像について
+
+このドキュメント内で使用されているさとうささらの画像は水梟るさんにより制作されたものです（[一次配布元](http://seiga.nicovideo.jp/seiga/im5467479)）。
+
+また、[さとうささら](http://satosasara.com/)は音声合成ソフトウェア [CeVIO Creative Studio](http://cevio.jp/) のキャラクターです。
 
 # 更新履歴
 
