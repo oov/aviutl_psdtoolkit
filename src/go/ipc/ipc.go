@@ -19,6 +19,21 @@ import (
 	"github.com/oov/psd/blend"
 )
 
+type cacheKey struct {
+	Width   int
+	Height  int
+	OffsetX int
+	OffsetY int
+	Scale   float32
+	Path    string
+	State   string
+}
+
+type cacheValue struct {
+	LastAccess time.Time
+	Data       []byte
+}
+
 type IPC struct {
 	AddFile     func(file string) error
 	ClearFiles  func() error
@@ -28,6 +43,7 @@ type IPC struct {
 	GCing       func()
 
 	tmpImg temporary.Temporary
+	cache  map[cacheKey]cacheValue
 
 	queue     chan func()
 	reply     chan error
@@ -52,6 +68,27 @@ func (ipc *IPC) draw(id int, filePath string, width, height int) ([]byte, error)
 	if err != nil {
 		return nil, errors.Wrap(err, "ipc: could not load")
 	}
+	state, err := img.Serialize()
+	if err != nil {
+		return nil, errors.Wrap(err, "ipc: could not serialize state")
+	}
+
+	ckey := cacheKey{
+		Width:   width,
+		Height:  height,
+		OffsetX: img.OffsetX,
+		OffsetY: img.OffsetY,
+		Scale:   img.Scale,
+		Path:    filePath,
+		State:   state,
+	}
+	if cv, ok := ipc.cache[ckey]; ok {
+		cv.LastAccess = time.Now()
+		ipc.cache[ckey] = cv
+		ipc.tmpImg.Srcs.Logger.Println("cached")
+		return cv.Data, nil
+	}
+
 	startAt := time.Now().UnixNano()
 	rgba, err := img.Render(context.Background())
 	if err != nil {
@@ -60,6 +97,10 @@ func (ipc *IPC) draw(id int, filePath string, width, height int) ([]byte, error)
 	ret := image.NewRGBA(image.Rect(0, 0, width, height))
 	blend.Copy.Draw(ret, ret.Rect, rgba, image.Pt(int(float32(-img.OffsetX)*img.Scale), int(float32(-img.OffsetY)*img.Scale)))
 	rgbaToNBGRA(ret.Pix)
+	ipc.cache[ckey] = cacheValue{
+		LastAccess: time.Now(),
+		Data:       ret.Pix,
+	}
 	ipc.tmpImg.Srcs.Logger.Println(fmt.Sprintf("render: %dms", (time.Now().UnixNano()-startAt)/1e6))
 	return ret.Pix, nil
 }
@@ -414,6 +455,17 @@ func (ipc *IPC) readCommand(r chan string) {
 	r <- string(cmd)
 }
 
+func (ipc *IPC) gc() {
+	const deadline = 1 * time.Minute
+	now := time.Now()
+
+	for k, v := range ipc.cache {
+		if now.Sub(v.LastAccess) > deadline {
+			delete(ipc.cache, k)
+		}
+	}
+}
+
 func (ipc *IPC) Main(exitCh chan<- struct{}) {
 	gcTicker := time.NewTicker(1 * time.Minute)
 	defer func() {
@@ -432,6 +484,7 @@ func (ipc *IPC) Main(exitCh chan<- struct{}) {
 			ipc.GCing()
 			ipc.tmpImg.GC()
 			ipc.tmpImg.Srcs.GC()
+			ipc.gc()
 		case f := <-ipc.queue:
 			if f == nil {
 				return
@@ -458,6 +511,7 @@ func (ipc *IPC) Main(exitCh chan<- struct{}) {
 func New(srcs *source.Sources) *IPC {
 	r := &IPC{
 		tmpImg: temporary.Temporary{Srcs: srcs},
+		cache:  map[cacheKey]cacheValue{},
 
 		queue:     make(chan func()),
 		reply:     make(chan error),
