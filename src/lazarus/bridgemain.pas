@@ -54,7 +54,7 @@ begin
   inherited Create;
   InitCriticalSection(FCS);
   FRemoteProcess := TProcess.Create(nil);
-  FRemoteProcess.Executable := ExtractFileDir(GetDLLName()) + '\PSDToolKit.exe';
+  FRemoteProcess.ApplicationName := string(ExtractFileDir(GetDLLName()) + '\PSDToolKit.exe');
   FRemoteProcess.Options := [poUsePipes, poNoConsole];
   FReceiver := nil;
 end;
