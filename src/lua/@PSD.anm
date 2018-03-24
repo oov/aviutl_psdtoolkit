@@ -32,6 +32,7 @@ PSD:addstate(require("PSDToolKit").LipSyncLab.new({
 
 @口パク 開閉のみ
 --track0:速さ,1,100,1,1
+--track1:感度,1,16,1,1
 --check0:口パク準備がなくても有効,1
 --dialog:開き,a="";ほぼ開き,b="";半開き,c="";ほぼ閉じ,d="";閉じ,e="";
 local m = {}
@@ -40,7 +41,7 @@ if d ~= "" then table.insert(m, d) end
 if c ~= "" then table.insert(m, c) end
 if b ~= "" then table.insert(m, b) end
 if a ~= "" then table.insert(m, a) end
-PSD:addstate(require("PSDToolKit").LipSyncSimple.new(m, obj.track0, obj.check0))
+PSD:addstate(require("PSDToolKit").LipSyncSimple.new(m, obj.track0, obj.check0, obj.track1))
 
 @目パチ
 --track0:間隔(秒),0,60,4,0.01

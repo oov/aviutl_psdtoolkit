@@ -219,11 +219,13 @@ local LipSyncSimple = {}
 -- patterns - {'閉じ', 'ほぼ閉じ', '半開き', 'ほぼ開き', '開き'} のパターンが入った配列（ほぼ閉じ、半目、ほぼ開きは省略可）
 -- speed - アニメーション速度
 -- alwaysapply - 口パク準備のデータがなくても閉じを適用する
-function LipSyncSimple.new(patterns, speed, alwaysapply)
+-- sensitivity - 感度
+function LipSyncSimple.new(patterns, speed, alwaysapply, sensitivity)
   return setmetatable({
     patterns = patterns,
     speed = speed,
     alwaysapply = alwaysapply,
+    sensitivity = sensitivity ~= nil and sensitivity ~= 0 and sensitivity or 1,
   }, {__index = LipSyncSimple})
 end
 
@@ -241,17 +243,26 @@ function LipSyncSimple:getstate(psd, obj)
     volume = psd.talkstate:getvolume()
   end
 
-  local stat = LipSyncSimple.states[obj.layer] or {frame = obj.frame-1, n = -1, pat = 0}
+  local stat = LipSyncSimple.states[obj.layer] or {frame = obj.frame-1, n = -1, pat = 0, vollog = {}}
   if stat.frame >= obj.frame or stat.frame + obj.framerate < obj.frame then
     -- 巻き戻っていたり、あまりに先に進んでいるようならアニメーションはリセットする
     -- プレビューでコマ飛びする場合は正しい挙動を示せないので、1秒の猶予を持たせる
     stat.n = -1
     stat.pat = 0
+    stat.vollog = {}
   end
   stat.n = stat.n + 1
   stat.frame = obj.frame
+  table.insert(stat.vollog, volume)
+  if #stat.vollog > self.sensitivity then
+    table.remove(stat.vollog, #stat.vollog - self.sensitivity)
+  end
   if stat.n >= self.speed then
-    if volume >= 1.0 then
+    volume = 0
+    for _,v in pairs(stat.vollog) do
+      volume = volume + v
+    end
+    if volume/#stat.vollog >= 1.0 then
       if stat.pat < #self.patterns - 1 then
         stat.pat = stat.pat + 1
         stat.n = 0
