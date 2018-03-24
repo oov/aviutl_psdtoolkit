@@ -1,26 +1,15 @@
 -- 雀の往来
 
 @口パク準備
---track0:ローカット,1,16000,100,1
---track1:ハイカット,1,16000,1000,1
---track2:しきい値,1,2000,20,1
+--track0:ローカット,0,16000,0,1
+--track1:ハイカット,0,16000,0,1
+--track2:しきい値,0,2000,0,1
 --file:
 tonumber(nil)
-local PSDToolKit = require("PSDToolKit")
 if file ~= nil and file ~= "" then
-  local ls = LIPSYNC ~= nil and LIPSYNC[obj.layer] or nil
-  PSDToolKit.talk:set(
-    obj,
-    file,
-    ls ~= nil and ls.locut or obj.track0,
-    ls ~= nil and ls.hicut or obj.track1,
-    ls ~= nil and ls.threshold or obj.track2
-  )
-  if ls ~= nil then
-    LIPSYNC[obj.layer] = nil
-  end
+  require("PSDToolKit").talk:set(obj, file, obj.track0, obj.track1, obj.track2)
+  file = nil
 end
-file = nil
 
 @多目的スライダー
 --track0:,0,100,0,1

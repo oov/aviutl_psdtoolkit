@@ -45,6 +45,10 @@ function PSDState.init(obj, o)
       layer = o.ptkl ~= "" and o.ptkl or nil,
       lipsync = o.lipsync ~= 0 and o.lipsync or nil,
       mpslider = o.mpslider ~= 0 and o.mpslider or nil,
+
+      ls_locut = o.ls_locut ~= nil and o.ls_locut or 100,
+      ls_hicut = o.ls_hicut ~= nil and o.ls_hicut or 1000,
+      ls_threshold = o.ls_threshold ~= nil and o.ls_threshold or 20,
     }
   )
   -- 何も出力しないと直後のアニメーション効果以外適用されないため
@@ -55,7 +59,7 @@ function PSDState.init(obj, o)
   if o.mpslider ~= 0 then
     subobj = r.valueholder or P.emptysubobj
   elseif o.lipsync ~= 0 then
-    subobj = r.talkstate ~= nil and r.talkstate.threshold ~= -1 and r.talkstate or P.emptysubobj
+    subobj = r.talkstate ~= nil and r.talkstate.samplerate ~= -1 and r.talkstate or P.emptysubobj
   else
     subobj = P.emptysubobj
   end
@@ -87,6 +91,11 @@ function PSDState.new(id, file, opt)
   }, {__index = PSDState})
   if opt.lipsync ~= nil then
     self.talkstate = P.talk:get(opt.lipsync)
+    if self.talkstate ~= nil then
+      self.talkstate.deflocut = opt.ls_locut
+      self.talkstate.defhicut = opt.ls_hicut
+      self.talkstate.defthreshold = opt.ls_threshold
+    end
     self.talkstateindex = opt.lipsync
   end
   if opt.mpslider ~= nil then
@@ -229,7 +238,7 @@ function LipSyncSimple:getstate(psd, obj)
   end
   local volume = 0
   if psd.talkstate ~= nil then
-    volume = psd.talkstate.volume
+    volume = psd.talkstate:getvolume()
   end
 
   local stat = LipSyncSimple.states[obj.layer] or {frame = obj.frame-1, n = -1, pat = 0}
@@ -299,7 +308,7 @@ function LipSyncLab:getstate(psd, obj)
   if ts.cur == "" then
     -- 音素情報がない時は音量に応じて「あ」の形を使う
     -- （lab ファイルを使わずに「口パク　あいうえお」を使っている場合の措置）
-    if ts.volume >= 1.0 then
+    if ts:getvolume() >= 1.0 then
       return pat.a
     end
     return pat.N
@@ -407,8 +416,14 @@ function TalkState.new(frame, time, totalframe, totaltime)
     time = time,
     totalframe = totalframe,
     totaltime = totaltime,
-    volume = 0,
-    threshold = -1,
+    buf = {},
+    samplerate = -1,
+    locut = 0,
+    hicut = 0,
+    threshold = 0,
+    deflocut = 0,
+    defhicut = 0,
+    defthreshold = 0,
     progress = 0,
     cur = "",
     cur_start = 0,
@@ -434,14 +449,13 @@ function TalkState:nextisvowel()
   return TalkState.isvowel(self.next)
 end
 
-function TalkState:setvolume(buf, samplerate, locut, hicut, threshold)
-  if threshold == 0 then
-    self.volume = 0
-    self.threshold = 1
-    return
-  end
+function TalkState:getvolume()
+  local buf = self.buf
   local buflen = #buf
-  local hzstep = samplerate / 2 / 1024
+  local hzstep = self.samplerate / 2 / 1024
+  local locut = self.locut ~= 0 and self.locut or self.deflocut
+  local hicut = self.hicut ~= 0 and self.hicut or self.defhicut
+  local threshold = self.threshold ~= 0 and self.threshold or self.defthreshold
   local v, d, hz = 0, 0, 0
   for i in ipairs(buf) do
     hz = math.pow(2, 10 * ((i - 1) / buflen)) * hzstep
@@ -456,7 +470,14 @@ function TalkState:setvolume(buf, samplerate, locut, hicut, threshold)
   if d > 0 then
     v = v / d
   end
-  self.volume = v / threshold
+  return v / threshold
+end
+
+function TalkState:setbuffer(buf, samplerate, locut, hicut, threshold)
+  self.buf = buf
+  self.samplerate = samplerate
+  self.locut = locut
+  self.hicut = hicut
   self.threshold = threshold
 end
 
@@ -509,7 +530,6 @@ end
 function TalkStates:set(obj, srcfile, locut, hicut, threshold)
   local ext = srcfile:sub(-4):lower()
   if ext ~= ".wav" and ext ~= ".lab" then
-    self.states[obj.layer] = t
     error("unsupported file: " .. srcfile)
   end
 
@@ -517,7 +537,7 @@ function TalkStates:set(obj, srcfile, locut, hicut, threshold)
   local wavfile = string.sub(srcfile, 1, #srcfile - 3) .. "wav"
   if ext == ".wav" or fileexists(wavfile) then
     local n, samplerate, buf = obj.getaudio(nil, wavfile, "spectrum", 32)
-    t:setvolume(buf, samplerate, locut, hicut, threshold)
+    t:setbuffer(buf, samplerate, locut, hicut, threshold)
   end
   local labfile = string.sub(srcfile, 1, #srcfile - 3) .. "lab"
   if ext == ".lab" or fileexists(labfile) then
