@@ -246,24 +246,31 @@ patterns.pau = patterns.pau or patterns.N or nil
 -- 現在のPSDオブジェクトから音量と音素情報を取得
 local ts = PSD.talkstate
 -- ts には以下のプロパティがあります
---   number  ts.frame      「口パク準備」基準でのフレーム数
---   number  ts.time       「口パク準備」基準での時間（秒）
---   number  ts.totalframe 「口パク準備」基準での総フレーム数
---   number  ts.totaltime  「口パク準備」基準での総時間（秒）
---   number  ts.volume     「口パク準備」の「しきい値」を 1.0 とした時の音量
---   number  ts.threshold  「口パク準備」の「しきい値」
---   number  ts.progress   現在の音素の開始地点を0、終了地点を1とした時の現在位置
---   string  ts.cur        発音中の音素（ない時は空文字列）
---   number  ts.cur_start  音素が始まる時間（ない時は0）
---   number  ts.cur_end    音素が終わる時間（ない時は0）
---   string  ts.prev       前の音素（ない時は空文字列）
---   number  ts.prev_start 音素が始まる時間（ない時は0）
---   number  ts.prev_end   音素が終わる時間（ない時は0）
---   string  ts.next       次の音素（ない時は空文字列）
---   number  ts.next_start 音素が始まる時間（ない時は0）
---   number  ts.next_end   音素が終わる時間（ない時は0）
+--   number  ts.frame        「口パク準備」基準でのフレーム数
+--   number  ts.time         「口パク準備」基準での時間（秒）
+--   number  ts.totalframe   「口パク準備」基準での総フレーム数
+--   number  ts.totaltime    「口パク準備」基準での総時間（秒）
+--   table   ts.buf          「口パク準備」で収集した音量情報（生データ）
+--   number  ts.samplerate   「口パク準備」で収集した音量情報の周波数
+--   number  ts.locut        「口パク準備」で設定されたローカット周波数
+--   number  ts.hicut        「口パク準備」で設定されたハイカット周波数
+--   number  ts.threshold    「口パク準備」で設定されたしきい値
+--   number  ts.deflocut     「PSD ファイルオブジェクト」で設定されたローカット周波数
+--   number  ts.defhicut     「PSD ファイルオブジェクト」で設定されたハイカット周波数
+--   number  ts.defthreshold 「PSD ファイルオブジェクト」で設定されたしきい値
+--   number  ts.progress     現在の音素の開始地点を0、終了地点を1とした時の現在位置
+--   string  ts.cur          発音中の音素（ない時は空文字列）
+--   number  ts.cur_start    音素が始まる時間（ない時は0）
+--   number  ts.cur_end      音素が終わる時間（ない時は0）
+--   string  ts.prev         前の音素（ない時は空文字列）
+--   number  ts.prev_start   音素が始まる時間（ない時は0）
+--   number  ts.prev_end     音素が終わる時間（ない時は0）
+--   string  ts.next         次の音素（ない時は空文字列）
+--   number  ts.next_start   音素が始まる時間（ない時は0）
+--   number  ts.next_end     音素が終わる時間（ない時は0）
 -- ts には以下のメソッドがあります
---   boolean ts:curisvowel() 現在発音中の音素が母音の時に 1、無声化された母音の時に -1、それ以外の時に 0
+--   number  ts:getvolume()   現在の音量を取得します
+--   boolean ts:curisvowel()  現在発音中の音素が母音の時に 1、無声化された母音の時に -1、それ以外の時に 0
 --   boolean ts:previsvowel() 前の音素が母音の時に 1、無声化された母音の時に -1、それ以外の時に 0
 --   boolean ts:nextisvowel() 次の音素が母音の時に 1、無声化された母音の時に -1、それ以外の時に 0
 -- ただし未設定の場合など、ts が正しく取得できない場合は nil です
