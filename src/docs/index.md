@@ -46,6 +46,10 @@ ZRamPreview.txt
 script/Extram.dll  
   - RAMプレビューを実現する「拡張編集RAMプレビュー」プラグイン
   - [別の場所で単独配布しているもの](https://github.com/oov/aviutl_rampreview)を同梱しています
+- RelMovieHandle.auf  
+RelMovieHandle.txt
+  - 「動画ハンドル開放」プラグイン
+  - [別の場所で単独配布しているもの](https://github.com/oov/aviutl_relmoviehandle)を同梱しています
 - script/PSDToolKit/PSDToolKitBridge.dll  
 script/PSDToolKit/PSDToolKit.exe
   - PSD ファイルの描画など

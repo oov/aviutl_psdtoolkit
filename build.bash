@@ -85,6 +85,9 @@ cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/ictalk/ictalk.lpi
 # cp ../aviutl_rampreview/bin/ZRamPreview.* bin/
 # cp ../aviutl_rampreview/bin/script/Extram.dll bin/script/
 
+# copy RelMovieHandle release version
+# cp ../aviutl_relmoviehandle/bin/RelMovieHandle.* bin/
+
 # install
 # mkdir -p aviutl/PSDToolKit aviutl/script/PSDToolKit/exa aviutl/GCMZDrops/dropper
 # cp bin/*.auf aviutl/

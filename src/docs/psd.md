@@ -141,7 +141,7 @@ local lipsync = require("PSDToolKit").LipSyncSimple.new(patterns, speed, alwaysa
 
 `口パク あいうえお` は母音の形に合わせてアニメーションを行うタイプのアニメーションで、`あ` / `い` / `う` / `え` / `お` / `ん` に対応した表情パターンが必要になります。
 
-また、音声ファイルから自動で母音を認識するような機能は PSDToolKit にはないため、`口パク準備` を使う際には `*.wav` ファイルと[同名の `*.lab` ファイルを用意する](prep.md#口パク準備@PSDToolKit)か、拡張編集の[タイムラインへ直接 `*.lab` ファイルをドラッグ＆ドロップ](gcmzdrops.md#*.lab_ファイル)して母音のタイミング情報を認識できる状態にする必要があります。
+また、音声ファイルから自動で母音を認識するような機能は PSDToolKit にはないため、`口パク準備` を使う際には `*.wav` ファイルと[同名の `*.lab` ファイルを用意する](prep.md#口パク準備@PSDToolKit)か、拡張編集の[タイムラインへ直接 `*.lab` ファイルをドラッグ＆ドロップ](plugins.md#*.lab_ファイル)して母音のタイミング情報を認識できる状態にする必要があります。
 
 プロパティ名|説明
 ---|---
@@ -168,7 +168,7 @@ local lipsync = require("PSDToolKit").LipSyncSimple.new(patterns, speed, alwaysa
 <dt>ん</dt><dd><input type="text" name="N" autocomplete="off" placeholder="例: v1.!口/*ん"></dd>
 </dl>
 <dl>
-<dt>子音処理</dt><dd><input type="text" name="mode" autocomplete="off" value="0" placeholder="例: 0"></dd>
+<dt>子音処理</dt><dd><input type="text" name="mode" autocomplete="off" value="1" placeholder="例: 1"></dd>
 <dt>オプション</dt><dd><label><input type="checkbox" name="alwaysapply" autocomplete="off" value="1" checked="checked">口パク準備がなくても有効</label></dd>
 </dl>
 <dl>
@@ -188,7 +188,7 @@ local patterns = {
   o = "v1.!口/*お",
   N = "v1.!口/*ん"
 }
-local mode = 0 -- 子音処理
+local mode = 1 -- 子音処理
 local alwaysapply = true -- 口パク準備がなくても有効
 local lipsync = require("PSDToolKit").LipSyncLab.new(patterns, mode, alwaysapply) -- 口パクオブジェクトを生成
 
