@@ -592,6 +592,22 @@ func (m *LayerManager) Deserialize(s string, flip Flip, pfv *PFV) (bool, Flip, e
 			}
 			n[idx].Visible = line[1] == '1'
 			n[idx].Priority = priority + 1
+
+			if line[1] == '1' {
+				// set parents too
+				for rpos := len(ln) - 1; rpos > 0; rpos-- {
+					if ln[rpos] != '/' {
+						continue
+					}
+					idx, ok := m.FullPath[ln[:rpos]]
+					if !ok {
+						ods.ODS("layer %q is not found. skipped.", ln)
+						break
+					}
+					n[idx].Visible = true
+					n[idx].Priority = priority + 1
+				}
+			}
 		case "F.", "F_":
 			if pfv == nil {
 				ods.ODS("do not have favorite data. skipped.")
