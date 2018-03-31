@@ -86,7 +86,6 @@ local blinker = require("PSDToolKit").Blinker.new(patterns, interval, speed, off
 プロパティ名|説明
 ---|---
 `速さ`|口パクのアニメーション速度をフレーム単位で指定します。
-`感度`|音声に対する反応の機敏さを指定します。<br>値を大きくすると細かい開閉が減りますが、反応速度が遅くなっていきます。
 `口パク準備がなくても有効`|チェックを入れると、`口パク準備` のオブジェクトがない区間でも `閉じ` のパターンが適用されるようになります。
 
 `設定` ボタンを押すと以下のプロパティがあります。
@@ -109,7 +108,6 @@ local blinker = require("PSDToolKit").Blinker.new(patterns, interval, speed, off
 </dl>
 <dl>
 <dt>速さ</dt><dd><input type="text" name="speed" autocomplete="off" value="1" placeholder="例: 1"></dd>
-<dt>感度</dt><dd><input type="text" name="sensitivity" autocomplete="off" value="1" placeholder="例: 1"></dd>
 <dt>オプション</dt><dd><label><input type="checkbox" name="alwaysapply" autocomplete="off" value="1" checked="checked">口パク準備がなくても有効</label></dd>
 </dl>
 <dl>
@@ -129,9 +127,8 @@ local patterns = {
   "v1.!口/*開き"
 }
 local speed = 1 -- 速さ
-local sensitivity = 1 -- 感度
 local alwaysapply = true -- 口パク準備がなくても有効
-local lipsync = require("PSDToolKit").LipSyncSimple.new(patterns, speed, alwaysapply, sensitivity) -- 口パクオブジェクトを生成
+local lipsync = require("PSDToolKit").LipSyncSimple.new(patterns, speed, alwaysapply) -- 口パクオブジェクトを生成
 
 -- 実際に使用する場合は以下のように PSD:addstate に与えます
 -- PSD:addstate(lipsync)

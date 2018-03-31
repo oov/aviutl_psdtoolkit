@@ -49,6 +49,7 @@ function PSDState.init(obj, o)
       ls_locut = o.ls_locut ~= nil and o.ls_locut or 100,
       ls_hicut = o.ls_hicut ~= nil and o.ls_hicut or 1000,
       ls_threshold = o.ls_threshold ~= nil and o.ls_threshold or 20,
+      ls_sensitivity = o.ls_sensitivity ~= nil and o.ls_sensitivity or 1,
     }
   )
   -- 何も出力しないと直後のアニメーション効果以外適用されないため
@@ -95,6 +96,7 @@ function PSDState.new(id, file, opt)
       self.talkstate.deflocut = opt.ls_locut
       self.talkstate.defhicut = opt.ls_hicut
       self.talkstate.defthreshold = opt.ls_threshold
+      self.talkstate.defsensitivity = opt.ls_sensitivity
     end
     self.talkstateindex = opt.lipsync
   end
@@ -219,13 +221,11 @@ local LipSyncSimple = {}
 -- patterns - {'閉じ', 'ほぼ閉じ', '半開き', 'ほぼ開き', '開き'} のパターンが入った配列（ほぼ閉じ、半目、ほぼ開きは省略可）
 -- speed - アニメーション速度
 -- alwaysapply - 口パク準備のデータがなくても閉じを適用する
--- sensitivity - 感度
-function LipSyncSimple.new(patterns, speed, alwaysapply, sensitivity)
+function LipSyncSimple.new(patterns, speed, alwaysapply)
   return setmetatable({
     patterns = patterns,
     speed = speed,
     alwaysapply = alwaysapply,
-    sensitivity = sensitivity ~= nil and sensitivity ~= 0 and sensitivity or 1,
   }, {__index = LipSyncSimple})
 end
 
@@ -238,31 +238,19 @@ function LipSyncSimple:getstate(psd, obj)
   if psd.talkstateindex == nil then
     error("口パク準備があるレイヤー番号を指定してください")
   end
-  local volume = 0
-  if psd.talkstate ~= nil then
-    volume = psd.talkstate:getvolume()
-  end
 
-  local stat = LipSyncSimple.states[obj.layer] or {frame = obj.frame-1, n = -1, pat = 0, vollog = {}}
-  if stat.frame >= obj.frame or stat.frame + obj.framerate < obj.frame then
+  local stat = LipSyncSimple.states[obj.layer] or {time = obj.time, n = -1, pat = 0}
+  if stat.time > obj.time or stat.time + 1 < obj.time then
     -- 巻き戻っていたり、あまりに先に進んでいるようならアニメーションはリセットする
     -- プレビューでコマ飛びする場合は正しい挙動を示せないので、1秒の猶予を持たせる
     stat.n = -1
     stat.pat = 0
-    stat.vollog = {}
   end
   stat.n = stat.n + 1
-  stat.frame = obj.frame
-  table.insert(stat.vollog, volume)
-  if #stat.vollog > self.sensitivity then
-    table.remove(stat.vollog, #stat.vollog - self.sensitivity)
-  end
+  stat.time = obj.time
   if stat.n >= self.speed then
-    volume = 0
-    for _,v in pairs(stat.vollog) do
-      volume = volume + v
-    end
-    if volume/#stat.vollog >= 1.0 then
+    local volume = psd.talkstate ~= nil and psd.talkstate:getvolume() or 0
+    if volume >= 1.0 then
       if stat.pat < #self.patterns - 1 then
         stat.pat = stat.pat + 1
         stat.n = 0
@@ -428,13 +416,16 @@ function TalkState.new(frame, time, totalframe, totaltime)
     totalframe = totalframe,
     totaltime = totaltime,
     buf = {},
+    cstate = nil,
     samplerate = -1,
     locut = 0,
     hicut = 0,
     threshold = 0,
+    sensitivity = 0,
     deflocut = 0,
     defhicut = 0,
     defthreshold = 0,
+    defsensitivity = 0,
     progress = 0,
     cur = "",
     cur_start = 0,
@@ -466,7 +457,6 @@ function TalkState:getvolume()
   local hzstep = self.samplerate / 2 / 1024
   local locut = self.locut ~= 0 and self.locut or self.deflocut
   local hicut = self.hicut ~= 0 and self.hicut or self.defhicut
-  local threshold = self.threshold ~= 0 and self.threshold or self.defthreshold
   local v, d, hz = 0, 0, 0
   for i in ipairs(buf) do
     hz = math.pow(2, 10 * ((i - 1) / buflen)) * hzstep
@@ -481,15 +471,18 @@ function TalkState:getvolume()
   if d > 0 then
     v = v / d
   end
-  return v / threshold
+  local threshold = self.threshold ~= 0 and self.threshold or self.defthreshold
+  local sensitivity = self.sensitivity ~= 0 and self.sensitivity or self.defsensitivity
+  return self.cstate:getvolume(v, self.time, sensitivity) / threshold
 end
 
-function TalkState:setbuffer(buf, samplerate, locut, hicut, threshold)
+function TalkState:setbuffer(buf, samplerate, locut, hicut, threshold, sensitivity)
   self.buf = buf
   self.samplerate = samplerate
   self.locut = locut
   self.hicut = hicut
   self.threshold = threshold
+  self.sensitivity = sensitivity
 end
 
 function TalkState:setphoneme(labfile, time)
@@ -530,15 +523,46 @@ function TalkState:setphoneme(labfile, time)
   f:close()
 end
 
+local TalkContinuousState = {}
+
+function TalkContinuousState.new()
+  return setmetatable({
+    time = -1,
+    vols = {},
+  }, {__index = TalkContinuousState})
+end
+
+function TalkContinuousState:getvolume(volume, time, sensitivity)
+  if self.time == time then
+    self.vols[#self.vols] = volume
+    return volume/sensitivity
+  end
+  if self.time > time or self.time + 1 < time then
+    self.vols = {}
+    self.user = {}
+  end
+  table.insert(self.vols, volume)
+  if #self.vols > sensitivity then
+    table.remove(self.vols, #self.vols - sensitivity)
+  end
+  self.time = time
+  local vol = 0
+  for _, v in pairs(self.vols) do
+    vol = vol + v
+  end
+  return vol/sensitivity
+end
+
 local TalkStates = {}
 
 function TalkStates.new()
   return setmetatable({
-    states = {}
+    states = {},
+    cstates = {},
   }, {__index = TalkStates})
 end
 
-function TalkStates:set(obj, srcfile, locut, hicut, threshold)
+function TalkStates:set(obj, srcfile, locut, hicut, threshold, sensitivity)
   local ext = srcfile:sub(-4):lower()
   if ext ~= ".wav" and ext ~= ".lab" then
     error("unsupported file: " .. srcfile)
@@ -548,12 +572,20 @@ function TalkStates:set(obj, srcfile, locut, hicut, threshold)
   local wavfile = string.sub(srcfile, 1, #srcfile - 3) .. "wav"
   if ext == ".wav" or fileexists(wavfile) then
     local n, samplerate, buf = obj.getaudio(nil, wavfile, "spectrum", 32)
-    t:setbuffer(buf, samplerate, locut, hicut, threshold)
+    t:setbuffer(buf, samplerate, locut, hicut, threshold, sensitivity)
   end
   local labfile = string.sub(srcfile, 1, #srcfile - 3) .. "lab"
   if ext == ".lab" or fileexists(labfile) then
     t:setphoneme(labfile, obj.time)
   end
+
+  local cstate = self.cstates[obj.layer]
+  if cstate == nil then
+    cstate = TalkContinuousState.new()
+    self.cstates[obj.layer] = cstate
+  end
+  t.cstate = cstate
+
   self.states[obj.layer] = t
 end
 
@@ -563,6 +595,14 @@ function TalkStates:setphoneme(obj, phonemestr)
   t.cur = phonemestr
   t.cur_start = 1
   t.cur_end = obj.totaltime + 1
+
+  local cstate = self.cstates[obj.layer]
+  if cstate == nil then
+    cstate = TalkContinuousState.new()
+    self.cstates[obj.layer] = cstate
+  end
+  t.cstate = cstate
+
   self.states[obj.layer] = t
 end
 

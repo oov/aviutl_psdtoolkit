@@ -100,7 +100,7 @@ BlinkerBuilder.prototype.getOutput = function () {
 };
 
 function LipSyncSimpleBuilder(form) {
-    BuilderBase.call(this, form, ['m0', 'm1', 'm2', 'm3', 'm4', 'speed', 'sensitivity', 'alwaysapply']);
+    BuilderBase.call(this, form, ['m0', 'm1', 'm2', 'm3', 'm4', 'speed', 'alwaysapply']);
 }
 LipSyncSimpleBuilder.prototype = Object.create(BuilderBase.prototype);
 LipSyncSimpleBuilder.prototype.constructor = LipSyncSimpleBuilder;
@@ -118,9 +118,8 @@ LipSyncSimpleBuilder.prototype.getOutput = function () {
         return '';
     }
     var speed = this.get('speed');
-    var sensitivity = this.get('sensitivity');
     var alwaysapply = this.get('alwaysapply') ? 'true' : 'false';
-    return 'require("PSDToolKit").LipSyncSimple.new({"' + patterns.join('","') + '"},' + speed + ',' + alwaysapply + ',' + sensitivity + ')';
+    return 'require("PSDToolKit").LipSyncSimple.new({"' + patterns.join('","') + '"},' + speed + ',' + alwaysapply + ')';
 };
 
 function LipSyncLabBuilder(form) {

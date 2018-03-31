@@ -4,10 +4,11 @@
 --track0:ローカット,0,16000,0,1
 --track1:ハイカット,0,16000,0,1
 --track2:しきい値,0,2000,0,1
+--track3:感度,0,15,0,1
 --file:
 tonumber(nil)
 if file ~= nil and file ~= "" then
-  require("PSDToolKit").talk:set(obj, file, obj.track0, obj.track1, obj.track2)
+  require("PSDToolKit").talk:set(obj, file, obj.track0, obj.track1, obj.track2, obj.track3)
   file = nil
 end
 
