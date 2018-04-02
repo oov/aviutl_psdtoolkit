@@ -82,10 +82,6 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
     <li class="ptk-menu-item-index"><a href="index.html">はじめに</a></li>
     <li class="ptk-menu-item-tutorial"><a href="tutorial.html">チュートリアル</a></li>
     <li class="ptk-menu-item-pfv"><a href="pfv.html">PSDTool のお気に入りを使う</a></li>
-    <li class="ptk-menu-item-gcmzdrops"><a href="gcmzdrops.html">ドラッグ＆ドロップ拡張</a></li>
-    <li class="ptk-menu-item-preview"><a href="preview.html">プレビューとコマ落ち</a></li>
-    <li class="ptk-menu-item-setting"><a href="setting.html">設定</a></li>
-    <li class="ptk-menu-item-faq"><a href="faq.html">よくある質問</a></li>
     <li class="ptk-menu-item-obj ptk-menu-item-psd ptk-menu-item-subobj ptk-menu-item-prep ptk-menu-item-audio">オブジェクトリファレンス
       <ul>
         <li class="ptk-menu-item-obj"><a href="obj.html">独自のオブジェクト</a>
@@ -106,6 +102,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
         <li class="ptk-menu-item-audio"><a href="audio.html">音声フィルタ</a></li>
       </ul>
     </li>
+    <li class="ptk-menu-item-plugins"><a href="plugins.html">付属プラグイン</a></li>
+    <li class="ptk-menu-item-setting"><a href="setting.html">設定</a></li>
+    <li class="ptk-menu-item-faq"><a href="faq.html">よくある質問</a></li>
   </ul>
 </div>
 <div id="ptk-main">
@@ -123,7 +122,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li><a href="#.E9.A0.85.E7.9B.AE.E5.90.8D.E3.81.AE.E4.B8.80.E9.83.A8.E3.81.8C.E6.96.87.E5.AD.97.E5.8C.96.E3.81.91.E3.81.99.E3.82.8B">項目名の一部が文字化けする</a></li>
 <li><a href="#.E3.82.A2.E3.83.8B.E3.83.A1.E3.83.BC.E3.82.B7.E3.83.A7.E3.83.B3.E3.81.AE.E5.8B.95.E3.81.8D.E3.81.8C.E5.A4.89">アニメーションの動きが変</a></li>
 <li><a href="#.E5.8F.A3.E3.83.91.E3.82.AF.E3.81.8C.E3.81.BB.E3.81.A8.E3.82.93.E3.81.A9.E9.96.8B.E3.81.8D.E3.81.A3.E3.81.B1.E3.81.AA.E3.81.97.E3.81.AB.E3.81.AA.E3.82.8B_.2F_.E3.81.BB.E3.81.A8.E3.82.93.E3.81.A9.E9.96.8B.E3.81.8B.E3.81.AA.E3.81.84">口パクがほとんど開きっぱなしになる / ほとんど開かない</a></li>
+<li><a href="#.E5.8F.A3.E3.83.91.E3.82.AF.E3.81.AE.E5.8B.95.E3.81.8D.E3.81.8C.E6.BF.80.E3.81.97.E3.81.99.E3.81.8E.E3.82.8B">口パクの動きが激しすぎる</a></li>
 <li><a href="#.E5.8F.A3.E3.83.91.E3.82.AF.E3.82.92.E6.AF.8D.E9.9F.B3.E3.81.AB.E5.90.88.E3.82.8F.E3.81.9B.E3.81.A6.E5.8B.95.E3.81.8B.E3.81.97.E3.81.A6.E3.82.82.E9.81.95.E5.92.8C.E6.84.9F.E3.81.8C.E3.81.82.E3.82.8B">口パクを母音に合わせて動かしても違和感がある</a></li>
+<li><a href="#.E9.9F.B3.E5.A3.B0.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.81.8C.E4.B8.8A.E6.9B.B8.E3.81.8D.EF.BC.8F.E5.89.8A.E9.99.A4.EF.BC.8F.E7.A7.BB.E5.8B.95.E3.81.A7.E3.81.8D.E3.81.AA.E3.81.84">音声ファイルが上書き／削除／移動できない</a></li>
 <li><a href="#attempt_to_call_global_.27type.27.28a_XXXXX_value.29_.E3.81.A8.E3.81.84.E3.81.86.E3.82.A8.E3.83.A9.E3.83.BC.E3.81.8C.E8.A1.A8.E7.A4.BA.E3.81.95.E3.82.8C.E3.82.8B"><code>attempt to call global 'type'(a XXXXX value)</code> というエラーが表示される</a></li>
 </ul>
 </nav>
@@ -171,16 +172,23 @@ AviUtl を <code>C:\AviUtl\aviutl.exe</code> あたりに置いて起動する�
 </ul>
 <p>上記のいずれかに該当する場合に、トラブルを回避するためにそれらを使わない表現に変換しています。</p>
 <h2 id=".E3.82.A2.E3.83.8B.E3.83.A1.E3.83.BC.E3.82.B7.E3.83.A7.E3.83.B3.E3.81.AE.E5.8B.95.E3.81.8D.E3.81.8C.E5.A4.89">アニメーションの動きが変</h2>
-<p>AviUtl のプレビュー再生は描画が間に合わない時はコマ飛びし、コマ飛びによって描画内容自体が変わってしまうこともあるためフレーム単位での正確な確認には向きません。</p>
-<p>きちんと動作しているかを確認したい場合は動画ファイルへの書き出しや<a href="preview.html#.E6.8B.A1.E5.BC.B5.E7.B7.A8.E9.9B.86RAM.E3.83.97.E3.83.AC.E3.83.93.E3.83.A5.E3.83.BC"><code>拡張編集RAMプレビュー</code></a>を利用して、コマ飛びがない状態で確認してみてください。</p>
+<p>AviUtl のプレビュー再生は描画が間に合わない時はコマ飛びし、コマ飛びによって動画の内容自体が変わってしまうこともあるためフレーム単位での正確な確認には向きません。</p>
+<p>きちんと動作しているかを確認したい場合は動画ファイルへの書き出しや<a href="plugins.html#.E6.8B.A1.E5.BC.B5.E7.B7.A8.E9.9B.86RAM.E3.83.97.E3.83.AC.E3.83.93.E3.83.A5.E3.83.BC"><code>拡張編集RAMプレビュー</code></a>を利用して、コマ飛びがない状態で確認してみてください。</p>
 <h2 id=".E5.8F.A3.E3.83.91.E3.82.AF.E3.81.8C.E3.81.BB.E3.81.A8.E3.82.93.E3.81.A9.E9.96.8B.E3.81.8D.E3.81.A3.E3.81.B1.E3.81.AA.E3.81.97.E3.81.AB.E3.81.AA.E3.82.8B_.2F_.E3.81.BB.E3.81.A8.E3.82.93.E3.81.A9.E9.96.8B.E3.81.8B.E3.81.AA.E3.81.84">口パクがほとんど開きっぱなしになる / ほとんど開かない</h2>
-<p>音声に対して <code>口パク準備@PSDToolKit</code> の設定が適切ではない場合、過剰に口が開きっぱなしになったり、ほとんど開かないなどという状況に陥ることがあります。</p>
+<p>音声に対して <code>口パク準備</code> の設定が適切ではない場合、過剰に口が開きっぱなしになったり、ほとんど開かないなどという状況に陥ることがあります。</p>
 <p>初期値は多くの場合に上手く母音が捉えられ小さい音声に対しても反応する設定になっていますが、対象が音声だけではないファイルだったり、ノイズが多いファイルなどの場合には設定を見直さなければ上手く動かないでしょう。</p>
-<p>既にタイムラインに設置済みの複数の <code>口パク準備@PSDToolKit</code> の設定を<a href="prep.html#.E5.8F.A3.E3.83.91.E3.82.AF.E6.BA.96.E5.82.99_.E8.A8.AD.E5.AE.9A.E4.B8.8A.E6.9B.B8.E3.81.8D">一括で変更する方法もあります</a>。</p>
+<p>個別のファイルを調整する場合は <code>口パク準備</code> のスライダーを、全体に対して調整する場合は <code>PSD ファイルオブジェクト</code> 側にある <code>ls_locut</code>/<code>ls_hicut</code>/<code>ls_threshold</code>/<code>ls_sensitivity</code> を使用します。</p>
+<h2 id=".E5.8F.A3.E3.83.91.E3.82.AF.E3.81.AE.E5.8B.95.E3.81.8D.E3.81.8C.E6.BF.80.E3.81.97.E3.81.99.E3.81.8E.E3.82.8B">口パクの動きが激しすぎる</h2>
+<p><a href="obj.html#PSD_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.AA.E3.83.96.E3.82.B8.E3.82.A7.E3.82.AF.E3.83.88">PSD ファイルオブジェクト</a> や <a href="prep.html#.E5.8F.A3.E3.83.91.E3.82.AF.E6.BA.96.E5.82.99.40PSDToolKit"><code>口パク準備</code></a> にある <code>感度</code> パラメーターを使うと、動きのバタつきを抑えることができます。</p>
+<p>ただし、この値を大きくすると反応が遅れ気味になるので、<a href="audio.html#.E3.83.81.E3.83.A3.E3.83.B3.E3.83.8D.E3.83.AB.E3.82.B9.E3.83.88.E3.83.AA.E3.83.83.E3.83.97"><code>チャンネルストリップ</code></a> を使って音声に遅延を加えたり、<a href="setting.html#.E7.92.B0.E5.A2.83.E8.A8.AD.E5.AE.9A.E3.83.80.E3.82.A4.E3.82.A2.E3.83.AD.E3.82.B0"><code>環境設定ダイアログ</code></a> で <code>口パク準備</code> の <code>オフセット</code> にマイナスの値を入れて、口パク準備が音声よりも若干手前に配置されるようにする必要があるかもしれません。</p>
 <h2 id=".E5.8F.A3.E3.83.91.E3.82.AF.E3.82.92.E6.AF.8D.E9.9F.B3.E3.81.AB.E5.90.88.E3.82.8F.E3.81.9B.E3.81.A6.E5.8B.95.E3.81.8B.E3.81.97.E3.81.A6.E3.82.82.E9.81.95.E5.92.8C.E6.84.9F.E3.81.8C.E3.81.82.E3.82.8B">口パクを母音に合わせて動かしても違和感がある</h2>
 <p>母音の形に合わせてアニメーションをするのは比較的難しく、期待しているほど上手く動かないこともあります。</p>
-<p>手間をいとわず細かい制御をしたい場合は <a href="gcmzdrops.html#*.lab_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB"><code>*.lab</code> ファイルを直接拡張編集のタイムライン上に投げ込む</a> のがオススメです。<br />
+<p>手間をいとわず細かい制御をしたい場合は <a href="plugins.html#*.lab_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB"><code>*.lab</code> ファイルを直接拡張編集のタイムライン上に投げ込む</a> のがオススメです。<br />
 この方法なら音素毎のタイミングも含めて手動で調整できるようになるので、後から微調整がタイムライン上で行なえます。</p>
+<h2 id=".E9.9F.B3.E5.A3.B0.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.81.8C.E4.B8.8A.E6.9B.B8.E3.81.8D.EF.BC.8F.E5.89.8A.E9.99.A4.EF.BC.8F.E7.A7.BB.E5.8B.95.E3.81.A7.E3.81.8D.E3.81.AA.E3.81.84">音声ファイルが上書き／削除／移動できない</h2>
+<p>拡張編集には Lua スクリプトからの動画や音声への連続したアクセスを効率化する目的で、動画ファイルや音声ファイルを内部的に保持したままにする仕組みがあります。</p>
+<p>しかし「保持しているものをいつ開放するのか」については予測が難しく、既にプロジェクト内で使用していないファイルでも保持したままになっていることがあるため、これが原因で Wave ファイルに対する上書き、削除、移動などができないことがあります。</p>
+<p><a href="plugins.html#.E5.8B.95.E7.94.BB.E3.83.8F.E3.83.B3.E3.83.89.E3.83.AB.E9.96.8B.E6.94.BE"><code>動画ハンドル開放</code></a> を使うことで、この問題は回避可能です。</p>
 <h2 id="attempt_to_call_global_.27type.27.28a_XXXXX_value.29_.E3.81.A8.E3.81.84.E3.81.86.E3.82.A8.E3.83.A9.E3.83.BC.E3.81.8C.E8.A1.A8.E7.A4.BA.E3.81.95.E3.82.8C.E3.82.8B"><code>attempt to call global 'type'(a XXXXX value)</code> というエラーが表示される</h2>
 <p><code>TAぽよよ～んと登場</code> など一部のスクリプトには Lua スクリプトに標準で用意されている <code>type</code> 関数を上書きして壊してしまう深刻なバグがあります。</p>
 <p>PSDToolKit では <code>type</code> 関数が必要な箇所があり、このような問題があるスクリプトを同時に使用することはできません。</p>
@@ -200,9 +208,9 @@ AviUtl を <code>C:\AviUtl\aviutl.exe</code> あたりに置いて起動する�
 <dt>Written by</dt>
 <dd>oov</dd>
 <dt>Generated at</dt>
-<dd>2018-03-19 18:42:36</dd>
+<dd>2018-04-02 18:22:10</dd>
 <dt>for</dt>
-<dd>v0.2beta13 ( c4e74b7 )</dd>
+<dd>v0.2beta14 ( b89cbb0 )</dd>
 </dl>
 </footer>
 </div>
