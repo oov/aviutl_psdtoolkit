@@ -133,7 +133,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li><a href="#P.wav_subtitle_margin_before"><code>P.wav_subtitle_margin_before</code></a></li>
 <li><a href="#P.wav_subtitle_margin_after"><code>P.wav_subtitle_margin_after</code></a></li>
 <li><a href="#P.wav_subtitle_encoding"><code>P.wav_subtitle_encoding</code></a></li>
-<li><a href="#P.3Awav_subtitle_replacer"><code>P:wav_subtitle_replacer</code></a></li>
+<li><a href="#P.3Awav_subtitle_replacer"><code>P:wav_subtitle_replacer</code></a><ul>
+<li><a href="#.E8.A8.AD.E5.AE.9A.E4.BE.8B.3A_.E6.96.87.E9.A0.AD.E3.81.AB.E3.81.82.E3.82.8B_.22.E4.BB.BB.E6.84.8F.E3.81.AE.E3.83.86.E3.82.AD.E3.82.B9.E3.83.88.EF.BC.9E.22_.E3.82.92.E5.89.8A.E9.99.A4">設定例: 文頭にある &quot;任意のテキスト＞&quot; を削除</a></li>
+</ul></li>
 <li><a href="#P.wav_subtitle_prefix.2FP.3Awav_subtitle_escape.2FP.wav_subtitle_postfix"><code>P.wav_subtitle_prefix</code>/<code>P:wav_subtitle_escape</code>/<code>P.wav_subtitle_postfix</code></a></li>
 <li><a href="#P.wav_exafinder"><code>P.wav_exafinder</code></a></li>
 <li><a href="#P.3Awav_examodifler_wav.2FP.3Awav_examodifler_lipsync.2FP.3Awav_examodifler_mpslider.2FP.3Awav_examodifler_subtitle"><code>P:wav_examodifler_wav</code>/<code>P:wav_examodifler_lipsync</code>/<code>P:wav_examodifler_mpslider</code>/<code>P:wav_examodifler_subtitle</code></a></li>
@@ -461,12 +463,17 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <div class="sourceCode" id="cb15"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb15-1" data-line-number="1"><span class="kw">function</span> P:wav_subtitle_replacer<span class="ot">(</span>s<span class="ot">)</span></a>
 <a class="sourceLine" id="cb15-2" data-line-number="2">  <span class="kw">return</span> s <span class="do">-- そのままの状態で返す</span></a>
 <a class="sourceLine" id="cb15-3" data-line-number="3"><span class="kw">end</span></a></code></pre></div>
+<h5 id=".E8.A8.AD.E5.AE.9A.E4.BE.8B.3A_.E6.96.87.E9.A0.AD.E3.81.AB.E3.81.82.E3.82.8B_.22.E4.BB.BB.E6.84.8F.E3.81.AE.E3.83.86.E3.82.AD.E3.82.B9.E3.83.88.EF.BC.9E.22_.E3.82.92.E5.89.8A.E9.99.A4">設定例: 文頭にある &quot;任意のテキスト＞&quot; を削除</h5>
+<div class="sourceCode" id="cb16"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb16-1" data-line-number="1"><span class="kw">function</span> P:wav_subtitle_replacer<span class="ot">(</span>s<span class="ot">)</span></a>
+<a class="sourceLine" id="cb16-2" data-line-number="2">  s <span class="ot">=</span> s:<span class="fu">gsub</span><span class="ot">(</span><span class="st">&quot;^.-\239\188\158&quot;</span><span class="ot">,</span> <span class="st">&quot;&quot;</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb16-3" data-line-number="3">  <span class="kw">return</span> s</a>
+<a class="sourceLine" id="cb16-4" data-line-number="4"><span class="kw">end</span></a></code></pre></div>
 <h4 id="P.wav_subtitle_prefix.2FP.3Awav_subtitle_escape.2FP.wav_subtitle_postfix"><code>P.wav_subtitle_prefix</code>/<code>P:wav_subtitle_escape</code>/<code>P.wav_subtitle_postfix</code></h4>
 <p><code>字幕準備</code> の構築に必要になるスクリプトの処理内容を設定します。</p>
 <p>一般的な用途においては変更する必要はありません。</p>
-<div class="sourceCode" id="cb16"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb16-1" data-line-number="1">P<span class="ot">.</span>wav_subtitle_prefix <span class="ot">=</span> <span class="st">&#39;&lt;?s=[==[&#39;</span></a>
-<a class="sourceLine" id="cb16-2" data-line-number="2"><span class="kw">function</span> P:wav_subtitle_escape<span class="ot">(</span>s<span class="ot">)</span> <span class="kw">return</span> s:<span class="fu">gsub</span><span class="ot">(</span><span class="st">&#39;]==]&#39;</span><span class="ot">,</span> <span class="st">&#39;]==]..&quot;]==]&quot;..[==[&#39;</span><span class="ot">)</span> <span class="kw">end</span></a>
-<a class="sourceLine" id="cb16-3" data-line-number="3">P<span class="ot">.</span>wav_subtitle_postfix <span class="ot">=</span> <span class="st">&#39;]==];require(&quot;PSDToolKit&quot;).subtitle:set(s, obj, true);s=nil?&gt;&#39;</span></a></code></pre></div>
+<div class="sourceCode" id="cb17"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb17-1" data-line-number="1">P<span class="ot">.</span>wav_subtitle_prefix <span class="ot">=</span> <span class="st">&#39;&lt;?s=[==[&#39;</span></a>
+<a class="sourceLine" id="cb17-2" data-line-number="2"><span class="kw">function</span> P:wav_subtitle_escape<span class="ot">(</span>s<span class="ot">)</span> <span class="kw">return</span> s:<span class="fu">gsub</span><span class="ot">(</span><span class="st">&#39;]==]&#39;</span><span class="ot">,</span> <span class="st">&#39;]==]..&quot;]==]&quot;..[==[&#39;</span><span class="ot">)</span> <span class="kw">end</span></a>
+<a class="sourceLine" id="cb17-3" data-line-number="3">P<span class="ot">.</span>wav_subtitle_postfix <span class="ot">=</span> <span class="st">&#39;]==];require(&quot;PSDToolKit&quot;).subtitle:set(s, obj, true);s=nil?&gt;&#39;</span></a></code></pre></div>
 <table>
 <thead>
 <tr class="header">
@@ -490,7 +497,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>この設定を使うと、拡張編集に投げ込んだ <code>*.wav</code> のファイル名などに応じて <code>*.exa</code> ファイル（エイリアスファイル）を切り替えることができます。</p>
 <p>エイリアスファイル作成は拡張編集のタイムライン上でエイリアス化したいオブジェクトを右クリックして <code>エイリアスの作成</code> から行います。出てきたウィンドウにある <code>エイリアス名</code> に適当な名前を入れると <code>aviutl.exe</code> と同じ場所に <code>入力した名前.exa</code> というファイルが作成されるので、そのファイルを <code>exa</code> フォルダーの中に配置して下さい。<br />
 なお複雑なエイリアスファイルを作った場合などには <a href="#P.3Awav_examodifler_wav.2FP.3Awav_examodifler_lipsync.2FP.3Awav_examodifler_mpslider.2FP.3Awav_examodifler_subtitle"><code>P:wav_examodifler_wav</code>/<code>P:wav_examodifler_lipsync</code>/<code>P:wav_examodifler_mpslider</code>/<code>P:wav_examodifler_subtitle</code></a> の設定も変更する必要があるかも知れません。</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb17-1" data-line-number="1">P<span class="ot">.</span>wav_exafinder <span class="ot">=</span> <span class="dv">0</span></a></code></pre></div>
+<div class="sourceCode" id="cb18"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb18-1" data-line-number="1">P<span class="ot">.</span>wav_exafinder <span class="ot">=</span> <span class="dv">0</span></a></code></pre></div>
 <table>
 <thead>
 <tr class="header">
@@ -534,57 +541,57 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p><code>*.wav</code> ファイルを投げ込んだ時の <code>*.exa</code> ファイル改変内容を設定します。</p>
 <p>エイリアスファイルを読み込んだ後、音声オブジェクトへの <code>*.wav</code> ファイルの割り当てや長さなどを設定するための設定です。</p>
 <p>一般的な用途においては変更する必要はありません。</p>
-<div class="sourceCode" id="cb18"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb18-1" data-line-number="1"><span class="kw">function</span> P:wav_examodifler_wav<span class="ot">(</span>exa<span class="ot">,</span> values<span class="ot">,</span> modifiers<span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-2" data-line-number="2">  exa:set<span class="ot">(</span><span class="st">&quot;ao&quot;</span><span class="ot">,</span> <span class="st">&quot;start&quot;</span><span class="ot">,</span> <span class="dv">1</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-3" data-line-number="3">  exa:set<span class="ot">(</span><span class="st">&quot;ao&quot;</span><span class="ot">,</span> <span class="st">&quot;end&quot;</span><span class="ot">,</span> values<span class="ot">.</span>WAV_LEN<span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-4" data-line-number="4">  exa:set<span class="ot">(</span><span class="st">&quot;ao&quot;</span><span class="ot">,</span> <span class="st">&quot;group&quot;</span><span class="ot">,</span> <span class="dv">1</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-5" data-line-number="5">  exa:set<span class="ot">(</span><span class="st">&quot;ao.0&quot;</span><span class="ot">,</span> <span class="st">&quot;file&quot;</span><span class="ot">,</span> values<span class="ot">.</span>WAV_PATH<span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-6" data-line-number="6"><span class="kw">end</span></a>
-<a class="sourceLine" id="cb18-7" data-line-number="7"><span class="kw">function</span> P:wav_examodifler_lipsync<span class="ot">(</span>exa<span class="ot">,</span> values<span class="ot">,</span> modifiers<span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-8" data-line-number="8">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;start&quot;</span><span class="ot">,</span> <span class="dv">1</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-9" data-line-number="9">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;end&quot;</span><span class="ot">,</span> values<span class="ot">.</span>WAV_LEN<span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-10" data-line-number="10">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;group&quot;</span><span class="ot">,</span> <span class="dv">1</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-11" data-line-number="11">  exa:set<span class="ot">(</span><span class="st">&quot;vo.0&quot;</span><span class="ot">,</span> <span class="st">&quot;param&quot;</span><span class="ot">,</span> <span class="st">&quot;file=&quot;</span> <span class="ot">..</span> modifiers<span class="ot">.</span>ENCODE_LUA_STRING<span class="ot">(</span>values<span class="ot">.</span>LIPSYNC_PATH<span class="ot">))</span></a>
-<a class="sourceLine" id="cb18-12" data-line-number="12"><span class="kw">end</span></a>
-<a class="sourceLine" id="cb18-13" data-line-number="13"><span class="kw">function</span> P:wav_examodifler_mpslider<span class="ot">(</span>exa<span class="ot">,</span> values<span class="ot">,</span> modifiers<span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-14" data-line-number="14">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;start&quot;</span><span class="ot">,</span> <span class="dv">1</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-15" data-line-number="15">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;end&quot;</span><span class="ot">,</span> values<span class="ot">.</span>WAV_LEN<span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-16" data-line-number="16">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;group&quot;</span><span class="ot">,</span> <span class="dv">1</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-17" data-line-number="17">  <span class="kw">for</span> i <span class="ot">=</span> <span class="dv">1</span><span class="ot">,</span> self<span class="ot">.</span>wav_mpslider <span class="kw">do</span></a>
-<a class="sourceLine" id="cb18-18" data-line-number="18">    <span class="kw">local</span> key <span class="ot">=</span> <span class="st">&quot;vo.&quot;</span> <span class="ot">..</span> <span class="ot">(</span>i <span class="ot">-</span> <span class="dv">1</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-19" data-line-number="19">    exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;_name&quot;</span><span class="ot">,</span> i <span class="ot">==</span> <span class="dv">1</span> <span class="kw">and</span> <span class="st">&quot;カスタムオブジェクト&quot;</span> <span class="kw">or</span> <span class="st">&quot;アニメーション効果&quot;</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-20" data-line-number="20">    exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;track0&quot;</span><span class="ot">,</span> <span class="st">&quot;0.00&quot;</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-21" data-line-number="21">    exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;track1&quot;</span><span class="ot">,</span> <span class="st">&quot;0.00&quot;</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-22" data-line-number="22">    exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;track2&quot;</span><span class="ot">,</span> <span class="st">&quot;0.00&quot;</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-23" data-line-number="23">    exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;track3&quot;</span><span class="ot">,</span> <span class="st">&quot;0.00&quot;</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-24" data-line-number="24">    exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;check0&quot;</span><span class="ot">,</span> <span class="st">&quot;0&quot;</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-25" data-line-number="25">    exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;type&quot;</span><span class="ot">,</span> <span class="st">&quot;0&quot;</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-26" data-line-number="26">    exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;filter&quot;</span><span class="ot">,</span> <span class="st">&quot;2&quot;</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-27" data-line-number="27">    exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;name&quot;</span><span class="ot">,</span> <span class="st">&quot;多目的スライダー@PSDToolKit&quot;</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-28" data-line-number="28">    exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;param&quot;</span><span class="ot">,</span> <span class="st">&quot;&quot;</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-29" data-line-number="29">  <span class="kw">end</span></a>
-<a class="sourceLine" id="cb18-30" data-line-number="30">  <span class="kw">local</span> key <span class="ot">=</span> <span class="st">&quot;vo.&quot;</span> <span class="ot">..</span> self<span class="ot">.</span>wav_mpslider</a>
-<a class="sourceLine" id="cb18-31" data-line-number="31">  exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;_name&quot;</span><span class="ot">,</span> <span class="st">&quot;標準描画&quot;</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-32" data-line-number="32">  exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;X&quot;</span><span class="ot">,</span> <span class="st">&quot;0.0&quot;</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-33" data-line-number="33">  exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;Y&quot;</span><span class="ot">,</span> <span class="st">&quot;0.0&quot;</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-34" data-line-number="34">  exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;Z&quot;</span><span class="ot">,</span> <span class="st">&quot;0.0&quot;</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-35" data-line-number="35">  exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;拡大率&quot;</span><span class="ot">,</span> <span class="st">&quot;100.00&quot;</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-36" data-line-number="36">  exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;透明度&quot;</span><span class="ot">,</span> <span class="st">&quot;0.0&quot;</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-37" data-line-number="37">  exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;回転&quot;</span><span class="ot">,</span> <span class="st">&quot;0.00&quot;</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-38" data-line-number="38">  exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;blend&quot;</span><span class="ot">,</span> <span class="st">&quot;0&quot;</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-39" data-line-number="39"><span class="kw">end</span></a>
-<a class="sourceLine" id="cb18-40" data-line-number="40"><span class="kw">function</span> P:wav_examodifler_subtitle<span class="ot">(</span>exa<span class="ot">,</span> values<span class="ot">,</span> modifiers<span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-41" data-line-number="41">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;start&quot;</span><span class="ot">,</span> <span class="dv">1</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-42" data-line-number="42">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;end&quot;</span><span class="ot">,</span> values<span class="ot">.</span>SUBTITLE_LEN<span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-43" data-line-number="43">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;group&quot;</span><span class="ot">,</span> self<span class="ot">.</span>wav_groupsubtitle <span class="kw">and</span> <span class="dv">1</span> <span class="kw">or</span> <span class="dv">0</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb18-44" data-line-number="44">  exa:set<span class="ot">(</span><span class="st">&quot;vo.0&quot;</span><span class="ot">,</span> <span class="st">&quot;text&quot;</span><span class="ot">,</span> modifiers<span class="ot">.</span>ENCODE_TEXT<span class="ot">(</span>values<span class="ot">.</span>SUBTITLE<span class="ot">))</span></a>
-<a class="sourceLine" id="cb18-45" data-line-number="45"><span class="kw">end</span></a></code></pre></div>
+<div class="sourceCode" id="cb19"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb19-1" data-line-number="1"><span class="kw">function</span> P:wav_examodifler_wav<span class="ot">(</span>exa<span class="ot">,</span> values<span class="ot">,</span> modifiers<span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-2" data-line-number="2">  exa:set<span class="ot">(</span><span class="st">&quot;ao&quot;</span><span class="ot">,</span> <span class="st">&quot;start&quot;</span><span class="ot">,</span> <span class="dv">1</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-3" data-line-number="3">  exa:set<span class="ot">(</span><span class="st">&quot;ao&quot;</span><span class="ot">,</span> <span class="st">&quot;end&quot;</span><span class="ot">,</span> values<span class="ot">.</span>WAV_LEN<span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-4" data-line-number="4">  exa:set<span class="ot">(</span><span class="st">&quot;ao&quot;</span><span class="ot">,</span> <span class="st">&quot;group&quot;</span><span class="ot">,</span> <span class="dv">1</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-5" data-line-number="5">  exa:set<span class="ot">(</span><span class="st">&quot;ao.0&quot;</span><span class="ot">,</span> <span class="st">&quot;file&quot;</span><span class="ot">,</span> values<span class="ot">.</span>WAV_PATH<span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-6" data-line-number="6"><span class="kw">end</span></a>
+<a class="sourceLine" id="cb19-7" data-line-number="7"><span class="kw">function</span> P:wav_examodifler_lipsync<span class="ot">(</span>exa<span class="ot">,</span> values<span class="ot">,</span> modifiers<span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-8" data-line-number="8">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;start&quot;</span><span class="ot">,</span> <span class="dv">1</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-9" data-line-number="9">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;end&quot;</span><span class="ot">,</span> values<span class="ot">.</span>WAV_LEN<span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-10" data-line-number="10">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;group&quot;</span><span class="ot">,</span> <span class="dv">1</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-11" data-line-number="11">  exa:set<span class="ot">(</span><span class="st">&quot;vo.0&quot;</span><span class="ot">,</span> <span class="st">&quot;param&quot;</span><span class="ot">,</span> <span class="st">&quot;file=&quot;</span> <span class="ot">..</span> modifiers<span class="ot">.</span>ENCODE_LUA_STRING<span class="ot">(</span>values<span class="ot">.</span>LIPSYNC_PATH<span class="ot">))</span></a>
+<a class="sourceLine" id="cb19-12" data-line-number="12"><span class="kw">end</span></a>
+<a class="sourceLine" id="cb19-13" data-line-number="13"><span class="kw">function</span> P:wav_examodifler_mpslider<span class="ot">(</span>exa<span class="ot">,</span> values<span class="ot">,</span> modifiers<span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-14" data-line-number="14">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;start&quot;</span><span class="ot">,</span> <span class="dv">1</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-15" data-line-number="15">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;end&quot;</span><span class="ot">,</span> values<span class="ot">.</span>WAV_LEN<span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-16" data-line-number="16">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;group&quot;</span><span class="ot">,</span> <span class="dv">1</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-17" data-line-number="17">  <span class="kw">for</span> i <span class="ot">=</span> <span class="dv">1</span><span class="ot">,</span> self<span class="ot">.</span>wav_mpslider <span class="kw">do</span></a>
+<a class="sourceLine" id="cb19-18" data-line-number="18">    <span class="kw">local</span> key <span class="ot">=</span> <span class="st">&quot;vo.&quot;</span> <span class="ot">..</span> <span class="ot">(</span>i <span class="ot">-</span> <span class="dv">1</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-19" data-line-number="19">    exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;_name&quot;</span><span class="ot">,</span> i <span class="ot">==</span> <span class="dv">1</span> <span class="kw">and</span> <span class="st">&quot;カスタムオブジェクト&quot;</span> <span class="kw">or</span> <span class="st">&quot;アニメーション効果&quot;</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-20" data-line-number="20">    exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;track0&quot;</span><span class="ot">,</span> <span class="st">&quot;0.00&quot;</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-21" data-line-number="21">    exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;track1&quot;</span><span class="ot">,</span> <span class="st">&quot;0.00&quot;</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-22" data-line-number="22">    exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;track2&quot;</span><span class="ot">,</span> <span class="st">&quot;0.00&quot;</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-23" data-line-number="23">    exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;track3&quot;</span><span class="ot">,</span> <span class="st">&quot;0.00&quot;</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-24" data-line-number="24">    exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;check0&quot;</span><span class="ot">,</span> <span class="st">&quot;0&quot;</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-25" data-line-number="25">    exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;type&quot;</span><span class="ot">,</span> <span class="st">&quot;0&quot;</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-26" data-line-number="26">    exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;filter&quot;</span><span class="ot">,</span> <span class="st">&quot;2&quot;</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-27" data-line-number="27">    exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;name&quot;</span><span class="ot">,</span> <span class="st">&quot;多目的スライダー@PSDToolKit&quot;</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-28" data-line-number="28">    exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;param&quot;</span><span class="ot">,</span> <span class="st">&quot;&quot;</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-29" data-line-number="29">  <span class="kw">end</span></a>
+<a class="sourceLine" id="cb19-30" data-line-number="30">  <span class="kw">local</span> key <span class="ot">=</span> <span class="st">&quot;vo.&quot;</span> <span class="ot">..</span> self<span class="ot">.</span>wav_mpslider</a>
+<a class="sourceLine" id="cb19-31" data-line-number="31">  exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;_name&quot;</span><span class="ot">,</span> <span class="st">&quot;標準描画&quot;</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-32" data-line-number="32">  exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;X&quot;</span><span class="ot">,</span> <span class="st">&quot;0.0&quot;</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-33" data-line-number="33">  exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;Y&quot;</span><span class="ot">,</span> <span class="st">&quot;0.0&quot;</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-34" data-line-number="34">  exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;Z&quot;</span><span class="ot">,</span> <span class="st">&quot;0.0&quot;</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-35" data-line-number="35">  exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;拡大率&quot;</span><span class="ot">,</span> <span class="st">&quot;100.00&quot;</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-36" data-line-number="36">  exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;透明度&quot;</span><span class="ot">,</span> <span class="st">&quot;0.0&quot;</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-37" data-line-number="37">  exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;回転&quot;</span><span class="ot">,</span> <span class="st">&quot;0.00&quot;</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-38" data-line-number="38">  exa:set<span class="ot">(</span>key<span class="ot">,</span> <span class="st">&quot;blend&quot;</span><span class="ot">,</span> <span class="st">&quot;0&quot;</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-39" data-line-number="39"><span class="kw">end</span></a>
+<a class="sourceLine" id="cb19-40" data-line-number="40"><span class="kw">function</span> P:wav_examodifler_subtitle<span class="ot">(</span>exa<span class="ot">,</span> values<span class="ot">,</span> modifiers<span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-41" data-line-number="41">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;start&quot;</span><span class="ot">,</span> <span class="dv">1</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-42" data-line-number="42">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;end&quot;</span><span class="ot">,</span> values<span class="ot">.</span>SUBTITLE_LEN<span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-43" data-line-number="43">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;group&quot;</span><span class="ot">,</span> self<span class="ot">.</span>wav_groupsubtitle <span class="kw">and</span> <span class="dv">1</span> <span class="kw">or</span> <span class="dv">0</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb19-44" data-line-number="44">  exa:set<span class="ot">(</span><span class="st">&quot;vo.0&quot;</span><span class="ot">,</span> <span class="st">&quot;text&quot;</span><span class="ot">,</span> modifiers<span class="ot">.</span>ENCODE_TEXT<span class="ot">(</span>values<span class="ot">.</span>SUBTITLE<span class="ot">))</span></a>
+<a class="sourceLine" id="cb19-45" data-line-number="45"><span class="kw">end</span></a></code></pre></div>
 <h3 id="*.lab_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.92.E6.8A.95.E3.81.92.E8.BE.BC.E3.82.93.E3.81.A0.E6.99.82.E3.81.AE.E8.A8.AD.E5.AE.9A"><code>*.lab</code> ファイルを投げ込んだ時の設定</h3>
 <p>拡張編集のタイムラインに <code>*.lab</code> ファイルを投げ込んだ時に <code>口パク準備</code> の処理を行うための設定です。</p>
 <h4 id="P.lab_exafinder"><code>P.lab_exafinder</code></h4>
 <p><code>*.lab</code> ファイルを投げ込んだ時に使用される <code>*.exa</code> ファイルの検索方法を設定します。</p>
 <p>この設定を使うと、拡張編集に投げ込んだ <code>*.lab</code> のファイル名などに応じて <code>*.exa</code> ファイル（エイリアスファイル）を切り替えることができます。</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb19-1" data-line-number="1">P<span class="ot">.</span>lab_exafinder <span class="ot">=</span> <span class="dv">0</span></a></code></pre></div>
+<div class="sourceCode" id="cb20"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb20-1" data-line-number="1">P<span class="ot">.</span>lab_exafinder <span class="ot">=</span> <span class="dv">0</span></a></code></pre></div>
 <table>
 <thead>
 <tr class="header">
@@ -628,20 +635,20 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p><code>*.lab</code> ファイルを投げ込んだ時の <code>*.exa</code> ファイル改変処理を設定します。</p>
 <p>エイリアスファイルを読み込んだ後、スクリプト処理を割り当てるための設定です。</p>
 <p>一般的な用途においては変更する必要はありません。</p>
-<div class="sourceCode" id="cb20"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb20-1" data-line-number="1"><span class="kw">function</span> P:lab_examodifler<span class="ot">(</span>exa<span class="ot">,</span> values<span class="ot">,</span> modifiers<span class="ot">)</span></a>
-<a class="sourceLine" id="cb20-2" data-line-number="2">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;start&quot;</span><span class="ot">,</span> values<span class="ot">.</span>START <span class="ot">+</span> <span class="dv">1</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb20-3" data-line-number="3">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;end&quot;</span><span class="ot">,</span> values<span class="ot">.</span>END <span class="ot">+</span> <span class="dv">1</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb20-4" data-line-number="4">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;group&quot;</span><span class="ot">,</span> <span class="dv">1</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb20-5" data-line-number="5">  exa:set<span class="ot">(</span><span class="st">&quot;vo.0&quot;</span><span class="ot">,</span> <span class="st">&quot;text&quot;</span><span class="ot">,</span> modifiers<span class="ot">.</span>ENCODE_TEXT<span class="ot">(</span>values<span class="ot">.</span>LIPSYNC<span class="ot">))</span></a>
-<a class="sourceLine" id="cb20-6" data-line-number="6"><span class="kw">end</span></a>
-<a class="sourceLine" id="cb20-7" data-line-number="7">P<span class="ot">.</span>lab_lipsync_prefix <span class="ot">=</span> <span class="st">&#39;&lt;?l=&#39;</span></a>
-<a class="sourceLine" id="cb20-8" data-line-number="8"><span class="kw">function</span> P:lab_lipsync_escape<span class="ot">(</span>s<span class="ot">)</span> <span class="kw">return</span> GCMZDrops<span class="ot">.</span>encodeluastring<span class="ot">(</span>s<span class="ot">)</span> <span class="kw">end</span></a>
-<a class="sourceLine" id="cb20-9" data-line-number="9">P<span class="ot">.</span>lab_lipsync_postfix <span class="ot">=</span> <span class="st">&#39;;require(&quot;PSDToolKit&quot;).talk:setphoneme(obj,l);l=nil?&gt;&#39;</span></a></code></pre></div>
+<div class="sourceCode" id="cb21"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb21-1" data-line-number="1"><span class="kw">function</span> P:lab_examodifler<span class="ot">(</span>exa<span class="ot">,</span> values<span class="ot">,</span> modifiers<span class="ot">)</span></a>
+<a class="sourceLine" id="cb21-2" data-line-number="2">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;start&quot;</span><span class="ot">,</span> values<span class="ot">.</span>START <span class="ot">+</span> <span class="dv">1</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb21-3" data-line-number="3">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;end&quot;</span><span class="ot">,</span> values<span class="ot">.</span>END <span class="ot">+</span> <span class="dv">1</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb21-4" data-line-number="4">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;group&quot;</span><span class="ot">,</span> <span class="dv">1</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb21-5" data-line-number="5">  exa:set<span class="ot">(</span><span class="st">&quot;vo.0&quot;</span><span class="ot">,</span> <span class="st">&quot;text&quot;</span><span class="ot">,</span> modifiers<span class="ot">.</span>ENCODE_TEXT<span class="ot">(</span>values<span class="ot">.</span>LIPSYNC<span class="ot">))</span></a>
+<a class="sourceLine" id="cb21-6" data-line-number="6"><span class="kw">end</span></a>
+<a class="sourceLine" id="cb21-7" data-line-number="7">P<span class="ot">.</span>lab_lipsync_prefix <span class="ot">=</span> <span class="st">&#39;&lt;?l=&#39;</span></a>
+<a class="sourceLine" id="cb21-8" data-line-number="8"><span class="kw">function</span> P:lab_lipsync_escape<span class="ot">(</span>s<span class="ot">)</span> <span class="kw">return</span> GCMZDrops<span class="ot">.</span>encodeluastring<span class="ot">(</span>s<span class="ot">)</span> <span class="kw">end</span></a>
+<a class="sourceLine" id="cb21-9" data-line-number="9">P<span class="ot">.</span>lab_lipsync_postfix <span class="ot">=</span> <span class="st">&#39;;require(&quot;PSDToolKit&quot;).talk:setphoneme(obj,l);l=nil?&gt;&#39;</span></a></code></pre></div>
 <h3 id="*.srt_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.92.E6.8A.95.E3.81.92.E8.BE.BC.E3.82.93.E3.81.A0.E6.99.82.E3.81.AE.E8.A8.AD.E5.AE.9A"><code>*.srt</code> ファイルを投げ込んだ時の設定</h3>
 <p><code>*.srt</code> ファイルを拡張編集のタイムラインに投げ込んだ時に <code>字幕準備</code> 作成を行うための設定です。</p>
 <h4 id="P.srt_insertmode"><code>P.srt_insertmode</code></h4>
 <p><code>*.srt</code> ファイルを投げ込んだ時に <code>テキスト</code> と <code>字幕準備</code> のどちらを作成するかを設定します。</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb21-1" data-line-number="1">P<span class="ot">.</span>srt_insertmode <span class="ot">=</span> <span class="dv">1</span></a></code></pre></div>
+<div class="sourceCode" id="cb22"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb22-1" data-line-number="1">P<span class="ot">.</span>srt_insertmode <span class="ot">=</span> <span class="dv">1</span></a></code></pre></div>
 <table>
 <thead>
 <tr class="header">
@@ -662,7 +669,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </table>
 <h4 id="P.srt_encoding"><code>P.srt_encoding</code></h4>
 <p><code>*.srt</code> ファイルの文字エンコーディングを指定します。</p>
-<div class="sourceCode" id="cb22"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb22-1" data-line-number="1">P<span class="ot">.</span>srt_encoding <span class="ot">=</span> <span class="st">&quot;utf8&quot;</span></a></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb23-1" data-line-number="1">P<span class="ot">.</span>srt_encoding <span class="ot">=</span> <span class="st">&quot;utf8&quot;</span></a></code></pre></div>
 <table>
 <thead>
 <tr class="header">
@@ -683,14 +690,14 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </table>
 <h4 id="P.srt_subtitle_margin_before"><code>P.srt_subtitle_margin_before</code></h4>
 <p><code>*.srt</code> ファイルを投げ込んだ時に作成される <code>字幕準備</code> の範囲が指定されたフレーム数だけ本来の範囲よりも早く始まるようにします。</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb23-1" data-line-number="1">P<span class="ot">.</span>srt_subtitle_margin_before <span class="ot">=</span> <span class="dv">0</span></a></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb24-1" data-line-number="1">P<span class="ot">.</span>srt_subtitle_margin_before <span class="ot">=</span> <span class="dv">0</span></a></code></pre></div>
 <h4 id="P.srt_subtitle_margin_after"><code>P.srt_subtitle_margin_after</code></h4>
 <p><code>*.srt</code> ファイルを投げ込んだ時に作成される <code>字幕準備</code> の範囲が指定されたフレーム数だけ本来の範囲よりも長く続くようにします。</p>
-<div class="sourceCode" id="cb24"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb24-1" data-line-number="1">P<span class="ot">.</span>srt_subtitle_margin_after <span class="ot">=</span> <span class="dv">0</span></a></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb25-1" data-line-number="1">P<span class="ot">.</span>srt_subtitle_margin_after <span class="ot">=</span> <span class="dv">0</span></a></code></pre></div>
 <h4 id="P.srt_exafinder"><code>P.srt_exafinder</code></h4>
 <p><code>*.srt</code> ファイルを投げ込んだ時に使用される <code>*.exa</code> ファイルの検索方法を設定します。</p>
 <p>この設定を使うと、拡張編集に投げ込んだ <code>*.srt</code> のファイル名などに応じて <code>*.exa</code> ファイル（エイリアスファイル）を切り替えることができます。</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb25-1" data-line-number="1">P<span class="ot">.</span>srt_exafinder <span class="ot">=</span> <span class="dv">0</span></a></code></pre></div>
+<div class="sourceCode" id="cb26"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb26-1" data-line-number="1">P<span class="ot">.</span>srt_exafinder <span class="ot">=</span> <span class="dv">0</span></a></code></pre></div>
 <table>
 <thead>
 <tr class="header">
@@ -733,29 +740,29 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h4 id="P.3Asrt_examodifler"><code>P:srt_examodifler</code></h4>
 <p><code>*.srt</code> ファイルを投げ込んだ時の <code>*.exa</code> ファイル改変処理を設定します。</p>
 <p>一般的な用途においては変更する必要はありません。</p>
-<div class="sourceCode" id="cb26"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb26-1" data-line-number="1"><span class="kw">function</span> P:srt_examodifler<span class="ot">(</span>exa<span class="ot">,</span> values<span class="ot">,</span> modifiers<span class="ot">)</span></a>
-<a class="sourceLine" id="cb26-2" data-line-number="2">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;start&quot;</span><span class="ot">,</span> values<span class="ot">.</span>START <span class="ot">+</span> <span class="dv">1</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb26-3" data-line-number="3">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;end&quot;</span><span class="ot">,</span> values<span class="ot">.</span>END <span class="ot">+</span> <span class="dv">1</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb26-4" data-line-number="4">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;group&quot;</span><span class="ot">,</span> <span class="dv">1</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb26-5" data-line-number="5">  exa:set<span class="ot">(</span><span class="st">&quot;vo.0&quot;</span><span class="ot">,</span> <span class="st">&quot;text&quot;</span><span class="ot">,</span> modifiers<span class="ot">.</span>ENCODE_TEXT<span class="ot">(</span>values<span class="ot">.</span>SUBTITLE<span class="ot">))</span></a>
-<a class="sourceLine" id="cb26-6" data-line-number="6"><span class="kw">end</span></a></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb27-1" data-line-number="1"><span class="kw">function</span> P:srt_examodifler<span class="ot">(</span>exa<span class="ot">,</span> values<span class="ot">,</span> modifiers<span class="ot">)</span></a>
+<a class="sourceLine" id="cb27-2" data-line-number="2">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;start&quot;</span><span class="ot">,</span> values<span class="ot">.</span>START <span class="ot">+</span> <span class="dv">1</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb27-3" data-line-number="3">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;end&quot;</span><span class="ot">,</span> values<span class="ot">.</span>END <span class="ot">+</span> <span class="dv">1</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb27-4" data-line-number="4">  exa:set<span class="ot">(</span><span class="st">&quot;vo&quot;</span><span class="ot">,</span> <span class="st">&quot;group&quot;</span><span class="ot">,</span> <span class="dv">1</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb27-5" data-line-number="5">  exa:set<span class="ot">(</span><span class="st">&quot;vo.0&quot;</span><span class="ot">,</span> <span class="st">&quot;text&quot;</span><span class="ot">,</span> modifiers<span class="ot">.</span>ENCODE_TEXT<span class="ot">(</span>values<span class="ot">.</span>SUBTITLE<span class="ot">))</span></a>
+<a class="sourceLine" id="cb27-6" data-line-number="6"><span class="kw">end</span></a></code></pre></div>
 <h4 id="P.3Asrt_subtitle_replacer"><code>P:srt_subtitle_replacer</code></h4>
 <p><code>*.srt</code> ファイルを投げ込んだ時、<code>字幕準備</code> のテキストに対して書き換えを行う必要がある場合に設定します。</p>
 <p>ここに渡されてくる文字列は <code>Shift_JIS</code> ではなく常に <code>UTF-8</code> なので、日本語を置換するときは日本語部分は <code>UTF-8</code> で指定する必要があります。</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb27-1" data-line-number="1"><span class="kw">function</span> P:srt_subtitle_replacer<span class="ot">(</span>s<span class="ot">)</span></a>
-<a class="sourceLine" id="cb27-2" data-line-number="2">  <span class="kw">return</span> s <span class="do">-- そのままの状態で返す</span></a>
-<a class="sourceLine" id="cb27-3" data-line-number="3"><span class="kw">end</span></a></code></pre></div>
+<div class="sourceCode" id="cb28"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb28-1" data-line-number="1"><span class="kw">function</span> P:srt_subtitle_replacer<span class="ot">(</span>s<span class="ot">)</span></a>
+<a class="sourceLine" id="cb28-2" data-line-number="2">  <span class="kw">return</span> s <span class="do">-- そのままの状態で返す</span></a>
+<a class="sourceLine" id="cb28-3" data-line-number="3"><span class="kw">end</span></a></code></pre></div>
 <h4 id="P.srt_subtitle_prefix.2FP.3Asrt_subtitle_escape.2FP.srt_subtitle_postfix"><code>P.srt_subtitle_prefix</code>/<code>P:srt_subtitle_escape</code>/<code>P.srt_subtitle_postfix</code></h4>
 <p><code>*.srt</code> ファイルを投げ込んだ時の <code>字幕準備</code> スクリプトの処理内容を設定します。</p>
 <p>一般的な用途においては変更する必要はありません。</p>
-<div class="sourceCode" id="cb28"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb28-1" data-line-number="1">P<span class="ot">.</span>srt_subtitle_prefix <span class="ot">=</span> <span class="st">&#39;&lt;?s=[==[&#39;</span></a>
-<a class="sourceLine" id="cb28-2" data-line-number="2"><span class="kw">function</span> P:srt_subtitle_escape<span class="ot">(</span>s<span class="ot">)</span> <span class="kw">return</span> s:<span class="fu">gsub</span><span class="ot">(</span><span class="st">&#39;]==]&#39;</span><span class="ot">,</span> <span class="st">&#39;]==]..&quot;]==]&quot;..[==[&#39;</span><span class="ot">)</span> <span class="kw">end</span></a>
-<a class="sourceLine" id="cb28-3" data-line-number="3">P<span class="ot">.</span>srt_subtitle_postfix <span class="ot">=</span> <span class="st">&#39;]==];require(&quot;PSDToolKit&quot;).subtitle:set(s, obj, true);s=nil?&gt;&#39;</span></a></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb29-1" data-line-number="1">P<span class="ot">.</span>srt_subtitle_prefix <span class="ot">=</span> <span class="st">&#39;&lt;?s=[==[&#39;</span></a>
+<a class="sourceLine" id="cb29-2" data-line-number="2"><span class="kw">function</span> P:srt_subtitle_escape<span class="ot">(</span>s<span class="ot">)</span> <span class="kw">return</span> s:<span class="fu">gsub</span><span class="ot">(</span><span class="st">&#39;]==]&#39;</span><span class="ot">,</span> <span class="st">&#39;]==]..&quot;]==]&quot;..[==[&#39;</span><span class="ot">)</span> <span class="kw">end</span></a>
+<a class="sourceLine" id="cb29-3" data-line-number="3">P<span class="ot">.</span>srt_subtitle_postfix <span class="ot">=</span> <span class="st">&#39;]==];require(&quot;PSDToolKit&quot;).subtitle:set(s, obj, true);s=nil?&gt;&#39;</span></a></code></pre></div>
 <h3 id="Instant_CTalk_.E3.81.AE.E8.A8.AD.E5.AE.9A">Instant CTalk の設定</h3>
 <p>Instant CTalk は実験的な機能なので、将来的には大きく変更されるかもしれません。</p>
 <h4 id="P.ictalk_firemode"><code>P.ictalk_firemode</code></h4>
 <p>Instant CTalk で作成した音声をどのように挿入するかを設定します。</p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb29-1" data-line-number="1">P<span class="ot">.</span>ictalk_firemode <span class="ot">=</span> <span class="dv">1</span></a></code></pre></div>
+<div class="sourceCode" id="cb30"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb30-1" data-line-number="1">P<span class="ot">.</span>ictalk_firemode <span class="ot">=</span> <span class="dv">1</span></a></code></pre></div>
 <table>
 <thead>
 <tr class="header">
@@ -776,7 +783,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </table>
 <h4 id="P.ictalk_format"><code>P.ictalk_format</code></h4>
 <p>Instant CTalk で作成した音声がどのようなファイル名で保存されるのかを設定します。</p>
-<div class="sourceCode" id="cb30"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb30-1" data-line-number="1">P<span class="ot">.</span>ictalk_format <span class="ot">=</span> <span class="dv">3</span></a></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb31-1" data-line-number="1">P<span class="ot">.</span>ictalk_format <span class="ot">=</span> <span class="dv">3</span></a></code></pre></div>
 <table>
 <thead>
 <tr class="header">
@@ -808,33 +815,33 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p><a href="#P.3Awav_subtitle_replacer"><code>P:wav_subtitle_replacer</code></a> や <a href="#P.3Asrt_subtitle_replacer"><code>P:srt_subtitle_replacer</code></a> は文字列を UTF-8 で記述する必要がありますが、そのやり方は色々あります。</p>
 <h3 id="1._.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.92.E5.88.86.E3.81.91.E3.82.8B">1. ファイルを分ける</h3>
 <p>下記のようなファイルを <code>replacer.lua</code> として UTF-8 で作成した上で、</p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb31-1" data-line-number="1"><span class="kw">return</span> <span class="kw">function</span><span class="ot">(</span>self<span class="ot">,</span> s<span class="ot">)</span></a>
-<a class="sourceLine" id="cb31-2" data-line-number="2">  s <span class="ot">=</span> s:<span class="fu">gsub</span><span class="ot">(</span><span class="st">&quot;こんにちは&quot;</span><span class="ot">,</span> <span class="st">&quot;Hello&quot;</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb31-3" data-line-number="3">  <span class="kw">return</span> s</a>
-<a class="sourceLine" id="cb31-4" data-line-number="4"><span class="kw">end</span></a></code></pre></div>
+<div class="sourceCode" id="cb32"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb32-1" data-line-number="1"><span class="kw">return</span> <span class="kw">function</span><span class="ot">(</span>self<span class="ot">,</span> s<span class="ot">)</span></a>
+<a class="sourceLine" id="cb32-2" data-line-number="2">  s <span class="ot">=</span> s:<span class="fu">gsub</span><span class="ot">(</span><span class="st">&quot;こんにちは&quot;</span><span class="ot">,</span> <span class="st">&quot;Hello&quot;</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb32-3" data-line-number="3">  <span class="kw">return</span> s</a>
+<a class="sourceLine" id="cb32-4" data-line-number="4"><span class="kw">end</span></a></code></pre></div>
 <p><code>setting.lua</code> 上ではそのファイルを読み込むように指定します。</p>
-<div class="sourceCode" id="cb32"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb32-1" data-line-number="1">P<span class="ot">.</span>wav_subtitle_replacer <span class="ot">=</span> <span class="fu">require</span><span class="ot">(</span><span class="st">&quot;replacer&quot;</span><span class="ot">)</span></a></code></pre></div>
+<div class="sourceCode" id="cb33"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb33-1" data-line-number="1">P<span class="ot">.</span>wav_subtitle_replacer <span class="ot">=</span> <span class="fu">require</span><span class="ot">(</span><span class="st">&quot;replacer&quot;</span><span class="ot">)</span></a></code></pre></div>
 <h3 id="2._.E5.A4.89.E6.8F.9B.E3.81.99.E3.82.8B">2. 変換する</h3>
 <p>変換すれば <code>setting.lua</code> 上に直接記述できます。</p>
-<div class="sourceCode" id="cb33"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb33-1" data-line-number="1"><span class="kw">function</span> P:wav_subtitle_replacer<span class="ot">(</span>s<span class="ot">)</span></a>
-<a class="sourceLine" id="cb33-2" data-line-number="2">  s <span class="ot">=</span> s:<span class="fu">gsub</span><span class="ot">(</span>GCMZDrops<span class="ot">.</span>convertencoding<span class="ot">(</span><span class="st">&quot;こんにちは&quot;</span><span class="ot">,</span> <span class="st">&quot;sjis&quot;</span><span class="ot">,</span> <span class="st">&quot;utf8&quot;</span><span class="ot">),</span> <span class="st">&quot;Hello&quot;</span><span class="ot">)</span></a>
-<a class="sourceLine" id="cb33-3" data-line-number="3">  <span class="kw">return</span> s</a>
-<a class="sourceLine" id="cb33-4" data-line-number="4"><span class="kw">end</span></a></code></pre></div>
-<h3 id="3._.E7.9B.B4.E6.8E.A5.E8.A8.98.E8.BF.B0.E3.81.99.E3.82.8B">3. 直接記述する</h3>
-<p>変換後の結果を直接 <code>setting.lua</code> に記述することもできます。</p>
 <div class="sourceCode" id="cb34"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb34-1" data-line-number="1"><span class="kw">function</span> P:wav_subtitle_replacer<span class="ot">(</span>s<span class="ot">)</span></a>
-<a class="sourceLine" id="cb34-2" data-line-number="2">  s <span class="ot">=</span> s:<span class="fu">gsub</span><span class="ot">(</span><span class="st">&quot;\227\129\147\227\130\147\227\129\171\227\129\161\227\129\175&quot;</span><span class="ot">,</span> <span class="st">&quot;Hello&quot;</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb34-2" data-line-number="2">  s <span class="ot">=</span> s:<span class="fu">gsub</span><span class="ot">(</span>GCMZDrops<span class="ot">.</span>convertencoding<span class="ot">(</span><span class="st">&quot;こんにちは&quot;</span><span class="ot">,</span> <span class="st">&quot;sjis&quot;</span><span class="ot">,</span> <span class="st">&quot;utf8&quot;</span><span class="ot">),</span> <span class="st">&quot;Hello&quot;</span><span class="ot">)</span></a>
 <a class="sourceLine" id="cb34-3" data-line-number="3">  <span class="kw">return</span> s</a>
 <a class="sourceLine" id="cb34-4" data-line-number="4"><span class="kw">end</span></a></code></pre></div>
+<h3 id="3._.E7.9B.B4.E6.8E.A5.E8.A8.98.E8.BF.B0.E3.81.99.E3.82.8B">3. 直接記述する</h3>
+<p>変換後の結果を直接 <code>setting.lua</code> に記述することもできます。</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb35-1" data-line-number="1"><span class="kw">function</span> P:wav_subtitle_replacer<span class="ot">(</span>s<span class="ot">)</span></a>
+<a class="sourceLine" id="cb35-2" data-line-number="2">  s <span class="ot">=</span> s:<span class="fu">gsub</span><span class="ot">(</span><span class="st">&quot;\227\129\147\227\130\147\227\129\171\227\129\161\227\129\175&quot;</span><span class="ot">,</span> <span class="st">&quot;Hello&quot;</span><span class="ot">)</span></a>
+<a class="sourceLine" id="cb35-3" data-line-number="3">  <span class="kw">return</span> s</a>
+<a class="sourceLine" id="cb35-4" data-line-number="4"><span class="kw">end</span></a></code></pre></div>
 </div>
 <footer>
 <dl>
 <dt>Written by</dt>
 <dd>oov</dd>
 <dt>Generated at</dt>
-<dd>2018-04-02 18:22:10</dd>
+<dd>2018-04-05 18:46:33</dd>
 <dt>for</dt>
-<dd>v0.2beta14 ( b89cbb0 )</dd>
+<dd>v0.2beta15 ( 0058698 )</dd>
 </dl>
 </footer>
 </div>
