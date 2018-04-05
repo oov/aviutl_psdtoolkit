@@ -36,7 +36,9 @@ GCMZDrops/avoiddup.lua
 GCMZDrops/example.lua  
 GCMZDrops/generic.lua  
 GCMZDrops/textsjis.lua  
-GCMZDrops/dropper/example.lua
+GCMZDrops/wmvmask.lua  
+GCMZDrops/dropper/example.lua  
+GCMZDrops/dropper/clipboard.lua
   - 拡張編集ウィンドウへのファイルドロップを拡張する「ごちゃまぜドロップス」プラグイン
   - [別の場所で単独配布しているもの](https://github.com/oov/aviutl_GCMZDrops)を同梱しています
 - ZRamPreview.auf  
