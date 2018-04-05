@@ -335,6 +335,12 @@ begin
   Result := LuaReturn(L, Main());
 end;
 
+function LuaType(L: Plua_State): integer; cdecl;
+begin
+  lua_pushstring(L, lua_typename(L, lua_type(L, -1)));
+  Result := 1;
+end;
+
 function luaopen_PSDToolKitBridge(L: Plua_State): integer; cdecl;
 type
   TEntry = record
@@ -342,7 +348,7 @@ type
     Func: lua_CFunction;
   end;
 const
-  Functions: array[0..9] of TEntry = (
+  Functions: array[0..10] of TEntry = (
     (Name: 'addfile'; Func: @LuaAddFile),
     (Name: 'clearfiles'; Func: @LuaClearFiles),
     (Name: 'draw'; Func: @LuaDraw),
@@ -352,7 +358,8 @@ const
     (Name: 'serialize'; Func: @LuaSerialize),
     (Name: 'deserialize'; Func: @LuaDeserialize),
     (Name: 'putcache'; Func: @LuaPutCache),
-    (Name: 'getcache'; Func: @LuaGetCache));
+    (Name: 'getcache'; Func: @LuaGetCache),
+    (Name: 'type'; Func: @LuaType));
 var
   i: integer;
 begin

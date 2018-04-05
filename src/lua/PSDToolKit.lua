@@ -138,20 +138,20 @@ function PSDState:render(obj)
   if self.file == nil then
     error("no image")
   end
+  local PSDToolKitBridge = require("PSDToolKitBridge")
   self.rendered = true
   if #self.layer > 0 then
     local layer = {}
     for i, v in ipairs(self.layer) do
-      local typ = type(v)
+      local typ = PSDToolKitBridge.type(v)
       if typ == "string" then
         table.insert(layer, v)
-      elseif typ == "table" and type(v.getstate) == "function" then
+      elseif typ == "table" and PSDToolKitBridge.type(v.getstate) == "function" then
         table.insert(layer, v:getstate(self, obj))
       end
     end
     self.layer = table.concat(layer, " ")
   end
-  local PSDToolKitBridge = require("PSDToolKitBridge")
   local modified, width, height = PSDToolKitBridge.setprops(self.id, self.file, self)
   local cacheid = "cache:"..self.id.." "..self.file
   if not modified then
