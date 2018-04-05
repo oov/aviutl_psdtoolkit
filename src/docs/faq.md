@@ -106,6 +106,10 @@ AviUtl のプレビュー再生は描画が間に合わない時はコマ飛び�
 
 [`動画ハンドル開放`](plugins.md#動画ハンドル開放) を使うことで、この問題は回避可能です。
 
+# 字幕のテキストを自動で加工したい
+
+[`setting.lua` を作成](setting.md#設定のカスタマイズ)し、[`P:wav_subtitle_replacer`](setting.md#P:wav_subtitle_replacer) の設定を行うことで実現できます。
+
 # `attempt to call global 'type'(a XXXXX value)` というエラーが表示される
 
 `TAぽよよ～んと登場` など一部のスクリプトには Lua スクリプトに標準で用意されている `type` 関数を上書きして壊してしまう深刻なバグがあります。

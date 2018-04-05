@@ -230,6 +230,15 @@ function P:wav_subtitle_replacer(s)
 end
 ```
 
+#### 設定例: 文頭にある "任意のテキスト＞" を削除
+
+```lua
+function P:wav_subtitle_replacer(s)
+  s = s:gsub("^.-\239\188\158", "")
+  return s
+end
+```
+
 ### `P.wav_subtitle_prefix`/`P:wav_subtitle_escape`/`P.wav_subtitle_postfix`
 
 `字幕準備` の構築に必要になるスクリプトの処理内容を設定します。
