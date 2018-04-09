@@ -127,8 +127,9 @@ function PSDState:addstate(layer, index)
 end
 
 function PSDState:adjustcenter(obj)
-  obj.ox = obj.w % 2 == 1 and 0.5 or 0
-  obj.oy = obj.h % 2 == 1 and 0.5 or 0
+  local w, h = obj.getpixel()
+  obj.ox = w % 2 == 1 and 0.5 or 0
+  obj.oy = h % 2 == 1 and 0.5 or 0
 end
 
 function PSDState:render(obj)
