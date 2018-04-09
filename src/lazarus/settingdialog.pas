@@ -78,6 +78,9 @@ const
   ID_SUBTITLE_GROUP_ID = 3001;
   ID_SUBTITLE_MARGIN_LEFT = 3002;
   ID_SUBTITLE_MARGIN_RIGHT = 3003;
+  ID_FIRE_SHIFT = 103;
+  ID_FIRE_WAVTXT = 104;
+  ID_FIRE_EXO = 105;
 
 type
   { TSettingDialog }
@@ -86,6 +89,9 @@ type
   protected
     function WndProc(Hwnd: HWND; Message: UINT; WP: WPARAM; LP: LPARAM): LRESULT;
   private
+    FFireExo: boolean;
+    FFireShift: boolean;
+    FFireWavTxt: boolean;
     FLipsyncGenerate: boolean;
     FLipsyncGroupId: integer;
     FLipsyncOffset: integer;
@@ -129,6 +135,9 @@ type
       write FSubtitleMarginLeft;
     property SubtitleMarginRight: integer read FSubtitleMarginRight
       write FSubtitleMarginRight;
+    property FireShift: boolean read FFireShift write FFireShift;
+    property FireWavTxt: boolean read FFireWavTxt write FFireWavTxt;
+    property FireExo: boolean read FFireExo write FFireExo;
   end;
 
 var
@@ -255,6 +264,10 @@ begin
   SetText(ID_SUBTITLE_GROUP_ID, WideString(IntToStr(FSubtitleGroupId)));
   SetText(ID_SUBTITLE_MARGIN_LEFT, WideString(IntToStr(FSubtitleMarginLeft)));
   SetText(ID_SUBTITLE_MARGIN_RIGHT, WideString(IntToStr(FSubtitleMarginRight)));
+
+  SetCheck(ID_FIRE_SHIFT, FFireShift);
+  SetCheck(ID_FIRE_WAVTXT, FFireWavTxt);
+  SetCheck(ID_FIRE_EXO, FFireExo);
 end;
 
 procedure TSettingDialog.FinalDialog();
@@ -278,6 +291,10 @@ begin
   FSubtitleGroupId := StrToIntDef(string(GetText(ID_SUBTITLE_GROUP_ID)), 1);
   FSubtitleMarginLeft := StrToIntDef(string(GetText(ID_SUBTITLE_MARGIN_LEFT)), 0);
   FSubtitleMarginRight := StrToIntDef(string(GetText(ID_SUBTITLE_MARGIN_RIGHT)), 0);
+
+  FFireShift := GetCheck(ID_FIRE_SHIFT);
+  FFireWavTxt := GetCheck(ID_FIRE_WAVTXT);
+  FFireExo := GetCheck(ID_FIRE_EXO);
 end;
 
 constructor TSettingDialog.Create();
@@ -404,6 +421,27 @@ begin
       Dialog.SubtitleMarginRight := lua_tointeger(L, -1);
     lua_pop(L, 1);
 
+    lua_getfield(L, -1, 'wav_firemode');
+    if lua_isnil(L, -1) then
+      Dialog.FireShift := True
+    else
+      Dialog.FireShift := lua_tointeger(L, -1) = 0;
+    lua_pop(L, 1);
+
+    lua_getfield(L, -1, 'wav_firemode_wavtxt');
+    if lua_isnil(L, -1) then
+      Dialog.FireWavTxt := False
+    else
+      Dialog.FireWavTxt := lua_tointeger(L, -1) = 1;
+    lua_pop(L, 1);
+
+    lua_getfield(L, -1, 'wav_firemode_exo');
+    if lua_isnil(L, -1) then
+      Dialog.FireExo := False
+    else
+      Dialog.FireExo := lua_tointeger(L, -1) = 1;
+    lua_pop(L, 1);
+
     if DialogBoxParamW(hInstance, 'SETTINGDIALOG', Parent, @WndProcTrampoline,
       LPARAM(Dialog)) = idOk then
     begin
@@ -439,6 +477,13 @@ begin
         if Dialog.SubtitleMarginRight <> 0 then
           SL.Add('P.wav_subtitle_margin_right = ' +
             IntToStr(Dialog.SubtitleMarginRight));
+
+        if not Dialog.FireShift then
+          SL.Add('P.wav_firemode = -1');
+        if Dialog.FireWavTxt then
+          SL.Add('P.wav_firemode_wavtxt = 1');
+        if Dialog.FireExo then
+          SL.Add('P.wav_firemode_exo = 1');
 
         SL.Add('return P');
 

@@ -19,6 +19,8 @@
 local P = {}
 
 P.wav_firemode = 0
+P.wav_firemode_wavtxt = 0
+P.wav_firemode_exo = 0
 P.wav_lipsync = 0
 P.wav_lipsync_group = 1
 P.wav_lipsync_offset = 0
