@@ -158,6 +158,7 @@ function LuaSetProperties(L: Plua_State): integer; cdecl;
     pOffsetX, pOffsetY: System.PInteger;
     Modified: boolean;
     Width, Height: integer;
+    CacheKey: DWord;
   begin
     try
       id := lua_tointeger(L, 1);
@@ -206,11 +207,12 @@ function LuaSetProperties(L: Plua_State): integer; cdecl;
 
       lua_pop(L, 3);
       bridge.SetProperties(id, filename, pLayer, pScale,
-        pOffsetX, pOffsetY, Modified, Width, Height);
+        pOffsetX, pOffsetY, Modified, CacheKey, Width, Height);
       lua_pushboolean(L, Modified);
+      lua_pushinteger(L, integer(CacheKey));
       lua_pushinteger(L, Width);
       lua_pushinteger(L, Height);
-      Result := 3;
+      Result := 4;
     except
       on E: Exception do
         Result := LuaPushError(L, E);

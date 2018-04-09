@@ -35,7 +35,7 @@ type
     function GetLayerNames(id: integer; filename: UTF8String): UTF8String;
     procedure SetProperties(id: integer; filename: UTF8String;
       Layer: PUTF8String; Scale: PSingle; OffsetX: System.PInteger;
-      OffsetY: System.PInteger; out Modified: boolean; out Width: integer;
+      OffsetY: System.PInteger; out Modified: boolean; out CacheKey: DWord; out Width: integer;
       out Height: integer);
     procedure ShowGUI();
     function Serialize(): RawByteString;
@@ -156,7 +156,7 @@ end;
 
 procedure TPSDToolKitBridge.SetProperties(id: integer; filename: UTF8String;
   Layer: PUTF8String; Scale: PSingle; OffsetX: System.PInteger;
-  OffsetY: System.PInteger; out Modified: boolean; out Width: integer;
+  OffsetY: System.PInteger; out Modified: boolean; out CacheKey: DWord; out Width: integer;
   out Height: integer);
 const
   PROPID_END = 0;
@@ -201,6 +201,7 @@ begin
   FReceiver.WaitResult();
   try
     Modified := FReceiver.ReadInt32() <> 0;
+    CacheKey := DWord(FReceiver.ReadInt32());
     Width := FReceiver.ReadInt32();
     Height := FReceiver.ReadInt32();
     ODS('  -> Modified:%d / Width:%d / Height:%d', [Ord(Modified), Width, Height]);
