@@ -67,6 +67,8 @@ function PSDState.init(obj, o)
   return r, subobj
 end
 
+PSDState.cachekeys = {}
+
 -- PSDオブジェクト
 -- id - 固有識別番号
 -- file - PSDファイルへのパス
@@ -127,8 +129,9 @@ function PSDState:addstate(layer, index)
 end
 
 function PSDState:adjustcenter(obj)
-  obj.ox = obj.w % 2 == 1 and 0.5 or 0
-  obj.oy = obj.h % 2 == 1 and 0.5 or 0
+  local w, h = obj.getpixel()
+  obj.ox = w % 2 == 1 and 0.5 or 0
+  obj.oy = h % 2 == 1 and 0.5 or 0
 end
 
 function PSDState:render(obj)
@@ -152,9 +155,9 @@ function PSDState:render(obj)
     end
     self.layer = table.concat(layer, " ")
   end
-  local modified, width, height = PSDToolKitBridge.setprops(self.id, self.file, self)
+  local modified, cachekey, width, height = PSDToolKitBridge.setprops(self.id, self.file, self)
   local cacheid = "cache:"..self.id.." "..self.file
-  if not modified then
+  if (not modified)or((PSDState.cachekeys[cacheid] or 0) == cachekey) then
     if obj.copybuffer("obj", cacheid) then
       self:adjustcenter(obj)
       return
@@ -173,6 +176,7 @@ function PSDState:render(obj)
   obj.putpixeldata(data)
   obj.copybuffer(cacheid, "obj")
   self:adjustcenter(obj)
+  PSDState.cachekeys[cacheid] = cachekey
 end
 
 local Blinker = {}

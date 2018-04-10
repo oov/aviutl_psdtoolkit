@@ -4,8 +4,10 @@ import (
 	"context"
 	"encoding/binary"
 	"fmt"
+	"hash/fnv"
 	"image"
 	"io"
+	"math"
 	"os"
 	"strings"
 	"time"
@@ -27,6 +29,32 @@ type cacheKey struct {
 	Scale   float32
 	Path    string
 	State   string
+}
+
+func (k *cacheKey) Hash() uint32 {
+	h := fnv.New32a()
+	if _, err := io.WriteString(h, k.Path); err != nil {
+		panic(err)
+	}
+	if err := binary.Write(h, binary.LittleEndian, uint32(k.Width)); err != nil {
+		panic(err)
+	}
+	if err := binary.Write(h, binary.LittleEndian, uint32(k.Height)); err != nil {
+		panic(err)
+	}
+	if err := binary.Write(h, binary.LittleEndian, int32(k.OffsetX)); err != nil {
+		panic(err)
+	}
+	if err := binary.Write(h, binary.LittleEndian, int32(k.OffsetY)); err != nil {
+		panic(err)
+	}
+	if err := binary.Write(h, binary.LittleEndian, math.Float32bits(k.Scale)); err != nil {
+		panic(err)
+	}
+	if _, err := io.WriteString(h, k.State); err != nil {
+		panic(err)
+	}
+	return h.Sum32()
 }
 
 type cacheValue struct {
@@ -117,10 +145,10 @@ func (ipc *IPC) getLayerNames(id int, filePath string) (string, error) {
 	return strings.Join(s, "\n"), nil
 }
 
-func (ipc *IPC) setProps(id int, filePath string, layer *string, scale *float32, offsetX, offsetY *int) (bool, int, int, error) {
+func (ipc *IPC) setProps(id int, filePath string, layer *string, scale *float32, offsetX, offsetY *int) (bool, uint32, int, int, error) {
 	img, err := ipc.tmpImg.Load(id, filePath)
 	if err != nil {
-		return false, 0, 0, errors.Wrap(err, "ipc: could not load")
+		return false, 0, 0, 0, errors.Wrap(err, "ipc: could not load")
 	}
 	modified := img.Modified
 	if layer != nil {
@@ -132,7 +160,7 @@ func (ipc *IPC) setProps(id int, filePath string, layer *string, scale *float32,
 		}
 		b, err := img.Deserialize(*layer)
 		if err != nil {
-			return false, 0, 0, errors.Wrap(err, "ipc: deserialize failed")
+			return false, 0, 0, 0, errors.Wrap(err, "ipc: deserialize failed")
 		}
 		if b {
 			modified = true
@@ -163,7 +191,22 @@ func (ipc *IPC) setProps(id int, filePath string, layer *string, scale *float32,
 	}
 	r := img.ScaledCanvasRect()
 	img.Modified = modified
-	return modified, r.Dx(), r.Dy(), nil
+
+	state, err := img.Serialize()
+	if err != nil {
+		return false, 0, 0, 0, errors.Wrap(err, "ipc: could not serialize state")
+	}
+	ckey := (&cacheKey{
+		Width:   r.Dx(),
+		Height:  r.Dy(),
+		OffsetX: img.OffsetX,
+		OffsetY: img.OffsetY,
+		Scale:   img.Scale,
+		Path:    filePath,
+		State:   state,
+	}).Hash()
+
+	return modified, ckey, r.Dx(), r.Dy(), nil
 }
 
 func (ipc *IPC) SendEditingImageState(filePath, state string) error {
@@ -366,15 +409,18 @@ func (ipc *IPC) dispatch(cmd string) error {
 				ods.ODS("  OffsetY: %d", i)
 			}
 		}
-		modified, width, height, err := ipc.setProps(id, filePath, layer, scale, offsetX, offsetY)
+		modified, ckey, width, height, err := ipc.setProps(id, filePath, layer, scale, offsetX, offsetY)
 		if err != nil {
 			return err
 		}
-		ods.ODS("  Modified: %v / Width: %d / Height: %d", modified, width, height)
+		ods.ODS("  Modified: %v / CacheKey: %v / Width: %d / Height: %d", modified, ckey, width, height)
 		if err = writeUint32(0x80000000); err != nil {
 			return err
 		}
 		if err = writeBool(modified); err != nil {
+			return err
+		}
+		if err = writeUint32(ckey); err != nil {
 			return err
 		}
 		if err = writeUint32(uint32(width)); err != nil {
