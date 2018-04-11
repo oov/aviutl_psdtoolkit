@@ -295,12 +295,12 @@ end
 function P.ondrop(files, state)
   local wav, subtitle, exabase = P.fire(files, state)
   if wav ~= nil then
-    return P.generateexo(wav, subtitle, exabase), state
+    return P.generateexo(wav, subtitle, exabase, state)
   end
   return false
 end
 
-function P.generateexo(wavfilepath, subtitle, exabase)
+function P.generateexo(wavfilepath, subtitle, exabase, state)
   local setting = P.loadsetting()
   -- テンプレート用変数を準備
   local values = {
@@ -333,8 +333,7 @@ function P.generateexo(wavfilepath, subtitle, exabase)
   local fi = GCMZDrops.getfileinfo(wavfilepath)
 
   -- 音声が現在のプロジェクトで何フレーム分あるのかを計算する
-  local wavlen = math.ceil((fi.audio_samples / proj.audio_rate) * proj.rate / proj.scale)
-
+  local wavlen = math.floor((fi.audio_samples * proj.rate) / (proj.audio_rate * proj.scale)) - 1
   -- 長さを反映
   values.WAV_END = values.WAV_END + wavlen
   values.LIPSYNC_END = values.LIPSYNC_END + wavlen
@@ -362,11 +361,12 @@ function P.generateexo(wavfilepath, subtitle, exabase)
 
   -- exo ファイルのヘッダ部分を組み立て
   local oini = GCMZDrops.inistring("")
+  local totallen = math.max(values.WAV_END, values.LIPSYNC_END, values.MPSLIDER_END, values.SUBTITLE_END)
   oini:set("exedit", "width", proj.width)
   oini:set("exedit", "height", proj.height)
   oini:set("exedit", "rate", proj.rate)
   oini:set("exedit", "scale", proj.scale)
-  oini:set("exedit", "length", math.max(values.WAV_END, values.LIPSYNC_END, values.MPSLIDER_END, values.SUBTITLE_END))
+  oini:set("exedit", "length", totallen)
   oini:set("exedit", "audio_rate", proj.audio_rate)
   oini:set("exedit", "audio_ch", proj.audio_ch)
 
@@ -411,7 +411,12 @@ function P.generateexo(wavfilepath, subtitle, exabase)
   f:write(tostring(oini))
   f:close()
   debug_print("["..P.name.."] がドロップされたファイルを exo ファイルに差し替えました。")
-  return {{filepath=filepath}}
+
+  if state.frameadvance ~= nil and state.frameadvance > 0 then
+    state.frameadvance = totallen
+  end
+
+  return {{filepath=filepath}}, state
 end
 
 return P
