@@ -52,6 +52,12 @@ script/Extram.dll
 RelMovieHandle.txt
   - 「動画ハンドル開放」プラグイン
   - [別の場所で単独配布しているもの](https://github.com/oov/aviutl_relmoviehandle)を同梱しています
+- かんしくん/forcepser.exe  
+かんしくん/_entrypoint.lua  
+かんしくん/forcepser.txt  
+setting.txt-template
+  - 補助プログラム「かんしくん」
+  - [別の場所で単独配布しているもの](https://github.com/oov/forcepser)を同梱しています
 - script/PSDToolKit/PSDToolKitBridge.dll  
 script/PSDToolKit/PSDToolKit.exe
   - PSD ファイルの描画など
