@@ -59,7 +59,7 @@ local function readsubtitle(filepath, encoding, setting)
 end
 
 
-function resolvepath(filepath, finder, setting)
+function P.resolvepath(filepath, finder, setting)
   if finder == 1 then
     return filepath:match("([^\\]+)[\\][^\\]+$")
   elseif finder == 2 then
@@ -220,7 +220,7 @@ function P.fire(files, state)
         trimextension(v.orgfilepath or v.filepath) .. ".txt",
         v.overridesubtitleencoding or setting.wav_subtitle_encoding,
         setting)
-      local exabase = resolvepath(
+      local exabase = P.resolvepath(
         v.orgfilepath or v.filepath,
         setting.wav_exafinder,
         setting)
@@ -260,7 +260,7 @@ function P.fire(files, state)
         txt.orgfilepath or txt.filepath,
         wav.overridesubtitleencoding or setting.wav_subtitle_encoding,
         setting)
-      local exabase = resolvepath(
+      local exabase = P.resolvepath(
         wav.orgfilepath or wav.filepath,
         setting.wav_exafinder,
         setting)
@@ -282,7 +282,7 @@ function P.fire(files, state)
         end
         if newwav ~= nil and txt ~= nil then
           local subtitle = postprocesssubtitle(txt, "utf8", setting)
-          local exabase = resolvepath(orgwav, setting.wav_exafinder, setting)
+          local exabase = P.resolvepath(orgwav, setting.wav_exafinder, setting)
           return newwav, subtitle, exabase
         end
       end
