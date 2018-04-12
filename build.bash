@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mkdir -p bin/PSDToolKit bin/script/PSDToolKit/exa bin/GCMZDrops/dropper
+mkdir -p bin/PSDToolKit bin/script/PSDToolKit/exa bin/GCMZDrops/dropper bin/かんしくん
 
 # copy readme
 sed 's/\r$//' README.md | sed 's/$/\r/' > bin/PSDToolKit.txt
@@ -87,6 +87,11 @@ cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/ictalk/ictalk.lpi
 
 # copy RelMovieHandle release version
 # cp ../aviutl_relmoviehandle/bin/RelMovieHandle.* bin/
+
+# copy forcepser release version
+# cp ../forcepser/bin/forcepser.* bin/かんしくん/
+# cp ../forcepser/bin/setting.txt-template bin/かんしくん/
+# cp ../forcepser/bin/_entrypoint.lua bin/かんしくん/
 
 # install
 # mkdir -p aviutl/PSDToolKit aviutl/script/PSDToolKit/exa aviutl/GCMZDrops/dropper
