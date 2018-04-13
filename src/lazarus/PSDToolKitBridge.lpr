@@ -13,7 +13,7 @@ uses
   Util,
   LuaFuncs,
   Cache,
-  Execute;
+  Execute, fftsg;
 
 exports
   luaopen_PSDToolKitBridge;
