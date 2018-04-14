@@ -31,7 +31,7 @@
         <FormatVersion Value="1"/>
       </local>
     </RunParams>
-    <Units Count="10">
+    <Units Count="11">
       <Unit0>
         <Filename Value="PSDToolKitBridge.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -79,6 +79,11 @@
         <Filename Value="fftsg.pas"/>
         <IsPartOfProject Value="True"/>
       </Unit9>
+      <Unit10>
+        <Filename Value="aviutl.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="AviUtl"/>
+      </Unit10>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

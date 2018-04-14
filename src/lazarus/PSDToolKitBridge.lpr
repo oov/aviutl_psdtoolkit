@@ -13,10 +13,13 @@ uses
   Util,
   LuaFuncs,
   Cache,
-  Execute, fftsg;
+  Execute,
+  fftsg,
+  AviUtl;
 
 exports
-  luaopen_PSDToolKitBridge;
+  luaopen_PSDToolKitBridge,
+  SetExFuncPtr;
 
 initialization
   SetMultiByteConversionCodePage(CP_UTF8);

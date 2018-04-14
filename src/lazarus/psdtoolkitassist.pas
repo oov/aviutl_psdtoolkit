@@ -14,7 +14,6 @@ type
   TPSDToolKitAssist = class
   private
     FEntry: TFilterDLL;
-    FWindow: THandle;
     function GetEntry: PFilterDLL;
   public
     constructor Create();
@@ -40,6 +39,36 @@ type
 
 var
   MainDLLInstance: THandle;
+
+procedure SetExFuncPtr(const Filter: PFilter; const Edit: Pointer);
+type
+  TSetExFuncPtrFunc = procedure(const ExFunc: PExFunc; const SampleRate, Channels: integer);
+var
+  F: TSetExFuncPtrFunc;
+  FI: TFileInfo;
+begin
+  if MainDLLInstance = 0 then
+    Exit;
+  F := TSetExFuncPtrFunc(GetProcAddress(MainDLLInstance, 'SetExFuncPtr'));
+  if F = nil then
+    Exit;
+
+  if Filter = nil then begin
+    F(nil, 0, 0);
+    Exit;
+  end;
+
+  FillChar(FI, SizeOf(FI), 0);
+  if Filter^.ExFunc^.GetFileInfo(Edit, @FI) = AVIUTL_FALSE then begin
+    F(nil, 0, 0);
+    Exit;
+  end;
+  if (FI.AudioRate = 0) or (FI.AudioCh = 0) then begin
+    F(nil, 0, 0);
+    Exit;
+  end;
+  F(Filter^.ExFunc, FI.AudioRate, FI.AudioCh);
+end;
 
 function LuaAllocator({%H-}ud, ptr: Pointer; {%H-}osize, nsize: size_t): Pointer; cdecl;
 begin
@@ -280,23 +309,6 @@ begin
   end;
 end;
 
-function MenuWndProc(hwnd: HWND; Msg: UINT; WP: WPARAM; LP: LPARAM): LRESULT; stdcall;
-begin
-  case Msg of
-    WM_FILTER_COMMAND:
-    begin
-      case WP of
-        1: ShowGUI();
-        2: ShowSetting();
-      end;
-    end;
-    WM_FILTER_FILE_OPEN: ClearFiles();
-    WM_FILTER_FILE_CLOSE: ClearFiles();
-  end;
-
-  Result := DefWindowProc(hwnd, Msg, WP, LP);
-end;
-
 { TPSDToolKitAssist }
 
 function TPSDToolKitAssist.GetEntry: PFilterDLL;
@@ -311,8 +323,7 @@ const
 begin
   inherited Create();
   FillChar(FEntry, SizeOf(FEntry), 0);
-  FEntry.Flag := FILTER_FLAG_ALWAYS_ACTIVE or FILTER_FLAG_EX_INFORMATION or
-    FILTER_FLAG_NO_CONFIG;
+  FEntry.Flag := FILTER_FLAG_ALWAYS_ACTIVE or FILTER_FLAG_EX_INFORMATION or FILTER_FLAG_DISP_FILTER;
   FEntry.Name := PluginName;
   FEntry.Information := PluginInfo;
 end;
@@ -330,17 +341,14 @@ const
   SettingCaption: WideString = '環境設定';
   ExEditNameANSI = #$8a#$67#$92#$a3#$95#$d2#$8f#$57; // '拡張編集'
   ExEditVersion = ' version 0.92 ';
-  HWND_MESSAGE = HWND(-3);
   PROCESSOR_ARCHITECTURE_AMD64 = 9;
 var
   i: integer;
-  wc: WNDCLASS;
   si: SYSTEM_INFO;
   asi: TSysInfo;
   exedit: PFilter;
 begin
   Result := True;
-  FWindow := 0;
 
   try
     GetNativeSystemInfo(@si);
@@ -378,40 +386,45 @@ begin
     end;
   end;
 
-  wc.style := 0;
-  wc.lpfnWndProc := @MenuWndProc;
-  wc.cbClsExtra := 0;
-  wc.cbWndExtra := 0;
-  wc.hInstance := fp^.DLLHInst;
-  wc.hIcon := 0;
-  wc.hCursor := 0;
-  wc.hbrBackground := 0;
-  wc.lpszMenuName := nil;
-  wc.lpszClassName := 'PSDToolKitAssist';
-  RegisterClass(wc);
-  FWindow := CreateWindow('PSDToolKitAssist', nil, WS_OVERLAPPEDWINDOW,
-    CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT, CW_USEDEFAULT,
-    HWND_MESSAGE, 0, fp^.DLLHInst, nil);
   fp^.ExFunc^.AddMenuItem(fp, PChar(ShiftJISString(ShowGUICaption)),
-    FWindow, 1, VK_W, ADD_MENU_ITEM_FLAG_KEY_CTRL);
+    fp^.Hwnd, 1, VK_W, ADD_MENU_ITEM_FLAG_KEY_CTRL);
   fp^.ExFunc^.AddMenuItem(fp, PChar(ShiftJISString(SettingCaption)),
-    FWindow, 2, 0, 0);
-  fp^.Hwnd := FWindow;
+    fp^.Hwnd, 2, 0, 0);
 end;
 
 function TPSDToolKitAssist.ExitProc(fp: PFilter): boolean;
 begin
   Result := True;
+  SetExFuncPtr(nil, nil);
   if MainDLLInstance = 0 then
     Exit;
-  if FWindow <> 0 then
-    DestroyWindow(FWindow);
 end;
 
 function TPSDToolKitAssist.WndProc(Window: HWND; Message: UINT; WP: WPARAM;
   LP: LPARAM; Edit: Pointer; Filter: PFilter): LRESULT;
 begin
-  Result := AVIUTL_TRUE;
+  Result := AVIUTL_FALSE;
+  case Message of
+    WM_FILTER_INIT:
+      CreateWindowW('STATIC', PWideChar('このウィンドウは使用しません'),
+        WS_CHILD or WS_VISIBLE or ES_LEFT, 0, 0, 400, 32,
+        Window, 0, Filter^.DLLHInst, nil);
+    WM_FILTER_COMMAND:
+    begin
+      case WP of
+        1: ShowGUI();
+        2: ShowSetting();
+      end;
+    end;
+    WM_FILTER_FILE_OPEN: begin
+      SetExFuncPtr(Filter, Edit);
+      ClearFiles();
+    end;
+    WM_FILTER_FILE_CLOSE: begin
+      SetExFuncPtr(nil, nil);
+      ClearFiles();
+    end;
+  end;
 end;
 
 function TPSDToolKitAssist.ProjectLoadProc(Filter: PFilter; Edit: Pointer;

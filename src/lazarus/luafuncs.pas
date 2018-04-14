@@ -9,6 +9,7 @@ uses
   lua;
 
 function luaopen_PSDToolKitBridge(L: Plua_State): integer; cdecl;
+procedure SetExFuncPtr(const ExFunc: Pointer; const SampleRate, Channels: integer);
 
 implementation
 
@@ -18,6 +19,11 @@ uses
 var
   bridge: TPSDToolKitBridge;
   CacheMgr: TCacheManager;
+
+procedure SetExFuncPtr(const ExFunc: Pointer; const SampleRate, Channels: integer);
+begin
+  CacheMgr.SetExFuncPtr(ExFunc, SampleRate, Channels);
+end;
 
 function LuaReturn(L: Plua_State; const Ret: integer): integer;
 begin
@@ -343,6 +349,31 @@ begin
   Result := 1;
 end;
 
+function LuaGetSpeakLevel(L: Plua_State): integer; cdecl;
+
+  function Main(): integer;
+  var
+    FileName: ShiftJISString;
+    Pos, LoCut, HiCut: double;
+  begin
+    try
+      FileName := lua_tostring(L, 1);
+      Pos := lua_tonumber(L, 2);
+      LoCut := lua_tonumber(L, 3);
+      HiCut := lua_tonumber(L, 4);
+      lua_pop(L, 4);
+      lua_pushnumber(L, CacheMgr.GetSpeakLevel(FileName, Pos, LoCut, HiCut));
+      Result := 1;
+    except
+      on E: Exception do
+        Result := LuaPushError(L, E);
+    end;
+  end;
+
+begin
+  Result := LuaReturn(L, Main());
+end;
+
 function luaopen_PSDToolKitBridge(L: Plua_State): integer; cdecl;
 type
   TEntry = record
@@ -350,7 +381,7 @@ type
     Func: lua_CFunction;
   end;
 const
-  Functions: array[0..10] of TEntry = (
+  Functions: array[0..11] of TEntry = (
     (Name: 'addfile'; Func: @LuaAddFile),
     (Name: 'clearfiles'; Func: @LuaClearFiles),
     (Name: 'draw'; Func: @LuaDraw),
@@ -361,7 +392,8 @@ const
     (Name: 'deserialize'; Func: @LuaDeserialize),
     (Name: 'putcache'; Func: @LuaPutCache),
     (Name: 'getcache'; Func: @LuaGetCache),
-    (Name: 'type'; Func: @LuaType));
+    (Name: 'type'; Func: @LuaType),
+    (Name: 'getspeaklevel'; Func: @LuaGetSpeakLevel));
 var
   i: integer;
 begin
@@ -379,7 +411,6 @@ end;
 initialization
   bridge := TPSDToolKitBridge.Create();
   cacheMgr := TCacheManager.Create();
-
 
 finalization
   bridge.Free();

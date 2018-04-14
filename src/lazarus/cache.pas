@@ -6,13 +6,22 @@ unit Cache;
 interface
 
 uses
-  Classes, SysUtils, GHashMap;
+  Classes, SysUtils, GHashMap, fftsg, AviUtl, Util;
 
 type
   TCacheEntry = record
     S: TStream;
     LastUsed: QWORD;
   end;
+
+  TMovieEntry = record
+    H: PAVIFileHandle;
+    FI: TFileInfo;
+    FileName: ShiftJISString;
+    CurSampleRate, CurChannels, CurSamples: integer;
+    LastUsed: QWORD;
+  end;
+  PMovieEntry = ^TMovieEntry;
 
   { TUTF8StringHash }
 
@@ -28,16 +37,25 @@ type
   TCacheManager = class(TThread)
   private
     FCacheMap: TCacheMap;
+    FRDFT: TRDFT;
+    FMovieMap: array[0..31] of TMovieEntry;
+    FExFunc: PExFunc;
+    FSampleRate: integer;
+    FChannels: integer;
     FCS: TRTLCriticalSection;
     FNotify: PRTLEvent;
+    function FindMovie(const FileName: ShiftJISString): PMovieEntry;
   protected
     procedure Execute(); override;
   public
     constructor Create();
     destructor Destroy(); override;
+    procedure SetExFuncPtr(const P: PExFunc; const SampleRate, Channels: integer);
     procedure PutToMemory(Name: UTF8String; P: Pointer; Len: integer);
     procedure PutToFile(Name: UTF8String; P: Pointer; Len: integer);
     function Get(Name: UTF8String; P: Pointer; Len: integer): boolean;
+    function GetSpeakLevel(const FileName: ShiftJISString; const Pos: double;
+      const LoCut, HiCut: double): double;
   end;
 
   { TTempFileStream }
@@ -52,6 +70,9 @@ implementation
 
 uses
   Windows;
+
+const
+  RDFTSize = 256;
 
 function FNV1a32(S: UTF8String): DWORD;
 var
@@ -112,71 +133,147 @@ end;
 
 { TCacheManager }
 
-procedure TCacheManager.Execute;
-const
-  CLEANUP_INTERVAL = 10 * 1000;
-  LIFETIME = 60 * 1000;
+function TCacheManager.FindMovie(const FileName: ShiftJISString): PMovieEntry;
 var
-  LastRun, Now: QWORD;
-  IT: TCacheMap.TIterator;
+  I: integer;
+  Unused, Oldest: PMovieEntry;
 begin
-  LastRun := GetTickCount64();
-  while not Terminated do
-  begin
-    RTLEventWaitFor(FNotify);
-    RTLEventResetEvent(FNotify);
-    Now := GetTickCount64();
-    if Now - LastRun < CLEANUP_INTERVAL then
+  Result := nil;
+  Unused := nil;
+  Oldest := nil;
+  for I := Low(FMovieMap) to High(FMovieMap) do begin
+    if FMovieMap[I].H = nil then begin
+      if Unused = nil then
+        Unused := @FMovieMap[I];
       continue;
-
-    IT := FCacheMap.Iterator();
-    if IT <> nil then
-    begin
-      try
-        repeat
-          if Now - IT.Value.LastUsed > LIFETIME then
-          begin
-            it.Value.S.Free();
-            FCacheMap.erase(IT);
-          end;
-        until not IT.Next;
-      finally
-        IT.Free;
-      end;
     end;
-    LastRun := Now;
+    if FMovieMap[I].FileName <> FileName then begin
+      if (Oldest = nil)or(Oldest^.LastUsed > FMovieMap[I].LastUsed) then
+        Oldest := @FMovieMap[I];
+      continue;
+    end;
+    Result := @FMovieMap[I];
+    break;
+  end;
+  if Result = nil then begin
+    if Unused <> nil then
+      Result := Unused
+    else begin
+      FExFunc^.AVIFileClose(Oldest^.H);
+      Result := Oldest;
+    end;
+    Result^.H := FExFunc^.AVIFileOpen(PChar(FileName), Result^.FI,
+      AVI_FILE_OPEN_FLAG_AUDIO_ONLY);
+    if Result^.H = nil then
+      raise Exception.Create('failed to open file');
+    Result^.FileName := FileName;
+    Result^.CurSampleRate := Result^.FI.AudioRate;
+    Result^.CurChannels := Result^.FI.AudioCh;
+    Result^.CurSamples := Result^.FI.AudioN;
+  end;
+  if (FSampleRate <> Result^.CurSampleRate) or (1 <> Result^.CurChannels) then
+  begin
+    Result^.CurSamples := FExFunc^.AVIFileSetAudioSampleRate(Result^.H, FSampleRate, 1);
+    Result^.CurSampleRate := FSampleRate;
+    Result^.CurChannels := 1;
   end;
 end;
 
-constructor TCacheManager.Create;
+procedure TCacheManager.Execute();
+const
+  CLEANUP_INTERVAL = 1 * 1000;
+  CACHEMAP_CLEANUP_INTERVAL = 30 * 1000;
+  CACHEMAP_LIFETIME = 60 * 1000;
+  MOVIEMAP_LIFETIME = 2 * 1000;
+var
+  Now, CacheMapLast: QWORD;
+  CIT: TCacheMap.TIterator;
+  I: integer;
+begin
+  CacheMapLast := 0;
+  while not Terminated do
+  begin
+    RTLEventWaitFor(FNotify, CLEANUP_INTERVAL);
+    RTLEventResetEvent(FNotify);
+    Now := GetTickCount64();
+
+    EnterCriticalSection(FCS);
+    try
+      if Now - CacheMapLast > CACHEMAP_CLEANUP_INTERVAL then
+      begin
+        CIT := FCacheMap.Iterator();
+        if CIT <> nil then
+        begin
+          try
+            repeat
+              if Now - CIT.Value.LastUsed > CACHEMAP_LIFETIME then
+              begin
+                CIT.Value.S.Free();
+                FCacheMap.erase(CIT);
+              end;
+            until not CIT.Next;
+          finally
+            CIT.Free;
+          end;
+        end;
+        CacheMapLast := Now;
+      end;
+
+      for I := Low(FMovieMap) to High(FMovieMap) do begin
+        if (FMovieMap[I].H = nil)or(Now - FMovieMap[I].LastUsed < MOVIEMAP_LIFETIME) then
+          continue;
+        FExFunc^.AVIFileClose(FMovieMap[I].H);
+        FMovieMap[I].H := nil;
+      end;
+    finally
+      LeaveCriticalSection(FCS);
+    end;
+  end;
+end;
+
+constructor TCacheManager.Create();
 begin
   inherited Create(False);
+  FExFunc := nil;
   InitCriticalSection(FCS);
   FNotify := RTLEventCreate();
   FCacheMap := TCacheMap.Create();
+  FillChar(FMovieMap[0], Length(FMovieMap) * SizeOf(TMovieEntry), 0);
+  FRDFT := TRDFT.Create(RDFTSize);
 end;
 
-destructor TCacheManager.Destroy;
+destructor TCacheManager.Destroy();
 var
-  IT: TCacheMap.TIterator;
+  CIT: TCacheMap.TIterator;
+  I: integer;
 begin
   Terminate();
   RTLEventSetEvent(FNotify);
   while not Finished do
     ThreadSwitch();
 
-  IT := FCacheMap.Iterator();
-  if IT <> nil then
+  CIT := FCacheMap.Iterator();
+  if CIT <> nil then
   begin
     try
       repeat
-        IT.Value.S.Free();
-      until not IT.Next;
+        CIT.Value.S.Free();
+      until not CIT.Next;
     finally
-      IT.Free;
+      CIT.Free;
     end;
   end;
   FreeAndNil(FCacheMap);
+
+  if FExFunc <> nil then begin
+    for I := Low(FMovieMap) to High(FMovieMap) do begin
+      if FMovieMap[I].H = nil then
+        continue;
+      FExFunc^.AVIFileClose(FMovieMap[I].H);
+    end;
+  end;
+  FreeAndNil(FRDFT);
+
   RTLEventDestroy(FNotify);
   DoneCriticalSection(FCS);
   inherited Destroy;
@@ -204,7 +301,6 @@ begin
   finally
     LeaveCriticalSection(FCS);
   end;
-  RTLEventSetEvent(FNotify);
 end;
 
 procedure TCacheManager.PutToFile(Name: UTF8String; P: Pointer; Len: integer);
@@ -229,7 +325,6 @@ begin
   finally
     LeaveCriticalSection(FCS);
   end;
-  RTLEventSetEvent(FNotify);
 end;
 
 function TCacheManager.Get(Name: UTF8String; P: Pointer; Len: integer): boolean;
@@ -249,7 +344,71 @@ begin
   finally
     LeaveCriticalSection(FCS);
   end;
-  RTLEventSetEvent(FNotify);
+end;
+
+function TCacheManager.GetSpeakLevel(const FileName: ShiftJISString;
+  const Pos: double; const LoCut, HiCut: double): double;
+var
+  V: PMovieEntry;
+  A: array[0..RDFTSize * 2 - 1] of smallint;
+  R: PDouble;
+  HzDivider, Hz, N: double;
+  Read, I: integer;
+begin
+  if FExFunc = nil then
+    raise Exception.Create('not initialized yet');
+
+  Result := 0;
+  EnterCriticalSection(FCS);
+  try
+    V := FindMovie(FileName);
+    Read := FExFunc^.AVIFileReadAudioSample(V^.H, Trunc(Pos * double(V^.CurSampleRate)),
+      RDFTSize, @A[0]);
+    V^.LastUsed := GetTickCount64();
+    if Read = 0 then
+      Exit;
+
+    for I := Read to High(A) do
+      A[I] := 0;
+
+    R := FRDFT.Execute(@A[0], 1);
+    HzDivider := double(V^.CurSampleRate) / RDFTSize;
+    N := 0;
+    for I := 0 to RDFTSize div 2 - 1 do
+    begin
+      Hz := double(I) * HzDivider;
+      if Hz < LoCut then
+        continue;
+      if HiCut < Hz then
+        break;
+      Result := Result + (R + I)^;
+      N := N + 1;
+    end;
+    if N <> 0 then
+      Result := Result / N;
+  finally
+    LeaveCriticalSection(FCS);
+  end;
+end;
+
+procedure TCacheManager.SetExFuncPtr(const P: PExFunc;
+  const SampleRate, Channels: integer);
+var
+  I: integer;
+begin
+  if FExFunc = P then Exit;
+  if FExFunc <> nil then
+  begin
+    for I := Low(FMovieMap) to High(FMovieMap) do begin
+      if FMovieMap[I].H = nil then
+        continue;
+      FExFunc^.AVIFileClose(FMovieMap[I].H);
+      FMovieMap[I].H := nil;
+    end;
+  end;
+  FExFunc := P;
+  FSampleRate := SampleRate;
+  FChannels := Channels;
 end;
 
 end.

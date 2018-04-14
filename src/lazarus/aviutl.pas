@@ -71,6 +71,11 @@ const
   ADD_MENU_ITEM_FLAG_KEY_CTRL = 2;
   ADD_MENU_ITEM_FLAG_KEY_ALT = 4;
 
+  AVI_FILE_OPEN_FLAG_VIDEO_ONLY	= 16;
+  AVI_FILE_OPEN_FLAG_AUDIO_ONLY = 32;
+  AVI_FILE_OPEN_FLAG_ONLY_YUY2	= $10000;
+  AVI_FILE_OPEN_FLAG_ONLY_RGB24	= $20000;
+  AVI_FILE_OPEN_FLAG_ONLY_RGB32	= $40000;
 type
   AviUtlBool = integer;
 
@@ -79,6 +84,39 @@ type
   PFileInfo = ^TFileInfo;
   PSysInfo = ^TSysInfo;
   PExFunc = ^TExFunc;
+  PAVIFileHandle = Pointer;
+
+  TFileInfo = record
+    Flag: integer;
+    Name: PChar;
+    Width, Height: integer;
+    VideoRate, VideoScale: integer;
+    AudioRate: integer;
+    AudioCh: integer;
+    FrameN: integer;
+    VideoDecodeFormat: DWORD;
+    VideoDecodeBit: integer;
+    AudioN: integer;
+    Reserved: array[0..3] of integer;
+  end;
+
+  TSysInfo = record
+    Flag: integer;
+    Info: PChar;
+    FilterN: integer;
+    MinW, MinH: integer;
+    MaxW, MaxH: integer;
+    MaxFrame: integer;
+    EditName: PChar;
+    ProjectName: PChar;
+    OutputName: PChar;
+    VRamW, VRamH: integer;
+    VRamYCSize: integer;
+    VRamLineSize: integer;
+    Font: THandle;
+    Build: integer;
+    Reserved: array[0..1] of integer;
+  end;
 
   // BOOL    (*func_proc)( FILTER *fp,FILTER_PROC_INFO *fpip );
   TProcFunc = function(fp: PFilter; fpip: PFilterProcInfo): AviUtlBool; cdecl;
@@ -110,6 +148,11 @@ type
   TIniLoadStrFunc = function(fp: PFilter; key: PChar; str: PChar; default: PChar): AviUtlBool; cdecl;
   TAddMenuItemFunc = function(fp: PFilter; Name: PChar; h: THandle;
     id: integer; def_key: integer; flag: integer): integer; cdecl;
+
+  TAVIFileOpenFunc = function(FileName: PChar; out FI: TFileInfo; Flag: integer): PAVIFileHandle; cdecl;
+  TAVIFileCloseFunc = procedure(H: PAVIFileHandle); cdecl;
+  TAVIFileReadAudioSampleFunc = function(H: PAVIFileHandle; Start, Length: integer; Buf: Pointer): integer; cdecl;
+  TAVIFileSetAudioSampleRateFunc = function(H: PAVIFileHandle; AudioRate, AudioCh: integer): integer; cdecl;
 
   TExFunc = record
     GetYCPOfs: Pointer;
@@ -170,14 +213,14 @@ type
     ResizeYC: Pointer;
     CopyYC: Pointer;
     DrawText: Pointer;
-    AVIFileOpen: Pointer;
-    AVIFileClose: Pointer;
+    AVIFileOpen: TAVIFileOpenFunc;
+    AVIFileClose: TAVIFileCloseFunc;
     AVIFileReadVideo: Pointer;
     AVIFileReadAudio: Pointer;
     AVIFileGetVideoPixelP: Pointer;
     GetAVIFileFilter: Pointer;
-    AVIFileReadAudioSample: Pointer;
-    AVIFileSetAudioSampleRate: Pointer;
+    AVIFileReadAudioSample: TAVIFileReadAudioSampleFunc;
+    AVIFileSetAudioSampleRate: TAVIFileSetAudioSampleRateFunc;
     GetFrameStatusTable: Pointer;
     SetUndo: Pointer;
     AddMenuItem: TAddMenuItemFunc;
@@ -186,38 +229,6 @@ type
     EditOutput: Pointer;
     SetConfig: Pointer;
     Reserved: array[0..6] of integer;
-  end;
-
-  TFileInfo = record
-    Flag: integer;
-    Name: PChar;
-    Width, Height: integer;
-    VideoRate, VideoScale: integer;
-    AudioRate: integer;
-    AudioCh: integer;
-    FrameN: integer;
-    VideoDecodeFormat: DWORD;
-    VideoDecodeBit: integer;
-    AudioN: integer;
-    Reserved: array[0..3] of integer;
-  end;
-
-  TSysInfo = record
-    Flag: integer;
-    Info: PChar;
-    FilterN: integer;
-    MinW, MinH: integer;
-    MaxW, MaxH: integer;
-    MaxFrame: integer;
-    EditName: PChar;
-    ProjectName: PChar;
-    OutputName: PChar;
-    VRamW, VRamH: integer;
-    VRamYCSize: integer;
-    VRamLineSize: integer;
-    Font: THandle;
-    Build: integer;
-    Reserved: array[0..1] of integer;
   end;
 
   TFilterProcInfo = record
