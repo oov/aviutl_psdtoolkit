@@ -250,8 +250,7 @@ local ts = PSD.talkstate
 --   number  ts.time         「口パク準備」基準での時間（秒）
 --   number  ts.totalframe   「口パク準備」基準での総フレーム数
 --   number  ts.totaltime    「口パク準備」基準での総時間（秒）
---   table   ts.buf          「口パク準備」で収集した音量情報（生データ）
---   number  ts.samplerate   「口パク準備」で収集した音量情報の周波数
+--   number  ts.wavfile      「口パク準備」で設定された *.wav ファイル名
 --   number  ts.locut        「口パク準備」で設定されたローカット周波数
 --   number  ts.hicut        「口パク準備」で設定されたハイカット周波数
 --   number  ts.threshold    「口パク準備」で設定されたしきい値

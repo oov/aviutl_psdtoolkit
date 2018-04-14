@@ -60,7 +60,7 @@ function PSDState.init(obj, o)
   if o.mpslider ~= 0 then
     subobj = r.valueholder or P.emptysubobj
   elseif o.lipsync ~= 0 then
-    subobj = r.talkstate ~= nil and r.talkstate.samplerate ~= -1 and r.talkstate or P.emptysubobj
+    subobj = r.talkstate ~= nil and r.talkstate.wavfile ~= "" and r.talkstate or P.emptysubobj
   else
     subobj = P.emptysubobj
   end
@@ -419,9 +419,8 @@ function TalkState.new(frame, time, totalframe, totaltime)
     time = time,
     totalframe = totalframe,
     totaltime = totaltime,
-    buf = {},
+    wavfile = "",
     cstate = nil,
-    samplerate = -1,
     locut = 0,
     hicut = 0,
     threshold = 0,
@@ -456,33 +455,16 @@ function TalkState:nextisvowel()
 end
 
 function TalkState:getvolume()
-  local buf = self.buf
-  local buflen = #buf
-  local hzstep = self.samplerate / 2 / 1024
   local locut = self.locut ~= 0 and self.locut or self.deflocut
   local hicut = self.hicut ~= 0 and self.hicut or self.defhicut
-  local v, d, hz = 0, 0, 0
-  for i in ipairs(buf) do
-    hz = math.pow(2, 10 * ((i - 1) / buflen)) * hzstep
-    if locut < hz then
-      if hz > hicut then
-        break
-      end
-      v = v + buf[i]
-      d = d + 1
-    end
-  end
-  if d > 0 then
-    v = v / d
-  end
+  local v = require("PSDToolKitBridge").getspeaklevel(self.wavfile, self.time, locut, hicut) * 100
   local threshold = self.threshold ~= 0 and self.threshold or self.defthreshold
   local sensitivity = self.sensitivity ~= 0 and self.sensitivity or self.defsensitivity
   return self.cstate:getvolume(v, self.time, sensitivity) / threshold
 end
 
-function TalkState:setbuffer(buf, samplerate, locut, hicut, threshold, sensitivity)
-  self.buf = buf
-  self.samplerate = samplerate
+function TalkState:setfile(wavfile, locut, hicut, threshold, sensitivity)
+  self.wavfile = wavfile
   self.locut = locut
   self.hicut = hicut
   self.threshold = threshold
@@ -575,8 +557,7 @@ function TalkStates:set(obj, srcfile, locut, hicut, threshold, sensitivity)
   local t = TalkState.new(obj.frame, obj.time, obj.totalframe, obj.totaltime)
   local wavfile = string.sub(srcfile, 1, #srcfile - 3) .. "wav"
   if ext == ".wav" or fileexists(wavfile) then
-    local n, samplerate, buf = obj.getaudio(nil, wavfile, "spectrum", 32)
-    t:setbuffer(buf, samplerate, locut, hicut, threshold, sensitivity)
+    t:setfile(wavfile, locut, hicut, threshold, sensitivity)
   end
   local labfile = string.sub(srcfile, 1, #srcfile - 3) .. "lab"
   if ext == ".lab" or fileexists(labfile) then
