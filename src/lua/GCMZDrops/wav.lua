@@ -94,8 +94,8 @@ end
 function P.ondragenter(files, state)
   for i, v in ipairs(files) do
     local ext = getextension(v.filepath)
-    if ext == ".wav" or ext == ".exo" then
-      -- ファイルの拡張子が .wav か .exo のファイルがあったら処理できるかもしれないので true
+    if ext == ".wav" or ext == ".txt" or ext == ".exo" then
+      -- ファイルの拡張子が .wav か .txt か .exo のファイルがあったら処理できるかもしれないので true
       return true
     end
   end
@@ -292,28 +292,64 @@ function P.fire(files, state)
   return nil
 end
 
+function P.firetext(files, state)
+  local setting = P.loadsetting()
+
+  for i, v in ipairs(files) do
+    if getextension(v.filepath) == ".txt" then
+      local encoding = setting.wav_subtitle_encoding
+      if v.mediatype == "text/plain; charset=Shift_JIS" then
+        encoding = "sjis"
+      elseif v.mediatype == "text/plain; charset=UTF-8" then
+        encoding = "utf8"
+      end
+      local subtitle = readsubtitle(
+        v.filepath,
+        v.overridesubtitleencoding or encoding,
+        setting)
+      local exabase = P.resolvepath(
+        v.orgfilepath or v.filepath,
+        setting.wav_exafinder,
+        setting)
+      if state.shift then
+        return subtitle, exabase
+      end
+    end
+  end
+  return nil
+end
+
 function P.ondrop(files, state)
-  local wav, subtitle, exabase = P.fire(files, state)
-  if wav ~= nil then
-    return P.generateexo(wav, subtitle, exabase, state)
+  local wavfilepath, subtitle, exabase = P.fire(files, state)
+  if wavfilepath ~= nil then
+    -- プロジェクトとファイルの情報を取得する
+    local proj = GCMZDrops.getexeditfileinfo()
+    local fi = GCMZDrops.getfileinfo(wavfilepath)
+    -- 音声が現在のプロジェクトで何フレーム分あるのかを計算する
+    local wavlen = math.ceil((fi.audio_samples * proj.rate) / (proj.audio_rate * proj.scale))
+    return P.generateexo(wavfilepath, wavlen, subtitle, exabase, state)
+  end
+  subtitle, exabase = P.firetext(files, state)
+  if subtitle ~= nil then
+    return P.generateexo(nil, 64, subtitle, exabase, state)
   end
   return false
 end
 
-function P.generateexo(wavfilepath, subtitle, exabase, state)
+function P.generateexo(wavfilepath, wavlen, subtitle, exabase, state)
   local setting = P.loadsetting()
   -- テンプレート用変数を準備
   local values = {
     WAV_START = 1,
-    WAV_END = 1,
+    WAV_END = 0,
     WAV_PATH = wavfilepath,
     LIPSYNC_START = 1,
-    LIPSYNC_END = 1,
+    LIPSYNC_END = 0,
     LIPSYNC_PATH = wavfilepath,
     MPSLIDER_START = 1,
-    MPSLIDER_END = 1,
+    MPSLIDER_END = 0,
     SUBTITLE_START = 1,
-    SUBTITLE_END = 1,
+    SUBTITLE_END = 0,
     SUBTITLE_TEXT = subtitle,
   }
   local modifiers = {
@@ -328,12 +364,6 @@ function P.generateexo(wavfilepath, subtitle, exabase, state)
     end,
   }
 
-  -- プロジェクトとファイルの情報を取得する
-  local proj = GCMZDrops.getexeditfileinfo()
-  local fi = GCMZDrops.getfileinfo(wavfilepath)
-
-  -- 音声が現在のプロジェクトで何フレーム分あるのかを計算する
-  local wavlen = math.floor((fi.audio_samples * proj.rate) / (proj.audio_rate * proj.scale)) - 1
   -- 長さを反映
   values.WAV_END = values.WAV_END + wavlen
   values.LIPSYNC_END = values.LIPSYNC_END + wavlen
@@ -360,6 +390,7 @@ function P.generateexo(wavfilepath, subtitle, exabase, state)
   values.SUBTITLE_END = values.SUBTITLE_END - ofs
 
   -- exo ファイルのヘッダ部分を組み立て
+  local proj = GCMZDrops.getexeditfileinfo()
   local oini = GCMZDrops.inistring("")
   local totallen = math.max(values.WAV_END, values.LIPSYNC_END, values.MPSLIDER_END, values.SUBTITLE_END)
   oini:set("exedit", "width", proj.width)
@@ -374,13 +405,15 @@ function P.generateexo(wavfilepath, subtitle, exabase, state)
   local index = 0
 
   -- 音声を組み立て
-  local aini = P.exaread(exabase, "wav")
-  setting:wav_examodifler_wav(aini, values, modifiers)
-  P.insertexa(oini, aini, index, index + 1)
-  index = index + 1
+  if wavfilepath ~= nil then
+    local aini = P.exaread(exabase, "wav")
+    setting:wav_examodifler_wav(aini, values, modifiers)
+    P.insertexa(oini, aini, index, index + 1)
+    index = index + 1
+  end
 
   -- 口パク準備を組み立て
-  if setting.wav_lipsync == 1 then
+  if wavfilepath ~= nil and setting.wav_lipsync == 1 then
     local aini = P.exaread(exabase, "lipsync")
     setting:wav_examodifler_lipsync(aini, values, modifiers)
     P.insertexa(oini, aini, index, index + 1)
