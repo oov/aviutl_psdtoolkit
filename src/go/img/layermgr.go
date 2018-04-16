@@ -457,12 +457,12 @@ func enumChildren(m *LayerManager, l *composite.Layer, sib []composite.Layer, di
 	if dir != nil {
 		dir = append(dir, '/')
 	}
-	dir = append(dir, encodeName(l.Name)...)
 	n, ok := dup[l.Name]
 	if ok {
 		n++
-		dir = append(dir, '\\')
-		dir = append(dir, itoa(n)...)
+		dir = append(dir, encodeName(l.Name+"\\"+itoa(n))...)
+	} else {
+		dir = append(dir, encodeName(l.Name)...)
 	}
 	dup[l.Name] = n
 
