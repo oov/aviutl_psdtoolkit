@@ -36,6 +36,7 @@ type
 
   TCacheManager = class(TThread)
   private
+    FBuffer: array of Smallint;
     FCacheMap: TCacheMap;
     FRDFT: TRDFT;
     FMovieMap: array[0..31] of TMovieEntry;
@@ -350,7 +351,7 @@ function TCacheManager.GetSpeakLevel(const FileName: ShiftJISString;
   const Pos: double; const LoCut, HiCut: double): double;
 var
   V: PMovieEntry;
-  A: array[0..RDFTSize * 2 - 1] of smallint;
+  A: PSmallint;
   R: PDouble;
   HzDivider, Hz, N: double;
   Read, I: integer;
@@ -361,17 +362,20 @@ begin
   Result := 0;
   EnterCriticalSection(FCS);
   try
+    A := @FBuffer[0];
     V := FindMovie(FileName);
+    // It seems avi_file_read_audio_sample writes more samples than requested.
+    // Therefore we have to reserve large buffer enough for that.
     Read := FExFunc^.AVIFileReadAudioSample(V^.H, Trunc(Pos * double(V^.CurSampleRate)),
-      RDFTSize, @A[0]);
+      RDFTSize, A);
     V^.LastUsed := GetTickCount64();
     if Read = 0 then
       Exit;
 
-    for I := Read to High(A) do
-      A[I] := 0;
+    for I := Read to RDFTSize - 1 do
+      (A + I)^ := 0;
 
-    R := FRDFT.Execute(@A[0], 1);
+    R := FRDFT.Execute(A, 1);
     HzDivider := double(V^.CurSampleRate) / RDFTSize;
     N := 0;
     for I := 0 to RDFTSize div 2 - 1 do
@@ -409,6 +413,7 @@ begin
   FExFunc := P;
   FSampleRate := SampleRate;
   FChannels := Channels;
+  SetLength(FBuffer, FSampleRate div 10); // 100ms
 end;
 
 end.
