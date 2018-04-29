@@ -85,6 +85,7 @@ func (t *Thumbnailer) Update(img image.Image, doer func(func() error) error) {
 type item struct {
 	DisplayName string
 	Image       *img.Image
+	Tag         int
 
 	Thumbnail *image.NRGBA
 }
@@ -100,21 +101,29 @@ type Editing struct {
 	thumbnails            []nk.Image
 }
 
-func (ed *Editing) Add(filePath string) error {
+func (ed *Editing) Add(filePath string, tag int) (int, error) {
+	if tag != 0 {
+		for idx, item := range ed.images {
+			if item.Tag == tag {
+				return idx, nil
+			}
+		}
+	}
 	if len(ed.images) == limit {
-		return errors.Errorf("too many images")
+		return -1, errors.Errorf("too many images")
 	}
 	img, err := ed.Srcs.NewImage(filePath)
 	if err != nil {
-		return errors.Wrapf(err, "editing: failed to load %q", filePath)
+		return -1, errors.Wrapf(err, "editing: failed to load %q", filePath)
 	}
 	ed.images = append(ed.images, item{
 		DisplayName: filepath.Base(*img.FilePath),
 		Image:       img,
+		Tag:         tag,
 	})
 	ed.thumbnails = nil
 	ed.SelectedIndex = len(ed.images) - 1
-	return nil
+	return -1, nil
 }
 
 func (ed *Editing) Delete(index int) {
@@ -214,6 +223,7 @@ func (ed *Editing) SelectedImageThumbnailer() *Thumbnailer {
 
 type serializeData struct {
 	Image     *img.ProjectState
+	Tag       int
 	Thumbnail []byte
 }
 
@@ -229,6 +239,7 @@ func (ed *Editing) Serialize() (string, error) {
 		}
 		srz = append(srz, serializeData{
 			Image:     item.Image.SerializeProject(),
+			Tag:       item.Tag,
 			Thumbnail: thumb,
 		})
 	}
@@ -251,7 +262,7 @@ func (ed *Editing) Deserialize(state string) error {
 	ed.Clear()
 	var wr warn.Warning
 	for _, d := range srz {
-		if err := ed.Add(d.Image.FilePath); err != nil {
+		if _, err := ed.Add(d.Image.FilePath, d.Tag); err != nil {
 			wr = append(wr, errors.Wrapf(err, "editing: cannot load %q", d.Image.FilePath))
 			continue
 		}

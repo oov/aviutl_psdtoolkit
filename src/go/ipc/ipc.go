@@ -63,12 +63,13 @@ type cacheValue struct {
 }
 
 type IPC struct {
-	AddFile     func(file string) error
-	ClearFiles  func() error
-	ShowGUI     func() (uintptr, error)
-	Serialize   func() (string, error)
-	Deserialize func(state string) error
-	GCing       func()
+	AddFile            func(file string, tag int) error
+	AddFileIfNotExists func(file string, tag int, state string) error
+	ClearFiles         func() error
+	ShowGUI            func() (uintptr, error)
+	Serialize          func() (string, error)
+	Deserialize        func(state string) error
+	GCing              func()
 
 	tmpImg temporary.Temporary
 	cache  map[cacheKey]cacheValue
@@ -145,7 +146,7 @@ func (ipc *IPC) getLayerNames(id int, filePath string) (string, error) {
 	return strings.Join(s, "\n"), nil
 }
 
-func (ipc *IPC) setProps(id int, filePath string, layer *string, scale *float32, offsetX, offsetY *int) (bool, uint32, int, int, error) {
+func (ipc *IPC) setProps(id int, filePath string, tag *int, layer *string, scale *float32, offsetX, offsetY *int) (bool, uint32, int, int, error) {
 	img, err := ipc.tmpImg.Load(id, filePath)
 	if err != nil {
 		return false, 0, 0, 0, errors.Wrap(err, "ipc: could not load")
@@ -196,6 +197,13 @@ func (ipc *IPC) setProps(id int, filePath string, layer *string, scale *float32,
 	if err != nil {
 		return false, 0, 0, 0, errors.Wrap(err, "ipc: could not serialize state")
 	}
+
+	if tag != nil && *tag != 0 {
+		go func() {
+			ipc.AddFileIfNotExists(filePath, *tag, state)
+		}()
+	}
+
 	ckey := (&cacheKey{
 		Width:   r.Dx(),
 		Height:  r.Dy(),
@@ -307,7 +315,11 @@ func (ipc *IPC) dispatch(cmd string) error {
 		if err != nil {
 			return err
 		}
-		if err = ipc.AddFile(file); err != nil {
+		tag, err := readUInt32()
+		if err != nil {
+			return err
+		}
+		if err = ipc.AddFile(file, tag); err != nil {
 			return err
 		}
 		return writeUint32(0x80000000)
@@ -366,7 +378,9 @@ func (ipc *IPC) dispatch(cmd string) error {
 			propScale
 			propOffsetX
 			propOffsetY
+			propTag
 		)
+		var tag *int
 		var layer *string
 		var scale *float32
 		var offsetX, offsetY *int
@@ -379,6 +393,13 @@ func (ipc *IPC) dispatch(cmd string) error {
 			switch pid {
 			case propEnd:
 				break readProps
+			case propTag:
+				ui, err := readUInt32()
+				if err != nil {
+					return err
+				}
+				tag = &ui
+				ods.ODS("  Tag: %d", ui)
 			case propLayer:
 				s, err := readString()
 				if err != nil {
@@ -409,7 +430,7 @@ func (ipc *IPC) dispatch(cmd string) error {
 				ods.ODS("  OffsetY: %d", i)
 			}
 		}
-		modified, ckey, width, height, err := ipc.setProps(id, filePath, layer, scale, offsetX, offsetY)
+		modified, ckey, width, height, err := ipc.setProps(id, filePath, tag, layer, scale, offsetX, offsetY)
 		if err != nil {
 			return err
 		}

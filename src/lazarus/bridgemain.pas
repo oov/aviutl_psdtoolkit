@@ -28,13 +28,13 @@ type
   public
     constructor Create();
     destructor Destroy(); override;
-    procedure AddFile(FilePath: UTF8String);
+    procedure AddFile(FilePath: UTF8String; Tag: DWord);
     procedure ClearFiles();
     procedure Draw(id: integer; filename: UTF8String; p: PByteArray;
       Width: integer; Height: integer);
     function GetLayerNames(id: integer; filename: UTF8String): UTF8String;
     procedure SetProperties(id: integer; filename: UTF8String;
-      Layer: PUTF8String; Scale: PSingle; OffsetX: System.PInteger;
+      Tag: PDWord; Layer: PUTF8String; Scale: PSingle; OffsetX: System.PInteger;
       OffsetY: System.PInteger; out Modified: boolean; out CacheKey: DWord; out Width: integer;
       out Height: integer);
     procedure ShowGUI();
@@ -82,14 +82,15 @@ begin
   inherited Destroy;
 end;
 
-procedure TPSDToolKitBridge.AddFile(FilePath: UTF8String);
+procedure TPSDToolKitBridge.AddFile(FilePath: UTF8String; Tag: DWord);
 begin
   EnterCS('ADDF');
   try
     PrepareIPC();
     FRemoteProcess.Input.WriteBuffer('ADDF', 4);
     WriteString(FRemoteProcess.Input, FilePath);
-    ODS('  FilePath: %s', [FilePath]);
+    WriteUInt32(FRemoteProcess.Input, Tag);
+    ODS('  FilePath: %s / Tag: %d', [FilePath, Tag]);
   finally
     LeaveCS('ADDF');
   end;
@@ -155,7 +156,7 @@ begin
 end;
 
 procedure TPSDToolKitBridge.SetProperties(id: integer; filename: UTF8String;
-  Layer: PUTF8String; Scale: PSingle; OffsetX: System.PInteger;
+  Tag: PDWord; Layer: PUTF8String; Scale: PSingle; OffsetX: System.PInteger;
   OffsetY: System.PInteger; out Modified: boolean; out CacheKey: DWord; out Width: integer;
   out Height: integer);
 const
@@ -164,12 +165,19 @@ const
   PROPID_SCALE = 2;
   PROPID_OFFSETX = 3;
   PROPID_OFFSETY = 4;
+  PROPID_TAG = 5;
 begin
   EnterCS('PROP');
   try
     PrepareIPC();
     FRemoteProcess.Input.WriteBuffer('PROP', 4);
     WriteIdAndFileName(FRemoteProcess.Input, id, filename);
+    if Tag <> nil then
+    begin
+      WriteInt32(FRemoteProcess.Input, PROPID_TAG);
+      WriteUInt32(FRemoteProcess.Input, Tag^);
+      ODS('  Tag: %d', [Tag^]);
+    end;
     if Layer <> nil then
     begin
       WriteInt32(FRemoteProcess.Input, PROPID_LAYER);

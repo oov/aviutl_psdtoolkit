@@ -41,6 +41,7 @@ function PSDState.init(obj, o)
   local r = PSDState.new(
     (o.scene or 0)*1000+obj.layer,
     o.ptkf ~= "" and o.ptkf or nil,
+    o.tag or 0,
     {
       layer = o.ptkl ~= "" and o.ptkl or nil,
       lipsync = o.lipsync ~= 0 and o.lipsync or nil,
@@ -72,6 +73,7 @@ PSDState.cachekeys = {}
 -- PSDオブジェクト
 -- id - 固有識別番号
 -- file - PSDファイルへのパス
+-- tag - 固有識別番号(PSDToolKit ウィンドウ用)
 -- opt - 追加の設定項目
 -- opt には以下のようなオブジェクトを渡す
 -- {
@@ -79,10 +81,11 @@ PSDState.cachekeys = {}
 --   lipsync = 2,
 --   mpslider = 3,
 -- }
-function PSDState.new(id, file, opt)
+function PSDState.new(id, file, tag, opt)
   local self = setmetatable({
     id = id,
     file = file,
+    tag = tag,
     layer = {opt.layer or "L.0"},
     scale = 1,
     offsetx = 0,

@@ -40,6 +40,14 @@ func readUInt64() (uint64, error) {
 	return l, nil
 }
 
+func readUInt32() (int, error) {
+	var l uint32
+	if err := binary.Read(os.Stdin, binary.LittleEndian, &l); err != nil {
+		return 0, err
+	}
+	return int(l), nil
+}
+
 func readInt32() (int, error) {
 	var l uint32
 	if err := binary.Read(os.Stdin, binary.LittleEndian, &l); err != nil {

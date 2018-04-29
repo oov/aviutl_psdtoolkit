@@ -53,6 +53,8 @@ function P.ondrop(files, state)
       end
 
       -- ファイルを直接読み込む代わりに exo ファイルを組み立てる
+      math.randomseed(os.time())
+      local tag = math.floor(math.random()*0xffffffff + 1)
       local proj = GCMZDrops.getexeditfileinfo()
       local exo = [[
 [exedit]
@@ -89,7 +91,7 @@ precision=0
 color=ffffff
 color2=000000
 font=MS UI Gothic
-text=]] .. GCMZDrops.encodeexotext("<?-- " .. filename .. " \r\n\r\no={ -- オプション設定\r\nlipsync = 0    ,-- 口パク準備のレイヤー番号\r\nmpslider = 0    ,-- 多目的スライダーのレイヤー番号\r\nscene = 0    ,-- シーン番号\r\n\r\n-- 口パク準備のデフォルト設定\r\nls_locut = 100    ,-- ローカット\r\nls_hicut = 1000    ,-- ハイカット\r\nls_threshold = 20    ,-- しきい値\r\nls_sensitivity = 1    ,-- 感度\r\n\r\n-- 以下は書き換えないでください\r\nptkf=" .. P.encodelua(filepath) .. ",ptkl=\"\"}PSD,subobj=require(\"PSDToolKit\").PSDState.init(obj,o)?>") .. "\r\n" .. [[
+text=]] .. GCMZDrops.encodeexotext("<?-- " .. filename .. " \r\n\r\no={ -- オプション設定\r\nlipsync = 0    ,-- 口パク準備のレイヤー番号\r\nmpslider = 0    ,-- 多目的スライダーのレイヤー番号\r\nscene = 0    ,-- シーン番号\r\ntag = " .. tag .. "    ,-- 識別用タグ\r\n\r\n-- 口パク準備のデフォルト設定\r\nls_locut = 100    ,-- ローカット\r\nls_hicut = 1000    ,-- ハイカット\r\nls_threshold = 20    ,-- しきい値\r\nls_sensitivity = 1    ,-- 感度\r\n\r\n-- 以下は書き換えないでください\r\nptkf=" .. P.encodelua(filepath) .. ",ptkl=\"\"}PSD,subobj=require(\"PSDToolKit\").PSDState.init(obj,o)?>") .. "\r\n" .. [[
 [0.1]
 _name=アニメーション効果
 track0=-1.00
@@ -116,7 +118,7 @@ blend=0
       -- 一時的に package.cpath を書き換え PSDToolKitBridge.dll を読み込んで addfile を呼ぶ
       local origcpath = package.cpath
       package.cpath = GCMZDrops.scriptdir() .. "..\\script\\PSDToolKit\\?.dll"
-      require('PSDToolKitBridge').addfile(GCMZDrops.convertencoding(filepath, "sjis", "utf8"))
+      require('PSDToolKitBridge').addfile(GCMZDrops.convertencoding(filepath, "sjis", "utf8"), tag)
       package.cpath = origcpath
 
       local filepath = GCMZDrops.createtempfile("psd", ".exo")

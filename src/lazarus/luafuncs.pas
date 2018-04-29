@@ -51,11 +51,13 @@ function LuaAddFile(L: Plua_State): integer; cdecl;
   function Main(): integer;
   var
     FilePath: UTF8String;
+    Tag: DWord;
   begin
     try
       FilePath := lua_tostring(L, 1);
-      lua_pop(L, 1);
-      bridge.AddFile(FilePath);
+      Tag := lua_tointeger(L, 2);
+      lua_pop(L, 2);
+      bridge.AddFile(FilePath, Tag);
       Result := 0;
     except
       on E: Exception do
@@ -162,6 +164,8 @@ function LuaSetProperties(L: Plua_State): integer; cdecl;
     pScale: PSingle;
     OffsetX, OffsetY: integer;
     pOffsetX, pOffsetY: System.PInteger;
+    Tag: DWord;
+    pTag: PDWord;
     Modified: boolean;
     Width, Height: integer;
     CacheKey: DWord;
@@ -169,6 +173,16 @@ function LuaSetProperties(L: Plua_State): integer; cdecl;
     try
       id := lua_tointeger(L, 1);
       filename := lua_tostring(L, 2);
+
+      lua_getfield(L, 3, 'tag');
+      if lua_isnumber(L, -1) then
+      begin
+        Tag := lua_tointeger(L, -1);
+        pTag := @Tag;
+      end
+      else
+        pTag := nil;
+      lua_pop(L, 1);
 
       lua_getfield(L, 3, 'layer');
       if lua_isstring(L, -1) then
@@ -212,7 +226,7 @@ function LuaSetProperties(L: Plua_State): integer; cdecl;
       lua_pop(L, 1);
 
       lua_pop(L, 3);
-      bridge.SetProperties(id, filename, pLayer, pScale,
+      bridge.SetProperties(id, filename, pTag, pLayer, pScale,
         pOffsetX, pOffsetY, Modified, CacheKey, Width, Height);
       lua_pushboolean(L, Modified);
       lua_pushinteger(L, integer(CacheKey));

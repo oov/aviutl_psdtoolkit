@@ -42,6 +42,7 @@ func main() {
 	g := gui.New(srcs)
 
 	ipcm.AddFile = g.AddFileSync
+	ipcm.AddFileIfNotExists = g.AddFileIfNotExistsSync
 	ipcm.ClearFiles = g.ClearFiles
 	ipcm.ShowGUI = g.ShowWindow
 	ipcm.Serialize = g.Serialize
@@ -51,7 +52,7 @@ func main() {
 	g.ExportFaviewSlider = ipcm.ExportFaviewSlider
 	g.ExportLayerNames = ipcm.ExportLayerNames
 	g.DropFiles = func(filenames []string) {
-		if err := g.AddFile(extractPSDAndPFV(filenames)); err != nil {
+		if err := g.AddFile(extractPSDAndPFV(filenames), 0); err != nil {
 			g.ReportError(err)
 		}
 	}

@@ -31,7 +31,7 @@
         <FormatVersion Value="1"/>
       </local>
     </RunParams>
-    <Units Count="6">
+    <Units Count="7">
       <Unit0>
         <Filename Value="AssistPlugin.lpr"/>
         <IsPartOfProject Value="True"/>
@@ -60,6 +60,11 @@
         <IsPartOfProject Value="True"/>
         <UnitName Value="Util"/>
       </Unit5>
+      <Unit6>
+        <Filename Value="assistmain.pas"/>
+        <IsPartOfProject Value="True"/>
+        <UnitName Value="AssistMain"/>
+      </Unit6>
     </Units>
   </ProjectOptions>
   <CompilerOptions>

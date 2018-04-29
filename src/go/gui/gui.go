@@ -64,21 +64,51 @@ func New(Srcs *source.Sources) *GUI {
 	return g
 }
 
-func (g *GUI) AddFile(path string) error {
+func (g *GUI) AddFile(path string, tag int) error {
 	// TODO: We do not want to rely on gc package.
 	gc.EnterCS()
 	go g.do(func() error { gc.LeaveCS(); return nil })
 
-	if err := g.edImg.Add(path); err != nil {
+	_, err := g.edImg.Add(path, tag)
+	if err != nil {
 		return err
 	}
 	g.changeSelectedImage()
 	return nil
 }
 
-func (g *GUI) AddFileSync(path string) error {
+func (g *GUI) AddFileSync(path string, tag int) error {
 	err := g.do(func() error {
-		return g.AddFile(path)
+		return g.AddFile(path, tag)
+	})
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func (g *GUI) AddFileIfNotExists(path string, tag int, state string) error {
+	// TODO: We do not want to rely on gc package.
+	gc.EnterCS()
+	go g.do(func() error { gc.LeaveCS(); return nil })
+
+	idx, err := g.edImg.Add(path, tag)
+	if err != nil {
+		return err
+	}
+	if idx == -1 {
+		_, err = g.edImg.SelectedImage().Deserialize(state)
+		if err != nil {
+			return err
+		}
+		g.changeSelectedImage()
+	}
+	return nil
+}
+
+func (g *GUI) AddFileIfNotExistsSync(path string, tag int, state string) error {
+	err := g.do(func() error {
+		return g.AddFileIfNotExists(path, tag, state)
 	})
 	if err != nil {
 		return err
