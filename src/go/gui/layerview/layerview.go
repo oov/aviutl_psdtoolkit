@@ -10,6 +10,7 @@ import (
 
 	"github.com/oov/aviutl_psdtoolkit/src/go/img"
 	"github.com/oov/aviutl_psdtoolkit/src/go/img/prop"
+	"github.com/oov/aviutl_psdtoolkit/src/go/jobqueue"
 	"github.com/oov/aviutl_psdtoolkit/src/go/nkhelper"
 	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
 	"github.com/oov/psd/composite"
@@ -45,6 +46,8 @@ type LayerView struct {
 	ExportLayerNames   func(path string, names, values []string, selectedIndex int)
 }
 
+var jq = jobqueue.New(1)
+
 func New(mainFontHandle, symbolFontHandle *nk.UserFont) (*LayerView, error) {
 	lv := &LayerView{
 		mainFontHandle:   mainFontHandle,
@@ -61,22 +64,25 @@ func New(mainFontHandle, symbolFontHandle *nk.UserFont) (*LayerView, error) {
 }
 
 func (lv *LayerView) UpdateLayerThumbnails(tree *composite.Tree, size int, doMain func(func() error) error) {
+	jq.CancelAll()
 	lv.thumbnailChip = map[int]*nk.Image{}
 	lv.thumbnailSize = size
-	go func() {
+	jq.Enqueue(func(ctx context.Context) error {
 		s := time.Now().UnixNano()
-		rgba, ptMap, err := tree.ThumbnailSheet(context.Background(), size)
+		rgba, ptMap, err := tree.ThumbnailSheet(ctx, size)
 		if err != nil {
 			doMain(func() error {
 				lv.ReportError(errors.Wrap(err, "layerview: failed to create thumbnail sheet"))
 				return nil
 			})
-			return
+			return nil
 		}
 		nrgba := rgbaToNRGBA(rgba)
 		ods.ODS("thumbnail: %dms", (time.Now().UnixNano()-s)/1e6)
 		if err = doMain(func() error {
 			lv.thumbnail.Update(nrgba)
+			lv.thumbnailChip = map[int]*nk.Image{}
+			lv.thumbnailSize = size
 			for i, rect := range ptMap {
 				img := lv.thumbnail.SubImage(nk.NkRect(
 					float32(rect.Min.X),
@@ -90,7 +96,8 @@ func (lv *LayerView) UpdateLayerThumbnails(tree *composite.Tree, size int, doMai
 		}); err != nil {
 			ods.ODS("layerview: failed to update thumbnail: %v", err)
 		}
-	}()
+		return nil
+	})
 }
 
 func b2i(b bool) int32 {
