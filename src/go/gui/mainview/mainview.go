@@ -1,7 +1,6 @@
 package mainview
 
 import (
-	"context"
 	"image"
 	"math"
 
@@ -9,6 +8,7 @@ import (
 	"github.com/pkg/errors"
 	"golang.org/x/image/draw"
 
+	"github.com/oov/aviutl_psdtoolkit/src/go/jobqueue"
 	"github.com/oov/aviutl_psdtoolkit/src/go/nkhelper"
 	"github.com/oov/psd/blend"
 )
@@ -37,12 +37,10 @@ type MainView struct {
 	zoom     float64
 	zooming  bool
 
-	cancelUpdateResized context.CancelFunc
-	cancelViewResize    context.CancelFunc
-	viewResizeRunning   viewResizeMode
-	viewResizeQueued    bool
-	queue               chan func()
+	queue chan func()
 }
+
+var jq = jobqueue.New(1)
 
 func New(bg image.Image) (*MainView, error) {
 	mv := &MainView{
@@ -102,7 +100,7 @@ func (mv *MainView) SetRenderedImage(img *image.RGBA) {
 	if mv.resizedImage == nil {
 		mv.adjustZoom(img.Rect)
 	}
-	mv.updateViewImage(true)
+	mv.updateViewImage(vrmFastAfterBeautiful)
 }
 
 func (mv *MainView) Clear() {
@@ -146,10 +144,10 @@ eat:
 				mv.zooming = true
 			}
 			mv.zoom = z
-			mv.updateViewImage(true)
+			mv.updateViewImage(vrmFast)
 		} else if (ctx.LastWidgetState()&nk.WidgetStateActive) != nk.WidgetStateActive && mv.zooming {
 			mv.zooming = false
-			mv.updateViewImage(false)
+			mv.updateViewImage(vrmBeautiful)
 		}
 		nk.NkGroupEnd(ctx)
 	}

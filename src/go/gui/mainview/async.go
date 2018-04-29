@@ -13,9 +13,9 @@ import (
 type viewResizeMode int
 
 const (
-	vrmNone viewResizeMode = iota
-	vrmFast
+	vrmFast viewResizeMode = iota
 	vrmBeautiful
+	vrmFastAfterBeautiful
 )
 
 func rgbaToNRGBA(rgba *image.RGBA) *image.NRGBA {
@@ -39,58 +39,34 @@ func rgbaToNRGBA(rgba *image.RGBA) *image.NRGBA {
 	return nrgba
 }
 
-func (mv *MainView) updateViewImage(fast bool) {
-	if mv.viewResizeRunning == vrmBeautiful && fast {
-		mv.cancelViewResize()
-		mv.cancelViewResize = nil
-		mv.viewResizeRunning = vrmNone
-		mv.viewResizeQueued = false
-	}
-	var notify <-chan *image.NRGBA
-	if mv.viewResizeRunning == vrmNone {
-		ctx, cancel := context.WithCancel(context.Background())
-		mv.cancelViewResize = cancel
+func (mv *MainView) updateViewImage(mode viewResizeMode) {
+	jq.CancelAll()
+	jq.Enqueue(func(ctx context.Context) error {
 		var z float64
 		if mv.zoom < 0 {
 			z = mv.zoom
 		}
-		notify = resizeImage(ctx, mv.renderedImage, math.Pow(2, z), fast)
-		if fast {
-			mv.viewResizeRunning = vrmFast
-		} else {
-			mv.viewResizeRunning = vrmBeautiful
-		}
-	} else {
-		mv.viewResizeQueued = true
-	}
-	if notify == nil {
-		return
-	}
-	go func() {
-		resizedImage := <-notify
+		resizedImage := <-resizeImage(ctx, mv.renderedImage, math.Pow(2, z), mode == vrmFast || mode == vrmFastAfterBeautiful)
 		if resizedImage == nil {
-			return
+			return nil
 		}
 		mv.do(func() {
 			mv.resizedImage = resizedImage
 			mv.forceUpdate = true
-
-			if mv.cancelViewResize != nil {
-				mv.cancelViewResize()
-				mv.cancelViewResize = nil
-			}
-
-			queued := mv.viewResizeQueued
-			running := mv.viewResizeRunning
-			mv.viewResizeRunning = vrmNone
-			mv.viewResizeQueued = false
-			if queued {
-				mv.updateViewImage(mv.zooming)
-			} else if running == vrmFast && !mv.zooming {
-				mv.updateViewImage(false)
-			}
 		})
-	}()
+		if mode != vrmFastAfterBeautiful {
+			return nil
+		}
+		resizedImage = <-resizeImage(ctx, mv.renderedImage, math.Pow(2, z), false)
+		if resizedImage == nil {
+			return nil
+		}
+		mv.do(func() {
+			mv.resizedImage = resizedImage
+			mv.forceUpdate = true
+		})
+		return nil
+	})
 }
 
 func resizeImage(ctx context.Context, img *image.RGBA, scale float64, fast bool) <-chan *image.NRGBA {
