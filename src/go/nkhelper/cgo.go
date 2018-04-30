@@ -77,6 +77,13 @@ int is_pressed(void *p, int key) {
 	}
 	return 0;
 }
+
+int reset_scroll_delta(void *p) {
+	struct nk_input *input = p;
+	struct nk_vec2 *d = &input->mouse.scroll_delta;
+	d->x = 0;
+	d->y = 0;
+}
 */
 import "C"
 
@@ -128,4 +135,8 @@ func TextWidth(p *nk.UserFont, s string) float32 {
 
 func IsPressed(ctx *nk.Context, key int) bool {
 	return C.is_pressed(unsafe.Pointer(ctx.Input().Ref()), C.int(key)) != 0
+}
+
+func ResetScrollDelta(ctx *nk.Context) {
+	C.reset_scroll_delta(unsafe.Pointer(ctx.Input().Ref()))
 }

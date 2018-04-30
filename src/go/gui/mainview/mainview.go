@@ -133,6 +133,17 @@ eat:
 
 	nk.NkLayoutRowDynamic(ctx, winHeight-bottomPaneHeight-padding, 1)
 	if nk.NkGroupScrolledOffsetBegin(ctx, &mv.scrollX, &mv.scrollY, "CanvasPane", 0) != 0 {
+		if nk.NkInputIsKeyDown(ctx.Input(), nk.KeyCtrl) != 0 {
+			m := ctx.Input().Mouse()
+			if v := m.ScrollDelta(); v.Y() != 0.0 {
+				if v.Y() < 0 {
+					mv.zoom = math.Min(mv.zoom+float64(mv.stepZoom)*100, float64(mv.maxZoom))
+				} else {
+					mv.zoom = math.Max(mv.zoom-float64(mv.stepZoom)*100, float64(mv.minZoom))
+				}
+				nkhelper.ResetScrollDelta(ctx)
+			}
+		}
 		mv.renderCanvas(ctx)
 		nk.NkGroupEnd(ctx)
 	}
