@@ -129,10 +129,7 @@ function P.ondrop(files, state)
         subtitle = setting:wav_subtitle_replacer(subtitle)
         -- 挿入モードが 1 の時はテキストをスクリプトとして整形する
         if setting.srt_insertmode == 1 then
-          if subtitle:sub(-2) ~= "\r\n" then
-            subtitle = subtitle .. "\r\n"
-          end
-          subtitle = setting.srt_subtitle_prefix .. "\r\n" .. setting:srt_subtitle_escape(subtitle) .. setting.srt_subtitle_postfix
+          subtitle = setting:srt_subtitle_scripter(subtitle)
         end
         values.SUBTITLE = subtitle
         values.START = math.floor(t.s * proj.rate / proj.scale)

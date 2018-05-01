@@ -41,10 +41,7 @@ local function postprocesssubtitle(subtitle, encoding, setting)
 
   -- setting.wav_subtitle が 2 の時はテキストをスクリプトとして整形する
   if setting.wav_subtitle == 2 then
-    if subtitle:sub(-2) ~= "\r\n" then
-      subtitle = subtitle .. "\r\n"
-    end
-    subtitle = setting.wav_subtitle_prefix .. "\r\n" .. setting:wav_subtitle_escape(subtitle) .. setting.wav_subtitle_postfix
+    subtitle = setting:wav_subtitle_scripter(subtitle)
   end
 
   return subtitle

@@ -34,9 +34,12 @@ P.wav_subtitle_margin_left = 0
 P.wav_subtitle_margin_right = 0
 P.wav_subtitle_encoding = "sjis"
 function P:wav_subtitle_replacer(s) return s end
-P.wav_subtitle_prefix = '<?s=[==['
-function P:wav_subtitle_escape(s) return s:gsub(']==]', ']==].."]==]"..[==[') end
-P.wav_subtitle_postfix = ']==];require("PSDToolKit").subtitle:set(s,obj,true);s=nil?>'
+function P:wav_subtitle_scripter(s)
+  if s:sub(-2) ~= "\r\n" then
+    s = s .. "\r\n"
+  end
+  return "<?s=[==[\r\n" .. s:gsub(']==]', ']==].."]==]"..[==[') .. ']==];require("PSDToolKit").subtitle:set(s,obj,true);s=nil?>'
+end
 P.wav_exafinder = 0
 function P:wav_examodifler_wav(exa, values, modifiers)
   exa:set("ao", "start", values.WAV_START)
@@ -91,9 +94,9 @@ function P:lab_examodifler(exa, values, modifiers)
   exa:set("vo", "group", 1)
   exa:set("vo.0", "text", modifiers.ENCODE_TEXT(values.LIPSYNC))
 end
-P.lab_lipsync_prefix = '<?l='
-function P:lab_lipsync_escape(s) return GCMZDrops.encodeluastring(s) end
-P.lab_lipsync_postfix = ';require("PSDToolKit").talk:setphoneme(obj,l);l=nil?>'
+function P:lab_lipsync_scripter(s)
+  return '<?l=' .. GCMZDrops.encodeluastring(s) .. ';require("PSDToolKit").talk:setphoneme(obj,l);l=nil?>'
+end
 
 P.srt_insertmode = 1
 P.srt_encoding = "utf8"
@@ -106,9 +109,12 @@ function P:srt_examodifler(exa, values, modifiers)
   exa:set("vo.0", "text", modifiers.ENCODE_TEXT(values.SUBTITLE))
 end
 function P:srt_subtitle_replacer(s) return s end
-P.srt_subtitle_prefix = '<?s=[==['
-function P:srt_subtitle_escape(s) return s:gsub(']==]', ']==].."]==]"..[==[') end
-P.srt_subtitle_postfix = ']==];require("PSDToolKit").subtitle:set(s,obj,true);s=nil?>'
+function P:srt_subtitle_scripter(s)
+  if s:sub(-2) ~= "\r\n" then
+    s = s .. "\r\n"
+  end
+  return "<?s=[==[\r\n" .. s:gsub(']==]', ']==].."]==]"..[==[') .. ']==];require("PSDToolKit").subtitle:set(s,obj,true);s=nil?>'
+end
 
 P.ictalk_firemode = 1
 P.ictalk_format = 3

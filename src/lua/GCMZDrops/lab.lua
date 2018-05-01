@@ -78,7 +78,7 @@ function P.ondrop(files, state)
       local layers = {}
       local n = 0
       for i, t in ipairs(lab) do
-        values.LIPSYNC = setting.lab_lipsync_prefix .. setting:lab_lipsync_escape(t.p) .. setting.lab_lipsync_postfix
+        values.LIPSYNC = setting:lab_lipsync_scripter(t.p)
         values.START = math.ceil(t.s * proj.rate / proj.scale)
         values.END = math.ceil(t.e * proj.rate / proj.scale) - 1
         local found = nil

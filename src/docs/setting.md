@@ -275,16 +275,19 @@ function P:wav_subtitle_replacer(s)
 end
 ```
 
-### `P.wav_subtitle_prefix`/`P:wav_subtitle_escape`/`P.wav_subtitle_postfix`
+### `P.wav_subtitle_scripter`
 
-`字幕準備` の構築に必要になるスクリプトの処理内容を設定します。
+テキストを `字幕準備` に整形するスクリプトの処理内容を設定します。
 
 一般的な用途においては変更する必要はありません。
 
 ```lua
-P.wav_subtitle_prefix = '<?s=[==['
-function P:wav_subtitle_escape(s) return s:gsub(']==]', ']==].."]==]"..[==[') end
-P.wav_subtitle_postfix = ']==];require("PSDToolKit").subtitle:set(s, obj, true);s=nil?>'
+function P:wav_subtitle_scripter(s)
+  if s:sub(-2) ~= "\r\n" then
+    s = s .. "\r\n"
+  end
+  return "<?s=[==[\r\n" .. s:gsub(']==]', ']==].."]==]"..[==[') .. ']==];require("PSDToolKit").subtitle:set(s,obj,true);s=nil?>'
+end
 ```
 
 値|説明
@@ -399,7 +402,7 @@ P.lab_exafinder = 0
 
 ※上記ルールで該当するファイルが見つからない場合は `lab.exa` が代わりに使用されます。
 
-### `P:lab_examodifler`/`P.lab_lipsync_prefix`/`P:lab_lipsync_escape`/`P.lab_lipsync_postfix`
+### `P:lab_examodifler`/`P.lab_lipsync_scripter`
 
 `*.lab` ファイルを投げ込んだ時の `*.exa` ファイル改変処理を設定します。
 
@@ -414,9 +417,9 @@ function P:lab_examodifler(exa, values, modifiers)
   exa:set("vo", "group", 1)
   exa:set("vo.0", "text", modifiers.ENCODE_TEXT(values.LIPSYNC))
 end
-P.lab_lipsync_prefix = '<?l='
-function P:lab_lipsync_escape(s) return GCMZDrops.encodeluastring(s) end
-P.lab_lipsync_postfix = ';require("PSDToolKit").talk:setphoneme(obj,l);l=nil?>'
+function P:lab_lipsync_scripter(s)
+  return '<?l=' .. GCMZDrops.encodeluastring(s) .. ';require("PSDToolKit").talk:setphoneme(obj,l);l=nil?>'
+end
 ```
 
 ## `*.srt` ファイルを投げ込んだ時の設定
@@ -514,16 +517,19 @@ function P:srt_subtitle_replacer(s)
 end
 ```
 
-### `P.srt_subtitle_prefix`/`P:srt_subtitle_escape`/`P.srt_subtitle_postfix`
+### `P.srt_subtitle_scripter`
 
-`*.srt` ファイルを投げ込んだ時の `字幕準備` スクリプトの処理内容を設定します。
+`*.srt` ファイルを投げ込んだ時にテキストを `字幕準備` に整形するスクリプトの処理内容を設定します。
 
 一般的な用途においては変更する必要はありません。
 
 ```lua
-P.srt_subtitle_prefix = '<?s=[==['
-function P:srt_subtitle_escape(s) return s:gsub(']==]', ']==].."]==]"..[==[') end
-P.srt_subtitle_postfix = ']==];require("PSDToolKit").subtitle:set(s, obj, true);s=nil?>'
+function P:srt_subtitle_scripter(s)
+  if s:sub(-2) ~= "\r\n" then
+    s = s .. "\r\n"
+  end
+  return "<?s=[==[\r\n" .. s:gsub(']==]', ']==].."]==]"..[==[') .. ']==];require("PSDToolKit").subtitle:set(s,obj,true);s=nil?>'
+end
 ```
 
 ## Instant CTalk の設定
