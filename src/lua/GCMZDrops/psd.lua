@@ -54,7 +54,7 @@ function P.ondrop(files, state)
 
       -- ファイルを直接読み込む代わりに exo ファイルを組み立てる
       math.randomseed(os.time())
-      local tag = math.floor(math.random()*0xffffffff + 1)
+      local tag = math.floor(math.random()*0x7fffffff + 1)
       local proj = GCMZDrops.getexeditfileinfo()
       local exo = [[
 [exedit]
