@@ -404,28 +404,36 @@ function P.generateexo(wavfilepath, wavlen, subtitle, exabase, state)
     index = index + 1
   end
 
-  -- 口パク準備を組み立て
-  if wavfilepath ~= nil and setting.wav_lipsync == 1 then
-    local aini = P.exaread(exabase, "lipsync")
-    setting:wav_examodifler_lipsync(aini, values, modifiers)
-    P.insertexa(oini, aini, index, index + 1)
-    index = index + 1
-  end
-
-  -- 多目的スライダーを組み立て
-  if setting.wav_mpslider > 0 then
+  if setting.wav_mergedprep > 0 then
+    -- 準備オブジェクトを組み立て
     local aini = GCMZDrops.inistring("")
-    setting:wav_examodifler_mpslider(aini, values, modifiers)
+    setting:wav_examodifler_mergedprep(aini, values, modifiers)
     P.insertexa(oini, aini, index, index + 1)
     index = index + 1
-  end
+  else
+    -- 口パク準備を組み立て
+    if wavfilepath ~= nil and setting.wav_lipsync == 1 then
+      local aini = P.exaread(exabase, "lipsync")
+      setting:wav_examodifler_lipsync(aini, values, modifiers)
+      P.insertexa(oini, aini, index, index + 1)
+      index = index + 1
+    end
 
-  -- 字幕準備を組み立て
-  if setting.wav_subtitle > 0 and values.SUBTITLE_TEXT ~= "" then
-    local aini = P.exaread(exabase, "subtitle")
-    setting:wav_examodifler_subtitle(aini, values, modifiers)
-    P.insertexa(oini, aini, index, index + 1)
-    index = index + 1
+    -- 多目的スライダーを組み立て
+    if setting.wav_mpslider > 0 then
+      local aini = GCMZDrops.inistring("")
+      setting:wav_examodifler_mpslider(aini, values, modifiers)
+      P.insertexa(oini, aini, index, index + 1)
+      index = index + 1
+    end
+
+    -- 字幕準備を組み立て
+    if setting.wav_subtitle > 0 and values.SUBTITLE_TEXT ~= "" then
+      local aini = P.exaread(exabase, "subtitle")
+      setting:wav_examodifler_subtitle(aini, values, modifiers)
+      P.insertexa(oini, aini, index, index + 1)
+      index = index + 1
+    end
   end
 
   local filepath = GCMZDrops.createtempfile("wav", ".exo")

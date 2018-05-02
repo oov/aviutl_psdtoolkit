@@ -290,10 +290,37 @@ function P:wav_subtitle_scripter(s)
 end
 ```
 
+### `P.wav_mergedprep`
+
+`*.wav` ファイルを投げ込んだ時に生成される `口パク準備` / `多目的スライダー` / `字幕準備` の代わりに、それらを１つに統合した `統合準備オブジェクト` を生成するかを設定します。
+
+```lua
+P.wav_mergedprep = 0
+```
+
 値|説明
 ---|---
-`"sjis"`|文字エンコーディングが `Shift_JIS` であるものとして読み込みます
-`"utf8"`|文字エンコーディングが `UTF-8` であるものとして読み込みます。ただし内部で `Shift_JIS` に変換されるため `Shift_JIS` にない文字は使えません
+`0`|統合しない
+`1`|統合する
+
+### `P.wav_mergedprep_scripter`
+
+テキストを `統合準備オブジェクト` 用に整形するためのスクリプトの処理内容を設定します。
+
+一般的な用途においては変更する必要はありません。
+
+```lua
+function P:wav_mergedprep_scripter(s, o)
+  if s:sub(-2) ~= "\r\n" then
+    s = s .. "\r\n"
+  end
+  return "<?s=[==[\r\n" .. s:gsub(']==]', ']==].."]==]"..[==[') .. ']==];require("PSDToolKit").prep.init({' ..
+    "ls_mgl=" .. o.ls_mgl .. ",ls_mgr=" .. o.ls_mgr .. "," ..
+    "st_mgl=" .. o.st_mgl .. ",st_mgr=" .. o.st_mgr .. "," ..
+    "sl_mgl=" .. o.sl_mgl .. ",sl_mgr=" .. o.sl_mgr .. "," ..
+    ',obj,s)?>'
+end
+```
 
 ### `P.wav_exafinder`
 
@@ -320,13 +347,15 @@ P.wav_exafinder = 0
 
 ※上記ルールで該当するファイルが見つからない場合は `wav.exa` / `lipsync.exa` / `subtitle.exa` が代わりに使用されます。
 
-### `P:wav_examodifler_wav`/`P:wav_examodifler_lipsync`/`P:wav_examodifler_mpslider`/`P:wav_examodifler_subtitle`
+### `P:wav_examodifler_wav`/`P:wav_examodifler_lipsync`/`P:wav_examodifler_mpslider`/`P:wav_examodifler_subtitle`/`P:wav_examodifler_mergedprep`
 
 `*.wav` ファイルを投げ込んだ時の `*.exa` ファイル改変内容を設定します。
 
 エイリアスファイルを読み込んだ後、音声オブジェクトへの `*.wav` ファイルの割り当てや長さなどを設定するための設定です。
 
 一般的な用途においては変更する必要はありません。
+
+`P:wav_examodifler_mpslider` と `P:wav_examodifler_mergedprep`
 
 ```lua
 function P:wav_examodifler_wav(exa, values, modifiers)
@@ -364,7 +393,7 @@ function P:wav_examodifler_mpslider(exa, values, modifiers)
   exa:set(key, "Y", "0.0")
   exa:set(key, "Z", "0.0")
   exa:set(key, "拡大率", "100.00")
-  exa:set(key, "透明度", "0.0")
+  exa:set(key, "透明度", "100.0")
   exa:set(key, "回転", "0.00")
   exa:set(key, "blend", "0")
 end
@@ -378,6 +407,81 @@ function P:wav_examodifler_subtitle(exa, values, modifiers)
     text = self:wav_subtitle_scripter(text)
   end
   exa:set("vo.0", "text", modifiers.ENCODE_TEXT(text))
+end
+function P:wav_examodifler_mergedprep(exa, values, modifiers)
+  local endlen = math.max(values.SUBTITLE_END, values.LIPSYNC_END, values.MPSLIDER_END)
+  exa:set("vo", "start", math.min(values.SUBTITLE_START, values.LIPSYNC_START, values.MPSLIDER_START))
+  exa:set("vo", "end", endlen)
+  exa:set("vo", "group", "1")
+  local idx = 0
+  local key = "vo." .. idx
+  exa:set(key, "_name", "テキスト")
+  exa:set(key, "サイズ", "1")
+  exa:set(key, "表示速度", "0.0")
+  exa:set(key, "文字毎に個別オブジェクト", "0")
+  exa:set(key, "移動座標上に表示する", "0")
+  exa:set(key, "自動スクロール", "0")
+  exa:set(key, "B", "0")
+  exa:set(key, "I", "0")
+  exa:set(key, "type", "0")
+  exa:set(key, "autoadjust", "0")
+  exa:set(key, "soft", "0")
+  exa:set(key, "monospace", "0")
+  exa:set(key, "align", "4")
+  exa:set(key, "spacing_x", "0")
+  exa:set(key, "spacing_y", "0")
+  exa:set(key, "precision", "0")
+  exa:set(key, "color", "ffffff")
+  exa:set(key, "color2", "000000")
+  exa:set(key, "font", "MS UI Gothic")
+  exa:set(key, "text", modifiers.ENCODE_TEXT(self:wav_mergedprep_scripter(self.wav_subtitle == 2 and values.SUBTITLE_TEXT or "", {
+    st_mgl = values.SUBTITLE_START - 1,
+    st_mgr = endlen - values.SUBTITLE_END,
+    ls_mgl = values.LIPSYNC_START - 1,
+    ls_mgr = endlen - values.LIPSYNC_END,
+    sl_mgl = values.MPSLIDER_START - 1,
+    sl_mgr = endlen - values.MPSLIDER_END,
+  })))
+  idx = idx + 1
+
+  if self.wav_lipsync == 1 and values.LIPSYNC_PATH ~= nil then
+    key = "vo." .. idx
+    exa:set(key, "_name", "アニメーション効果")
+    exa:set(key, "track0", "0.00")
+    exa:set(key, "track1", "0.00")
+    exa:set(key, "track2", "0.00")
+    exa:set(key, "track3", "0.00")
+    exa:set(key, "check0", "0")
+    exa:set(key, "type", "0")
+    exa:set(key, "filter", "2")
+    exa:set(key, "name", "口パク準備@PSDToolKit")
+    exa:set(key, "param", "file=" .. modifiers.ENCODE_LUA_STRING(values.LIPSYNC_PATH))
+    idx = idx + 1
+  end
+
+  for i = 0, self.wav_mpslider-1 do
+    key = "vo." .. idx
+    exa:set(key, "_name", "アニメーション効果")
+    exa:set(key, "track0", "0.00")
+    exa:set(key, "track1", "0.00")
+    exa:set(key, "track2", "0.00")
+    exa:set(key, "track3", "0.00")
+    exa:set(key, "check0", "0")
+    exa:set(key, "type", "0")
+    exa:set(key, "filter", "2")
+    exa:set(key, "name", "多目的スライダー@PSDToolKit")
+    exa:set(key, "param", "")
+    idx = idx + 1
+  end
+  key = "vo." .. idx
+  exa:set(key, "_name", "標準描画")
+  exa:set(key, "X", "0.0")
+  exa:set(key, "Y", "0.0")
+  exa:set(key, "Z", "0.0")
+  exa:set(key, "拡大率", "100.00")
+  exa:set(key, "透明度", "100.0")
+  exa:set(key, "回転", "0.00")
+  exa:set(key, "blend", "0")
 end
 ```
 

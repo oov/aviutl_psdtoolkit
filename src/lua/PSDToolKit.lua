@@ -719,9 +719,81 @@ function ValueHolderStates:get(index)
   return vh
 end
 
+local PrepObject = {}
+
+function PrepObject.new()
+  return setmetatable({
+    o = {},
+    layer = 0,
+    frame = 0,
+    totalframe = 0,
+    framerate = 30,
+  }, {__index = PrepObject})
+end
+
+-- スクリプトから呼び出す用
+function PrepObject.init(o, obj, text)
+  P.prep:set(o, obj)
+  if text ~= "" then
+    local st = P.prep:getst(obj)
+    if st ~= nil then
+      P.subtitle:set(text, st, true)
+    end
+  end
+
+  -- 何も出力しないと直後のアニメーション効果以外適用されないため
+  -- それに対するワークアラウンド
+  mes(" ")
+end
+
+function PrepObject:fakeobj(mgl, mgr)
+  local totalframe = self.totalframe - mgl - mgr
+  local frame = self.frame - mgl
+  if totalframe < 0 or frame < 0 or frame > totalframe then
+    return nil
+  end
+  return {
+    layer = self.layer,
+    frame = frame,
+    time = frame / self.framerate,
+    totalframe = totalframe,
+    totaltime = totalframe / self.framerate,
+  }
+end
+
+function PrepObject:set(o, obj)
+  self.o = o
+  self.layer = obj.layer
+  self.frame = obj.frame
+  self.totalframe = obj.totalframe
+  self.framerate = obj.framerate
+end
+
+function PrepObject:getst(obj)
+  if self.layer ~= obj.layer or self.frame ~= obj.frame or self.totalframe ~= obj.totalframe then
+    return nil
+  end
+  return self:fakeobj(self.o.st_mgl or 0, self.o.st_mgr or 0)
+end
+
+function PrepObject:getls(obj)
+  if self.layer ~= obj.layer or self.frame ~= obj.frame or self.totalframe ~= obj.totalframe then
+    return nil
+  end
+  return self:fakeobj(self.o.ls_mgl or 0, self.o.ls_mgr or 0)
+end
+
+function PrepObject:getsl(obj)
+  if self.layer ~= obj.layer or self.frame ~= obj.frame or self.totalframe ~= obj.totalframe then
+    return nil
+  end
+  return self:fakeobj(self.o.sl_mgl or 0, self.o.sl_mgr or 0)
+end
+
 P.talk = TalkStates.new()
 P.subtitle = SubtitleStates.new()
 P.valueholder = ValueHolderStates.new()
+P.prep = PrepObject.new()
 
 P.emptysubobj = {frame = 0, time = 0, totalframe = 1, totaltime = 1, notfound = true}
 

@@ -68,6 +68,7 @@ const
   ID_LIPSYNC_GENERATE = 100;
   ID_MPSLIDER_GENERATE = 101;
   ID_SUBTITLE_GENERATE = 102;
+  ID_MERGE_PREPS = 103;
   ID_LIPSYNC_GROUP_ID = 1000;
   ID_LIPSYNC_OFFSET = 1001;
   ID_MPSLIDER_NUMBER = 2000;
@@ -78,9 +79,9 @@ const
   ID_SUBTITLE_GROUP_ID = 3001;
   ID_SUBTITLE_MARGIN_LEFT = 3002;
   ID_SUBTITLE_MARGIN_RIGHT = 3003;
-  ID_FIRE_SHIFT = 103;
-  ID_FIRE_WAVTXT = 104;
-  ID_FIRE_EXO = 105;
+  ID_FIRE_SHIFT = 104;
+  ID_FIRE_WAVTXT = 105;
+  ID_FIRE_EXO = 106;
 
 type
   { TSettingDialog }
@@ -95,6 +96,7 @@ type
     FLipsyncGenerate: boolean;
     FLipsyncGroupId: integer;
     FLipsyncOffset: integer;
+    FMergePreps: boolean;
     FMPSliderGenerate: boolean;
     FMPSliderGroupId: integer;
     FMPSliderMarginLeft: integer;
@@ -135,6 +137,7 @@ type
       write FSubtitleMarginLeft;
     property SubtitleMarginRight: integer read FSubtitleMarginRight
       write FSubtitleMarginRight;
+    property MergePreps: boolean read FMergePreps write FMergePreps;
     property FireShift: boolean read FFireShift write FFireShift;
     property FireWavTxt: boolean read FFireWavTxt write FFireWavTxt;
     property FireExo: boolean read FFireExo write FFireExo;
@@ -238,12 +241,13 @@ begin
   SetCheck(ID_LIPSYNC_GENERATE, FLipsyncGenerate);
   SetCheck(ID_MPSLIDER_GENERATE, FMPSliderGenerate);
   SetCheck(ID_SUBTITLE_GENERATE, FSubtitleGenerate);
+  SetCheck(ID_MERGE_PREPS, FMergePreps);
 
   SetText(ID_LIPSYNC_GROUP_ID, WideString(IntToStr(FLipsyncGroupId)));
   SetText(ID_LIPSYNC_OFFSET, WideString(IntToStr(FLipsyncOffset)));
 
   H := GetControl(ID_MPSLIDER_NUMBER);
-  for I := 1 to 11 do
+  for I := 1 to 10 do
   begin
     WS := WideString(IntToStr(I * 4));
     SendMessageW(H, CB_ADDSTRING, 0, {%H-}LPARAM(PWideChar(WS)));
@@ -277,6 +281,7 @@ begin
   FLipsyncGenerate := GetCheck(ID_LIPSYNC_GENERATE);
   FMPSliderGenerate := GetCheck(ID_MPSLIDER_GENERATE);
   FSubtitleGenerate := GetCheck(ID_SUBTITLE_GENERATE);
+  FMergePreps := GetCheck(ID_MERGE_PREPS);
 
   FLipsyncGroupId := StrToIntDef(string(GetText(ID_LIPSYNC_GROUP_ID)), 1);
   FLipsyncOffset := StrToIntDef(string(GetText(ID_LIPSYNC_OFFSET)), 0);
@@ -421,6 +426,13 @@ begin
       Dialog.SubtitleMarginRight := lua_tointeger(L, -1);
     lua_pop(L, 1);
 
+    lua_getfield(L, -1, 'wav_mergedprep');
+    if lua_isnil(L, -1) then
+      Dialog.MergePreps := False
+    else
+      Dialog.MergePreps := lua_tointeger(L, -1) = 1;
+    lua_pop(L, 1);
+
     lua_getfield(L, -1, 'wav_firemode');
     if lua_isnil(L, -1) then
       Dialog.FireShift := True
@@ -477,6 +489,9 @@ begin
         if Dialog.SubtitleMarginRight <> 0 then
           SL.Add('P.wav_subtitle_margin_right = ' +
             IntToStr(Dialog.SubtitleMarginRight));
+
+        if Dialog.MergePreps then
+          SL.Add('P.wav_mergedprep = 1');
 
         if not Dialog.FireShift then
           SL.Add('P.wav_firemode = -1');
