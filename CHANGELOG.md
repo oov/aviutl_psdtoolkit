@@ -2,7 +2,7 @@
 
 ## 0.2beta25
 
-- PSDToolKit ウィンドウでマウスホイールでの画像の拡大／縮小に対応
+- PSDToolKit ウィンドウで Ctrl + マウスホイールでの画像の拡大／縮小に対応
 - `統合準備オブジェクト` を追加
   - ひとつのオブジェクトで `口パク準備`、`多目的スライダー`、`字幕準備` の機能を持たせられるため、レイヤー数が節約ができます。
 - 以下の設定項目は廃止され、新設された `P:wav_subtitle_scripter` / `P:lab_lipsync_scripter` / `P:srt_subtitle_scripter` へ統合されました
