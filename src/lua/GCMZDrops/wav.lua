@@ -39,11 +39,6 @@ local function postprocesssubtitle(subtitle, encoding, setting)
   -- 置換用処理を呼び出す
   subtitle = setting:wav_subtitle_replacer(subtitle)
 
-  -- setting.wav_subtitle が 2 の時はテキストをスクリプトとして整形する
-  if setting.wav_subtitle == 2 then
-    subtitle = setting:wav_subtitle_scripter(subtitle)
-  end
-
   return subtitle
 end
 

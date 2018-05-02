@@ -330,24 +330,24 @@ P.wav_exafinder = 0
 
 ```lua
 function P:wav_examodifler_wav(exa, values, modifiers)
-  exa:set("ao", "start", 1)
-  exa:set("ao", "end", values.WAV_LEN)
+  exa:set("ao", "start", values.WAV_START)
+  exa:set("ao", "end", values.WAV_END)
   exa:set("ao", "group", 1)
   exa:set("ao.0", "file", values.WAV_PATH)
 end
 function P:wav_examodifler_lipsync(exa, values, modifiers)
-  exa:set("vo", "start", 1)
-  exa:set("vo", "end", values.WAV_LEN)
-  exa:set("vo", "group", 1)
+  exa:set("vo", "start", values.LIPSYNC_START)
+  exa:set("vo", "end", values.LIPSYNC_END)
+  exa:set("vo", "group", self.wav_lipsync_group)
   exa:set("vo.0", "param", "file=" .. modifiers.ENCODE_LUA_STRING(values.LIPSYNC_PATH))
 end
 function P:wav_examodifler_mpslider(exa, values, modifiers)
-  exa:set("vo", "start", 1)
-  exa:set("vo", "end", values.WAV_LEN)
-  exa:set("vo", "group", 1)
-  for i = 1, self.wav_mpslider do
-    local key = "vo." .. (i - 1)
-    exa:set(key, "_name", i == 1 and "カスタムオブジェクト" or "アニメーション効果")
+  exa:set("vo", "start", values.MPSLIDER_START)
+  exa:set("vo", "end", values.MPSLIDER_END)
+  exa:set("vo", "group", self.wav_mpslider_group)
+  for i = 0, self.wav_mpslider-1 do
+    local key = "vo." .. i
+    exa:set(key, "_name", i == 0 and "カスタムオブジェクト" or "アニメーション効果")
     exa:set(key, "track0", "0.00")
     exa:set(key, "track1", "0.00")
     exa:set(key, "track2", "0.00")
@@ -369,10 +369,15 @@ function P:wav_examodifler_mpslider(exa, values, modifiers)
   exa:set(key, "blend", "0")
 end
 function P:wav_examodifler_subtitle(exa, values, modifiers)
-  exa:set("vo", "start", 1)
-  exa:set("vo", "end", values.SUBTITLE_LEN)
-  exa:set("vo", "group", self.wav_groupsubtitle and 1 or 0)
-  exa:set("vo.0", "text", modifiers.ENCODE_TEXT(values.SUBTITLE))
+  exa:set("vo", "start", values.SUBTITLE_START)
+  exa:set("vo", "end", values.SUBTITLE_END)
+  exa:set("vo", "group", self.wav_subtitle_group)
+  local text = values.SUBTITLE_TEXT
+  -- wav_subtitle が 2 の時はテキストをスクリプトとして整形する
+  if self.wav_subtitle == 2 then
+    text = self:wav_subtitle_scripter(text)
+  end
+  exa:set("vo.0", "text", modifiers.ENCODE_TEXT(text))
 end
 ```
 

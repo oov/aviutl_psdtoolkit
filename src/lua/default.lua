@@ -84,7 +84,12 @@ function P:wav_examodifler_subtitle(exa, values, modifiers)
   exa:set("vo", "start", values.SUBTITLE_START)
   exa:set("vo", "end", values.SUBTITLE_END)
   exa:set("vo", "group", self.wav_subtitle_group)
-  exa:set("vo.0", "text", modifiers.ENCODE_TEXT(values.SUBTITLE_TEXT))
+  local text = values.SUBTITLE_TEXT
+  -- wav_subtitle が 2 の時はテキストをスクリプトとして整形する
+  if self.wav_subtitle == 2 then
+    text = self:wav_subtitle_scripter(text)
+  end
+  exa:set("vo.0", "text", modifiers.ENCODE_TEXT(text))
 end
 
 P.lab_exafinder = 0
