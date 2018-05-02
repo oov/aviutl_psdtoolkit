@@ -90,7 +90,7 @@ begin
     FRemoteProcess.Input.WriteBuffer('ADDF', 4);
     WriteString(FRemoteProcess.Input, FilePath);
     WriteUInt32(FRemoteProcess.Input, Tag);
-    ODS('  FilePath: %s / Tag: %d', [FilePath, Tag]);
+    ODS('  FilePath: %s / Tag: %u', [FilePath, Tag]);
   finally
     LeaveCS('ADDF');
   end;
@@ -176,7 +176,7 @@ begin
     begin
       WriteInt32(FRemoteProcess.Input, PROPID_TAG);
       WriteUInt32(FRemoteProcess.Input, Tag^);
-      ODS('  Tag: %d', [Tag^]);
+      ODS('  Tag: %u', [Tag^]);
     end;
     if Layer <> nil then
     begin
