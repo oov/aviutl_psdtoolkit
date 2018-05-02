@@ -304,6 +304,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 ※これらのファイルをこのチュートリアルを完了させるため以外の目的で使用することを禁止します。</small></p>
 <p>口パクには音量解析データが必要で、そのデータは <a href="prep.html#.E5.8F.A3.E3.83.91.E3.82.AF.E6.BA.96.E5.82.99.40PSDToolKit"><code>口パク準備</code></a> を使うと作成できます。</p>
 <p><code>PSD ファイルオブジェクト</code> を <code>Layer 3</code> に移動します。</p>
+<p>なお、<strong><code>口パク準備</code> は <code>PSD ファイルオブジェクト</code> より上のレイヤーに置く</strong>必要があります。<br />
+下だと描画後に音声解析データが割り当てられるため、表示への反映が１フレーム遅れることになります。</p>
 <p><img src="assets/tutorial-timeline-move.png" alt="パラメータ設定 ダイアログ" /></p>
 <p>まずは音声ファイルをタイムラインの <code>Layer 1</code> にドラッグ＆ドロップで挿入します。</p>
 <p><img src="assets/tutorial-addwave.png" alt="音声ファイル の追加" /></p>
@@ -340,6 +342,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p>音声に合わせて表示する字幕を作成します。</p>
 <p>字幕も口パクと同じように準備オブジェクトが必要です。</p>
 <p><code>PSD ファイルオブジェクト</code> を <code>Layer 4</code> に移動し、右クリックメニューから <code>メディアオブジェクトの追加</code>→<code>PSDToolKit</code>→<code>字幕準備</code> を選び、<code>Layer 3</code> に <a href="prep.html#.E5.AD.97.E5.B9.95.E6.BA.96.E5.82.99"><code>字幕準備</code></a> を挿入します。</p>
+<p>なお、<strong><code>字幕準備</code> は <code>字幕表示</code> より上のレイヤーに置く</strong>必要があります。<br />
+下だと描画後に字幕データが割り当てられるため、表示への反映が１フレーム遅れることになります。</p>
 <p><img src="assets/tutorial-addstprep.png" alt="字幕準備 を追加" /></p>
 <p><code>字幕準備</code> も音声と同じ範囲に設定します。</p>
 <p><code>字幕準備</code> のプロパティを開くとテキスト入力欄に <code>セリフ</code> と書かれた箇所があるので、これを字幕として表示したいテキストに書き換えます。</p>
@@ -492,6 +496,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <h2 id=".E5.A4.9A.E7.9B.AE.E7.9A.84.E3.82.B9.E3.83.A9.E3.82.A4.E3.83.80.E3.83.BC">多目的スライダー</h2>
 <p>中間点を使った表情の切り替えも有用ですが、その他に「一時的に変更し、あとで戻す」という用途に特化した機能もあり、「喋っている間だけ表情を切り替える」といった形で表情を切り替えたい場合には大変有用です。</p>
 <p><code>Layer 3</code>～<code>Layer 5</code> にあるアイテムを一段下にずらし、<code>拡張編集</code> ウィンドウでの右クリックメニューから <code>メディアオブジェクトの追加</code>→<code>PSDToolKit</code>→<code>多目的スライダー</code> を選び、<a href="prep.html#.E5.A4.9A.E7.9B.AE.E7.9A.84.E3.82.B9.E3.83.A9.E3.82.A4.E3.83.80.E3.83.BC.40PSDToolKit"><code>多目的スライダー</code></a> を <code>Layer 3</code> に挿入します。</p>
+<p>なお、<strong><code>多目的スライダー</code> は <code>PSD ファイルオブジェクト</code> より上のレイヤーに置く</strong>必要があります。<br />
+下だと描画後に多目的スライダーのデータが割り当てられるため、表示への反映が１フレーム遅れることになります。</p>
 <p><img src="assets/tutorial-mpslider.png" alt="多目的スライダー" /></p>
 <p>追加した <code>多目的スライダー</code> の範囲を音声と同じにします。</p>
 <p>また、<code>字幕準備</code> の位置が変わったので <code>字幕表示</code> のテキスト入力欄で <code>layer = 3</code> を <code>layer = 4</code> に修正しておきます。<br />
@@ -593,9 +599,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <dt>Written by</dt>
 <dd>oov</dd>
 <dt>Generated at</dt>
-<dd>2018-05-02 17:33:36</dd>
+<dd>2018-05-03 02:22:56</dd>
 <dt>for</dt>
-<dd>v0.2beta25 ( 2bfb0f5 )</dd>
+<dd>v0.2beta26 ( 43e2771 )</dd>
 </dl>
 </footer>
 </div>
