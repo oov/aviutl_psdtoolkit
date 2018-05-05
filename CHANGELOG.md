@@ -2,7 +2,7 @@
 
 ## 0.2beta27
 
-- lua51.dll を入れ替えている環境で default.lua でエラーが起きていたのを修正
+- default.lua でエラーが起きることがあったのを修正
 
 ## 0.2beta26
 
