@@ -286,7 +286,7 @@ func (lv *LayerView) layoutLayer(ctx *nk.Context, img *img.Image, indent float32
 	)
 
 	visible = visible && l.Visible
-	if l.Clipping {
+	if l.Clipping && l.ClippedBy != nil {
 		visible = visible && l.ClippedBy.Visible
 	}
 	_, forceVisible := img.Layers.ForceVisible[l.SeqID]
