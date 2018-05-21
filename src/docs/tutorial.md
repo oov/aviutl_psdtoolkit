@@ -11,7 +11,7 @@
 
 [AviUtl の配布元サイト](http://spring-fragrance.mints.ne.jp/aviutl/)から `aviutl100.zip` と `exedit92.zip` をダウンロードし、`C:\AviUtl` へ解凍します。
 
-そして、同じフォルダーへ `psdtoolkit_vX.X.zip` も解凍します。
+そして `exedit.auf` と同じ場所へ `psdtoolkit_vX.X.zip` も解凍します。
 
 ![すべてのファイルを完了した時の様子](assets/tutorial-extract.png)
 
