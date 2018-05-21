@@ -273,7 +273,9 @@ func (lv *LayerView) layerTreeItem(ctx *nk.Context, indent, thumbSize float32, t
 		drawTextMiddle(canvas, rect, symbolClippingArrow, lv.symbolFontHandle, fg)
 		rect = nk.NkRect(rect.X()+visibleSize, rect.Y(), rect.W()-visibleSize, rect.H())
 	}
-	drawTextMiddle(canvas, rect, l.Name, lv.mainFontHandle, fg)
+	if l.Name != "" {
+		drawTextMiddle(canvas, rect, l.Name, lv.mainFontHandle, fg)
+	}
 	return clicked, ctrl
 }
 

@@ -130,6 +130,9 @@ func FontHeight(p *nk.UserFont) float32 {
 }
 
 func TextWidth(p *nk.UserFont, s string) float32 {
+	if s == "" {
+		return 0
+	}
 	return float32(C.text_width(unsafe.Pointer(p.Ref()), unsafe.Pointer(&[]byte(s)[0]), C.int(len(s))))
 }
 
