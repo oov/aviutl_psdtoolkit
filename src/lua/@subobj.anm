@@ -4,10 +4,15 @@
 --track2:拡大率,0,100,1,0.01
 --track3:X座標,-100,100,4,0.01
 --check0:フェードアウトはシンプル,1
-local eofs = obj.check0 and 0 or (obj.num-obj.index-1)*obj.track1
-local sp = 1 - math.max(0, math.min(1, (obj.track0-subobj.time+obj.index*obj.track1)/obj.track0))
-local ep = math.max(0, math.min(1, (subobj.totaltime-subobj.time-eofs)/obj.track0))
-local p = sp * ep
+local p
+if obj.track0 > 0 then
+  local eofs = obj.check0 and 0 or (obj.num-obj.index-1)*obj.track1
+  local sp = 1 - math.max(0, math.min(1, (obj.track0-subobj.time+obj.index*obj.track1)/obj.track0))
+  local ep = math.max(0, math.min(1, (subobj.totaltime-subobj.time-eofs)/obj.track0))
+  p = sp * ep
+else
+  p = subobj.notfound and 0 or 1
+end
 if p == 0 then
   obj.alpha = 0
   return
