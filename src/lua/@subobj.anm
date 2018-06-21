@@ -4,11 +4,11 @@
 --track2:拡大率,0,100,1,0.01
 --track3:X座標,-100,100,4,0.01
 --check0:フェードアウトはシンプル,1
-local p
+local p, ep
 if obj.track0 > 0 then
   local eofs = obj.check0 and 0 or (obj.num-obj.index-1)*obj.track1
   local sp = 1 - math.max(0, math.min(1, (obj.track0-subobj.time+obj.index*obj.track1)/obj.track0))
-  local ep = math.max(0, math.min(1, (subobj.totaltime-subobj.time-eofs)/obj.track0))
+  ep = math.max(0, math.min(1, (subobj.totaltime-subobj.time-eofs)/obj.track0))
   p = sp * ep
 else
   p = subobj.notfound and 0 or 1
@@ -35,10 +35,10 @@ obj.ox = obj.ox * p + (obj.ox + obj.track3) * (1 - p)
 local p
 if obj.track0 > 0 then
   p = math.max(0, math.min(1, (obj.track0-subobj.time+obj.index*obj.track1)/obj.track0))
-elseif obj.track0 < 0
+elseif obj.track0 < 0 then
   p = subobj.notfound and 1 or math.max(0, math.min(1, (obj.track0+subobj.totaltime-subobj.time-(obj.num-obj.index-1)*obj.track1)/obj.track0))
 else
-  p = subobj.notfound and 0 or 1
+  p = subobj.notfound and 1 or 0
 end
 if obj.track2 ~= 1 then
   obj.alpha = obj.alpha * (1 - p) + obj.track2 * p
@@ -63,10 +63,10 @@ if subobj.notfound then
   obj.alpha = obj.alpha * obj.track2
   return
 end
-local p
+local p, sp
 if obj.track0 > 0 then
   local eofs = (obj.num-obj.index-1)*obj.track1
-  local sp = ein == 0 and 1 or 1 - math.max(0, math.min(1, (obj.track0-subobj.time+obj.index*obj.track1)/obj.track0))
+  sp = ein == 0 and 1 or 1 - math.max(0, math.min(1, (obj.track0-subobj.time+obj.index*obj.track1)/obj.track0))
   local ep = eout == 0 and 1 or math.max(0, math.min(1, (subobj.totaltime-subobj.time-eofs)/obj.track0))
   p = sp * ep
 else
