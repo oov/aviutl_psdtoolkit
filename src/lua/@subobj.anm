@@ -35,8 +35,10 @@ obj.ox = obj.ox * p + (obj.ox + obj.track3) * (1 - p)
 local p
 if obj.track0 > 0 then
   p = math.max(0, math.min(1, (obj.track0-subobj.time+obj.index*obj.track1)/obj.track0))
-else
+elseif obj.track0 < 0
   p = subobj.notfound and 1 or math.max(0, math.min(1, (obj.track0+subobj.totaltime-subobj.time-(obj.num-obj.index-1)*obj.track1)/obj.track0))
+else
+  p = subobj.notfound and 0 or 1
 end
 if obj.track2 ~= 1 then
   obj.alpha = obj.alpha * (1 - p) + obj.track2 * p
@@ -61,10 +63,15 @@ if subobj.notfound then
   obj.alpha = obj.alpha * obj.track2
   return
 end
-local eofs = (obj.num-obj.index-1)*obj.track1
-local sp = ein == 0 and 1 or 1 - math.max(0, math.min(1, (obj.track0-subobj.time+obj.index*obj.track1)/obj.track0))
-local ep = eout == 0 and 1 or math.max(0, math.min(1, (subobj.totaltime-subobj.time-eofs)/obj.track0))
-local p = sp * ep
+local p
+if obj.track0 > 0 then
+  local eofs = (obj.num-obj.index-1)*obj.track1
+  local sp = ein == 0 and 1 or 1 - math.max(0, math.min(1, (obj.track0-subobj.time+obj.index*obj.track1)/obj.track0))
+  local ep = eout == 0 and 1 or math.max(0, math.min(1, (subobj.totaltime-subobj.time-eofs)/obj.track0))
+  p = sp * ep
+else
+  p = subobj.notfound and 0 or 1
+end
 local function easein(p) return p*p end
 local function easeout(p) return p*(2-p) end
 if p ~= 0 and p ~= 1 then
