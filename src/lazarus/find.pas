@@ -88,6 +88,47 @@ begin
   Result := PWideChar(Result);
 end;
 
+function FindExtendedFilterClassFromSingleWindowWrapper(): THandle;
+  function FindChild(hParent: THandle): THandle;
+  var
+    h: THandle;
+    S: WideString;
+  begin
+    SetLength(S, 256);
+    Result := 0;
+    h := 0;
+    while Result = 0 do
+    begin
+      h := FindWindowExA(hParent, h, nil, nil);
+      if h = 0 then
+        break;
+      if not IsWindowVisible(h) then
+        continue;
+      GetClassNameW(h, @S[1], 255);
+      if PWideChar(S) = 'ExtendedFilterClass' then
+        Result := h
+      else
+        Result := FindChild(h);
+    end;
+  end;
+var
+  h: THandle;
+begin
+  Result := 0;
+  h := 0;
+  while Result = 0 do
+  begin
+    h := FindWindowExA(0, h, 'AVIUTLSINGLEWINDOW', nil);
+    if h = 0 then
+      break;
+    if not IsWindowVisible(h) then
+      continue;
+    Result := h;
+  end;
+  if Result <> 0 then
+    Result := FindChild(Result);
+end;
+
 function FindExEditMultiLineText(out W: TExEditMultiLineText;
   const IncludeText: WideString): boolean;
 var
@@ -99,7 +140,7 @@ begin
   FillChar(w, SizeOf(w), 0);
   mypid := GetCurrentProcessId();
   h := 0;
-  Window := 0;
+  Window := FindExtendedFilterClassFromSingleWindowWrapper();
   while Window = 0 do
   begin
     h := FindWindowExA(0, h, 'ExtendedFilterClass', nil);
