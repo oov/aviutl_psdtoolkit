@@ -406,7 +406,7 @@ begin
   Result := AVIUTL_FALSE;
   case Message of
     WM_FILTER_INIT:
-      CreateWindowW('STATIC', PWideChar('このウィンドウは使用しません'),
+      CreateWindowW('STATIC', PWideChar('まずは説明書を読みましょう。'),
         WS_CHILD or WS_VISIBLE or ES_LEFT, 0, 0, 400, 32,
         Window, 0, Filter^.DLLHInst, nil);
     WM_FILTER_COMMAND:
