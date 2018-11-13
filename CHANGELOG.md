@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2beta31
+
+- PSDファイルのレイヤー合成結果の精度を改善
+
 ## 0.2beta30
 
 - [AviUtlシングルウィンドウプラグイン](http://www.nicovideo.jp/watch/sm33485502) の実験的サポートを追加
