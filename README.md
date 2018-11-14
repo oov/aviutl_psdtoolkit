@@ -2,7 +2,7 @@
 
 PSDToolKit は AviUtl の拡張編集プラグイン上で PSD ファイルを扱えるようにするためのツールキットです。
 
-動作には 64bit Windows が、快適な動作には十分な CPU 速度とメモリが必要です。  
+動作には 64bit 版の Windows 7 以降が、快適な動作には十分な CPU 速度とメモリが必要です。  
 動作確認は AviUtl version 1.00 / 拡張編集 version 0.92 のみで行っています。
 
 更新履歴は CHANGELOG を参照してください。
@@ -31,7 +31,7 @@ https://github.com/oov/aviutl_psdtoolkit/releases
 Windows Subsystem for Linux 上で `./build.bash` を行うと必要なファイルがビルドできます。
 なお、リポジトリは GOPATH 上にある前提でコードが書かれています。
 
-ソースコードのコンパイルには Go 1.10.1 windows/amd64、Lazarus 1.8.2 for Windows 32bit が必要です。  
+ソースコードのコンパイルには Go 1.11.2 windows/amd64、Lazarus 1.8.2 for Windows 32bit が必要です。  
 また、埋め込むリソースファイルのコンパイル用に https://github.com/akavel/rsrc が必要です。  
 Lazarus は C:\lazarus にインストールされているのを想定しています。
 Go から利用している Nuklear は現状 fork 版 ( https://github.com/oov/nuklear/tree/forme ) が必要です。
