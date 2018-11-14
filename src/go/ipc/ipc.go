@@ -119,13 +119,13 @@ func (ipc *IPC) draw(id int, filePath string, width, height int) ([]byte, error)
 	}
 
 	startAt := time.Now().UnixNano()
-	rgba, err := img.Render(context.Background())
+	nrgba, err := img.Render(context.Background())
 	if err != nil {
 		return nil, errors.Wrap(err, "ipc: could not render")
 	}
-	ret := image.NewRGBA(image.Rect(0, 0, width, height))
-	blend.Copy.Draw(ret, ret.Rect, rgba, image.Pt(int(float32(-img.OffsetX)*img.Scale), int(float32(-img.OffsetY)*img.Scale)))
-	rgbaToNBGRA(ret.Pix)
+	ret := image.NewNRGBA(image.Rect(0, 0, width, height))
+	blend.Copy.Draw(ret, ret.Rect, nrgba, image.Pt(int(float32(-img.OffsetX)*img.Scale), int(float32(-img.OffsetY)*img.Scale)))
+	nrgbaToNBGRA(ret.Pix)
 	ipc.cache[ckey] = cacheValue{
 		LastAccess: time.Now(),
 		Data:       ret.Pix,

@@ -33,7 +33,7 @@ type Image struct {
 	Toucher  Toucher
 
 	PSD    *composite.Tree
-	image  *image.RGBA
+	image  *image.NRGBA
 	Layers *LayerManager
 	Flip   Flip
 
@@ -107,10 +107,10 @@ func (img *Image) ScaledCanvasRect() image.Rectangle {
 	return r
 }
 
-func (img *Image) Render(ctx context.Context) (*image.RGBA, error) {
+func (img *Image) Render(ctx context.Context) (*image.NRGBA, error) {
 	var err error
 	if img.image == nil {
-		img.image = image.NewRGBA(img.PSD.CanvasRect)
+		img.image = image.NewNRGBA(img.PSD.CanvasRect)
 		err = img.PSD.Renderer.Render(ctx, img.image)
 	} else {
 		err = img.PSD.Renderer.RenderDiff(ctx, img.image)
@@ -119,17 +119,17 @@ func (img *Image) Render(ctx context.Context) (*image.RGBA, error) {
 		return nil, errors.Wrap(err, "img: render failed")
 	}
 	img.Modified = false
-	rgba := img.image
+	nrgba := img.image
 	if img.Scale < 1 {
-		tmp := image.NewRGBA(img.ScaledCanvasRect())
-		if err = downscale.RGBAGamma(ctx, tmp, rgba, 2.2); err != nil {
+		tmp := image.NewNRGBA(img.ScaledCanvasRect())
+		if err = downscale.NRGBAGamma(ctx, tmp, nrgba, 2.2); err != nil {
 			return nil, errors.Wrap(err, "img: downscale failed")
 		}
-		rgba = tmp
+		nrgba = tmp
 	}
 	f := img.Flip
 	if f != FlipNone {
-		tmp := image.NewRGBA(rgba.Rect)
+		tmp := image.NewNRGBA(nrgba.Rect)
 		g := gift.New()
 		if f == FlipX || f == FlipXY {
 			g.Add(gift.FlipHorizontal())
@@ -137,10 +137,10 @@ func (img *Image) Render(ctx context.Context) (*image.RGBA, error) {
 		if f == FlipY || f == FlipXY {
 			g.Add(gift.FlipVertical())
 		}
-		g.Draw(tmp, rgba)
-		rgba = tmp
+		g.Draw(tmp, nrgba)
+		nrgba = tmp
 	}
-	return rgba, nil
+	return nrgba, nil
 }
 
 func (img *Image) Serialize() (string, error) {

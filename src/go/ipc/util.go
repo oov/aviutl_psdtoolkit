@@ -10,11 +10,10 @@ import (
 	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
 )
 
-func rgbaToNBGRA(p []byte) {
+func nrgbaToNBGRA(p []byte) {
 	for i := 0; i < len(p); i += 4 {
-		a := uint32(p[i+3])
-		if a > 0 {
-			p[i+2], p[i+1], p[i+0] = uint8(uint32(p[i+0])*0xff/a), uint8(uint32(p[i+1])*0xff/a), uint8(uint32(p[i+2])*0xff/a)
+		if p[i+3] > 0 {
+			p[i+2], p[i+0] = p[i+0], p[i+2]
 		}
 	}
 }

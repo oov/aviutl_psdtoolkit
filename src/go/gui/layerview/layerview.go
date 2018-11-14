@@ -69,7 +69,7 @@ func (lv *LayerView) UpdateLayerThumbnails(tree *composite.Tree, size int, doMai
 	lv.thumbnailSize = size
 	jq.Enqueue(func(ctx context.Context) error {
 		s := time.Now().UnixNano()
-		rgba, ptMap, err := tree.ThumbnailSheet(ctx, size)
+		nrgba, ptMap, err := tree.ThumbnailSheet(ctx, size)
 		if err != nil {
 			doMain(func() error {
 				lv.ReportError(errors.Wrap(err, "layerview: failed to create thumbnail sheet"))
@@ -77,7 +77,6 @@ func (lv *LayerView) UpdateLayerThumbnails(tree *composite.Tree, size int, doMai
 			})
 			return nil
 		}
-		nrgba := rgbaToNRGBA(rgba)
 		ods.ODS("thumbnail: %dms", (time.Now().UnixNano()-s)/1e6)
 		if err = doMain(func() error {
 			lv.thumbnail.Update(nrgba)
@@ -490,27 +489,6 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 		}
 	}
 	return modified
-}
-
-func rgbaToNRGBA(rgba *image.RGBA) *image.NRGBA {
-	nrgba := &image.NRGBA{
-		Stride: rgba.Stride,
-		Rect:   rgba.Rect,
-		Pix:    rgba.Pix,
-	}
-	w, lines, pix, stride := rgba.Rect.Dx()<<2, rgba.Rect.Dy(), rgba.Pix, rgba.Stride
-	for y := 0; y < lines; y++ {
-		p := pix[y*stride : y*stride+stride]
-		for x := 0; x < w; x += 4 {
-			a := uint32(p[x+3])
-			if a > 0 {
-				p[x+0] = uint8(uint32(p[x+0]) * 0xff / a)
-				p[x+1] = uint8(uint32(p[x+1]) * 0xff / a)
-				p[x+2] = uint8(uint32(p[x+2]) * 0xff / a)
-			}
-		}
-	}
-	return nrgba
 }
 
 func (lv *LayerView) selectFavoriteNode(img *img.Image, n *img.Node) bool {

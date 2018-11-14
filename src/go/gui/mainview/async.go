@@ -18,27 +18,6 @@ const (
 	vrmFastAfterBeautiful
 )
 
-func rgbaToNRGBA(rgba *image.RGBA) *image.NRGBA {
-	nrgba := &image.NRGBA{
-		Stride: rgba.Stride,
-		Rect:   rgba.Rect,
-		Pix:    rgba.Pix,
-	}
-	w, lines, pix, stride := rgba.Rect.Dx()<<2, rgba.Rect.Dy(), rgba.Pix, rgba.Stride
-	for y := 0; y < lines; y++ {
-		p := pix[y*stride : y*stride+stride]
-		for x := 0; x < w; x += 4 {
-			a := uint32(p[x+3])
-			if a > 0 {
-				p[x+0] = uint8(uint32(p[x+0]) * 0xff / a)
-				p[x+1] = uint8(uint32(p[x+1]) * 0xff / a)
-				p[x+2] = uint8(uint32(p[x+2]) * 0xff / a)
-			}
-		}
-	}
-	return nrgba
-}
-
 func (mv *MainView) updateViewImage(mode viewResizeMode) {
 	jq.CancelAll()
 	jq.Enqueue(func(ctx context.Context) error {
@@ -69,7 +48,7 @@ func (mv *MainView) updateViewImage(mode viewResizeMode) {
 	})
 }
 
-func resizeImage(ctx context.Context, img *image.RGBA, scale float64, fast bool) <-chan *image.NRGBA {
+func resizeImage(ctx context.Context, img *image.NRGBA, scale float64, fast bool) <-chan *image.NRGBA {
 	notify := make(chan *image.NRGBA)
 	go func() {
 		s := time.Now().UnixNano()
@@ -85,19 +64,18 @@ func resizeImage(ctx context.Context, img *image.RGBA, scale float64, fast bool)
 		if r.Dy() == 0 {
 			r.Max.Y++
 		}
-		rgba := image.NewRGBA(r)
+		nrgba := image.NewNRGBA(r)
 		var err error
 		if fast {
-			err = downscale.RGBAFast(ctx, rgba, img)
+			err = downscale.NRGBAFast(ctx, nrgba, img)
 		} else {
-			err = downscale.RGBAGamma(ctx, rgba, img, 2.2)
+			err = downscale.NRGBAGamma(ctx, nrgba, img, 2.2)
 		}
 		if err != nil {
 			ods.ODS("resize: aborted")
 			notify <- nil
 			return
 		}
-		nrgba := rgbaToNRGBA(rgba)
 		ods.ODS("resize: %dms", (time.Now().UnixNano()-s)/1e6)
 		notify <- nrgba
 	}()

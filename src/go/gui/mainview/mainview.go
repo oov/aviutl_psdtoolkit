@@ -14,7 +14,7 @@ import (
 )
 
 type MainView struct {
-	renderedImage *image.RGBA
+	renderedImage *image.NRGBA
 	resizedImage  *image.NRGBA
 
 	visibleAreaImage *image.NRGBA
@@ -95,7 +95,7 @@ func (mv *MainView) adjustZoom(imageRect image.Rectangle) {
 	mv.forceFitToWindow = true
 }
 
-func (mv *MainView) SetRenderedImage(img *image.RGBA) {
+func (mv *MainView) SetRenderedImage(img *image.NRGBA) {
 	mv.renderedImage = img
 	if mv.resizedImage == nil {
 		mv.adjustZoom(img.Rect)
