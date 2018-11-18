@@ -6,7 +6,7 @@ mkdir -p bin/PSDToolKit bin/script/PSDToolKit/exa bin/GCMZDrops/dropper bin/ã‹ã
 sed 's/\r$//' README.md | sed 's/$/\r/' > bin/PSDToolKit.txt
 
 # update version string
-VERSION='v0.2beta31'
+VERSION='v0.2beta32'
 GITHASH=`git rev-parse --short HEAD`
 echo -n "$VERSION ( $GITHASH )" > "VERSION"
 cat << EOS | sed 's/\r$//' | sed 's/$/\r/' > 'src/lazarus/ver.pas'
