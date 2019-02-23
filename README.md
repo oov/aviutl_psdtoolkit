@@ -36,6 +36,10 @@ Windows Subsystem for Linux 上で `./build.bash` を行うと必要なファイ
 Lazarus は C:\lazarus にインストールされているのを想定しています。
 Go から利用している Nuklear は現状 fork 版 ( https://github.com/oov/nuklear/tree/forme ) が必要です。
 
+## Contributors
+
+- mikan-megane
+
 ## Credits
 
 PSDToolKit is made possible by the following open source softwares.
