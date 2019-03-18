@@ -34,6 +34,17 @@ local function fileexists(filepath)
   return false
 end
 
+local function isused(subobj, index, frame)
+  local at = subobj.used[index]
+  if at == nil then
+    subobj.used[index] = frame
+    return false
+  elseif at == frame then
+    return false
+  end
+  return true
+end
+
 local PSDState = {}
 
 -- スクリプトから呼び出す用
@@ -42,6 +53,8 @@ function PSDState.init(obj, o)
     (o.scene or 0)*1000+obj.layer,
     o.ptkf ~= "" and o.ptkf or nil,
     o.tag or 0,
+    obj.layer,
+    obj.frame,
     {
       layer = o.ptkl ~= "" and o.ptkl or nil,
       lipsync = o.lipsync ~= 0 and o.lipsync or nil,
@@ -74,6 +87,8 @@ PSDState.cachekeys = {}
 -- id - 固有識別番号
 -- file - PSDファイルへのパス
 -- tag - 固有識別番号(PSDToolKit ウィンドウ用)
+-- objlayer - obj.layer(subobj の使用済み識別に必要)
+-- objframe - obj.frame(subobj の使用済み識別に必要)
 -- opt - 追加の設定項目
 -- opt には以下のようなオブジェクトを渡す
 -- {
@@ -81,7 +96,7 @@ PSDState.cachekeys = {}
 --   lipsync = 2,
 --   mpslider = 3,
 -- }
-function PSDState.new(id, file, tag, opt)
+function PSDState.new(id, file, tag, objlayer, objframe, opt)
   local self = setmetatable({
     id = id,
     file = file,
@@ -91,12 +106,13 @@ function PSDState.new(id, file, tag, opt)
     offsetx = 0,
     offsety = 0,
     valueholder = nil,
+    valueholderindex = nil,
     talkstate = nil,
     talkstateindex = nil,
     rendered = false,
   }, {__index = PSDState})
   if opt.lipsync ~= nil then
-    self.talkstate = P.talk:get(opt.lipsync)
+    self.talkstate = P.talk:get(opt.lipsync, objlayer, objframe)
     if self.talkstate ~= nil then
       self.talkstate.deflocut = opt.ls_locut
       self.talkstate.defhicut = opt.ls_hicut
@@ -106,13 +122,15 @@ function PSDState.new(id, file, tag, opt)
     self.talkstateindex = opt.lipsync
   end
   if opt.mpslider ~= nil then
-    self.valueholder = P.valueholder:get(opt.mpslider)
+    self.valueholder = P.valueholder:get(opt.mpslider, objlayer, objframe)
+    self.valueholderindex = 1
   end
   return self
 end
 
 function PSDState:addstate(layer, index)
   -- index が指定されていない場合は layer の内容を直接追加
+  -- (layer の type が 文字列)
   if index == nil then
     if layer ~= nil and layer ~= "" then
       table.insert(self.layer, layer)
@@ -123,7 +141,8 @@ function PSDState:addstate(layer, index)
   -- index が指定されている場合は layer 内の項目のひとつを割り当てるが、
   -- もし valueholder が存在する場合は index を上書きする
   if self.valueholder ~= nil then
-    index = self.valueholder:get(index, 0)
+    index = self.valueholder:get(index, self.valueholderindex, 0)
+    self.valueholderindex = self.valueholderindex + 1
   end
   -- 値が範囲外でなければ割り当て
   if 0 < index and index <= #layer then
@@ -417,7 +436,7 @@ end
 
 function TalkState.new(frame, time, totalframe, totaltime)
   return setmetatable({
-    used = false,
+    used = {},
     frame = frame,
     time = time,
     totalframe = totalframe,
@@ -594,12 +613,11 @@ function TalkStates:setphoneme(obj, phonemestr)
   self.states[obj.layer] = t
 end
 
-function TalkStates:get(index)
+function TalkStates:get(index, layer, frame)
   local ts = self.states[index]
-  if ts == nil or ts.used then
+  if ts == nil or isused(ts, layer, frame) then
     return nil
   end
-  ts.used = true
   return ts
 end
 
@@ -610,7 +628,7 @@ function SubtitleState.new(text, frame, time, totalframe, totaltime, unescape)
     text = text:gsub("([\128-\160\224-\255]\092)\092", "%1")
   end
   return setmetatable({
-    used = false,
+    used = {},
     text = text,
     frame = frame,
     time = time,
@@ -648,10 +666,9 @@ end
 
 function SubtitleStates:mes(index, obj)
   local s = self:get(index)
-  if s == nil or s.used then
+  if s == nil or isused(s, obj.layer, obj.frame) then
     return P.emptysubobj
   end
-  s.used = true
   s:mes(obj)
   return s
 end
@@ -660,8 +677,8 @@ local ValueHolder = {}
 
 function ValueHolder.new(frame, time, totalframe, totaltime)
   return setmetatable({
-    used = false,
-    index = 1,
+    used = {},
+    rendered = false,
     values = {},
     frame = frame,
     time = time,
@@ -674,12 +691,11 @@ function ValueHolder:add(value)
   table.insert(self.values, value)
 end
 
-function ValueHolder:get(defvalue, unusedvalue)
-  if (self.index < 1)or(self.index > #self.values) then
+function ValueHolder:get(defvalue, vhindex, unusedvalue)
+  if (vhindex < 1)or(vhindex > #self.values) then
     return defvalue
   end
-  local v = self.values[self.index]
-  self.index = self.index + 1
+  local v = self.values[vhindex]
   if v == unusedvalue then
     return defvalue
   end
@@ -696,7 +712,7 @@ end
 
 function ValueHolderStates:set(index, values, obj)
   local vh = self.states[index]
-  if vh == nil or vh.used or vh.frame ~= obj.frame then
+  if vh == nil or vh.rendered or vh.frame ~= obj.frame then
     vh = ValueHolder.new(
       obj.frame,
       obj.time,
@@ -710,12 +726,12 @@ function ValueHolderStates:set(index, values, obj)
   end
 end
 
-function ValueHolderStates:get(index)
+function ValueHolderStates:get(index, layer, frame)
   local vh = self.states[index]
-  if vh == nil or vh.used then
+  if vh == nil or isused(vh, layer, frame) then
     return nil
   end
-  vh.used = true
+  vh.rendered = true
   return vh
 end
 
