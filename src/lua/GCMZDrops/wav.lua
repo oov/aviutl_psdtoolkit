@@ -26,12 +26,15 @@ local function fileread(filepath)
 end
 
 local function postprocesssubtitle(subtitle, encoding, setting)
-  if encoding == "utf8" then
-    -- BOM があるなら除去する
-    if subtitle:sub(1, 3) == "\239\187\191" then
-      subtitle = subtitle:sub(4)
-    end
-  else
+  -- BOM がある場合はそれを基準にエンコーディング設定を上書きする
+  if subtitle:sub(1, 3) == "\239\187\191" then
+    encoding = "utf8"
+  elseif subtitle:sub(1, 2) == "\255\254" then
+    encoding = "utf16le"
+  elseif subtitle:sub(1, 2) == "\254\255" then
+    encoding = "utf16be"
+  end
+  if encoding ~= "utf8" then
     -- 内部の保持状態を UTF-8 に統一する
     subtitle = GCMZDrops.convertencoding(subtitle, encoding, "utf8")
   end
