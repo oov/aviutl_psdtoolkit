@@ -9,6 +9,7 @@ uses
   lua;
 
 function luaopen_PSDToolKitBridge(L: Plua_State): integer; cdecl;
+procedure SetCurrentFramePtr(ACurrentFrame, ACurrentFrameN: PInteger);
 procedure SetExFuncPtr(const ExFunc: Pointer; const SampleRate, Channels: integer);
 
 implementation
@@ -19,6 +20,13 @@ uses
 var
   bridge: TPSDToolKitBridge;
   CacheMgr: TCacheManager;
+  CurrentFrame, CurrentFrameN: PInteger;
+
+procedure SetCurrentFramePtr(ACurrentFrame, ACurrentFrameN: PInteger);
+begin
+  CurrentFrame := ACurrentFrame;
+  CurrentFrameN := ACurrentFrameN;
+end;
 
 procedure SetExFuncPtr(const ExFunc: Pointer; const SampleRate, Channels: integer);
 begin
@@ -388,6 +396,18 @@ begin
   Result := LuaReturn(L, Main());
 end;
 
+function LuaGetCurrentFrame(L: Plua_State): integer; cdecl;
+begin
+  if Assigned(CurrentFrame) and Assigned(CurrentFrameN) then begin
+    lua_pushnumber(L, InterlockedExchangeAdd(CurrentFrame^, 0));
+    lua_pushnumber(L, InterlockedExchangeAdd(CurrentFrameN^, 0));
+  end else begin
+    lua_pushnumber(L, -1);
+    lua_pushnumber(L, -1);
+  end;
+  Result := 2;
+end;
+
 function luaopen_PSDToolKitBridge(L: Plua_State): integer; cdecl;
 type
   TEntry = record
@@ -395,7 +415,7 @@ type
     Func: lua_CFunction;
   end;
 const
-  Functions: array[0..11] of TEntry = (
+  Functions: array[0..12] of TEntry = (
     (Name: 'addfile'; Func: @LuaAddFile),
     (Name: 'clearfiles'; Func: @LuaClearFiles),
     (Name: 'draw'; Func: @LuaDraw),
@@ -407,7 +427,8 @@ const
     (Name: 'putcache'; Func: @LuaPutCache),
     (Name: 'getcache'; Func: @LuaGetCache),
     (Name: 'type'; Func: @LuaType),
-    (Name: 'getspeaklevel'; Func: @LuaGetSpeakLevel));
+    (Name: 'getspeaklevel'; Func: @LuaGetSpeakLevel),
+    (Name: 'getcurrentframe'; Func: @LuaGetCurrentFrame));
 var
   i: integer;
 begin

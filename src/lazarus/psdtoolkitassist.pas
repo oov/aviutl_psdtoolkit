@@ -20,6 +20,7 @@ type
     destructor Destroy(); override;
     function InitProc(fp: PFilter): boolean;
     function ExitProc({%H-}fp: PFilter): boolean;
+    function Proc({%H-}fp: PFilter; fpip: PFilterProcInfo): boolean;
     function WndProc(Window: HWND; Message: UINT; WP: WPARAM;
       LP: LPARAM; Edit: Pointer; Filter: PFilter): LRESULT;
     function ProjectLoadProc(Filter: PFilter; Edit: Pointer; Data: Pointer;
@@ -39,6 +40,21 @@ type
 
 var
   MainDLLInstance: THandle;
+  CurrentFrame, CurrentFrameN: integer;
+
+procedure SetCurrentFramePtr();
+type
+  TSetCurrentFramePtrFunc = procedure(CurrentFrame, CurrentFrameN: PInteger);
+var
+  F: TSetCurrentFramePtrFunc;
+begin
+  if MainDLLInstance = 0 then
+    Exit;
+  F := TSetCurrentFramePtrFunc(GetProcAddress(MainDLLInstance, 'SetCurrentFramePtr'));
+  if F = nil then
+    Exit;
+  F(@CurrentFrame, @CurrentFrameN);
+end;
 
 procedure SetExFuncPtr(const Filter: PFilter; const Edit: Pointer);
 type
@@ -316,19 +332,19 @@ begin
   Result := @FEntry;
 end;
 
-constructor TPSDToolKitAssist.Create;
+constructor TPSDToolKitAssist.Create();
 const
   PluginName = 'PSDToolKit';
   PluginInfo = 'PSDToolKitAssist ' + Version;
 begin
   inherited Create();
   FillChar(FEntry, SizeOf(FEntry), 0);
-  FEntry.Flag := FILTER_FLAG_ALWAYS_ACTIVE or FILTER_FLAG_EX_INFORMATION or FILTER_FLAG_DISP_FILTER;
+  FEntry.Flag := FILTER_FLAG_ALWAYS_ACTIVE or FILTER_FLAG_EX_INFORMATION or FILTER_FLAG_DISP_FILTER or FILTER_FLAG_PRIORITY_HIGHEST;
   FEntry.Name := PluginName;
   FEntry.Information := PluginInfo;
 end;
 
-destructor TPSDToolKitAssist.Destroy;
+destructor TPSDToolKitAssist.Destroy();
 begin
   inherited Destroy();
 end;
@@ -390,6 +406,7 @@ begin
     fp^.Hwnd, 1, VK_W, ADD_MENU_ITEM_FLAG_KEY_CTRL);
   fp^.ExFunc^.AddMenuItem(fp, PChar(ShiftJISString(SettingCaption)),
     fp^.Hwnd, 2, 0, 0);
+  SetCurrentFramePtr();
 end;
 
 function TPSDToolKitAssist.ExitProc(fp: PFilter): boolean;
@@ -398,6 +415,13 @@ begin
   SetExFuncPtr(nil, nil);
   if MainDLLInstance = 0 then
     Exit;
+end;
+
+function TPSDToolKitAssist.Proc(fp: PFilter; fpip: PFilterProcInfo): boolean;
+begin
+  InterlockedExchange(CurrentFrame, fpip^.Frame);
+  InterlockedExchange(CurrentFrameN, fpip^.FrameN);
+  Result := True;
 end;
 
 function TPSDToolKitAssist.WndProc(Window: HWND; Message: UINT; WP: WPARAM;

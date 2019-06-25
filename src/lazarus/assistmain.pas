@@ -32,6 +32,11 @@ begin
   Result := BoolConv[Assist.ExitProc(fp)];
 end;
 
+function AssistFuncProc(fp: PFilter; fpip: PFilterProcInfo): AviUtlBool; cdecl;
+begin
+  Result := BoolConv[Assist.Proc(fp, fpip)];
+end;
+
 function AssistFuncWndProc(Window: HWND; Message: UINT; WP: WPARAM;
   LP: LPARAM; Edit: Pointer; Filter: PFilter): LRESULT; cdecl;
 begin
@@ -59,6 +64,7 @@ initialization
   Assist := TPSDToolKitAssist.Create();
   Assist.Entry^.FuncInit := @AssistFuncInit;
   Assist.Entry^.FuncExit := @AssistFuncExit;
+  Assist.Entry^.FuncProc := @AssistFuncProc;
   Assist.Entry^.FuncWndProc := @AssistFuncWndProc;
   Assist.Entry^.FuncProjectLoad := @AssistFuncProjectLoad;
   Assist.Entry^.FuncProjectSave := @AssistFuncProjectSave;

@@ -91,7 +91,7 @@
     <Version Value="11"/>
     <PathDelim Value="\"/>
     <Target>
-      <Filename Value="..\..\bin\script\PSDToolKit\PSDToolKitBridge" ApplyConventions="False"/>
+      <Filename Value="..\..\bin\script\PSDToolKit\PSDToolKitBridge.dll" ApplyConventions="False"/>
     </Target>
     <SearchPaths>
       <IncludeFiles Value="$(ProjOutDir)"/>

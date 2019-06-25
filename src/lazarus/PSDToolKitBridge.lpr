@@ -19,6 +19,7 @@ uses
 
 exports
   luaopen_PSDToolKitBridge,
+  SetCurrentFramePtr,
   SetExFuncPtr;
 
 initialization
