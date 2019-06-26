@@ -375,7 +375,7 @@ begin
       raise Exception.Create(
         'script\PSDToolKit\PSDToolKitBridge.dll の読み込みに失敗しました。');
     if not LuaLoaded() then
-      raise Exception.Create('lua51.dll の読み込みに失敗しました。');
+      raise Exception.Create('lua51.dll の読み込みに失敗しました。'#13#10'インストール方法が間違っている可能性があります。'#13#10'詳しくは付属マニュアルのチュートリアルを参照してください。');
     if fp^.ExFunc^.GetSysInfo(nil, @asi) = AVIUTL_FALSE then
       raise Exception.Create(
         'AviUtl のバージョン情報取得に失敗しました。');
