@@ -34,7 +34,8 @@ local function fileexists(filepath)
   return false
 end
 
-local function isused(subobj, index, frame)
+local function isused(subobj, index)
+  local frame = require("PSDToolKitBridge").getcurrentframe()
   local at = subobj.used[index]
   if at == nil then
     subobj.used[index] = frame
@@ -54,7 +55,6 @@ function PSDState.init(obj, o)
     o.ptkf ~= "" and o.ptkf or nil,
     o.tag or 0,
     obj.layer,
-    obj.frame,
     {
       layer = o.ptkl ~= "" and o.ptkl or nil,
       lipsync = o.lipsync ~= 0 and o.lipsync or nil,
@@ -88,7 +88,6 @@ PSDState.cachekeys = {}
 -- file - PSDファイルへのパス
 -- tag - 固有識別番号(PSDToolKit ウィンドウ用)
 -- objlayer - obj.layer(subobj の使用済み識別に必要)
--- objframe - obj.frame(subobj の使用済み識別に必要)
 -- opt - 追加の設定項目
 -- opt には以下のようなオブジェクトを渡す
 -- {
@@ -96,7 +95,7 @@ PSDState.cachekeys = {}
 --   lipsync = 2,
 --   mpslider = 3,
 -- }
-function PSDState.new(id, file, tag, objlayer, objframe, opt)
+function PSDState.new(id, file, tag, objlayer, opt)
   local self = setmetatable({
     id = id,
     file = file,
@@ -112,7 +111,7 @@ function PSDState.new(id, file, tag, objlayer, objframe, opt)
     rendered = false,
   }, {__index = PSDState})
   if opt.lipsync ~= nil then
-    self.talkstate = P.talk:get(opt.lipsync, objlayer, objframe)
+    self.talkstate = P.talk:get(opt.lipsync, objlayer)
     if self.talkstate ~= nil then
       self.talkstate.deflocut = opt.ls_locut
       self.talkstate.defhicut = opt.ls_hicut
@@ -122,7 +121,7 @@ function PSDState.new(id, file, tag, objlayer, objframe, opt)
     self.talkstateindex = opt.lipsync
   end
   if opt.mpslider ~= nil then
-    self.valueholder = P.valueholder:get(opt.mpslider, objlayer, objframe)
+    self.valueholder = P.valueholder:get(opt.mpslider, objlayer)
     self.valueholderindex = 1
   end
   return self
@@ -613,9 +612,9 @@ function TalkStates:setphoneme(obj, phonemestr)
   self.states[obj.layer] = t
 end
 
-function TalkStates:get(index, layer, frame)
+function TalkStates:get(index, layer)
   local ts = self.states[index]
-  if ts == nil or isused(ts, layer, frame) then
+  if ts == nil or isused(ts, layer) then
     return nil
   end
   return ts
@@ -666,7 +665,7 @@ end
 
 function SubtitleStates:mes(index, obj)
   local s = self:get(index)
-  if s == nil or isused(s, obj.layer, obj.frame) then
+  if s == nil or isused(s, obj.layer) then
     return P.emptysubobj
   end
   s:mes(obj)
@@ -726,9 +725,9 @@ function ValueHolderStates:set(index, values, obj)
   end
 end
 
-function ValueHolderStates:get(index, layer, frame)
+function ValueHolderStates:get(index, layer)
   local vh = self.states[index]
-  if vh == nil or isused(vh, layer, frame) then
+  if vh == nil or isused(vh, layer) then
     return nil
   end
   vh.rendered = true
