@@ -1,4 +1,5 @@
 local P = {}
+local PSDToolKitBridge = require("PSDToolKitBridge")
 
 local function print(obj, msg)
   obj.load("figure", "\148\119\140\105", 0, 1, 1)
@@ -35,7 +36,7 @@ local function fileexists(filepath)
 end
 
 local function isused(subobj, index)
-  local frame = require("PSDToolKitBridge").getcurrentframe()
+  local frame = PSDToolKitBridge.getcurrentframe()
   local at = subobj.used[index]
   if at == nil then
     subobj.used[index] = frame
@@ -162,7 +163,6 @@ function PSDState:render(obj)
   if self.file == nil then
     error("no image")
   end
-  local PSDToolKitBridge = require("PSDToolKitBridge")
   self.rendered = true
   if #self.layer > 0 then
     local layer = {}
@@ -478,7 +478,7 @@ end
 function TalkState:getvolume()
   local locut = self.locut ~= 0 and self.locut or self.deflocut
   local hicut = self.hicut ~= 0 and self.hicut or self.defhicut
-  local v = require("PSDToolKitBridge").getspeaklevel(self.wavfile, self.time, locut, hicut) * 100
+  local v = PSDToolKitBridge.getspeaklevel(self.wavfile, self.time, locut, hicut) * 100
   local threshold = self.threshold ~= 0 and self.threshold or self.defthreshold
   local sensitivity = self.sensitivity ~= 0 and self.sensitivity or self.defsensitivity
   return self.cstate:getvolume(v, self.time, sensitivity) / threshold
