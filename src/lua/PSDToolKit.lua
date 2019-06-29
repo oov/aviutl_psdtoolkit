@@ -35,13 +35,12 @@ local function fileexists(filepath)
   return false
 end
 
-local function isused(subobj, index)
-  local frame = PSDToolKitBridge.getcurrentframe()
-  local at = subobj.used[index]
-  if at == nil then
-    subobj.used[index] = frame
+local function isdead(subobj)
+  local unsed1, unsed2, render_index = PSDToolKitBridge.getcurrentframe()
+  if subobj.used == nil then
+    subobj.used = render_index
     return false
-  elseif at == frame then
+  elseif subobj.used == render_index then
     return false
   end
   return true
@@ -112,7 +111,7 @@ function PSDState.new(id, file, tag, objlayer, opt)
     rendered = false,
   }, {__index = PSDState})
   if opt.lipsync ~= nil then
-    self.talkstate = P.talk:get(opt.lipsync, objlayer)
+    self.talkstate = P.talk:get(opt.lipsync)
     if self.talkstate ~= nil then
       self.talkstate.deflocut = opt.ls_locut
       self.talkstate.defhicut = opt.ls_hicut
@@ -122,7 +121,7 @@ function PSDState.new(id, file, tag, objlayer, opt)
     self.talkstateindex = opt.lipsync
   end
   if opt.mpslider ~= nil then
-    self.valueholder = P.valueholder:get(opt.mpslider, objlayer)
+    self.valueholder = P.valueholder:get(opt.mpslider)
     self.valueholderindex = 1
   end
   return self
@@ -435,7 +434,7 @@ end
 
 function TalkState.new(frame, time, totalframe, totaltime)
   return setmetatable({
-    used = {},
+    used = nil,
     frame = frame,
     time = time,
     totalframe = totalframe,
@@ -612,9 +611,10 @@ function TalkStates:setphoneme(obj, phonemestr)
   self.states[obj.layer] = t
 end
 
-function TalkStates:get(index, layer)
+function TalkStates:get(index)
   local ts = self.states[index]
-  if ts == nil or isused(ts, layer) then
+  if ts == nil or isdead(ts) then
+    self.states[index] = nil
     return nil
   end
   return ts
@@ -627,7 +627,7 @@ function SubtitleState.new(text, frame, time, totalframe, totaltime, unescape)
     text = text:gsub("([\128-\160\224-\255]\092)\092", "%1")
   end
   return setmetatable({
-    used = {},
+    used = nil,
     text = text,
     frame = frame,
     time = time,
@@ -664,8 +664,9 @@ function SubtitleStates:get(index)
 end
 
 function SubtitleStates:mes(index, obj)
-  local s = self:get(index)
-  if s == nil or isused(s, obj.layer) then
+  local s = self.states[index]
+  if s == nil or isdead(s) then
+    self.states[index] = nil
     return P.emptysubobj
   end
   s:mes(obj)
@@ -676,7 +677,7 @@ local ValueHolder = {}
 
 function ValueHolder.new(frame, time, totalframe, totaltime)
   return setmetatable({
-    used = {},
+    used = nil,
     rendered = false,
     values = {},
     frame = frame,
@@ -725,9 +726,10 @@ function ValueHolderStates:set(index, values, obj)
   end
 end
 
-function ValueHolderStates:get(index, layer)
+function ValueHolderStates:get(index)
   local vh = self.states[index]
-  if vh == nil or isused(vh, layer) then
+  if vh == nil or isdead(vh) then
+    self.states[index] = nil
     return nil
   end
   vh.rendered = true

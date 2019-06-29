@@ -9,7 +9,7 @@ uses
   lua;
 
 function luaopen_PSDToolKitBridge(L: Plua_State): integer; cdecl;
-procedure SetCurrentFramePtr(ACurrentFrame, ACurrentFrameN: PInteger);
+procedure SetCurrentFramePtr(ACurrentFrame, ACurrentFrameN, ACurrentRenderIndex: PInteger);
 procedure SetExFuncPtr(const ExFunc: Pointer; const SampleRate, Channels: integer);
 
 implementation
@@ -20,12 +20,13 @@ uses
 var
   bridge: TPSDToolKitBridge;
   CacheMgr: TCacheManager;
-  CurrentFrame, CurrentFrameN: PInteger;
+  CurrentFrame, CurrentFrameN, CurrentRenderIndex: PInteger;
 
-procedure SetCurrentFramePtr(ACurrentFrame, ACurrentFrameN: PInteger);
+procedure SetCurrentFramePtr(ACurrentFrame, ACurrentFrameN, ACurrentRenderIndex: PInteger);
 begin
   CurrentFrame := ACurrentFrame;
   CurrentFrameN := ACurrentFrameN;
+  CurrentRenderIndex := ACurrentRenderIndex;
 end;
 
 procedure SetExFuncPtr(const ExFunc: Pointer; const SampleRate, Channels: integer);
@@ -398,14 +399,16 @@ end;
 
 function LuaGetCurrentFrame(L: Plua_State): integer; cdecl;
 begin
-  if Assigned(CurrentFrame) and Assigned(CurrentFrameN) then begin
+  if Assigned(CurrentFrame) and Assigned(CurrentFrameN) and Assigned(CurrentRenderIndex) then begin
     lua_pushnumber(L, InterlockedExchangeAdd(CurrentFrame^, 0));
     lua_pushnumber(L, InterlockedExchangeAdd(CurrentFrameN^, 0));
+    lua_pushnumber(L, InterlockedExchangeAdd(CurrentRenderIndex^, 0));
   end else begin
     lua_pushnumber(L, -1);
     lua_pushnumber(L, -1);
+    lua_pushnumber(L, -1);
   end;
-  Result := 2;
+  Result := 3;
 end;
 
 function luaopen_PSDToolKitBridge(L: Plua_State): integer; cdecl;

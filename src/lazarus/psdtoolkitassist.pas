@@ -40,11 +40,11 @@ type
 
 var
   MainDLLInstance: THandle;
-  CurrentFrame, CurrentFrameN: integer;
+  CurrentFrame, CurrentFrameN, CurrentRenderIndex: integer;
 
 procedure SetCurrentFramePtr();
 type
-  TSetCurrentFramePtrFunc = procedure(CurrentFrame, CurrentFrameN: PInteger);
+  TSetCurrentFramePtrFunc = procedure(CurrentFrame, CurrentFrameN, CurrentRenderIndex: PInteger);
 var
   F: TSetCurrentFramePtrFunc;
 begin
@@ -53,7 +53,7 @@ begin
   F := TSetCurrentFramePtrFunc(GetProcAddress(MainDLLInstance, 'SetCurrentFramePtr'));
   if F = nil then
     Exit;
-  F(@CurrentFrame, @CurrentFrameN);
+  F(@CurrentFrame, @CurrentFrameN, @CurrentRenderIndex);
 end;
 
 procedure SetExFuncPtr(const Filter: PFilter; const Edit: Pointer);
@@ -421,6 +421,7 @@ function TPSDToolKitAssist.Proc(fp: PFilter; fpip: PFilterProcInfo): boolean;
 begin
   InterlockedExchange(CurrentFrame, fpip^.Frame);
   InterlockedExchange(CurrentFrameN, fpip^.FrameN);
+  InterlockedExchangeAdd(CurrentRenderIndex, 1);
   Result := True;
 end;
 
