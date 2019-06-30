@@ -339,7 +339,7 @@ const
 begin
   inherited Create();
   FillChar(FEntry, SizeOf(FEntry), 0);
-  FEntry.Flag := FILTER_FLAG_ALWAYS_ACTIVE or FILTER_FLAG_EX_INFORMATION or FILTER_FLAG_DISP_FILTER or FILTER_FLAG_PRIORITY_HIGHEST;
+  FEntry.Flag := FILTER_FLAG_ALWAYS_ACTIVE or FILTER_FLAG_EX_INFORMATION or FILTER_FLAG_PRIORITY_HIGHEST;
   FEntry.Name := PluginName;
   FEntry.Information := PluginInfo;
 end;
