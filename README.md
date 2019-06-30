@@ -31,7 +31,7 @@ https://github.com/oov/aviutl_psdtoolkit/releases
 Windows Subsystem for Linux 上で `./build.bash` を行うと必要なファイルがビルドできます。
 なお、リポジトリは GOPATH 上にある前提でコードが書かれています。
 
-ソースコードのコンパイルには Go 1.12.1 windows/amd64、Lazarus 2.0.0 for Windows 32bit が必要です。  
+ソースコードのコンパイルには Go 1.12.5 windows/amd64、Lazarus 2.0.2 for Windows 32bit が必要です。  
 また、埋め込むリソースファイルのコンパイル用に https://github.com/akavel/rsrc が必要です。  
 Lazarus は C:\lazarus にインストールされているのを想定しています。
 Go から利用している Nuklear は現状 fork 版 ( https://github.com/oov/nuklear/tree/forme ) が必要です。
