@@ -109,3 +109,10 @@ if ay ~= 1 then
   local ofs = (obj.h * obj.zoom - obj.h * z) * 0.5
   obj.oy = obj.oy + (ay == 0 and ofs or -ofs)
 end
+
+@XYZ”½‰f
+if not subobj.notfound then
+  obj.ox = obj.ox + subobj.x
+  obj.oy = obj.oy + subobj.y
+  obj.oz = obj.oz + subobj.z
+end

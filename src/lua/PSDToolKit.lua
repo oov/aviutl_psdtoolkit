@@ -622,13 +622,16 @@ end
 
 local SubtitleState = {}
 
-function SubtitleState.new(text, frame, time, totalframe, totaltime, unescape)
+function SubtitleState.new(text, x, y, z, frame, time, totalframe, totaltime, unescape)
   if unescape then
     text = text:gsub("([\128-\160\224-\255]\092)\092", "%1")
   end
   return setmetatable({
     used = nil,
     text = text,
+    x = x,
+    y = y,
+    z = z,
     frame = frame,
     time = time,
     totalframe = totalframe,
@@ -651,6 +654,9 @@ end
 function SubtitleStates:set(text, obj, unescape)
   self.states[obj.layer] = SubtitleState.new(
     text,
+    obj.x,
+    obj.y,
+    obj.z,
     obj.frame,
     obj.time,
     obj.totalframe,
@@ -675,11 +681,14 @@ end
 
 local ValueHolder = {}
 
-function ValueHolder.new(frame, time, totalframe, totaltime)
+function ValueHolder.new(x, y, z, frame, time, totalframe, totaltime)
   return setmetatable({
     used = nil,
     rendered = false,
     values = {},
+    x = x,
+    y = y,
+    z = z,
     frame = frame,
     time = time,
     totalframe = totalframe,
@@ -714,6 +723,9 @@ function ValueHolderStates:set(index, values, obj)
   local vh = self.states[index]
   if vh == nil or vh.rendered or vh.frame ~= obj.frame then
     vh = ValueHolder.new(
+      obj.x,
+      obj.y,
+      obj.z,
       obj.frame,
       obj.time,
       obj.totalframe,
@@ -771,6 +783,9 @@ function PrepObject:fakeobj(mgl, mgr)
   end
   return {
     layer = self.layer,
+    x = self.x,
+    y = self.y,
+    z = self.z,
     frame = frame,
     time = frame / self.framerate,
     totalframe = totalframe,
@@ -781,6 +796,9 @@ end
 function PrepObject:set(o, obj)
   self.o = o
   self.layer = obj.layer
+  self.x = obj.x
+  self.y = obj.y
+  self.z = obj.z
   self.frame = obj.frame
   self.totalframe = obj.totalframe
   self.framerate = obj.framerate
@@ -812,7 +830,16 @@ P.subtitle = SubtitleStates.new()
 P.valueholder = ValueHolderStates.new()
 P.prep = PrepObject.new()
 
-P.emptysubobj = {frame = 0, time = 0, totalframe = 1, totaltime = 1, notfound = true}
+P.emptysubobj = {
+  x = 0,
+  y = 0,
+  z = 0,
+  frame = 0,
+  time = 0,
+  totalframe = 1,
+  totaltime = 1,
+  notfound = true
+}
 
 P.print = print
 P.PSDState = PSDState
