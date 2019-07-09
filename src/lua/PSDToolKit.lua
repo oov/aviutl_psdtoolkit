@@ -689,7 +689,7 @@ local ValueHolder = {}
 function ValueHolder.new(x, y, z, frame, time, totalframe, totaltime)
   return setmetatable({
     used = nil,
-    rendered = false,
+    created = getrenderindex(),
     values = {},
     x = x,
     y = y,
@@ -726,7 +726,7 @@ end
 
 function ValueHolderStates:set(index, values, obj)
   local vh = self.states[index]
-  if vh == nil or vh.rendered or vh.frame ~= obj.frame then
+  if vh == nil or vh.created ~= getrenderindex() then
     vh = ValueHolder.new(
       obj.x,
       obj.y,
@@ -749,7 +749,6 @@ function ValueHolderStates:get(index)
     self.states[index] = nil
     return nil
   end
-  vh.rendered = true
   return vh
 end
 
