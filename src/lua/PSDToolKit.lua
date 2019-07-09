@@ -852,6 +852,7 @@ end
 function PrepObject:set(o, obj)
   self.o = o
   self.layer = obj.layer
+  self.created = getrenderindex()
   self.x = obj.x
   self.y = obj.y
   self.z = obj.z
@@ -861,21 +862,21 @@ function PrepObject:set(o, obj)
 end
 
 function PrepObject:getst(obj)
-  if self.layer ~= obj.layer or self.frame ~= obj.frame or self.totalframe ~= obj.totalframe then
+  if self.layer ~= obj.layer or self.created ~= getrenderindex() then
     return nil
   end
   return self:fakeobj(self.o.st_mgl or 0, self.o.st_mgr or 0)
 end
 
 function PrepObject:getls(obj)
-  if self.layer ~= obj.layer or self.frame ~= obj.frame or self.totalframe ~= obj.totalframe then
+  if self.layer ~= obj.layer or self.created ~= getrenderindex() then
     return nil
   end
   return self:fakeobj(self.o.ls_mgl or 0, self.o.ls_mgr or 0)
 end
 
 function PrepObject:getsl(obj)
-  if self.layer ~= obj.layer or self.frame ~= obj.frame or self.totalframe ~= obj.totalframe then
+  if self.layer ~= obj.layer or self.created ~= getrenderindex() then
     return nil
   end
   return self:fakeobj(self.o.sl_mgl or 0, self.o.sl_mgr or 0)
