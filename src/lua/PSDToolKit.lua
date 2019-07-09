@@ -716,6 +716,33 @@ function ValueHolder:get(defvalue, vhindex, unusedvalue)
   return v
 end
 
+local MultipleValueHolder = {}
+
+function MultipleValueHolder.new(holders, x, y, z, frame, time, totalframe, totaltime)
+  return setmetatable({
+    used = nil,
+    holders = holders,
+    x = x,
+    y = y,
+    z = z,
+    frame = frame,
+    time = time,
+    totalframe = totalframe,
+    totaltime = totaltime
+  }, {__index = MultipleValueHolder})
+end
+
+function MultipleValueHolder:get(defvalue, vhindex, unusedvalue)
+  local idx = -1
+  for i in ipairs(self.holders) do
+    idx = self.holders[i]:get(-1, vhindex, unusedvalue)
+    if idx ~= -1 then
+      return idx
+    end
+  end
+  return defvalue
+end
+
 local ValueHolderStates = {}
 
 function ValueHolderStates.new()
@@ -744,12 +771,39 @@ function ValueHolderStates:set(index, values, obj)
 end
 
 function ValueHolderStates:get(index)
-  local vh = self.states[index]
-  if vh == nil or isdead(vh) then
-    self.states[index] = nil
-    return nil
+  local indices
+  if PSDToolKitBridge.type(index) == "table" then
+    indices = index
+  else
+    indices = {index}
   end
-  return vh
+  local vhs = {}
+  local first = P.emptysubobj
+  for i in ipairs(indices) do
+    local vh = self.states[indices[i]]
+    if vh == nil or isdead(vh) then
+      self.states[indices] = nil
+    else
+      table.insert(vhs, vh)
+      if i == 1 then
+        first = vh
+      end
+    end
+  end
+  if #vhs == 0 then
+    return nil
+  else
+    return MultipleValueHolder.new(
+      vhs,
+      first.x,
+      first.y,
+      first.z,
+      first.frame,
+      first.time,
+      first.totalframe,
+      first.totaltime
+    )
+  end
 end
 
 local PrepObject = {}
