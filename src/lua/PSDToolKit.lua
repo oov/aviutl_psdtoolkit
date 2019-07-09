@@ -35,8 +35,13 @@ local function fileexists(filepath)
   return false
 end
 
+local function getrenderindex()
+  local frame, totalframe, render_index = PSDToolKitBridge.getcurrentframe()
+  return render_index
+end
+
 local function isdead(subobj)
-  local unsed1, unsed2, render_index = PSDToolKitBridge.getcurrentframe()
+  local render_index = getrenderindex()
   if subobj.used == nil then
     subobj.used = render_index
     return false
