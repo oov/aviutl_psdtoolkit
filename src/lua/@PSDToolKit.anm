@@ -24,3 +24,100 @@ local o = PSDToolKit.prep:getsl(obj) or obj
 if o ~= nil then
   PSDToolKit.valueholder:set(o.layer, {obj.track0, obj.track1, obj.track2, obj.track3}, o)
 end
+
+@吹き出し
+--track0:透明度,0,100,0,0.01
+--dialog:色/col,local col=0xffffff;余白 縦,local mtb=12;余白 横,local mlr=24;角丸,local corner=16;配置(0-8),local pos=7;しっぽ(0-12),local tailpos=8;しっぽX,local tx=0;しっぽY,local ty=0;しっぽ幅,local tw=12;しっぽ高さ,local th=12;しっぽ先X,local ex=0;しっぽ先Y,local ey=0
+if not subobj.notfound then
+  -- マージンを確保しながら塗りつぶして角丸処理
+  local w, h = obj.w/2 + mlr, obj.h/2 + mtb
+  obj.copybuffer("cache:text", "obj")
+  obj.setoption("drawtarget", "tempbuffer", w*2, h*2)
+  obj.load("figure", "四角形", col, 1)
+  obj.drawpoly(-w, -h, 0, w, -h, 0, w, h, 0, -w, h, 0)
+  obj.load("tempbuffer")
+  obj.effect("境界ぼかし", "範囲", corner)
+  obj.effect("縁取り", "サイズ", 1, "ぼかし", 0, "color", col)
+  obj.effect("縁取り", "サイズ", 1, "ぼかし", 0, "color", col)
+
+  local textx, texty = 0, 0
+
+  -- しっぽ
+  if tailpos ~= 0 then
+    tw, th = tw/2, th/2
+    local x, y, ext
+    if tailpos == 1 then
+      x, y, ext = -w + tw, -h, "上"
+    elseif tailpos == 2 then
+      x, y, ext = 0, -h, "上"
+    elseif tailpos == 3 then
+      x, y, ext = w - tw, -h, "上"
+    elseif tailpos == 4 then
+      x, y, ext = w, -h + th, "右"
+    elseif tailpos == 5 then
+      x, y, ext = w, 0, "右"
+    elseif tailpos == 6 then
+      x, y, ext = w, h - th, "右"
+    elseif tailpos == 7 then
+      x, y, ext = w - tw, h, "下"
+    elseif tailpos == 8 then
+      x, y, ext = 0, h, "下"
+    elseif tailpos == 9 then
+      x, y, ext = -w + tw, h, "下"
+    elseif tailpos == 10 then
+      x, y, ext = -w, h - th, "左"
+    elseif tailpos == 11 then
+      x, y, ext = -w, 0, "左"
+    elseif tailpos == 12 then
+      x, y, ext = -w, -h + th, "左"
+    end
+    x, y = x + tx, y + ty
+    if ext == "左" or ext == "右" then
+      obj.effect("領域拡張", ext, tw*2)
+    else
+      obj.effect("領域拡張", ext, th*2)
+    end
+    obj.copybuffer("tmp", "obj")
+    obj.load("figure", "四角形", col, 1)
+    if ext == "左" then
+      obj.drawpoly(x - tw + ex, y + ey, 0, x + tw, y - th, 0, x + tw, y, 0, x + tw, y + th, 0)
+      textx, texty = tw, 0
+    elseif ext == "下" then
+      obj.drawpoly(x - tw, y - th, 0, x, y - th, 0, x + tw, y - th, 0, x + ex, y + th + ey, 0)
+      textx, texty = 0, -th
+    elseif ext == "右" then
+      obj.drawpoly(x - tw, y - th, 0, x + tw + ex, y + ey, 0, x - tw, y + th, 0, x - tw, y, 0)
+      textx, texty = -tw, 0
+    elseif ext == "上" then
+      obj.drawpoly(x - tw, y + th, 0, x + ex, y - th + ey, 0, x + tw, y + th, 0, x, y + th, 0)
+      textx, texty = 0, th
+    end
+  else
+    obj.copybuffer("tmp", "obj")
+  end
+
+  obj.load("tempbuffer")
+  obj.setoption("drawtarget", "tempbuffer", obj.w, obj.h)
+  obj.draw(0, 0, 0, 1.0, (100 - obj.track0)/100, 0, 0, 0)
+
+  obj.copybuffer("obj", "cache:text")
+  obj.draw(textx, texty, 0, 1.0, 1.0, 0, 0, 0)
+
+  obj.load("tempbuffer")
+
+  -- 配置
+  if pos == 0 or pos == 3 or pos == 6 then
+    obj.cx = -obj.w/2
+  elseif pos == 2 or pos == 5 or pos == 8 then
+    obj.cx = obj.w/2
+  else
+    obj.cx = 0
+  end
+  if pos == 0 or pos == 1 or pos == 2 then
+    obj.cy = -obj.h/2
+  elseif pos == 6 or pos == 7 or pos == 8 then
+    obj.cy = obj.h/2
+  else
+    obj.cy = 0
+  end
+end
