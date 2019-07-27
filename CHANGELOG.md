@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2beta40
+
+- 字幕に BOM 付き UTF-8 のファイルを使うと BOM が除去されなかったのを修正(beta35 から発生)
+
 ## 0.2beta39
 
 - アニメーション効果 `XYZ反映@subobj` を追加
