@@ -26,13 +26,17 @@ local function fileread(filepath)
 end
 
 local function postprocesssubtitle(subtitle, encoding, setting)
-  -- BOM がある場合はそれを基準にエンコーディング設定を上書きする
+  -- BOM がある場合はそれを基準にエンコーディング設定を上書きし、
+  -- ついでに BOM もカットする
   if subtitle:sub(1, 3) == "\239\187\191" then
     encoding = "utf8"
+    subtitle = subtitle:sub(4)
   elseif subtitle:sub(1, 2) == "\255\254" then
     encoding = "utf16le"
+    subtitle = subtitle:sub(3)
   elseif subtitle:sub(1, 2) == "\254\255" then
     encoding = "utf16be"
+    subtitle = subtitle:sub(3)
   end
   if encoding ~= "utf8" then
     -- 内部の保持状態を UTF-8 に統一する
