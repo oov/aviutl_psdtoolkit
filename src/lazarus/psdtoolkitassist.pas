@@ -101,6 +101,42 @@ begin
     Result := GetMem(nsize);
 end;
 
+function ParseExEditVersion(S: string): integer;
+  function NumDot(S: string): integer;
+  var
+    i: integer;
+  begin
+    for i := Low(S) to High(S) do
+      case S[i] of
+        '0', '1', '2', '3', '4', '5', '6', '7', '8', '9', '.':;
+        else begin
+          Result := i - 1;
+          Exit;
+        end;
+      end;
+    Result := Length(S);
+  end;
+const
+  ExEditVersionString = ' version ';
+var
+  I: integer;
+  e: Extended;
+begin
+  Result := 0;
+  I := Pos(ExEditVersionString, S);
+  if I = 0 then
+     Exit;
+  Delete(S, 1, I + Length(ExEditVersionString) - 1);
+  I := NumDot(S);
+  if I = 0 then
+     Exit;
+  Delete(S, I + 1, Length(S));
+  E := StrToFloatDef(S, 0);
+  if E = 0 then
+     Exit;
+  Result := Trunc(E * 10000);
+end;
+
 function FindExEditWindow(): THandle;
 var
   h: THandle;
@@ -356,10 +392,9 @@ const
   ShowGUICaption: WideString = 'ウィンドウを表示';
   SettingCaption: WideString = '環境設定';
   ExEditNameANSI = #$8a#$67#$92#$a3#$95#$d2#$8f#$57; // '拡張編集'
-  ExEditVersion = ' version 0.92 ';
   PROCESSOR_ARCHITECTURE_AMD64 = 9;
 var
-  i: integer;
+  i, v: integer;
   si: SYSTEM_INFO;
   asi: TSysInfo;
   exedit: PFilter;
@@ -387,9 +422,11 @@ begin
       exedit := fp^.ExFunc^.GetFilterP(i);
       if (exedit = nil) or (exedit^.Name <> ExEditNameANSI) then
         continue;
-      if StrPos(exedit^.Information, ExEditVersion) = nil then
-        raise Exception.Create('PSDToolKit を使うには拡張編集' +
-          ExEditVersion + 'が必要です。');
+      v := ParseExEditVersion(exedit^.Information);
+      if v = 0 then
+        raise Exception.Create('拡張編集のバージョンナンバー解析に失敗しました。');
+      if v < 9200 then
+        raise Exception.Create('PSDToolKit を使うには拡張編集 version 0.92 以降が必要です。');
       break;
     end;
   except
