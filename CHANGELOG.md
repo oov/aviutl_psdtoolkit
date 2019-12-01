@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2beta42
+
+- Photopea で編集した PSD ファイルが開けないことがあったのを修正
+
 ## 0.2beta41
 
 - 拡張編集 0.93rc1 に暫定対応（LuaJIT には未対応）
