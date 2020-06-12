@@ -572,19 +572,13 @@ function TalkStates.new()
 end
 
 function TalkStates:set(obj, srcfile, locut, hicut, threshold, sensitivity)
-  local ext = srcfile:sub(-4):lower()
-  if ext ~= ".wav" and ext ~= ".lab" then
-    error("unsupported file: " .. srcfile)
-  end
-
+  local wav, lab = PSDToolKitBridge.getwavlabpath(srcfile)
   local t = TalkState.new(obj.frame, obj.time, obj.totalframe, obj.totaltime)
-  local wavfile = string.sub(srcfile, 1, #srcfile - 3) .. "wav"
-  if ext == ".wav" or fileexists(wavfile) then
-    t:setfile(wavfile, locut, hicut, threshold, sensitivity)
+  if wav ~= nil then
+    t:setfile(wav, locut, hicut, threshold, sensitivity)
   end
-  local labfile = string.sub(srcfile, 1, #srcfile - 3) .. "lab"
-  if ext == ".lab" or fileexists(labfile) then
-    t:setphoneme(labfile, obj.time)
+  if lab ~= nil then
+    t:setphoneme(lab, obj.time)
   end
 
   local cstate = self.cstates[obj.layer]

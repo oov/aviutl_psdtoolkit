@@ -21,6 +21,7 @@ var
   bridge: TPSDToolKitBridge;
   CacheMgr: TCacheManager;
   CurrentFrame, CurrentFrameN, CurrentRenderIndex: PInteger;
+  CurrentProjectPath: UTF8String;
 
 procedure SetCurrentFramePtr(ACurrentFrame, ACurrentFrameN, ACurrentRenderIndex: PInteger);
 begin
@@ -87,8 +88,42 @@ function LuaUpdateCurrentProjectPath(L: Plua_State): integer; cdecl;
     try
       FilePath := lua_tostring(L, 1);
       lua_pop(L, 1);
+      CurrentProjectPath := FilePath;
       bridge.UpdateCurrentProjectPath(FilePath);
       Result := 0;
+    except
+      on E: Exception do
+        Result := LuaPushError(L, E);
+    end;
+  end;
+
+begin
+  Result := LuaReturn(L, Main());
+end;
+
+function LuaGetWavLabPath(L: Plua_State): integer; cdecl;
+
+  function Main(): integer;
+  var
+    S: ShiftJISString;
+    FilePath: UTF8String;
+  begin
+    try
+      FilePath := UTF8String(ShiftJISString(lua_tostring(L, 1)));
+      lua_pop(L, 1);
+      if (not FileExists(FilePath))and(CurrentProjectPath <> '') then
+        FilePath := IncludeTrailingPathDelimiter(ExtractFileDir(CurrentProjectPath)) + ExtractFileName(FilePath);
+      S := ShiftJISString(UTF8String(ChangeFileExt(FilePath, '.wav')));
+      if FileExists(S) then
+        lua_pushlstring(L, @S[1], Length(S))
+      else
+        lua_pushnil(L);
+      S := ShiftJISString(UTF8String(ChangeFileExt(FilePath, '.lab')));
+      if FileExists(S) then
+        lua_pushlstring(L, @S[1], Length(S))
+      else
+        lua_pushnil(L);
+      Result := 2;
     except
       on E: Exception do
         Result := LuaPushError(L, E);
@@ -439,9 +474,10 @@ type
     Func: lua_CFunction;
   end;
 const
-  Functions: array[0..13] of TEntry = (
+  Functions: array[0..14] of TEntry = (
     (Name: 'addfile'; Func: @LuaAddFile),
     (Name: 'updatecurrentprojectpath'; Func: @LuaUpdateCurrentProjectPath),
+    (Name: 'getwavlabpath'; Func: @LuaGetWavLabPath),
     (Name: 'clearfiles'; Func: @LuaClearFiles),
     (Name: 'draw'; Func: @LuaDraw),
     (Name: 'getlayernames'; Func: @LuaGetLayerNames),
