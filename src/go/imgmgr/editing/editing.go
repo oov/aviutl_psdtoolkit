@@ -23,9 +23,9 @@ import (
 
 const (
 	thumbnailSize = 48
-	textureSize   = 256
+	textureSize   = 512
 
-	limit = (textureSize * textureSize) / (thumbnailSize * thumbnailSize)
+	limit = int(textureSize/thumbnailSize) * int(textureSize/thumbnailSize)
 )
 
 type Thumbnailer struct {
