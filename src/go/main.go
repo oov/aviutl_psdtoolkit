@@ -42,6 +42,10 @@ func main() {
 	g := gui.New(srcs)
 
 	ipcm.AddFile = g.AddFileSync
+	ipcm.UpdateCurrentProjectPath = func(file string) error {
+		srcs.ProjectPath = file
+		return nil
+	}
 	ipcm.AddFileIfNotExists = g.AddFileIfNotExistsSync
 	ipcm.ClearFiles = g.ClearFiles
 	ipcm.ShowGUI = g.ShowWindow

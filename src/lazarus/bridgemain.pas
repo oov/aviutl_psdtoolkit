@@ -29,6 +29,7 @@ type
     constructor Create();
     destructor Destroy(); override;
     procedure AddFile(FilePath: UTF8String; Tag: DWord);
+    procedure UpdateCurrentProjectPath(FilePath: UTF8String);
     procedure ClearFiles();
     procedure Draw(id: integer; filename: UTF8String; p: PByteArray;
       Width: integer; Height: integer);
@@ -93,6 +94,21 @@ begin
     ODS('  FilePath: %s / Tag: %u', [FilePath, Tag]);
   finally
     LeaveCS('ADDF');
+  end;
+  FReceiver.WaitResult();
+  FReceiver.Done();
+end;
+
+procedure TPSDToolKitBridge.UpdateCurrentProjectPath(FilePath: UTF8String);
+begin
+  EnterCS('UPDP');
+  try
+    PrepareIPC();
+    FRemoteProcess.Input.WriteBuffer('UPDP', 4);
+    WriteString(FRemoteProcess.Input, FilePath);
+    ODS('  FilePath: %s', [FilePath]);
+  finally
+    LeaveCS('UPDP');
   end;
   FReceiver.WaitResult();
   FReceiver.Done();

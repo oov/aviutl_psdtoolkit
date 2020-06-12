@@ -63,13 +63,14 @@ type cacheValue struct {
 }
 
 type IPC struct {
-	AddFile            func(file string, tag int) error
-	AddFileIfNotExists func(file string, tag int, state string) error
-	ClearFiles         func() error
-	ShowGUI            func() (uintptr, error)
-	Serialize          func() (string, error)
-	Deserialize        func(state string) error
-	GCing              func()
+	AddFile                  func(file string, tag int) error
+	UpdateCurrentProjectPath func(file string) error
+	AddFileIfNotExists       func(file string, tag int, state string) error
+	ClearFiles               func() error
+	ShowGUI                  func() (uintptr, error)
+	Serialize                func() (string, error)
+	Deserialize              func(state string) error
+	GCing                    func()
 
 	tmpImg temporary.Temporary
 	cache  map[cacheKey]cacheValue
@@ -320,6 +321,16 @@ func (ipc *IPC) dispatch(cmd string) error {
 			return err
 		}
 		if err = ipc.AddFile(file, tag); err != nil {
+			return err
+		}
+		return writeUint32(0x80000000)
+
+	case "UPDP":
+		file, err := readString()
+		if err != nil {
+			return err
+		}
+		if err = ipc.UpdateCurrentProjectPath(file); err != nil {
 			return err
 		}
 		return writeUint32(0x80000000)

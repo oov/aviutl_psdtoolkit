@@ -54,15 +54,24 @@ func (src *Source) LastAccess() time.Time {
 
 // Sources has a map from filePath to Source.
 type Sources struct {
-	m      sync.Mutex
-	srcs   map[string]*Source
-	Logger Logger
+	m           sync.Mutex
+	srcs        map[string]*Source
+	ProjectPath string
+	Logger      Logger
+}
+
+func (s *Sources) openFallback(filePath string) (*os.File, error) {
+	f, err := os.Open(filePath)
+	if err != nil && os.IsNotExist(err) && s.ProjectPath != "" {
+		return os.Open(filepath.Join(filepath.Dir(s.ProjectPath), filepath.Base(filePath)))
+	}
+	return f, err
 }
 
 func (s *Sources) load(filePath string) (*Source, error) {
 	files := strings.SplitN(filePath, "|", 2)
 	startAt := time.Now().UnixNano()
-	f, err := os.Open(files[0])
+	f, err := s.openFallback(files[0])
 	if err != nil {
 		return nil, errors.Wrap(err, "source: cannot open the image file")
 	}
@@ -91,7 +100,7 @@ func (s *Sources) load(filePath string) (*Source, error) {
 	var pf *img.PFV
 	var wr warn.Warning
 	if len(files) > 1 {
-		f2, err := os.Open(filepath.Join(filepath.Dir(files[0]), files[1]))
+		f2, err := s.openFallback(filepath.Join(filepath.Dir(files[0]), files[1]))
 		if err != nil {
 			return nil, errors.Wrap(err, "source: cannot open the pfv file")
 		}

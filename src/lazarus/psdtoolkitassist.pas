@@ -361,6 +361,55 @@ begin
   end;
 end;
 
+procedure UpdateCurrentProjectPath(Edit: Pointer; Filter: PFilter);
+var
+  SI: TSysInfo;
+  FI: TFileInfo;
+  err: ShiftJISString;
+  U: UTF8String;
+  L: Plua_state;
+  Proc: lua_CFunction;
+  n: integer;
+begin
+  if MainDLLInstance = 0 then
+    Exit;
+
+  FillChar(SI, SizeOf(SI), 0);
+  FillChar(FI, SizeOf(FI), 0);
+  if (Edit = nil) or (Filter = nil)
+    or (Filter^.ExFunc^.GetSysInfo(Edit, @SI) = AVIUTL_FALSE)
+    or (SI.ProjectName = nil) or (SI.ProjectName = '')
+    or (Filter^.ExFunc^.GetFileInfo(Edit, @FI) = AVIUTL_FALSE)
+    or (FI.FrameN = 0) or (FI.AudioRate = 0) or (FI.AudioCh = 0) then
+    U := ''
+  else
+    U := ShiftJISString(SI.ProjectName);
+
+  Proc := lua_CFunction(GetProcAddress(MainDLLInstance, 'luaopen_PSDToolKitBridge'));
+  if Proc = nil then
+    raise Exception.Create('luaopen_PSDToolKitBridge not found');
+  L := lua_newstate(@LuaAllocator, nil);
+  if L = nil then
+    raise Exception.Create('failed to execute lua_newstate');
+  try
+    lua_pushstring(L, 'PSDToolKitBridge');
+    n := Proc(L);
+    if n <> 1 then
+      raise Exception.Create('luaopen_PSDToolKitBridge returned unexpected value');
+    lua_getfield(L, 2, 'updatecurrentprojectpath');
+    if not lua_iscfunction(L, 3) then
+      raise Exception.Create('PSDToolKitBridge.updatecurrentprojectpath is not a function');
+
+    lua_pushlstring(L, @U[1], Length(U));
+    if lua_pcall(L, 1, 0, 0) <> 0 then begin
+      err := lua_tostring(L, -1);
+      raise Exception.Create(err);
+    end;
+  finally
+    lua_close(L);
+  end;
+end;
+
 { TPSDToolKitAssist }
 
 function TPSDToolKitAssist.GetEntry: PFilterDLL;
@@ -481,10 +530,15 @@ begin
     WM_FILTER_FILE_OPEN: begin
       SetExFuncPtr(Filter, Edit);
       ClearFiles();
+      UpdateCurrentProjectPath(Edit, Filter);
     end;
     WM_FILTER_FILE_CLOSE: begin
       SetExFuncPtr(nil, nil);
       ClearFiles();
+      UpdateCurrentProjectPath(nil, nil);
+    end;
+    WM_FILTER_SAVE_END: begin
+      UpdateCurrentProjectPath(Edit, Filter);
     end;
   end;
 end;

@@ -78,6 +78,27 @@ begin
   Result := LuaReturn(L, Main());
 end;
 
+function LuaUpdateCurrentProjectPath(L: Plua_State): integer; cdecl;
+
+  function Main(): integer;
+  var
+    FilePath: UTF8String;
+  begin
+    try
+      FilePath := lua_tostring(L, 1);
+      lua_pop(L, 1);
+      bridge.UpdateCurrentProjectPath(FilePath);
+      Result := 0;
+    except
+      on E: Exception do
+        Result := LuaPushError(L, E);
+    end;
+  end;
+
+begin
+  Result := LuaReturn(L, Main());
+end;
+
 function LuaClearFiles(L: Plua_State): integer; cdecl;
 
   function Main(): integer;
@@ -418,8 +439,9 @@ type
     Func: lua_CFunction;
   end;
 const
-  Functions: array[0..12] of TEntry = (
+  Functions: array[0..13] of TEntry = (
     (Name: 'addfile'; Func: @LuaAddFile),
+    (Name: 'updatecurrentprojectpath'; Func: @LuaUpdateCurrentProjectPath),
     (Name: 'clearfiles'; Func: @LuaClearFiles),
     (Name: 'draw'; Func: @LuaDraw),
     (Name: 'getlayernames'; Func: @LuaGetLayerNames),
