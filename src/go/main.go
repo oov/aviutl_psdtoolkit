@@ -46,7 +46,7 @@ func main() {
 		srcs.ProjectPath = file
 		return nil
 	}
-	ipcm.AddFileIfNotExists = g.AddFileIfNotExistsSync
+	ipcm.UpdateTagState = g.UpdateTagStateSync
 	ipcm.ClearFiles = g.ClearFiles
 	ipcm.ShowGUI = g.ShowWindow
 	ipcm.Serialize = g.Serialize

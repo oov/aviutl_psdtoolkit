@@ -86,6 +86,7 @@ type item struct {
 	DisplayName string
 	Image       *img.Image
 	Tag         int
+	LatestState string
 
 	Thumbnail *image.NRGBA
 }
@@ -99,6 +100,16 @@ type Editing struct {
 	thumbnailSheet        *image.NRGBA
 	thumbnailSheetTexture *nkhelper.Texture
 	thumbnails            []nk.Image
+}
+
+func (ed *Editing) UpdateLatestState(filePath string, tag int, state string) bool {
+	for idx, item := range ed.images {
+		if item.Tag == tag {
+			ed.images[idx].LatestState = state
+			return true
+		}
+	}
+	return false
 }
 
 func (ed *Editing) Add(filePath string, tag int) (int, error) {

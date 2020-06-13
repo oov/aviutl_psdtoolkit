@@ -87,7 +87,7 @@ func (g *GUI) AddFileSync(path string, tag int) error {
 	return nil
 }
 
-func (g *GUI) AddFileIfNotExists(path string, tag int, state string) error {
+func (g *GUI) UpdateTagState(path string, tag int, state string) error {
 	// TODO: We do not want to rely on gc package.
 	gc.EnterCS()
 	go g.do(func() error { gc.LeaveCS(); return nil })
@@ -103,12 +103,13 @@ func (g *GUI) AddFileIfNotExists(path string, tag int, state string) error {
 		}
 		g.changeSelectedImage()
 	}
+	g.edImg.UpdateLatestState(path, tag, state)
 	return nil
 }
 
-func (g *GUI) AddFileIfNotExistsSync(path string, tag int, state string) error {
+func (g *GUI) UpdateTagStateSync(path string, tag int, state string) error {
 	err := g.do(func() error {
-		return g.AddFileIfNotExists(path, tag, state)
+		return g.UpdateTagState(path, tag, state)
 	})
 	if err != nil {
 		return err

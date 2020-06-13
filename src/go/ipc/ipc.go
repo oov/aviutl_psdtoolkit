@@ -65,7 +65,7 @@ type cacheValue struct {
 type IPC struct {
 	AddFile                  func(file string, tag int) error
 	UpdateCurrentProjectPath func(file string) error
-	AddFileIfNotExists       func(file string, tag int, state string) error
+	UpdateTagState           func(file string, tag int, state string) error
 	ClearFiles               func() error
 	ShowGUI                  func() (uintptr, error)
 	Serialize                func() (string, error)
@@ -201,7 +201,7 @@ func (ipc *IPC) setProps(id int, filePath string, tag *int, layer *string, scale
 
 	if tag != nil && *tag != 0 {
 		go func() {
-			ipc.AddFileIfNotExists(filePath, *tag, state)
+			ipc.UpdateTagState(filePath, *tag, state)
 		}()
 	}
 
