@@ -258,14 +258,16 @@ func (g *GUI) update() {
 			if g.img != nil {
 				rgn := nk.NkWindowGetContentRegion(ctx)
 
-				nk.NkLayoutRowDynamic(ctx, float32(topPaneHeight-padding), 3)
+				nk.NkLayoutRowBegin(ctx, nk.Dynamic, float32(topPaneHeight-padding), 4)
+				nk.NkLayoutRowPush(ctx, 0.3)
 				if nk.NkButtonLabel(ctx, "送る") != 0 || nkhelper.IsPressed(ctx, 19) { // 19 = ^S
-					if nk.NkInputIsKeyDown(ctx.Input(), nk.KeyCtrl) != 0 {
-						modified = g.loadEditingImage() || modified
-					} else {
-						g.sendEditingImage()
-					}
+					g.sendEditingImage()
 				}
+				nk.NkLayoutRowPush(ctx, 0.3)
+				if nk.NkButtonLabel(ctx, "取り込む") != 0 {
+					modified = g.loadEditingImage() || modified
+				}
+				nk.NkLayoutRowPush(ctx, 0.2)
 				fx, fy := g.img.FlipX(), g.img.FlipY()
 				if (nk.NkSelectLabel(ctx, "⇆", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(fx)) != 0) != fx {
 					modified = g.img.SetFlipX(!fx) || modified
@@ -273,6 +275,7 @@ func (g *GUI) update() {
 				if (nk.NkSelectLabel(ctx, "⇅", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(fy)) != 0) != fy {
 					modified = g.img.SetFlipY(!fy) || modified
 				}
+				nk.NkLayoutRowEnd(ctx)
 
 				nk.NkLayoutRowBegin(ctx, nk.Static, float32(rgn.H()-padding), 3)
 
