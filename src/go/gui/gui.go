@@ -260,7 +260,11 @@ func (g *GUI) update() {
 
 				nk.NkLayoutRowDynamic(ctx, float32(topPaneHeight-padding), 3)
 				if nk.NkButtonLabel(ctx, "送る") != 0 || nkhelper.IsPressed(ctx, 19) { // 19 = ^S
-					g.sendEditingImage()
+					if nk.NkInputIsKeyDown(ctx.Input(), nk.KeyCtrl) != 0 {
+						modified = g.loadEditingImage() || modified
+					} else {
+						g.sendEditingImage()
+					}
 				}
 				fx, fy := g.img.FlipX(), g.img.FlipY()
 				if (nk.NkSelectLabel(ctx, "⇆", nk.TextAlignCentered|nk.TextAlignMiddle, b2i(fx)) != 0) != fx {
@@ -348,6 +352,15 @@ func (g *GUI) sendEditingImage() {
 	if err != nil {
 		g.ReportError(errors.Wrap(err, "gui: cannot send editing image state"))
 	}
+}
+
+func (g *GUI) loadEditingImage() bool {
+	modified, err := g.img.Deserialize(g.edImg.SelectedImageLatestState())
+	if err != nil {
+		g.ReportError(errors.Wrap(err, "gui: cannot load state"))
+		return false
+	}
+	return modified
 }
 
 func (g *GUI) ReportError(err error) {

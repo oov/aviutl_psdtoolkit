@@ -232,6 +232,13 @@ func (ed *Editing) SelectedImageThumbnailer() *Thumbnailer {
 	return &Thumbnailer{ed: ed, item: &ed.images[ed.SelectedIndex]}
 }
 
+func (ed *Editing) SelectedImageLatestState() string {
+	if ed.SelectedIndex < 0 || ed.SelectedIndex >= len(ed.images) {
+		return ""
+	}
+	return ed.images[ed.SelectedIndex].LatestState
+}
+
 type serializeData struct {
 	Image     *img.ProjectState
 	Tag       int
