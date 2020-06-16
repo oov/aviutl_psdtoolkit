@@ -9,6 +9,7 @@ import (
 	"github.com/golang-ui/nuklear/nk"
 	"github.com/pkg/errors"
 
+	"github.com/oov/aviutl_psdtoolkit/src/go/clipboard"
 	"github.com/oov/aviutl_psdtoolkit/src/go/gc"
 	"github.com/oov/aviutl_psdtoolkit/src/go/gui/layerview"
 	"github.com/oov/aviutl_psdtoolkit/src/go/gui/mainview"
@@ -258,6 +259,9 @@ func (g *GUI) update() {
 			if g.img != nil {
 				rgn := nk.NkWindowGetContentRegion(ctx)
 
+				if nk.NkInputIsKeyDown(ctx.Input(), nk.KeyCopy) != 0 {
+					g.setClipboard()
+				}
 				nk.NkLayoutRowBegin(ctx, nk.Dynamic, float32(topPaneHeight-padding), 4)
 				nk.NkLayoutRowPush(ctx, 0.3)
 				if nk.NkButtonLabel(ctx, "送る") != 0 || nkhelper.IsPressed(ctx, 19) { // 19 = ^S
@@ -354,6 +358,18 @@ func (g *GUI) sendEditingImage() {
 	err = g.SendEditingImageState(*g.img.FilePath, state)
 	if err != nil {
 		g.ReportError(errors.Wrap(err, "gui: cannot send editing image state"))
+	}
+}
+func (g *GUI) setClipboard() {
+	img, err := g.img.Render(context.Background())
+	if err != nil {
+		g.ReportError(errors.Wrap(err, "gui: failed to render image"))
+		return
+	}
+	err = clipboard.SetImage(img)
+	if err != nil {
+		g.ReportError(errors.Wrap(err, "gui: failed to set clipboard"))
+		return
 	}
 }
 
