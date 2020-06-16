@@ -4,11 +4,12 @@ import (
 	"fmt"
 	"os"
 	"runtime"
-	"syscall"
 	"unsafe"
+
+	"golang.org/x/sys/windows"
 )
 
-var outputDebugStringW = syscall.NewLazyDLL("kernel32").NewProc("OutputDebugStringW")
+var outputDebugStringW = windows.NewLazySystemDLL("kernel32").NewProc("OutputDebugStringW")
 var debugging = os.Getenv("PSDTOOLKITDEBUG") != ""
 
 func ODS(format string, a ...interface{}) {
@@ -16,7 +17,7 @@ func ODS(format string, a ...interface{}) {
 		return
 	}
 	s := fmt.Sprintf("psdtoolkit srv: "+format, a...)
-	p, err := syscall.UTF16PtrFromString(s)
+	p, err := windows.UTF16PtrFromString(s)
 	if err != nil {
 		return
 	}
