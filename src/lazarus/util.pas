@@ -323,9 +323,13 @@ begin
 end;
 
 procedure WriteString(const S: TStream; const V: UTF8String);
+var
+  L: integer;
 begin
-  WriteInt32(S, Length(V));
-  S.WriteBuffer(V[1], Length(V));
+  L := Length(V);
+  WriteInt32(S, L);
+  if L > 0 then
+     S.WriteBuffer(V[1], L);
 end;
 
 procedure WriteRawString(const S: TStream; const V: RawByteString);
