@@ -18,7 +18,7 @@ type
     H: PAVIFileHandle;
     FI: TFileInfo;
     FileName: ShiftJISString;
-    CurSampleRate, CurChannels, CurSamples: integer;
+    CurSamples: integer;
     LastUsed: QWORD;
   end;
   PMovieEntry = ^TMovieEntry;
@@ -167,15 +167,11 @@ begin
     if Result^.H = nil then
       raise Exception.Create('failed to open file');
     Result^.FileName := FileName;
-    Result^.CurSampleRate := Result^.FI.AudioRate;
-    Result^.CurChannels := Result^.FI.AudioCh;
     Result^.CurSamples := Result^.FI.AudioN;
-  end;
-  if (SampleRate <> Result^.CurSampleRate) or (1 <> Result^.CurChannels) then
-  begin
-    Result^.CurSamples := FExFunc^.AVIFileSetAudioSampleRate(Result^.H, SampleRate, 1);
-    Result^.CurSampleRate := SampleRate;
-    Result^.CurChannels := 1;
+    if (SampleRate <> Result^.FI.AudioRate) or (1 <> Result^.FI.AudioCh) then
+    begin
+      Result^.CurSamples := FExFunc^.AVIFileSetAudioSampleRate(Result^.H, SampleRate, 1);
+    end;
   end;
 end;
 
@@ -366,7 +362,7 @@ begin
     V := FindMovie(FileName);
     // It seems avi_file_read_audio_sample writes more samples than requested.
     // Therefore we have to reserve large buffer enough for that.
-    Read := FExFunc^.AVIFileReadAudioSample(V^.H, Trunc(Pos * double(V^.CurSampleRate)),
+    Read := FExFunc^.AVIFileReadAudioSample(V^.H, Trunc(Pos * SampleRate),
       RDFTSize, A);
     V^.LastUsed := GetTickCount64();
     if Read = 0 then
@@ -376,7 +372,7 @@ begin
       (A + I)^ := 0;
 
     R := FRDFT.Execute(A, 1);
-    HzDivider := double(V^.CurSampleRate) / RDFTSize;
+    HzDivider := double(SampleRate) / RDFTSize;
     N := 0;
     for I := 0 to RDFTSize div 2 - 1 do
     begin
