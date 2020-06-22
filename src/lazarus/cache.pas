@@ -41,8 +41,6 @@ type
     FRDFT: TRDFT;
     FMovieMap: array[0..31] of TMovieEntry;
     FExFunc: PExFunc;
-    FSampleRate: integer;
-    FChannels: integer;
     FCS: TRTLCriticalSection;
     FNotify: PRTLEvent;
     function FindMovie(const FileName: ShiftJISString): PMovieEntry;
@@ -51,7 +49,7 @@ type
   public
     constructor Create();
     destructor Destroy(); override;
-    procedure SetExFuncPtr(const P: PExFunc; const SampleRate, Channels: integer);
+    procedure SetExFuncPtr(const P: PExFunc);
     procedure PutToMemory(Name: UTF8String; P: Pointer; Len: integer);
     procedure PutToFile(Name: UTF8String; P: Pointer; Len: integer);
     function Get(Name: UTF8String; P: Pointer; Len: integer): boolean;
@@ -74,6 +72,7 @@ uses
 
 const
   RDFTSize = 256;
+  SampleRate = 24000;
 
 function FNV1a32(S: UTF8String): DWORD;
 var
@@ -172,10 +171,10 @@ begin
     Result^.CurChannels := Result^.FI.AudioCh;
     Result^.CurSamples := Result^.FI.AudioN;
   end;
-  if (FSampleRate <> Result^.CurSampleRate) or (1 <> Result^.CurChannels) then
+  if (SampleRate <> Result^.CurSampleRate) or (1 <> Result^.CurChannels) then
   begin
-    Result^.CurSamples := FExFunc^.AVIFileSetAudioSampleRate(Result^.H, FSampleRate, 1);
-    Result^.CurSampleRate := FSampleRate;
+    Result^.CurSamples := FExFunc^.AVIFileSetAudioSampleRate(Result^.H, SampleRate, 1);
+    Result^.CurSampleRate := SampleRate;
     Result^.CurChannels := 1;
   end;
 end;
@@ -240,6 +239,7 @@ begin
   FNotify := RTLEventCreate();
   FCacheMap := TCacheMap.Create();
   FillChar(FMovieMap[0], Length(FMovieMap) * SizeOf(TMovieEntry), 0);
+  SetLength(FBuffer, SampleRate div 10); // 100ms
   FRDFT := TRDFT.Create(RDFTSize);
 end;
 
@@ -395,8 +395,7 @@ begin
   end;
 end;
 
-procedure TCacheManager.SetExFuncPtr(const P: PExFunc;
-  const SampleRate, Channels: integer);
+procedure TCacheManager.SetExFuncPtr(const P: PExFunc);
 var
   I: integer;
 begin
@@ -411,9 +410,6 @@ begin
     end;
   end;
   FExFunc := P;
-  FSampleRate := SampleRate;
-  FChannels := Channels;
-  SetLength(FBuffer, FSampleRate div 10); // 100ms
 end;
 
 end.

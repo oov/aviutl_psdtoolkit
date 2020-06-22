@@ -58,10 +58,9 @@ end;
 
 procedure SetExFuncPtr(const Filter: PFilter; const Edit: Pointer);
 type
-  TSetExFuncPtrFunc = procedure(const ExFunc: PExFunc; const SampleRate, Channels: integer);
+  TSetExFuncPtrFunc = procedure(const ExFunc: PExFunc);
 var
   F: TSetExFuncPtrFunc;
-  FI: TFileInfo;
 begin
   if MainDLLInstance = 0 then
     Exit;
@@ -69,21 +68,10 @@ begin
   if F = nil then
     Exit;
 
-  if Filter = nil then begin
-    F(nil, 0, 0);
-    Exit;
-  end;
-
-  FillChar(FI, SizeOf(FI), 0);
-  if Filter^.ExFunc^.GetFileInfo(Edit, @FI) = AVIUTL_FALSE then begin
-    F(nil, 0, 0);
-    Exit;
-  end;
-  if (FI.AudioRate = 0) or (FI.AudioCh = 0) then begin
-    F(nil, 0, 0);
-    Exit;
-  end;
-  F(Filter^.ExFunc, FI.AudioRate, FI.AudioCh);
+  if Filter = nil then
+    F(nil)
+  else
+    F(Filter^.ExFunc);
 end;
 
 function LuaAllocator({%H-}ud, ptr: Pointer; {%H-}osize, nsize: size_t): Pointer; cdecl;

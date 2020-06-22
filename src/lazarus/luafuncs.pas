@@ -10,7 +10,7 @@ uses
 
 function luaopen_PSDToolKitBridge(L: Plua_State): integer; cdecl;
 procedure SetCurrentFramePtr(ACurrentFrame, ACurrentFrameN, ACurrentRenderIndex: PInteger);
-procedure SetExFuncPtr(const ExFunc: Pointer; const SampleRate, Channels: integer);
+procedure SetExFuncPtr(const ExFunc: Pointer);
 
 implementation
 
@@ -30,9 +30,9 @@ begin
   CurrentRenderIndex := ACurrentRenderIndex;
 end;
 
-procedure SetExFuncPtr(const ExFunc: Pointer; const SampleRate, Channels: integer);
+procedure SetExFuncPtr(const ExFunc: Pointer);
 begin
-  CacheMgr.SetExFuncPtr(ExFunc, SampleRate, Channels);
+  CacheMgr.SetExFuncPtr(ExFunc);
 end;
 
 function LuaReturn(L: Plua_State; const Ret: integer): integer;
