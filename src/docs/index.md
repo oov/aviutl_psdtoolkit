@@ -3,6 +3,9 @@
 PSDToolKit は AviUtl の拡張編集プラグイン上で PSD ファイルを扱えるようにするためのツールキットです。  
 また、それに付随して必要になるであろう機能なども含んでいます。
 
+PSDToolKit は[こちらからダウンロード](https://github.com/oov/aviutl_psdtoolkit/releases)できます。  
+各バージョンの下にある `▶ Assets` をクリックすると実際のファイルへのリンクが現れます。
+
 # 注意事項
 
 PSDToolKit は無保証で提供されます。  
@@ -13,7 +16,7 @@ PSDToolKit を使用したこと及び使用しなかったことによるいか
 # 動作環境
 
 動作には 64bit Windows が、快適な動作には十分な CPU 速度とメモリが必要です。  
-動作確認は AviUtl version 1.00 / 拡張編集 version 0.92 のみで行っています。
+動作確認は AviUtl version 1.10 / 拡張編集 version 0.92 で行っています。
 
 # 同梱されるファイルについて
 
@@ -55,7 +58,7 @@ RelMovieHandle.txt
 - かんしくん/forcepser.exe  
 かんしくん/_entrypoint.lua  
 かんしくん/forcepser.txt  
-setting.txt-template
+かんしくん/setting.txt-template
   - 補助プログラム「かんしくん」
   - [別の場所で単独配布しているもの](https://github.com/oov/forcepser)を同梱しています
 - script/PSDToolKit/PSDToolKitBridge.dll  
@@ -79,7 +82,6 @@ PSDToolKit/字幕準備.exa
 PSDToolKit/字幕表示.exa
   - 各種オブジェクトを作成するためのエイリアスファイル
 - GCMZDrops/psdtoolkit_psd.lua  
-GCMZDrops/psdtoolkit_psd.lua  
 GCMZDrops/psdtoolkit_wav.lua  
 GCMZDrops/psdtoolkit_srt.lua  
 GCMZDrops/psdtoolkit_lab.lua  
