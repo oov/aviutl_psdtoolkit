@@ -57,6 +57,41 @@ local function readsubtitle(filepath, encoding, setting)
   return postprocesssubtitle(subtitle, encoding, setting)
 end
 
+local function requireLocal(pkg)
+  local origpath = package.path
+  local origcpath = package.cpath
+  package.path = GCMZDrops.scriptdir() .. "..\\script\\PSDToolKit\\?.lua"
+  package.cpath = GCMZDrops.scriptdir() .. "..\\script\\PSDToolKit\\?.dll"
+  local ok, r = pcall(require, pkg)
+  package.path = origpath
+  package.cpath = origcpath
+  if not ok then
+    error(r)
+  end
+  return r
+end
+
+local function loadjsonstr(jsonstr)
+  if jsonstr:sub(1, 3) == "\239\187\191" then
+    jsonstr = jsonstr:sub(4)
+  end
+  local j = requireLocal("json").decode(jsonstr)
+  if j == nil then
+    return nil
+  end
+  if j.psdtk ~= 1 then
+    return nil
+  end
+  return j
+end
+
+local function loadjson(filepath)
+  local jsonstr = fileread(filepath)
+  if jsonstr == nil then
+    return nil
+  end
+  return loadjsonstr(jsonstr)
+end
 
 function P.resolvepath(filepath, finder, setting)
   if finder == 1 then
@@ -177,21 +212,23 @@ function P.parseexo(filepath)
     return nil
   end
   local ini = GCMZDrops.inistring(exo)
-  local wav, txt = nil, nil
+  local wav, txt, j = nil, nil, nil
   local i = 0
   while 1 do
     if ini:get(i, "start", "") ~= "1" then
       break
     end
-    if i == 2 then
-      -- 無関係なオブジェクトがあるっぽいので失敗とする
+    if i == 10 then
+      -- これだけ見れば十分
       return nil
     end
     local name = ini:get(i .. ".0", "_name", "")
-    if name == "音声ファイル" then
+    if wav == nil and name == "音声ファイル" then
       wav = ini:get(i .. ".0", "file", nil)
-    elseif name == "テキスト" then
+    elseif txt == nil and name == "テキスト" then
       txt = ini:get(i .. ".0", "text", nil)
+    elseif j == nil and name == "スクリプト制御" then
+      j = ini:get(i .. ".0", "text", nil)
     end
     i = i + 1
   end
@@ -199,7 +236,15 @@ function P.parseexo(filepath)
     return nil
   end
   txt = GCMZDrops.decodeexotextutf8(txt)
-  return wav, txt
+  if j ~= nil then
+    j = GCMZDrops.decodeexotextutf8(j)
+    if j:sub(1, 7) == "--JSON:" then
+      j = loadjsonstr(j:sub(8))
+    else
+      j = nil
+    end
+  end
+  return wav, txt, j
 end
 
 function P.fire(files, state)
@@ -223,16 +268,17 @@ function P.fire(files, state)
         v.orgfilepath or v.filepath,
         setting.wav_exafinder,
         setting)
+      local j = loadjson(trimextension(v.orgfilepath or v.filepath) .. ".json")
       if firemode == 0 then
         if state.shift then
-          return v.filepath, subtitle, exabase
+          return v.filepath, subtitle, exabase, j
         end
       elseif firemode == 1 then
         if (subtitle ~= nil)and(not state.shift) then
-          return v.filepath, subtitle, exabase
+          return v.filepath, subtitle, exabase, j
         end
       elseif firemode == 2 then
-        return v.filepath, subtitle, exabase
+        return v.filepath, subtitle, exabase, j
       end
     end
   end
@@ -263,7 +309,8 @@ function P.fire(files, state)
         wav.orgfilepath or wav.filepath,
         setting.wav_exafinder,
         setting)
-      return wav.filepath, subtitle, exabase
+      local j = loadjson(trimextension(wav.orgfilepath or wav.filepath) .. ".json")
+      return wav.filepath, subtitle, exabase, j
     end
   end
 
@@ -271,7 +318,7 @@ function P.fire(files, state)
   if setting.wav_firemode_exo == 1 then
     for i, v in ipairs(files) do
       if getextension(v.filepath) == ".exo" then
-        local orgwav, txt = P.parseexo(v.filepath)
+        local orgwav, txt, j = P.parseexo(v.filepath)
         local newwav = orgwav
         if newwav ~= nil and GCMZDrops.needcopy(newwav) then
           newwav = avoiddupP.getfile(newwav)
@@ -282,7 +329,10 @@ function P.fire(files, state)
         if newwav ~= nil and txt ~= nil then
           local subtitle = postprocesssubtitle(txt, "utf8", setting)
           local exabase = P.resolvepath(orgwav, setting.wav_exafinder, setting)
-          return newwav, subtitle, exabase
+          if j == nil then
+            j = loadjson(trimextension(orgwav) .. ".json")
+          end
+          return newwav, subtitle, exabase, j
         end
       end
     end
@@ -310,8 +360,9 @@ function P.firetext(files, state)
         v.orgfilepath or v.filepath,
         setting.wav_exafinder,
         setting)
+      local j = loadjson(trimextension(v.orgfilepath or v.filepath) .. ".json")
       if state.shift then
-        return subtitle, exabase
+        return subtitle, exabase, j
       end
     end
   end
@@ -319,23 +370,23 @@ function P.firetext(files, state)
 end
 
 function P.ondrop(files, state)
-  local wavfilepath, subtitle, exabase = P.fire(files, state)
+  local wavfilepath, subtitle, exabase, j = P.fire(files, state)
   if wavfilepath ~= nil then
     -- プロジェクトとファイルの情報を取得する
     local proj = GCMZDrops.getexeditfileinfo()
     local fi = GCMZDrops.getfileinfo(wavfilepath)
     -- 音声が現在のプロジェクトで何フレーム分あるのかを計算する
     local wavlen = math.ceil((fi.audio_samples * proj.rate) / (proj.audio_rate * proj.scale))
-    return P.generateexo(wavfilepath, wavlen, subtitle, exabase, state)
+    return P.generateexo(wavfilepath, wavlen, subtitle, exabase, state, j)
   end
-  subtitle, exabase = P.firetext(files, state)
+  subtitle, exabase, j = P.firetext(files, state)
   if subtitle ~= nil then
-    return P.generateexo(nil, 64, subtitle, exabase, state)
+    return P.generateexo(nil, 64, subtitle, exabase, state, j)
   end
   return false
 end
 
-function P.generateexo(wavfilepath, wavlen, subtitle, exabase, state)
+function P.generateexo(wavfilepath, wavlen, subtitle, exabase, state, j)
   local setting = P.loadsetting()
   -- テンプレート用変数を準備
   local values = {
@@ -350,6 +401,7 @@ function P.generateexo(wavfilepath, wavlen, subtitle, exabase, state)
     SUBTITLE_START = 1,
     SUBTITLE_END = 0,
     SUBTITLE_TEXT = subtitle,
+    USER = j or {},
   }
   local modifiers = {
     ENCODE_TEXT = function(v)
@@ -454,6 +506,9 @@ function P.generateexo(wavfilepath, wavlen, subtitle, exabase, state)
 
   if state.frameadvance ~= nil and state.frameadvance > 0 then
     state.frameadvance = totallen
+    if values.USER and values.USER.padding then
+      state.frameadvance = state.frameadvance + values.USER.padding
+    end
   end
 
   return {{filepath=filepath}}, state

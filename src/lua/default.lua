@@ -18,6 +18,13 @@
 
 local P = {}
 
+local function slidervalue(v)
+  if type(v) == "number" then
+    return string.format("%0.2f,%0.2f,3", v, v)
+  end
+  return v
+end
+
 P.wav_firemode = 0
 P.wav_firemode_wavtxt = 0
 P.wav_firemode_exo = 0
@@ -68,13 +75,16 @@ function P:wav_examodifler_mpslider(exa, values, modifiers)
   exa:set("vo", "start", values.MPSLIDER_START)
   exa:set("vo", "end", values.MPSLIDER_END)
   exa:set("vo", "group", self.wav_mpslider_group)
+  local mpslidervalues = values.USER and values.USER.mpslider or {}
+  local mpsidx = 0
   for i = 0, self.wav_mpslider-1 do
     local key = "vo." .. i
     exa:set(key, "_name", i == 0 and "カスタムオブジェクト" or "アニメーション効果")
-    exa:set(key, "track0", "0.00,0.00,3")
-    exa:set(key, "track1", "0.00,0.00,3")
-    exa:set(key, "track2", "0.00,0.00,3")
-    exa:set(key, "track3", "0.00,0.00,3")
+    exa:set(key, "track0", slidervalue(mpslidervalues[mpsidx+1]) or "0.00,0.00,3")
+    exa:set(key, "track1", slidervalue(mpslidervalues[mpsidx+2]) or "0.00,0.00,3")
+    exa:set(key, "track2", slidervalue(mpslidervalues[mpsidx+3]) or "0.00,0.00,3")
+    exa:set(key, "track3", slidervalue(mpslidervalues[mpsidx+4]) or "0.00,0.00,3")
+    mpsidx = mpsidx + 4
     exa:set(key, "check0", "0")
     exa:set(key, "type", "0")
     exa:set(key, "filter", "2")
@@ -153,13 +163,16 @@ function P:wav_examodifler_mergedprep(exa, values, modifiers)
     idx = idx + 1
   end
 
+  local mpslidervalues = values.USER and values.USER.mpslider or {}
+  local mpsidx = 0
   for i = 0, self.wav_mpslider-1 do
     key = "vo." .. idx
     exa:set(key, "_name", "アニメーション効果")
-    exa:set(key, "track0", "0.00,0.00,3")
-    exa:set(key, "track1", "0.00,0.00,3")
-    exa:set(key, "track2", "0.00,0.00,3")
-    exa:set(key, "track3", "0.00,0.00,3")
+    exa:set(key, "track0", slidervalue(mpslidervalues[mpsidx+1]) or "0.00,0.00,3")
+    exa:set(key, "track1", slidervalue(mpslidervalues[mpsidx+2]) or "0.00,0.00,3")
+    exa:set(key, "track2", slidervalue(mpslidervalues[mpsidx+3]) or "0.00,0.00,3")
+    exa:set(key, "track3", slidervalue(mpslidervalues[mpsidx+4]) or "0.00,0.00,3")
+    mpsidx = mpsidx + 4
     exa:set(key, "check0", "0")
     exa:set(key, "type", "0")
     exa:set(key, "filter", "2")

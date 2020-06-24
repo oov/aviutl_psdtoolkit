@@ -40,6 +40,7 @@ sed 's/\r$//' 'src/exa/MultiPurposeSlider.exa' | sed 's/$/\r/' > 'bin/PSDToolKit
 # copy script files
 sed 's/\r$//' 'src/lua/PSDToolKit.lua' | sed 's/$/\r/' > 'bin/script/PSDToolKit/PSDToolKit.lua'
 sed 's/\r$//' 'src/lua/PSDToolKitIndex.lua' | sed 's/$/\r/' > 'bin/script/PSDToolKit.lua'
+sed 's/\r$//' 'src/lua/json.lua' | sed 's/$/\r/' > 'bin/script/PSDToolKit/json.lua'
 sed 's/\r$//' 'src/lua/@PSD.anm' | sed 's/$/\r/' > 'bin/script/PSDToolKit/@PSD.anm'
 sed 's/\r$//' 'src/lua/@PSDToolKit.anm' | sed 's/$/\r/' > 'bin/script/PSDToolKit/@PSDToolKit.anm'
 sed 's/\r$//' 'src/lua/@PSDToolKit.obj' | sed 's/$/\r/' > 'bin/script/PSDToolKit/@PSDToolKit.obj'
