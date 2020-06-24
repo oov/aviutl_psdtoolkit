@@ -38,6 +38,8 @@ uses
 type
   ShiftJISString = type ansistring(932);
 
+const
+  WM_PSDTKSAVED = WM_APP + 1;
 var
   MainDLLInstance: THandle;
   CurrentFrame, CurrentFrameN, CurrentRenderIndex: integer;
@@ -525,7 +527,7 @@ begin
       ClearFiles();
       UpdateCurrentProjectPath(nil, nil);
     end;
-    WM_FILTER_SAVE_END: begin
+    WM_PSDTKSAVED: begin
       UpdateCurrentProjectPath(Edit, Filter);
     end;
   end;
@@ -554,6 +556,7 @@ function TPSDToolKitAssist.ProjectSaveProc(Filter: PFilter; Edit: Pointer;
 var
   S: string;
 begin
+  PostMessage(Filter^.Hwnd, WM_PSDTKSAVED, 0, 0);
   try
     S := Serialize();
     Size := Length(S);
