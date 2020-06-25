@@ -9,28 +9,27 @@
   <style type="text/css">
   </style>
   <style type="text/css">
-a.sourceLine { display: inline-block; line-height: 1.25; }
-a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; position: absolute; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-a.sourceLine { text-indent: -1em; padding-left: 1em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
-pre.numberSource a.sourceLine
-  { position: relative; }
-pre.numberSource a.sourceLine:empty
-  { position: absolute; }
-pre.numberSource a.sourceLine::before
-  { content: attr(data-line-number);
-    position: absolute; left: -5em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all;
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
@@ -39,9 +38,9 @@ pre.numberSource a.sourceLine::before
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-  {  }
+  {   }
 @media screen {
-a.sourceLine::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
@@ -81,6 +80,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <ul>
     <li class="ptk-menu-item-index"><a href="index.html">はじめに</a></li>
     <li class="ptk-menu-item-tutorial"><a href="tutorial.html">チュートリアル</a></li>
+    <li class="ptk-menu-item-tutorial2"><a href="tutorial2.html">ツール連携入門</a></li>
     <li class="ptk-menu-item-pfv"><a href="pfv.html">PSDTool のお気に入りを使う</a></li>
     <li class="ptk-menu-item-forcepser"><a href="forcepser.html">かんしくん</a></li>
     <li class="ptk-menu-item-obj ptk-menu-item-psd ptk-menu-item-subobj ptk-menu-item-prep ptk-menu-item-audio">オブジェクトリファレンス
@@ -118,10 +118,12 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <li><a href="#.E3.82.A8.E3.83.A9.E3.83.BC.E3.83.A1.E3.83.83.E3.82.BB.E3.83.BC.E3.82.B8.E3.81.8C.E8.A1.A8.E7.A4.BA.E3.81.95.E3.82.8C.E3.82.8B">エラーメッセージが表示される</a></li>
 <li><a href="#PSDToolKit_.E3.82.A6.E3.82.A3.E3.83.B3.E3.83.89.E3.82.A6.E3.81.8C.E3.83.95.E3.83.AA.E3.83.BC.E3.82.BA.E3.81.99.E3.82.8B">PSDToolKit ウィンドウがフリーズする</a></li>
 <li><a href="#.E6.8B.A1.E5.BC.B5.E7.B7.A8.E9.9B.86.E3.81.AB.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.81.8C.E6.8A.95.E3.81.92.E8.BE.BC.E3.82.81.E3.81.AA.E3.81.84">拡張編集にファイルが投げ込めない</a></li>
-<li><a href="#.E3.83.AC.E3.82.A4.E3.83.A4.E3.83.BC.E3.81.8C.E6.B6.88.E3.81.88.E3.81.AA.E3.81.84_.2F_.E8.A4.87.E6.95.B0.E8.A1.A8.E7.A4.BA.E3.81.95.E3.82.8C.E3.82.8B_.2F_.E6.8C.87.E5.AE.9A.E3.81.97.E3.81.A6.E3.81.84.E3.81.AA.E3.81.84.E3.83.AC.E3.82.A4.E3.83.A4.E3.83.BC.E3.81.8C.E5.87.BA.E3.82.8B">レイヤーが消えない / 複数表示される / 指定していないレイヤーが出る</a><ul>
+<li><a href="#.E3.83.AC.E3.82.A4.E3.83.A4.E3.83.BC.E3.81.8C.E6.B6.88.E3.81.88.E3.81.AA.E3.81.84_.2F_.E8.A4.87.E6.95.B0.E8.A1.A8.E7.A4.BA.E3.81.95.E3.82.8C.E3.82.8B_.2F_.E6.8C.87.E5.AE.9A.E3.81.97.E3.81.A6.E3.81.84.E3.81.AA.E3.81.84.E3.83.AC.E3.82.A4.E3.83.A4.E3.83.BC.E3.81.8C.E5.87.BA.E3.82.8B">レイヤーが消えない / 複数表示される / 指定していないレイヤーが出る</a>
+<ul>
 <li><a href="#.E9.9D.9E.E8.A1.A8.E7.A4.BA.E3.81.AB.E3.81.99.E3.82.8B.E9.9A.9B.E3.81.AE.E6.B3.A8.E6.84.8F.E7.82.B9">非表示にする際の注意点</a></li>
 </ul></li>
-<li><a href="#.E8.A8.AD.E5.AE.9A.E3.81.8C.E4.BF.9D.E5.AD.98.E3.81.95.E3.82.8C.E3.81.AA.E3.81.84">設定が保存されない</a><ul>
+<li><a href="#.E8.A8.AD.E5.AE.9A.E3.81.8C.E4.BF.9D.E5.AD.98.E3.81.95.E3.82.8C.E3.81.AA.E3.81.84">設定が保存されない</a>
+<ul>
 <li><a href="#.E3.82.B9.E3.82.AF.E3.83.AA.E3.83.97.E3.83.88.E5.88.B6.E5.BE.A1.E3.81.A7.E7.9B.AE.E3.83.91.E3.83.81.E3.82.92.E8.A1.8C.E3.81.86">スクリプト制御で目パチを行う</a></li>
 </ul></li>
 <li><a href="#.E9.A0.85.E7.9B.AE.E5.90.8D.E3.81.AE.E4.B8.80.E9.83.A8.E3.81.8C.E6.96.87.E5.AD.97.E5.8C.96.E3.81.91.E3.81.99.E3.82.8B">項目名の一部が文字化けする</a></li>
@@ -170,7 +172,7 @@ AviUtl を <code>C:\AviUtl\aviutl.exe</code> あたりに置いて起動する�
 <h3 id=".E3.82.B9.E3.82.AF.E3.83.AA.E3.83.97.E3.83.88.E5.88.B6.E5.BE.A1.E3.81.A7.E7.9B.AE.E3.83.91.E3.83.81.E3.82.92.E8.A1.8C.E3.81.86">スクリプト制御で目パチを行う</h3>
 <p><code>目パチ</code> や <code>口パク</code> のみを使いたいだけの場合は、<code>アニメーション効果</code> の代わりに <code>スクリプト制御</code> を使う方法もあり、これなら1024バイトまで入力することができます。</p>
 <p>例えば<a href="psd.html#.E7.9B.AE.E3.83.91.E3.83.81_.E3.82.92_Lua_.E3.82.B9.E3.82.AF.E3.83.AA.E3.83.97.E3.83.88.E3.81.8B.E3.82.89.E4.BD.BF.E3.81.86">目パチ用フォーム</a>で使いたい内容を組み立ててクリップボードにコピーし、</p>
-<div class="sourceCode" id="cb2"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb2-1" data-line-number="1">PSD:addstate<span class="ot">(</span>ここに組み立てた内容をペースト<span class="ot">)</span></a></code></pre></div>
+<div class="sourceCode" id="cb2"><pre class="sourceCode lua"><code class="sourceCode lua"><span id="cb2-1"><a href="#cb2-1"></a><span class="cn">PSD</span><span class="op">:</span>addstate<span class="op">(</span>ここに組み立てた内容をペースト<span class="op">)</span></span></code></pre></div>
 <p>というスクリプトを記述すると、<code>目パチ</code> のアニメーション効果と全く同じように使うことができます。</p>
 <p><img src="assets/faq-blinker.png" alt="スクリプト制御 使用例" /></p>
 <h2 id=".E9.A0.85.E7.9B.AE.E5.90.8D.E3.81.AE.E4.B8.80.E9.83.A8.E3.81.8C.E6.96.87.E5.AD.97.E5.8C.96.E3.81.91.E3.81.99.E3.82.8B">項目名の一部が文字化けする</h2>
@@ -211,9 +213,9 @@ AviUtl を <code>C:\AviUtl\aviutl.exe</code> あたりに置いて起動する�
 <dt>Written by</dt>
 <dd>oov</dd>
 <dt>Generated at</dt>
-<dd>2020-06-16 19:59:09</dd>
+<dd>2020-06-25 23:16:23</dd>
 <dt>for</dt>
-<dd>v0.2beta44 ( 15fc563 )</dd>
+<dd>v0.2beta45 ( b77249f )</dd>
 </dl>
 </footer>
 </div>

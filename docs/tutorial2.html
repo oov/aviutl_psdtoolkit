@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="oov" />
+  <title>ツール連携入門</title>
+  <style type="text/css">
+  </style>
+  <style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="ptk-outer">
+<div id="ptk-menu" class="ptk-selected-tutorial2">
+  <ul>
+    <li class="ptk-menu-item-index"><a href="index.html">はじめに</a></li>
+    <li class="ptk-menu-item-tutorial"><a href="tutorial.html">チュートリアル</a></li>
+    <li class="ptk-menu-item-tutorial2"><a href="tutorial2.html">ツール連携入門</a></li>
+    <li class="ptk-menu-item-pfv"><a href="pfv.html">PSDTool のお気に入りを使う</a></li>
+    <li class="ptk-menu-item-forcepser"><a href="forcepser.html">かんしくん</a></li>
+    <li class="ptk-menu-item-obj ptk-menu-item-psd ptk-menu-item-subobj ptk-menu-item-prep ptk-menu-item-audio">オブジェクトリファレンス
+      <ul>
+        <li class="ptk-menu-item-obj"><a href="obj.html">独自のオブジェクト</a>
+          <ul>
+            <li><a href="obj.html#PSD_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.AA.E3.83.96.E3.82.B8.E3.82.A7.E3.82.AF.E3.83.88">PSD ファイルオブジェクト</a></li>
+            <li><a href="obj.html#.E5.AD.97.E5.B9.95.E8.A1.A8.E7.A4.BA">字幕表示</a></li>
+          </ul>
+        </li>
+        <li class="ptk-menu-item-psd"><a href="psd.html">PSD アニメーション効果</a>
+          <ul>
+            <li><a href="psd.html#.E7.9B.AE.E3.83.91.E3.83.81.40PSD">目パチ</a> | <a href="psd.html#.E7.9B.AE.E3.83.91.E3.83.81_.E3.82.92_Lua_.E3.82.B9.E3.82.AF.E3.83.AA.E3.83.97.E3.83.88.E3.81.8B.E3.82.89.E4.BD.BF.E3.81.86">フォーム</a></li>
+            <li><a href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E9.96.8B.E9.96.89.E3.81.AE.E3.81.BF.40PSD">口パク 開閉のみ</a> | <a href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E9.96.8B.E9.96.89.E3.81.AE.E3.81.BF_.E3.82.92_Lua_.E3.82.B9.E3.82.AF.E3.83.AA.E3.83.97.E3.83.88.E3.81.8B.E3.82.89.E4.BD.BF.E3.81.86">フォーム</a></li>
+            <li><a href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E3.81.82.E3.81.84.E3.81.86.E3.81.88.E3.81.8A.40PSD">口パク あいうえお</a> | <a href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E3.81.82.E3.81.84.E3.81.86.E3.81.88.E3.81.8A_.E3.82.92_Lua_.E3.82.B9.E3.82.AF.E3.83.AA.E3.83.97.E3.83.88.E3.81.8B.E3.82.89.E4.BD.BF.E3.81.86">フォーム</a></li>
+          </ul>
+        </li>
+        <li class="ptk-menu-item-subobj"><a href="subobj.html">subobj アニメーション効果</a></li>
+        <li class="ptk-menu-item-otheranm"><a href="otheranm.html">その他のアニメーション効果</a></li>
+        <li class="ptk-menu-item-prep"><a href="prep.html">準備オブジェクト</a></li>
+        <li class="ptk-menu-item-audio"><a href="audio.html">音声フィルタ</a></li>
+      </ul>
+    </li>
+    <li class="ptk-menu-item-plugins"><a href="plugins.html">付属プラグイン</a></li>
+    <li class="ptk-menu-item-setting"><a href="setting.html">設定</a></li>
+    <li class="ptk-menu-item-faq"><a href="faq.html">よくある質問</a></li>
+  </ul>
+</div>
+<div id="ptk-main">
+<header>
+<h1 class="title">ツール連携入門</h1>
+</header>
+<nav id="TOC">
+<ul>
+<li><a href="#.E3.83.84.E3.83.BC.E3.83.AB.E9.80.A3.E6.90.BA.E3.81.AB.E3.81.A4.E3.81.84.E3.81.A6">ツール連携について</a></li>
+<li><a href="#.E3.81.96.E3.81.A3.E3.81.8F.E3.82.8A.E3.83.95.E3.83.AD.E3.83.BC.E3.83.81.E3.83.A3.E3.83.BC.E3.83.88">ざっくりフローチャート</a>
+<ul>
+<li><a href="#.E5.A5.BD.E3.81.8D.E3.81.AA.E3.82.82.E3.81.AE.E4.BD.BF.E3.81.A3.E3.81.A6.E3.81.AD">好きなもの使ってね</a></li>
+<li><a href="#VoiceroidUtil_.2B_AITalk_.E7.B3.BB">VoiceroidUtil + AITalk 系</a>
+<ul>
+<li><a href="#VoiceroidUtil_.E3.81.AE.E5.88.9D.E5.9B.9E.E8.B5.B7.E5.8B.95.E3.81.8B.E3.82.89.E9.80.A3.E6.90.BA.E8.A8.AD.E5.AE.9A.E3.81.BE.E3.81.A7.E3.81.AE.E6.9C.80.E7.9F.AD.E3.83.AB.E3.83.BC.E3.83.88">VoiceroidUtil の初回起動から連携設定までの最短ルート</a></li>
+</ul></li>
+<li><a href="#.E3.81.8B.E3.82.93.E3.81.97.E3.81.8F.E3.82.93_.2B_VoiceroidUtil_.2B_AITalk_.E7.B3.BB">かんしくん + VoiceroidUtil + AITalk 系</a>
+<ul>
+<li><a href="#.E3.81.8B.E3.82.93.E3.81.97.E3.81.8F.E3.82.93.E3.81.AE.E8.A8.AD.E5.AE.9A.E4.BE.8B">かんしくんの設定例</a></li>
+</ul></li>
+<li><a href="#.E3.81.8B.E3.82.93.E3.81.97.E3.81.8F.E3.82.93_.2B_.E6.A3.92.E8.AA.AD.E3.81.BF.E3.81.A1.E3.82.83.E3.82.93_.2B_Plugin_Bouyomichan_wav_and_txt.dll">かんしくん + 棒読みちゃん + Plugin_Bouyomichan_wav_and_txt.dll</a>
+<ul>
+<li><a href="#.E3.83.97.E3.83.A9.E3.82.B0.E3.82.A4.E3.83.B3.E3.82.92.E5.B0.8E.E5.85.A5.E6.B8.88.E3.81.BF.E3.81.AE.E6.A3.92.E8.AA.AD.E3.81.BF.E3.81.A1.E3.82.83.E3.82.93.E3.81.AE.E5.88.9D.E5.9B.9E.E8.B5.B7.E5.8B.95.E3.81.8B.E3.82.89.E9.80.A3.E6.90.BA.E8.A8.AD.E5.AE.9A.E3.81.BE.E3.81.A7.E3.81.AE.E6.9C.80.E7.9F.AD.E3.83.AB.E3.83.BC.E3.83.88">プラグインを導入済みの棒読みちゃんの初回起動から連携設定までの最短ルート</a></li>
+<li><a href="#.E3.81.8B.E3.82.93.E3.81.97.E3.81.8F.E3.82.93.E3.81.AE.E8.A8.AD.E5.AE.9A.E4.BE.8B">かんしくんの設定例</a></li>
+</ul></li>
+<li><a href="#.E3.81.8B.E3.82.93.E3.81.97.E3.81.8F.E3.82.93_.2B_.E3.82.86.E3.81.A3.E3.81.8F.E3.82.8A.E8.AA.BF.E5.A3.B0.E3.81.8F.E3.82.93_.2B_SofTalk">かんしくん + ゆっくり調声くん + SofTalk</a>
+<ul>
+<li><a href="#.E3.82.86.E3.81.A3.E3.81.8F.E3.82.8A.E8.AA.BF.E5.A3.B0.E3.81.8F.E3.82.93_.2B_SofTalk_.E3.81.AE.E5.88.9D.E5.9B.9E.E8.B5.B7.E5.8B.95.E3.81.8B.E3.82.89.E9.80.A3.E6.90.BA.E8.A8.AD.E5.AE.9A.E3.81.BE.E3.81.A7.E3.81.AE.E6.9C.80.E7.9F.AD.E3.83.AB.E3.83.BC.E3.83.88">ゆっくり調声くん + SofTalk の初回起動から連携設定までの最短ルート</a></li>
+<li><a href="#.E3.81.8B.E3.82.93.E3.81.97.E3.81.8F.E3.82.93.E3.81.AE.E8.A8.AD.E5.AE.9A.E4.BE.8B">かんしくんの設定例</a></li>
+</ul></li>
+<li><a href="#.E3.81.8B.E3.82.93.E3.81.97.E3.81.8F.E3.82.93_.2B_CeVIO_Creative_Studio">かんしくん + CeVIO Creative Studio</a>
+<ul>
+<li><a href="#.E3.81.8B.E3.82.93.E3.81.97.E3.81.8F.E3.82.93.E3.81.AE.E8.A8.AD.E5.AE.9A.E4.BE.8B">かんしくんの設定例</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+<h2 id=".E3.83.84.E3.83.BC.E3.83.AB.E9.80.A3.E6.90.BA.E3.81.AB.E3.81.A4.E3.81.84.E3.81.A6">ツール連携について</h2>
+<p>PSDToolKit を使う際には、音声合成ソフトと組み合わせて使うことがしばしばあると思います。</p>
+<p>Shift キーを押しながら音声ファイルをドロップすることで <code>口パク準備</code> や <code>字幕準備</code>、<code>多目的スライダー</code> などが自動生成されるというのは<a href="tutorial.html">チュートリアル</a>にて紹介しましたが、設定をきちんと行うとソフトによっては音声ファイルを保存するだけでカーソル位置に自動で挿入することができるようになるものまであります。</p>
+<p>ここでは<a href="tutorial.html">チュートリアル</a>を既に読み終わり PSDToolKit についての基本的な知識が既に備わっている方々へ向けて、ツール連携方法について紹介していきます。</p>
+<h2 id=".E3.81.96.E3.81.A3.E3.81.8F.E3.82.8A.E3.83.95.E3.83.AD.E3.83.BC.E3.83.81.E3.83.A3.E3.83.BC.E3.83.88">ざっくりフローチャート</h2>
+<p>あなたのニーズに合わせて何を用意すればいいかザックリと導くフローチャートです。<br />
+最後の項目はリンクになっており、クリックすると詳細な説明に飛べます。</p>
+<svg fill="none" stroke-linecap="square" stroke-miterlimit="10" version="1.1" viewBox="0 0 1060 574" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+<clipPath>
+<path d="m0 0h1060v574h-1060v-574z"/>
+</clipPath>
+<path d="m0 0h1060v574h-1060z" fill-opacity="0"/>
+<path d="m591 259h26" fill-opacity="0"/>
+<path d="m591 259h20" fill-rule="evenodd" stroke="#000" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="m611 261 4.54-1.65-4.54-1.65z" fill="#000" fill-rule="evenodd" stroke="#000" stroke-linecap="butt"/>
+<path d="m750 288c0 13.9 39.3 20.9 78.5 27.9 39.3 6.96 78.5 13.9 78.5 27.9" fill-opacity="0"/>
+<path d="m750 288c0 13.9 39.3 20.9 78.5 27.9 19.6 3.48 39.3 6.96 54 11.3 7.36 2.18 13.5 4.57 17.8 7.29 1.07 0.68 2.03 1.38 2.87 2.1 0.417 0.361 0.803 0.728 1.16 1.1 0.0883 0.0931 0.175 0.187 0.259 0.281l0.187 0.215" fill-rule="evenodd" stroke="#000" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="m903 339 3.25 3.57-0.196-4.83z" fill="#000" fill-rule="evenodd" stroke="#000" stroke-linecap="butt"/>
+<path d="m750 288c0 33.3-32.2 51.4-61.9 66.6s-57 27.5-61.9 47.5c-4.93 19.9 12.5 47.5 25 47.5" fill-opacity="0"/>
+<path d="m750 288c0 33.3-32.2 51.4-61.9 66.6s-57 27.5-61.9 47.5c-2.46 9.97 0.661 21.8 5.96 31.2 2.65 4.69 5.84 8.75 9.16 11.6 0.828 0.723 1.66 1.37 2.5 1.94 0.418 0.284 0.837 0.548 1.25 0.79 0.104 0.0606 0.209 0.12 0.313 0.178l0.0408 0.0221" fill-rule="evenodd" stroke="#000" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="m645 449 4.82-0.312-3.89-2.86z" fill="#000" fill-rule="evenodd" stroke="#000" stroke-linecap="butt"/>
+<path d="m360 259h-26" fill-opacity="0"/>
+<path d="m360 259h-20" fill-rule="evenodd" stroke="#000" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="m340 258-4.54 1.65 4.54 1.65z" fill="#000" fill-rule="evenodd" stroke="#000" stroke-linecap="butt"/>
+<path d="m273 288c0 13.9-13.3 20.9-26.7 27.9-13.3 6.96-26.7 13.9-26.7 27.9" fill-opacity="0"/>
+<path d="m273 288c0 13.9-13.3 20.9-26.7 27.9-6.67 3.48-13.3 6.96-18.3 11.3-2.5 2.18-4.58 4.57-6.04 7.29-0.364 0.68-0.69 1.38-0.973 2.1-0.142 0.361-0.273 0.728-0.393 1.1l-0.0352 0.112" fill-rule="evenodd" stroke="#000" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="m219 337 0.96 4.73 2.31-4.24z" fill="#000" fill-rule="evenodd" stroke="#000" stroke-linecap="butt"/>
+<path d="m475 302v24.5" fill-opacity="0"/>
+<path d="m475 302v18.5" fill-rule="evenodd" stroke="#000" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="m474 321 1.65 4.54 1.65-4.54z" fill="#000" fill-rule="evenodd" stroke="#000" stroke-linecap="butt"/>
+<path d="m475 384c0 28.7-65 43.1-130 57.4s-130 28.7-130 57.4" fill-opacity="0"/>
+<path d="m475 384c0 28.7-65 43.1-130 57.4-32.5 7.18-65 14.4-89.4 23.3-12.2 4.49-22.3 9.42-29.4 15-3.55 2.8-6.35 5.78-8.25 8.94-0.476 0.792-0.896 1.6-1.26 2.41-0.181 0.408-0.349 0.82-0.501 1.24-0.0381 0.104-0.0753 0.208-0.112 0.312l-0.081 0.239" fill-rule="evenodd" stroke="#000" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="m215 492 0.899 4.74 2.36-4.21z" fill="#000" fill-rule="evenodd" stroke="#000" stroke-linecap="butt"/>
+<path d="m472 147c-17.2 0-32.4 15.4-34.4 28-2.05 12.6 9.03 22.5 19.1 28 10.1 5.53 19.1 6.73 19.1 13.5" fill-opacity="0"/>
+<path d="m472 147c-17.2 0-32.4 15.4-34.4 28-2.05 12.6 9.03 22.5 19.1 28 5.03 2.76 9.8 4.45 13.3 6.28 0.878 0.458 1.68 0.925 2.38 1.42 0.176 0.124 0.347 0.25 0.511 0.378l0.0853 0.0682" fill-rule="evenodd" stroke="#000" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="m471 212 3.57 3.25-0.648-4.79z" fill="#000" fill-rule="evenodd" stroke="#000" stroke-linecap="butt"/>
+<path d="m604 63.1v36.9" fill-opacity="0"/>
+<path d="m604 63.1v30.9" fill-rule="evenodd" stroke="#000" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="m602 93.9 1.65 4.54 1.65-4.54z" fill="#000" fill-rule="evenodd" stroke="#000" stroke-linecap="butt"/>
+<g fill-opacity="0">
+<path d="m380 155h78.6v45h-78.6z"/>
+<path d="m703 97.7h78.6v45h-78.6z"/>
+<path d="m736 147c21.2 0 31.8-6.66 42.5-13.3 10.6-6.66 21.2-13.3 42.5-13.3"/>
+</g>
+<path d="m736 147c21.2 0 31.8-6.66 42.5-13.3 5.31-3.33 10.6-6.66 17.2-9.16 3.32-1.25 6.96-2.29 11.1-3.02 2.07-0.364 4.27-0.651 6.61-0.846 0.293-0.0244 0.588-0.0474 0.885-0.0689l0.601-0.0402" fill-rule="evenodd" stroke="#000" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="m815 122 4.48-1.79-4.59-1.51z" fill="#000" fill-rule="evenodd" stroke="#000" stroke-linecap="butt"/>
+<path d="m475 384c0 28.7 36.8 43.1 73.5 57.4 36.8 14.4 73.5 28.7 73.5 57.4" fill-opacity="0"/>
+<path d="m475 384c0 28.7 36.8 43.1 73.5 57.4 18.4 7.18 36.8 14.4 50.5 23.3 6.89 4.49 12.6 9.42 16.7 15 2.01 2.8 3.59 5.78 4.67 8.94 0.269 0.792 0.507 1.6 0.712 2.41 0.103 0.408 0.197 0.82 0.283 1.24l0.0983 0.498" fill-rule="evenodd" stroke="#000" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="m620 493 2.07 4.37 1.22-4.67z" fill="#000" fill-rule="evenodd" stroke="#000" stroke-linecap="butt"/>
+<a xlink:href="#.E5.A5.BD.E3.81.8D.E3.81.AA.E3.82.82.E3.81.AE.E4.BD.BF.E3.81.A3.E3.81.A6.E3.81.AD">
+<path d="m930 94.6 37.7-53.1-3.72 48.8 42.8-7.95-17 26.2 44.5 7.53-35.3 21.4 40.4 25.8-48.2-3.19 13.2 47.2-41.8-33.3-7.83 48.4-27.5-44-20.7 61.1-7.79-54.7-29.9 18.2 9.16-33.7-56 5.96 36.3-25.8-37.7-29 46.8-9.14-43.1-48.8 70.3 36.9 10.5-36.9z" fill="#f00" fill-rule="evenodd"/>
+<path d="m930 94.6 37.7-53.1-3.72 48.8 42.8-7.95-17 26.2 44.5 7.53-35.3 21.4 40.4 25.8-48.2-3.19 13.2 47.2-41.8-33.3-7.83 48.4-27.5-44-20.7 61.1-7.79-54.7-29.9 18.2 9.16-33.7-56 5.96 36.3-25.8-37.7-29 46.8-9.14-43.1-48.8 70.3 36.9 10.5-36.9z" fill-rule="evenodd" stroke="#000" stroke-linecap="butt" stroke-linejoin="round"/>
+<text x="930.07318" y="136.88858" fill="#ffffff" font-family="sans-serif" font-size="18.7px" letter-spacing="0px" stroke-linecap="butt" stroke-width="1px" text-align="center" text-anchor="middle" word-spacing="0px" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal;line-height:100%" xml:space="preserve"><tspan x="930.07318" y="136.88858">好きなもの</tspan><tspan x="930.07318" y="157.41463">使ってね</tspan></text>
+</a>
+<path d="m472 15.8c0-5.22 4.23-9.45 9.45-9.45h245c2.51 0 4.91 0.996 6.69 2.77 1.77 1.77 2.77 4.18 2.77 6.69v37.8c0 5.22-4.23 9.45-9.45 9.45h-245c-5.22 0-9.45-4.23-9.45-9.45z" fill-rule="evenodd" stroke="#000" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="m472 15.8c0-5.22 4.23-9.45 9.45-9.45h245c2.51 0 4.91 0.996 6.69 2.77 1.77 1.77 2.77 4.18 2.77 6.69v37.8c0 5.22-4.23 9.45-9.45 9.45h-245c-5.22 0-9.45-4.23-9.45-9.45z" fill="#4a86e8" fill-rule="evenodd"/>
+<text x="604.3009" y="41.485973" fill="#ffffff" font-family="sans-serif" font-size="18.7px" letter-spacing="0px" stroke-linecap="butt" stroke-width="1px" text-align="center" text-anchor="middle" word-spacing="0px" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal;line-height:100%" xml:space="preserve"><tspan x="604.3009" y="41.485973">スタート</tspan></text>
+<path d="m472 147 132-47.1 132 47.1-132 47.1z" fill-rule="evenodd" stroke="#000" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="m472 147 132-47.1 132 47.1-132 47.1z" fill="#d9ead3" fill-rule="evenodd"/>
+<text x="604.01056" y="141.62169" fill="#000000" font-family="sans-serif" font-size="18.7px" letter-spacing="0px" stroke-linecap="butt" stroke-width="1px" text-align="center" text-anchor="middle" word-spacing="0px" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal;line-height:100%" xml:space="preserve"><tspan x="604.01056" y="141.62169" text-align="center" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal">音声を自動で</tspan><tspan x="604.01056" y="166.09564" text-align="center" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal">挿入したい</tspan></text>
+<path d="m360 259 115-42.9 115 42.9-115 42.9z" fill-rule="evenodd" stroke="#000" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="m360 259 115-42.9 115 42.9-115 42.9z" fill="#d9ead3" fill-rule="evenodd"/>
+<text x="475.65997" y="254.23415" fill="#000000" font-family="sans-serif" font-size="18.7px" letter-spacing="0px" stroke-linecap="butt" stroke-width="1px" text-align="center" text-anchor="middle" word-spacing="0px" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal;line-height:100%" xml:space="preserve"><tspan x="475.65997" y="254.23415" text-align="center" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal">使いたい</tspan><tspan x="475.65997" y="278.7081" text-align="center" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal">ソフトは</tspan></text>
+<path d="m212 231c0-5.6e-4 4.6e-4 -1e-3 1e-3 -1e-3l123 1e-3c2.7e-4 0 5.2e-4 1.1e-4 7e-4 3.1e-4 2.1e-4 1.9e-4 3e-4 4.5e-4 3e-4 7.1e-4l-1e-3 56.7c0 5.5e-4 -4.6e-4 1e-3 -1e-3 1e-3l-123-1e-3c-5.6e-4 0-1e-3 -4.6e-4 -1e-3 -1e-3z" fill-rule="evenodd" stroke="#000" stroke-linecap="butt" stroke-linejoin="round"/>
+<path d="m212 231c0-5.6e-4 4.6e-4 -1e-3 1e-3 -1e-3l123 1e-3c2.7e-4 0 5.2e-4 1.1e-4 7e-4 3.1e-4 2.1e-4 1.9e-4 3e-4 4.5e-4 3e-4 7.1e-4l-1e-3 56.7c0 5.5e-4 -4.6e-4 1e-3 -1e-3 1e-3l-123-1e-3c-5.6e-4 0-1e-3 -4.6e-4 -1e-3 -1e-3z" fill="#cfe2f3" fill-rule="evenodd"/>
+<text x="272.94882" y="266.24637" fill="#000000" font-family="sans-serif" font-size="24px" letter-spacing="0px" stroke-linecap="butt" stroke-width="1px" text-align="center" text-anchor="middle" word-spacing="0px" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal;line-height:100%" xml:space="preserve"><tspan x="272.94882" y="266.24637" font-family="sans-serif" font-size="18.7px" text-align="center" text-anchor="middle" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal">CeVIO</tspan></text>
+<a xlink:href="#.E3.81.8B.E3.82.93.E3.81.97.E3.81.8F.E3.82.93_.2B_CeVIO_Creative_Studio">
+<path d="m50.2 353c0-5.22 4.23-9.45 9.45-9.45h320c2.51 0 4.91 0.996 6.69 2.77 1.77 1.77 2.77 4.18 2.77 6.69v37.8c0 5.22-4.23 9.45-9.45 9.45h-320c-5.22 0-9.45-4.23-9.45-9.45z" fill="#cfe2f3" fill-rule="evenodd"/>
+<path d="m50.2 353c0-5.22 4.23-9.45 9.45-9.45h320c2.51 0 4.91 0.996 6.69 2.77 1.77 1.77 2.77 4.18 2.77 6.69v37.8c0 5.22-4.23 9.45-9.45 9.45h-320c-5.22 0-9.45-4.23-9.45-9.45z" fill-rule="evenodd" stroke="#000" stroke-linecap="butt" stroke-linejoin="round"/>
+<text x="219.51993" y="378.78302" fill="#000000" font-family="sans-serif" font-size="24px" letter-spacing="0px" stroke-linecap="butt" stroke-width="1px" text-align="center" text-anchor="middle" word-spacing="0px" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal;line-height:100%" xml:space="preserve"><tspan x="219.51993" y="378.78302" font-family="sans-serif" font-size="18.7px" text-align="center" text-anchor="middle" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal">かんしくん + CeVIO Creative Studio</tspan></text>
+</a>
+<path d="m414 327c0-5.8e-4 4.6e-4 -1e-3 1e-3 -1e-3l123 1e-3c3e-4 0 5.5e-4 9e-5 7.3e-4 3.1e-4 1.8e-4 1.8e-4 3.1e-4 4.2e-4 3.1e-4 7e-4l-1e-3 56.7c0 5.8e-4 -4.3e-4 1e-3 -9.8e-4 1e-3l-123-1e-3c-5.5e-4 0-1e-3 -4.6e-4 -1e-3 -1e-3z" fill="#f4cccc" fill-rule="evenodd"/>
+<path d="m414 327c0-5.8e-4 4.6e-4 -1e-3 1e-3 -1e-3l123 1e-3c3e-4 0 5.5e-4 9e-5 7.3e-4 3.1e-4 1.8e-4 1.8e-4 3.1e-4 4.2e-4 3.1e-4 7e-4l-1e-3 56.7c0 5.8e-4 -4.3e-4 1e-3 -9.8e-4 1e-3l-123-1e-3c-5.5e-4 0-1e-3 -4.6e-4 -1e-3 -1e-3z" fill-rule="evenodd" stroke="#000" stroke-linecap="butt" stroke-linejoin="round"/>
+<text x="477.09851" y="361.98758" fill="#000000" font-family="sans-serif" font-size="24px" letter-spacing="0px" stroke-linecap="butt" stroke-width="1px" text-align="center" text-anchor="middle" word-spacing="0px" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal;line-height:100%" xml:space="preserve"><tspan x="477.09851" y="361.98758" font-family="sans-serif" font-size="18.7px" text-align="center" text-anchor="middle" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal">ゆっくり</tspan></text>
+<path d="m617 231c0-1e-3 9.8e-4 -2e-3 2e-3 -2e-3l267 2e-3c6.1e-4 0 1e-3 2.4e-4 2e-3 6.6e-4 4.2e-4 4.1e-4 6.7e-4 9.9e-4 6.7e-4 2e-3l-2e-3 56.7c0 1e-3 -9.8e-4 2e-3 -2e-3 2e-3l-267-2e-3c-1e-3 0-2e-3 -1e-3 -2e-3 -2e-3z" fill="#d9d2e9" fill-rule="evenodd"/>
+<path d="m617 231c0-1e-3 9.8e-4 -2e-3 2e-3 -2e-3l267 2e-3c6.1e-4 0 1e-3 2.4e-4 2e-3 6.6e-4 4.2e-4 4.1e-4 6.7e-4 9.9e-4 6.7e-4 2e-3l-2e-3 56.7c0 1e-3 -9.8e-4 2e-3 -2e-3 2e-3l-267-2e-3c-1e-3 0-2e-3 -1e-3 -2e-3 -2e-3z" fill-rule="evenodd" stroke="#000" stroke-linecap="butt" stroke-linejoin="round"/>
+<text x="750.80328" y="266.19644" fill="#000000" font-family="sans-serif" font-size="24px" letter-spacing="0px" stroke-linecap="butt" stroke-width="1px" text-align="center" text-anchor="middle" word-spacing="0px" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal;line-height:100%" xml:space="preserve"><tspan x="750.80328" y="266.19644" font-family="sans-serif" font-size="18.7px" text-align="center" text-anchor="middle" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal">VOICEROID などの AITalk 系</tspan></text>
+<a xlink:href="#VoiceroidUtil_.2B_AITalk_.E7.B3.BB">
+<path d="m775 353c0-5.22 4.23-9.45 9.45-9.45h245c2.51 0 4.91 0.996 6.69 2.77 1.77 1.77 2.77 4.18 2.77 6.69v37.8c0 5.22-4.23 9.45-9.45 9.45h-245c-5.22 0-9.45-4.23-9.45-9.45z" fill="#d9d2e9" fill-rule="evenodd"/>
+<path d="m775 353c0-5.22 4.23-9.45 9.45-9.45h245c2.51 0 4.91 0.996 6.69 2.77 1.77 1.77 2.77 4.18 2.77 6.69v37.8c0 5.22-4.23 9.45-9.45 9.45h-245c-5.22 0-9.45-4.23-9.45-9.45z" fill-rule="evenodd" stroke="#000" stroke-linecap="butt" stroke-linejoin="round"/>
+<text x="907.80804" y="378.59943" fill="#000000" font-family="sans-serif" font-size="24px" letter-spacing="0px" stroke-linecap="butt" stroke-width="1px" text-align="center" text-anchor="middle" word-spacing="0px" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal;line-height:100%" xml:space="preserve"><tspan x="907.80804" y="378.59943" font-family="sans-serif" font-size="18.7px" text-align="center" text-anchor="middle" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal">VoiceroidUtil + AITalk 系</tspan></text>
+</a>
+<a xlink:href="#.E3.81.8B.E3.82.93.E3.81.97.E3.81.8F.E3.82.93_.2B_VoiceroidUtil_.2B_AITalk_.E7.B3.BB">
+<path d="m651 430c0-5.22 4.23-9.45 9.45-9.45h369c2.51 0 4.91 0.996 6.69 2.77 1.77 1.77 2.77 4.18 2.77 6.69v37.8c0 5.22-4.23 9.45-9.45 9.45h-369c-5.22 0-9.45-4.23-9.45-9.45z" fill="#d9d2e9" fill-rule="evenodd"/>
+<path d="m651 430c0-5.22 4.23-9.45 9.45-9.45h369c2.51 0 4.91 0.996 6.69 2.77 1.77 1.77 2.77 4.18 2.77 6.69v37.8c0 5.22-4.23 9.45-9.45 9.45h-369c-5.22 0-9.45-4.23-9.45-9.45z" fill-rule="evenodd" stroke="#000" stroke-linecap="butt" stroke-linejoin="round"/>
+<text x="845.29266" y="456.05347" fill="#000000" font-family="sans-serif" font-size="24px" letter-spacing="0px" stroke-linecap="butt" stroke-width="1px" text-align="center" text-anchor="middle" word-spacing="0px" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal;line-height:100%" xml:space="preserve"><tspan x="845.29266" y="456.05347" font-family="sans-serif" font-size="18.7px" text-align="center" text-anchor="middle" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal">かんしくん + VoiceroidUtil + AITalk 系</tspan></text>
+</a>
+<a xlink:href="#.E3.81.8B.E3.82.93.E3.81.97.E3.81.8F.E3.82.93_.2B_.E6.A3.92.E8.AA.AD.E3.81.BF.E3.81.A1.E3.82.83.E3.82.93_.2B_Plugin_Bouyomichan_wav_and_txt.dll">
+<path d="m425 508c0-5.22 4.23-9.45 9.45-9.45h375c2.51 0 4.91 0.996 6.69 2.77 1.77 1.77 2.77 4.18 2.77 6.69v37.8c0 5.22-4.23 9.45-9.45 9.45h-375c-5.22 0-9.45-4.23-9.45-9.45z" fill="#f4cccc" fill-rule="evenodd"/>
+<path d="m425 508c0-5.22 4.23-9.45 9.45-9.45h375c2.51 0 4.91 0.996 6.69 2.77 1.77 1.77 2.77 4.18 2.77 6.69v37.8c0 5.22-4.23 9.45-9.45 9.45h-375c-5.22 0-9.45-4.23-9.45-9.45z" fill-rule="evenodd" stroke="#000" stroke-linecap="butt" stroke-linejoin="round"/>
+<text x="622.47394" y="519.45349" fill="#000000" font-family="sans-serif" font-size="18.7px" letter-spacing="0px" stroke-linecap="butt" stroke-width="1px" text-align="center" text-anchor="middle" word-spacing="0px" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal;line-height:100%" xml:space="preserve"><tspan x="622.47394" y="519.45349" text-align="center" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal">かんしくん + 棒読みちゃん +</tspan><tspan x="622.47394" y="544.83893" text-align="center" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal">Plugin_Bouyomichan_wav_and_txt.dll</tspan></text>
+</a>
+<a xlink:href="#.E3.81.8B.E3.82.93.E3.81.97.E3.81.8F.E3.82.93_.2B_.E3.82.86.E3.81.A3.E3.81.8F.E3.82.8A.E8.AA.BF.E5.A3.B0.E3.81.8F.E3.82.93_.2B_SofTalk">
+<path d="m19 508c0-5.22 4.23-9.45 9.45-9.45h374c2.51 0 4.91 0.996 6.69 2.77 1.77 1.77 2.77 4.18 2.77 6.69v37.8c0 5.22-4.23 9.45-9.45 9.45h-374c-5.22 0-9.45-4.23-9.45-9.45z" fill="#f4cccc" fill-rule="evenodd"/>
+<path d="m19 508c0-5.22 4.23-9.45 9.45-9.45h374c2.51 0 4.91 0.996 6.69 2.77 1.77 1.77 2.77 4.18 2.77 6.69v37.8c0 5.22-4.23 9.45-9.45 9.45h-374c-5.22 0-9.45-4.23-9.45-9.45z" fill-rule="evenodd" stroke="#000" stroke-linecap="butt" stroke-linejoin="round"/>
+<text x="214.95998" y="533.47241" fill="#000000" font-family="sans-serif" font-size="24px" letter-spacing="0px" stroke-linecap="butt" stroke-width="1px" text-align="center" text-anchor="middle" word-spacing="0px" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal;line-height:100%" xml:space="preserve"><tspan x="214.95998" y="533.47241" font-family="sans-serif" font-size="18.7px" text-align="center" text-anchor="middle" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal">かんしくん + ゆっくり調声くん + SofTalk</tspan></text>
+</a>
+<text x="408.6369" y="181.85616" fill="#000000" font-family="sans-serif" font-size="24px" letter-spacing="0px" stroke-linecap="butt" stroke-width="1px" text-align="center" text-anchor="middle" word-spacing="0px" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal;line-height:100%" xml:space="preserve"><tspan x="408.6369" y="181.85616" font-family="sans-serif" font-size="18.7px" text-align="center" text-anchor="middle" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal">はい</tspan></text>
+<text x="766.9043" y="167.35141" fill="#000000" font-family="sans-serif" font-size="24px" letter-spacing="0px" stroke-linecap="butt" stroke-width="1px" text-align="center" text-anchor="middle" word-spacing="0px" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal;line-height:100%" xml:space="preserve"><tspan x="766.9043" y="167.35141" font-family="sans-serif" font-size="18.7px" text-align="center" text-anchor="middle" style="font-feature-settings:normal;font-variant-caps:normal;font-variant-ligatures:normal;font-variant-numeric:normal">いいえ</tspan></text>
+</svg>
+
+<p>音声ファイルの自動挿入には<a href="https://github.com/oov/aviutl_gcmzdrops">ごちゃまぜドロップス</a>が持つ <a href="https://github.com/oov/aviutl_gcmzdrops#.25E5.25A4.2596.25E9.2583.25A8.25E9.2580.25A3.25E6.2590.25BA-api-.25E3.2581.25AB.25E3.2581.25A4.25E3.2581.2584.25E3.2581.25A6">外部連携 API</a> を使う必要があり、<br />
+これに対応しているのは現時点では <a href="https://www.nicovideo.jp/watch/sm28526328">VoiceroidUtil</a> と拙作の <a href="#.E3.81.8B.E3.82.93.E3.81.97.E3.81.8F.E3.82.93">かんしくん</a> だけです。</p>
+<p>そのため自動挿入するには <code>VoiceroidUtil</code> を使うか、音声とテキストが同時に保存できるソフトと <code>かんしくん</code> を組み合わせて使うかの２択になります。<br />
+後者のパターンは上記フローチャートにはない組み合わせで動くものもたくさんありますが、ここでは一番ニーズが多そうなものに絞って紹介しています。</p>
+<h3 id=".E5.A5.BD.E3.81.8D.E3.81.AA.E3.82.82.E3.81.AE.E4.BD.BF.E3.81.A3.E3.81.A6.E3.81.AD">好きなもの使ってね</h3>
+<p>自動挿入を使わないのであれば、音声ファイルさえあれば使えます。<br />
+音声ファイルを生成できるソフトと自由に組み合わせてお使いください。</p>
+<p><a href="tutorial.html#.E5.8F.A3.E3.83.91.E3.82.AF.E6.BA.96.E5.82.99.E3.81.A8.E5.AD.97.E5.B9.95.E6.BA.96.E5.82.99.E3.81.AE.E9.85.8D.E7.BD.AE.E3.82.92.E5.8A.B9.E7.8E.87.E5.8C.96">チュートリアルで紹介</a>したように設定を行えば、ファイルを拡張編集に投げ込むときに Shift キーを押しておくことによって口パク準備などを自動生成できますし、テキストファイルがあれば字幕準備の自動生成もできます。</p>
+<p>また、ソフトによっては <code>*.exo</code> ファイルが生成できるものもあります。<br />
+音声とテキストのみが入った <code>*.exo</code> を使うなら、PSDToolKit の <a href="setting.html#.E7.92.B0.E5.A2.83.E8.A8.AD.E5.AE.9A.E3.83.80.E3.82.A4.E3.82.A2.E3.83.AD.E3.82.B0">環境設定ダイアログ</a> にある <code>1フレーム目に音声とテキストがある *.exo をドロップした時</code> にチェックを入れておくことで、挿入されるデータを <code>字幕準備</code>や <code>口パク準備</code> などに変化させることもできます。</p>
+<h3 id="VoiceroidUtil_.2B_AITalk_.E7.B3.BB">VoiceroidUtil + AITalk 系</h3>
+<p><a href="https://www.nicovideo.jp/watch/sm28526328">VoiceroidUtil</a> は VOICEROID などの AITalk 系製品の起動／終了を管理したり、規則的なファイル名での保存や、外部ツールとの連携をサポートしてくれます。</p>
+<p>VoiceroidUtil を使えば保存のたびに <code>名前をつけて保存</code> のダイアログを使う必要がなくなり、更に連携設定を行えば拡張編集への自動挿入まで行えるようになります。</p>
+<h4 id="VoiceroidUtil_.E3.81.AE.E5.88.9D.E5.9B.9E.E8.B5.B7.E5.8B.95.E3.81.8B.E3.82.89.E9.80.A3.E6.90.BA.E8.A8.AD.E5.AE.9A.E3.81.BE.E3.81.A7.E3.81.AE.E6.9C.80.E7.9F.AD.E3.83.AB.E3.83.BC.E3.83.88">VoiceroidUtil の初回起動から連携設定までの最短ルート</h4>
+<ol>
+<li>VoiceroidUtil を起動します。</li>
+<li><code>設定</code> タブをクリックします。</li>
+<li><code>音声保存</code> タブをクリックします。</li>
+<li><code>AviUtl拡張編集ファイル(.exo)を作成</code> にチェックを入れます。</li>
+</ol>
+<p>これで VoiceroidUtil での音声ファイル保存時に AviUtl にテキストと音声が挿入されるようになりました。<br />
+ただし、この状態で挿入されるのは普通のテキストオブジェクトと音声です。</p>
+<p>ここから更に PSDToolKit の <a href="setting.html#.E7.92.B0.E5.A2.83.E8.A8.AD.E5.AE.9A.E3.83.80.E3.82.A4.E3.82.A2.E3.83.AD.E3.82.B0">環境設定ダイアログ</a> にある <code>1フレーム目に音声とテキストがある *.exo をドロップした時</code> にチェックを入れておくことで、挿入されるデータを <code>字幕準備</code>や <code>口パク準備</code> などに変化させることができます。</p>
+<p>なお PSDToolKit で <code>字幕準備</code> や <code>口パク準備</code> などを作成するようにすると VoiceroidUtil 側で設定したキャラごとのフォント設定などはすべて無効になりますが、これは仕様です。<br />
+PSDToolKit ではフォント設定などは <code>字幕表示</code> で行います。</p>
+<h3 id=".E3.81.8B.E3.82.93.E3.81.97.E3.81.8F.E3.82.93_.2B_VoiceroidUtil_.2B_AITalk_.E7.B3.BB">かんしくん + VoiceroidUtil + AITalk 系</h3>
+<p><a href="#VoiceroidUtil_.2B_AITalk_.E7.B3.BB">VoiceroidUtil のみを使って自動挿入する</a>こともできますが、<a href="#.E3.81.8B.E3.82.93.E3.81.97.E3.81.8F.E3.82.93">かんしくん</a>を組み合わせて使うこともできます。<br />
+色々な音声合成ソフトを組み合わせて使う場合にはこの構成が選ばれることもあります。</p>
+<p>この構成で使用するなら VoiceroidUtil はデフォルト設定のまま使うことができます。</p>
+<h4 id=".E3.81.8B.E3.82.93.E3.81.97.E3.81.8F.E3.82.93.E3.81.AE.E8.A8.AD.E5.AE.9A.E4.BE.8B">かんしくんの設定例</h4>
+<p>かんしくんの基本的な部分については<a href="forcepser.html">こちら</a>を参照ください。<br />
+VoiceroidUtil がすべてデフォルト設定なら以下のような設定で動作します。<br />
+（<code>basedir</code> は不使用）</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode txt"><code class="sourceCode default"><span id="cb1-1"><a href="#cb1-1"></a>delta = 15.0</span>
+<span id="cb1-2"><a href="#cb1-2"></a>freshness = 5.0</span>
+<span id="cb1-3"><a href="#cb1-3"></a></span>
+<span id="cb1-4"><a href="#cb1-4"></a>[[rule]]</span>
+<span id="cb1-5"><a href="#cb1-5"></a>dir = &#39;C:\Users\ユーザー名\Documents\VoiceroidWaveFiles&#39;</span>
+<span id="cb1-6"><a href="#cb1-6"></a>file = &#39;*_東北きりたん_*.wav&#39;</span>
+<span id="cb1-7"><a href="#cb1-7"></a>encoding = &#39;sjis&#39;</span>
+<span id="cb1-8"><a href="#cb1-8"></a>layer = 1</span></code></pre></div>
+<p>VOICEROID2 や ガイノイドTalk などでボイスプリセット名付きで発言させる場合（例えば <code>鳴花ヒメ＞こんにちは</code> のような使い方）は、以下のようにテキストファイル内のボイスプリセット名を基準に判定させることもできます。</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode txt"><code class="sourceCode default"><span id="cb2-1"><a href="#cb2-1"></a>delta = 15.0</span>
+<span id="cb2-2"><a href="#cb2-2"></a>freshness = 5.0</span>
+<span id="cb2-3"><a href="#cb2-3"></a></span>
+<span id="cb2-4"><a href="#cb2-4"></a>[[rule]]</span>
+<span id="cb2-5"><a href="#cb2-5"></a>dir = &#39;C:\Users\ユーザー名\Documents\VoiceroidWaveFiles&#39;</span>
+<span id="cb2-6"><a href="#cb2-6"></a>file = &#39;*.wav&#39; # ファイル名は何でもいい</span>
+<span id="cb2-7"><a href="#cb2-7"></a>text = &#39;&#39;&#39;^鳴花ヒメ＞&#39;&#39;&#39;</span>
+<span id="cb2-8"><a href="#cb2-8"></a>encoding = &#39;sjis&#39;</span>
+<span id="cb2-9"><a href="#cb2-9"></a>layer = 1</span>
+<span id="cb2-10"><a href="#cb2-10"></a>modifier = &#39;&#39;&#39;text = re.gsub(text, &quot;^.*?＞&quot;, &quot;&quot;)&#39;&#39;&#39; # テキストの冒頭のボイスプリセット指定を除去</span></code></pre></div>
+<h3 id=".E3.81.8B.E3.82.93.E3.81.97.E3.81.8F.E3.82.93_.2B_.E6.A3.92.E8.AA.AD.E3.81.BF.E3.81.A1.E3.82.83.E3.82.93_.2B_Plugin_Bouyomichan_wav_and_txt.dll">かんしくん + 棒読みちゃん + Plugin_Bouyomichan_wav_and_txt.dll</h3>
+<p><a href="https://chi.usamimi.info/Program/Application/BouyomiChan/">棒読みちゃん</a> に <a href="https://github.com/yukimaru73/Plugin_Bouyomichan_wav_and_txt">Plugin_Bouyomichan_wav_and_txt.dll</a> を導入すると、音声ファイルとテキストファイルを同時に保存できるようになります。</p>
+<h4 id=".E3.83.97.E3.83.A9.E3.82.B0.E3.82.A4.E3.83.B3.E3.82.92.E5.B0.8E.E5.85.A5.E6.B8.88.E3.81.BF.E3.81.AE.E6.A3.92.E8.AA.AD.E3.81.BF.E3.81.A1.E3.82.83.E3.82.93.E3.81.AE.E5.88.9D.E5.9B.9E.E8.B5.B7.E5.8B.95.E3.81.8B.E3.82.89.E9.80.A3.E6.90.BA.E8.A8.AD.E5.AE.9A.E3.81.BE.E3.81.A7.E3.81.AE.E6.9C.80.E7.9F.AD.E3.83.AB.E3.83.BC.E3.83.88">プラグインを導入済みの棒読みちゃんの初回起動から連携設定までの最短ルート</h4>
+<ol>
+<li>棒読みちゃんを起動します。</li>
+<li><code>音声 テキスト出力</code> プラグインを有効にします。<br />
+（※それ以外のプラグインは連携に必要ありません）</li>
+<li><code>その他</code> タブをクリックします。</li>
+<li><code>音声 テキスト出力</code> を選択し、下にあるスパナアイコンをクリックします。</li>
+<li>ファイルの保存場所を好きな場所に変更します。<br />
+（例えば <code>C:\Users\ユーザー名\Documents\BouyomiChan</code> など）</li>
+</ol>
+<p>これで <code>音声合成</code> タブに戻り、セリフを入力してツールバー右上のほうにある <code>🛑/📝</code> のようなボタンを押すと音声とテキストの保存ができます。</p>
+<h4 id=".E3.81.8B.E3.82.93.E3.81.97.E3.81.8F.E3.82.93.E3.81.AE.E8.A8.AD.E5.AE.9A.E4.BE.8B">かんしくんの設定例</h4>
+<p>かんしくんの基本的な部分については<a href="forcepser.html">こちら</a>を参照ください。<br />
+保存先を <code>C:\Users\ユーザー名\Documents\BouyomiChan</code> に設定している場合、以下のような設定で動作します。<br />
+（<code>basedir</code> は不使用）</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode txt"><code class="sourceCode default"><span id="cb3-1"><a href="#cb3-1"></a>delta = 15.0</span>
+<span id="cb3-2"><a href="#cb3-2"></a>freshness = 5.0</span>
+<span id="cb3-3"><a href="#cb3-3"></a></span>
+<span id="cb3-4"><a href="#cb3-4"></a>[[rule]]</span>
+<span id="cb3-5"><a href="#cb3-5"></a>dir = &#39;C:\Users\ユーザー名\Documents\BouyomiChan&#39;</span>
+<span id="cb3-6"><a href="#cb3-6"></a>file = &#39;*_女性１_*.wav&#39;</span>
+<span id="cb3-7"><a href="#cb3-7"></a>encoding = &#39;sjis&#39;</span>
+<span id="cb3-8"><a href="#cb3-8"></a>layer = 1</span></code></pre></div>
+<h3 id=".E3.81.8B.E3.82.93.E3.81.97.E3.81.8F.E3.82.93_.2B_.E3.82.86.E3.81.A3.E3.81.8F.E3.82.8A.E8.AA.BF.E5.A3.B0.E3.81.8F.E3.82.93_.2B_SofTalk">かんしくん + ゆっくり調声くん + SofTalk</h3>
+<p><a href="https://w.atwiki.jp/softalk/pages/1.html">SofTalk</a> はそれ単体でも音声とテキストファイルを保存することができますが、<a href="https://www.nicovideo.jp/watch/sm32835672">ゆっくり調声くん</a>と組み合わせると詳細な調声やセリフの再編集なども行いやすくなります。</p>
+<h4 id=".E3.82.86.E3.81.A3.E3.81.8F.E3.82.8A.E8.AA.BF.E5.A3.B0.E3.81.8F.E3.82.93_.2B_SofTalk_.E3.81.AE.E5.88.9D.E5.9B.9E.E8.B5.B7.E5.8B.95.E3.81.8B.E3.82.89.E9.80.A3.E6.90.BA.E8.A8.AD.E5.AE.9A.E3.81.BE.E3.81.A7.E3.81.AE.E6.9C.80.E7.9F.AD.E3.83.AB.E3.83.BC.E3.83.88">ゆっくり調声くん + SofTalk の初回起動から連携設定までの最短ルート</h4>
+<ol>
+<li>ゆっくり調声くんを起動します。</li>
+<li><code>設定</code> タブをクリックします。</li>
+<li>一番下にある <code>SofTalk.exe ファイルパス</code> に SofTalk.exe のファイルパスを指定します。</li>
+<li><code>音声作成</code> タブをクリックします。</li>
+<li><code>ファイル</code> メニューから <code>新規プロジェクト開始</code> を選びます。</li>
+<li>プロジェクトのフォルダーを選択します。<br />
+（例えば <code>C:\Users\ユーザー名\Documents\YukkuriChoseiKun</code> など）</li>
+</ol>
+<p>これで左上の <code>新規作成</code> を選び、緑の枠の一番上の入力欄にセリフを入力して <code>変換</code> ボタンを押すと読み上げに関する設定画面が現れます。<br />
+この状態で下の <code>挿入</code> ボタン押すと上のセリフ一覧にセリフが追加され、それと同時に音声とテキストの保存がされます。</p>
+<h4 id=".E3.81.8B.E3.82.93.E3.81.97.E3.81.8F.E3.82.93.E3.81.AE.E8.A8.AD.E5.AE.9A.E4.BE.8B">かんしくんの設定例</h4>
+<p>かんしくんの基本的な部分については<a href="forcepser.html">こちら</a>を参照ください。<br />
+保存先を <code>C:\Users\ユーザー名\Documents\YukkuriChoseiKun</code> に設定している場合、以下のような設定で動作します。<br />
+（<code>basedir</code> は不使用）</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode txt"><code class="sourceCode default"><span id="cb4-1"><a href="#cb4-1"></a>delta = 15.0</span>
+<span id="cb4-2"><a href="#cb4-2"></a>freshness = 5.0</span>
+<span id="cb4-3"><a href="#cb4-3"></a></span>
+<span id="cb4-4"><a href="#cb4-4"></a>[[rule]]</span>
+<span id="cb4-5"><a href="#cb4-5"></a>dir = &#39;C:\Users\ユーザー名\Documents\YukkuriChoseiKun&#39;</span>
+<span id="cb4-6"><a href="#cb4-6"></a>file = &#39;*_霊夢_*.wav&#39;</span>
+<span id="cb4-7"><a href="#cb4-7"></a>encoding = &#39;sjis&#39;</span>
+<span id="cb4-8"><a href="#cb4-8"></a>layer = 1</span></code></pre></div>
+<h3 id=".E3.81.8B.E3.82.93.E3.81.97.E3.81.8F.E3.82.93_.2B_CeVIO_Creative_Studio">かんしくん + CeVIO Creative Studio</h3>
+<p><a href="http://cevio.jp/">CeVIO Creative Studio</a> では保存時にテキストも同時に保存することができます。</p>
+<p>CeVIO Creative Studio での事前の設定は特に必要なく、トークトラックに適当にセリフを入力し、<code>Ctrl + W</code> を押すか、右クリックメニューから <code>WAV書き出し(W)...</code> を選び、出てきた保存ダイアログの下にある <code>セリフをテキスト出力</code> にチェックを付けた状態で音声ファイルを保存することで、音声とテキストが同時に保存されます。</p>
+<h4 id=".E3.81.8B.E3.82.93.E3.81.97.E3.81.8F.E3.82.93.E3.81.AE.E8.A8.AD.E5.AE.9A.E4.BE.8B">かんしくんの設定例</h4>
+<p>かんしくんの基本的な部分については<a href="forcepser.html">こちら</a>を参照ください。<br />
+音声ファイルを <code>C:\Users\ユーザー名\Documents\CeVIO</code> に保存する場合、以下のような設定で動作します。<br />
+（<code>basedir</code> は不使用）</p>
+<p>なお識別にファイル名を利用しているため、ファイル名はデフォルトのままで保存してください。</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode txt"><code class="sourceCode default"><span id="cb5-1"><a href="#cb5-1"></a>delta = 15.0</span>
+<span id="cb5-2"><a href="#cb5-2"></a>freshness = 5.0</span>
+<span id="cb5-3"><a href="#cb5-3"></a></span>
+<span id="cb5-4"><a href="#cb5-4"></a>[[rule]]</span>
+<span id="cb5-5"><a href="#cb5-5"></a>dir = &#39;C:\Users\ユーザー名\Documents\CeVIO&#39;</span>
+<span id="cb5-6"><a href="#cb5-6"></a>file = &#39;*_さとうささら_*.wav&#39;</span>
+<span id="cb5-7"><a href="#cb5-7"></a>encoding = &#39;sjis&#39;</span>
+<span id="cb5-8"><a href="#cb5-8"></a>layer = 1</span></code></pre></div>
+</div>
+<footer>
+<dl>
+<dt>Written by</dt>
+<dd>oov</dd>
+<dt>Generated at</dt>
+<dd>2020-06-25 23:16:23</dd>
+<dt>for</dt>
+<dd>v0.2beta45 ( b77249f )</dd>
+</dl>
+</footer>
+</div>
+</body>
+</html>

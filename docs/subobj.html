@@ -9,28 +9,27 @@
   <style type="text/css">
   </style>
   <style type="text/css">
-a.sourceLine { display: inline-block; line-height: 1.25; }
-a.sourceLine { pointer-events: none; color: inherit; text-decoration: inherit; }
-a.sourceLine:empty { height: 1.2em; position: absolute; }
-.sourceCode { overflow: visible; }
-code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
 div.sourceCode { margin: 1em 0; }
 pre.sourceCode { margin: 0; }
 @media screen {
 div.sourceCode { overflow: auto; }
 }
 @media print {
-code.sourceCode { white-space: pre-wrap; }
-a.sourceLine { text-indent: -1em; padding-left: 1em; }
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
 }
-pre.numberSource a.sourceLine
-  { position: relative; }
-pre.numberSource a.sourceLine:empty
-  { position: absolute; }
-pre.numberSource a.sourceLine::before
-  { content: attr(data-line-number);
-    position: absolute; left: -5em; text-align: right; vertical-align: baseline;
-    border: none; pointer-events: all;
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
     -webkit-touch-callout: none; -webkit-user-select: none;
     -khtml-user-select: none; -moz-user-select: none;
     -ms-user-select: none; user-select: none;
@@ -39,9 +38,9 @@ pre.numberSource a.sourceLine::before
   }
 pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
 div.sourceCode
-  {  }
+  {   }
 @media screen {
-a.sourceLine::before { text-decoration: underline; }
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 code span.al { color: #ff0000; font-weight: bold; } /* Alert */
 code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
@@ -81,6 +80,7 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
   <ul>
     <li class="ptk-menu-item-index"><a href="index.html">はじめに</a></li>
     <li class="ptk-menu-item-tutorial"><a href="tutorial.html">チュートリアル</a></li>
+    <li class="ptk-menu-item-tutorial2"><a href="tutorial2.html">ツール連携入門</a></li>
     <li class="ptk-menu-item-pfv"><a href="pfv.html">PSDTool のお気に入りを使う</a></li>
     <li class="ptk-menu-item-forcepser"><a href="forcepser.html">かんしくん</a></li>
     <li class="ptk-menu-item-obj ptk-menu-item-psd ptk-menu-item-subobj ptk-menu-item-prep ptk-menu-item-audio">オブジェクトリファレンス
@@ -115,7 +115,8 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 </header>
 <nav id="TOC">
 <ul>
-<li><a href="#subobj_.E3.82.A2.E3.83.8B.E3.83.A1.E3.83.BC.E3.82.B7.E3.83.A7.E3.83.B3.E5.8A.B9.E6.9E.9C.E3.81.AB.E3.81.A4.E3.81.84.E3.81.A6">subobj アニメーション効果について</a><ul>
+<li><a href="#subobj_.E3.82.A2.E3.83.8B.E3.83.A1.E3.83.BC.E3.82.B7.E3.83.A7.E3.83.B3.E5.8A.B9.E6.9E.9C.E3.81.AB.E3.81.A4.E3.81.84.E3.81.A6">subobj アニメーション効果について</a>
+<ul>
 <li><a href="#.E4.BB.95.E7.B5.84.E3.81.BF">仕組み</a></li>
 </ul></li>
 <li><a href="#.E3.83.95.E3.82.A7.E3.83.BC.E3.83.89.40subobj">フェード@subobj</a></li>
@@ -132,10 +133,10 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <p><code>subobj アニメーション効果</code> では、通常使われる <code>obj.time</code>/<code>obj.frame</code>/<code>obj.totaltime</code>/<code>obj.totalframe</code> の代わりに <code>subobj.time</code>/<code>subobj.frame</code>/<code>subobj.totaltime</code>/<code>subobj.totalframe</code> を参照することで、依存している別のオブジェクトの表示時間を得ることができます。</p>
 <p>ただし依存している別のオブジェクトがタイムライン上に存在していない時間もあり、その場合は <code>subobj.notfound</code> が <code>true</code> なります。</p>
 <p>登場／退場を扱うスクリプトでは、例えば以下のようにして依存しているオブジェクトが存在しない間は表示を消す必要があるかもしれません。</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode lua"><code class="sourceCode lua"><a class="sourceLine" id="cb1-1" data-line-number="1"><span class="kw">if</span> subobj<span class="ot">.</span>notfound <span class="kw">then</span></a>
-<a class="sourceLine" id="cb1-2" data-line-number="2">  obj<span class="ot">.</span>alpha <span class="ot">=</span> <span class="dv">0</span></a>
-<a class="sourceLine" id="cb1-3" data-line-number="3">  <span class="kw">return</span></a>
-<a class="sourceLine" id="cb1-4" data-line-number="4"><span class="kw">end</span></a></code></pre></div>
+<div class="sourceCode" id="cb1"><pre class="sourceCode lua"><code class="sourceCode lua"><span id="cb1-1"><a href="#cb1-1"></a><span class="cf">if</span> subobj<span class="op">.</span>notfound <span class="cf">then</span></span>
+<span id="cb1-2"><a href="#cb1-2"></a>  obj<span class="op">.</span>alpha <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb1-3"><a href="#cb1-3"></a>  <span class="cf">return</span></span>
+<span id="cb1-4"><a href="#cb1-4"></a><span class="cf">end</span></span></code></pre></div>
 <h2 id=".E3.83.95.E3.82.A7.E3.83.BC.E3.83.89.40subobj">フェード@subobj</h2>
 <p>字幕を1文字ずつフェードインさせる場合などに有用な <code>subobj アニメーション効果</code> です。</p>
 <table>
@@ -309,9 +310,9 @@ code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warni
 <dt>Written by</dt>
 <dd>oov</dd>
 <dt>Generated at</dt>
-<dd>2020-06-16 19:59:09</dd>
+<dd>2020-06-25 23:16:23</dd>
 <dt>for</dt>
-<dd>v0.2beta44 ( 15fc563 )</dd>
+<dd>v0.2beta45 ( b77249f )</dd>
 </dl>
 </footer>
 </div>
