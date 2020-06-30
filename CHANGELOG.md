@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2beta46
+
+- アイビスペイントから出力した PSD ファイルが開けないことがあったのを修正
+
 ## 0.2beta45
 
 - Krita や SketchBook で生成した PSD ファイルを開くと GUI がフリーズする問題を修正
