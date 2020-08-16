@@ -79,9 +79,6 @@ local function loadjsonstr(jsonstr)
   if j == nil then
     return nil
   end
-  if j.psdtk ~= 1 then
-    return nil
-  end
   return j
 end
 
@@ -225,10 +222,14 @@ function P.parseexo(filepath)
     local name = ini:get(i .. ".0", "_name", "")
     if wav == nil and name == "音声ファイル" then
       wav = ini:get(i .. ".0", "file", nil)
+      if j == nil or j == '' then
+        j = ini:get(i .. ".0", "__json", nil)
+      end
     elseif txt == nil and name == "テキスト" then
       txt = ini:get(i .. ".0", "text", nil)
-    elseif j == nil and name == "スクリプト制御" then
-      j = ini:get(i .. ".0", "text", nil)
+      if j == nil or j == '' then
+        j = ini:get(i .. ".0", "__json", nil)
+      end
     end
     i = i + 1
   end
@@ -236,13 +237,8 @@ function P.parseexo(filepath)
     return nil
   end
   txt = GCMZDrops.decodeexotextutf8(txt)
-  if j ~= nil then
-    j = GCMZDrops.decodeexotextutf8(j)
-    if j:sub(1, 7) == "--JSON:" then
-      j = loadjsonstr(j:sub(8))
-    else
-      j = nil
-    end
+  if j ~= nil and j ~= '' then
+    j = loadjsonstr(GCMZDrops.decodeexotextutf8(j))
   end
   return wav, txt, j
 end
