@@ -641,40 +641,6 @@ function P:srt_subtitle_scripter(s)
 end
 ```
 
-## Instant CTalk の設定
-
-Instant CTalk は実験的な機能なので、将来的には大きく変更されるかもしれません。
-
-### `P.ictalk_firemode`
-
-Instant CTalk で作成した音声をどのように挿入するかを設定します。
-
-```lua
-P.ictalk_firemode = 1
-```
-
-値|説明
----|---
-`0`|`*.wav` ファイルのみを追加する
-`1`|`*.wav` ファイルと `口パク準備` を追加する<br>字幕用テキストを出力した場合は `テキスト` または `字幕準備` も作成する
-
-### `P.ictalk_format`
-
-Instant CTalk で作成した音声がどのようなファイル名で保存されるのかを設定します。
-
-```lua
-P.ictalk_format = 3
-```
-
-値|説明
----|---
-`0`|`こんにちは.wav`
-`1`|`180116_172059_こんにちは.wav`
-`2`|`キャラ名_こんにちは.wav`
-`3`|`180116_172059_キャラ名_こんにちは.wav`
-
-上記の説明は `2018年1月16日 17時20分59秒` に `こんにちは` というセリフを `キャラ名` というキャラクターの声で作成した場合の例です。
-
 # 文字列を UTF-8 で記述する
 
 [`P:wav_subtitle_replacer`](#P:wav_subtitle_replacer) や [`P:srt_subtitle_replacer`](#P:srt_subtitle_replacer) は文字列を UTF-8 で記述する必要がありますが、そのやり方は色々あります。

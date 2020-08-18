@@ -81,8 +81,6 @@ PSDToolKit/字幕表示.exa
 GCMZDrops/psdtoolkit_wav.lua  
 GCMZDrops/psdtoolkit_srt.lua  
 GCMZDrops/psdtoolkit_lab.lua  
-GCMZDrops/dropper/psdtoolkit_ictalk.lua  
-GCMZDrops/dropper/ICTalk.dll
   - ごちゃまぜドロップス用ファイル
 - PSDToolKit説明書.html  
 PSDToolKitDocs/*

@@ -160,7 +160,7 @@ begin
   end;
 end;
 
-{ TICTalkDialog }
+{ TSettingDialog }
 
 function TSettingDialog.GetControl(const ControlId: integer): THandle;
 begin

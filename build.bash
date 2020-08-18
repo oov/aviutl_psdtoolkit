@@ -53,7 +53,6 @@ sed 's/\r$//' 'src/lua/GCMZDrops/psd.lua' | sed 's/$/\r/' > 'bin/GCMZDrops/psdto
 sed 's/\r$//' 'src/lua/GCMZDrops/wav.lua' | sed 's/$/\r/' > 'bin/GCMZDrops/psdtoolkit_wav.lua'
 sed 's/\r$//' 'src/lua/GCMZDrops/srt.lua' | sed 's/$/\r/' > 'bin/GCMZDrops/psdtoolkit_srt.lua'
 sed 's/\r$//' 'src/lua/GCMZDrops/lab.lua' | sed 's/$/\r/' > 'bin/GCMZDrops/psdtoolkit_lab.lua'
-sed 's/\r$//' 'src/lua/GCMZDrops/dropper/ictalk.lua' | sed 's/$/\r/' > 'bin/GCMZDrops/dropper/psdtoolkit_ictalk.lua'
 sed 's/\r$//' 'src/lua/exa/lipsync.exa' | sed 's/$/\r/' > 'bin/script/PSDToolKit/exa/lipsync.exa'
 sed 's/\r$//' 'src/lua/exa/subtitle.exa' | sed 's/$/\r/' > 'bin/script/PSDToolKit/exa/subtitle.exa'
 sed 's/\r$//' 'src/lua/exa/wav.exa' | sed 's/$/\r/' > 'bin/script/PSDToolKit/exa/wav.exa'
@@ -75,7 +74,6 @@ popd > /dev/null
 cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/PSDToolKitBridge.lpi
 cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/AssistPlugin.lpi
 cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/AudioMixerPlugin.lpi
-cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/ictalk/ictalk.lpi
 
 # copy GCMZDrops release version
 # cp ../aviutl_gcmzdrops/bin/GCMZDrops.* bin/

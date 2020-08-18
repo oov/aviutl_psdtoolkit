@@ -220,7 +220,4 @@ function P:srt_subtitle_scripter(s)
   return "<?s=[==[\r\n" .. s:gsub(']==]', ']==].."]==]"..[==[') .. ']==];require("PSDToolKit").subtitle:set(s,obj,true);s=nil?>'
 end
 
-P.ictalk_firemode = 1
-P.ictalk_format = 3
-
 return P
