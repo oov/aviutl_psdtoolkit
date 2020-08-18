@@ -1,6 +1,6 @@
 #!/bin/bash
 
-mkdir -p bin/PSDToolKit bin/script/PSDToolKit/exa bin/GCMZDrops/dropper bin/かんしくん
+mkdir -p bin/PSDToolKit bin/script/PSDToolKit/exa bin/GCMZDrops/dropper bin/かんしくん/asas
 
 # copy readme
 sed 's/\r$//' README.md | sed 's/$/\r/' > bin/PSDToolKit.txt
@@ -94,6 +94,7 @@ cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/ictalk/ictalk.lpi
 # cp ../forcepser/bin/setting.txt-template bin/かんしくん/
 # cp ../forcepser/bin/template.exo-template bin/かんしくん/
 # cp ../forcepser/bin/_entrypoint.lua bin/かんしくん/
+# cp ../forcepser/bin/asas/* bin/かんしくん/asas/
 
 # install
 # mkdir -p aviutl/PSDToolKit aviutl/script/PSDToolKit/exa aviutl/GCMZDrops/dropper
