@@ -86,9 +86,6 @@ cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/ictalk/ictalk.lpi
 # cp ../aviutl_rampreview/bin/ZRamPreview.* bin/
 # cp ../aviutl_rampreview/bin/script/Extram.dll bin/script/
 
-# copy RelMovieHandle release version
-# cp ../aviutl_relmoviehandle/bin/RelMovieHandle.* bin/
-
 # copy forcepser release version
 # cp ../forcepser/bin/forcepser.* bin/かんしくん/
 # cp ../forcepser/bin/setting.txt-template bin/かんしくん/
