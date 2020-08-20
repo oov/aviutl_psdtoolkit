@@ -42,6 +42,7 @@ const
   WM_PSDTKSAVED = WM_APP + 1;
 var
   MainDLLInstance: THandle;
+  Heap: THandle;
   CurrentFrame, CurrentFrameN, CurrentRenderIndex: integer;
 
 procedure SetCurrentFramePtr();
@@ -81,14 +82,14 @@ begin
   if nsize = 0 then
   begin
     if ptr <> nil then
-      FreeMem(ptr);
+      HeapFree(Heap, 0, ptr);
     Result := nil;
     Exit;
   end;
   if ptr <> nil then
-    Result := ReallocMem({%H-}ptr, nsize)
+    Result := HeapRealloc(Heap, 0, {%H-}ptr, nsize)
   else
-    Result := GetMem(nsize);
+    Result := HeapAlloc(Heap, 0, nsize);
 end;
 
 function ParseExEditVersion(S: string): integer;
@@ -587,6 +588,7 @@ begin
 end;
 
 initialization
+  Heap := GetProcessHeap();
   MainDLLInstance := LoadLibraryW(PWideChar(GetMainDLLName()));
   LoadLua(GetLuaDLLName());
 
