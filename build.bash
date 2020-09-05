@@ -87,7 +87,6 @@ cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/AudioMixerPlugin.lpi
 # copy forcepser release version
 # cp ../forcepser/bin/forcepser.* bin/かんしくん/
 # cp ../forcepser/bin/setting.txt-template bin/かんしくん/
-# cp ../forcepser/bin/template.exo-template bin/かんしくん/
 # cp ../forcepser/bin/_entrypoint.lua bin/かんしくん/
 # cp ../forcepser/bin/asas/* bin/かんしくん/asas/
 
