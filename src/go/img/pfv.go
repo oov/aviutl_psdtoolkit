@@ -500,7 +500,7 @@ func registerFaview(p *PFV) error {
 	if len(p.FaviewRoot.Children) > 0 {
 		nameList := make([]string, 0, len(p.FaviewRoot.Children))
 		for i := range p.FaviewRoot.Children {
-			nameList = append(nameList, p.FaviewRoot.Children[i].NameNode.Name)
+			nameList = append(nameList, strings.ReplaceAll(p.FaviewRoot.Children[i].NameNode.Name, "\x00", ""))
 		}
 		p.FaviewRoot.ItemNameList = strings.Join(nameList, "\x00")
 	}
@@ -533,7 +533,7 @@ func registerFaviewChildren(fn *FaviewNode) int {
 		if cn.Item() {
 			fn.Items = append(fn.Items, cn)
 			n++
-			nameList = append(nameList, cn.Name)
+			nameList = append(nameList, strings.ReplaceAll(cn.Name, "\x00", ""))
 			continue
 		}
 		if cn.Filter() || cn.Folder() {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"image"
 	"time"
+	"strings"
 
 	"github.com/golang-ui/nuklear/nk"
 	"github.com/pkg/errors"
@@ -210,7 +211,8 @@ func (lv *LayerView) layerTreeItem(ctx *nk.Context, indent, thumbSize float32, t
 	}
 	indent += collapseSize + 1
 
-	w := float32(nkhelper.TextWidth(lv.mainFontHandle, l.Name) + marginSize*2 + visibleSize + thumbSize)
+	layerName := strings.ReplaceAll(l.Name, "\x00", "")
+	w := float32(nkhelper.TextWidth(lv.mainFontHandle, layerName) + marginSize*2 + visibleSize + thumbSize)
 	if l.Clipping {
 		w += visibleSize
 	}
@@ -272,8 +274,8 @@ func (lv *LayerView) layerTreeItem(ctx *nk.Context, indent, thumbSize float32, t
 		drawTextMiddle(canvas, rect, symbolClippingArrow, lv.symbolFontHandle, fg)
 		rect = nk.NkRect(rect.X()+visibleSize, rect.Y(), rect.W()-visibleSize, rect.H())
 	}
-	if l.Name != "" {
-		drawTextMiddle(canvas, rect, l.Name, lv.mainFontHandle, fg)
+	if layerName != "" {
+		drawTextMiddle(canvas, rect, layerName, lv.mainFontHandle, fg)
 	}
 	return clicked, ctrl
 }
@@ -351,7 +353,8 @@ func (lv *LayerView) layoutFavoriteItem(ctx *nk.Context, indent float32, n *img.
 	}
 	indent += collapseSize + 1
 
-	w := float32(nkhelper.TextWidth(lv.mainFontHandle, n.Name) + marginSize*2)
+	favName := strings.ReplaceAll(n.Name, "\x00", "")
+	w := float32(nkhelper.TextWidth(lv.mainFontHandle, favName) + marginSize*2)
 	if n.Filter() || n.Item() {
 		w += visibleSize
 	}
@@ -385,7 +388,7 @@ func (lv *LayerView) layoutFavoriteItem(ctx *nk.Context, indent float32, n *img.
 		drawTextMiddle(canvas, rect, symbolFile, lv.symbolFontHandle, fg)
 		rect = nk.NkRect(rect.X()+visibleSize, rect.Y(), rect.W()-visibleSize, rect.H())
 	}
-	drawTextMiddle(canvas, rect, n.Name, lv.mainFontHandle, fg)
+	drawTextMiddle(canvas, rect, favName, lv.mainFontHandle, fg)
 	return modified
 }
 
@@ -420,7 +423,8 @@ func (lv *LayerView) layoutFaview(ctx *nk.Context, img *img.Image, indent float3
 
 	left := indent
 	nk.NkLayoutSpacePush(ctx, nk.NkRect(left, 0, bounds.W()-left, bounds.H()))
-	nk.NkLabel(ctx, n.NameNode.Name, nk.TextLeft)
+	nodeName := strings.ReplaceAll(n.NameNode.Name, "\x00", "")
+	nk.NkLabel(ctx, nodeName, nk.TextLeft)
 
 	nk.NkLayoutSpaceEnd(ctx)
 
