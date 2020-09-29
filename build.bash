@@ -34,6 +34,7 @@ EOS
 sed 's/\r$//' 'src/exa/TalkDetector.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/口パク準備.exa'
 sed 's/\r$//' 'src/exa/Phoneme.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/口パク準備（音素のみ）.exa'
 sed 's/\r$//' 'src/exa/Subtitle.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/字幕表示.exa'
+sed 's/\r$//' 'src/exa/SubtitleFast.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/字幕表示（キャッシュ）.exa'
 sed 's/\r$//' 'src/exa/PrepSubtitle.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/字幕準備.exa'
 sed 's/\r$//' 'src/exa/MultiPurposeSlider.exa' | sed 's/$/\r/' > 'bin/PSDToolKit/多目的スライダー.exa'
 
@@ -89,6 +90,10 @@ cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/AudioMixerPlugin.lpi
 # cp ../forcepser/bin/setting.txt-template bin/かんしくん/
 # cp ../forcepser/bin/_entrypoint.lua bin/かんしくん/
 # cp ../forcepser/bin/asas/* bin/かんしくん/asas/
+
+# copy CacheText release version
+# cp ../aviutl_cachetext/bin/script/CacheText.* bin/script/
+# cp ../aviutl_cachetext/bin/キャッシュテキスト.* bin/
 
 # install
 # mkdir -p aviutl/PSDToolKit aviutl/script/PSDToolKit/exa aviutl/GCMZDrops/dropper

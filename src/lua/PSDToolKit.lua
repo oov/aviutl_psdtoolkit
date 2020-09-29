@@ -640,6 +640,10 @@ function SubtitleState:mes(obj)
   obj.mes(self.text)
 end
 
+function SubtitleState:mesfast(obj, mode)
+  require("CacheText").mes(self.text, mode)
+end
+
 local SubtitleStates = {}
 
 function SubtitleStates.new()
@@ -666,13 +670,30 @@ function SubtitleStates:get(index)
   return self.states[index]
 end
 
-function SubtitleStates:mes(index, obj)
+function SubtitleStates:getlive(index, obj)
   local s = self.states[index]
   if s == nil or isdead(s) then
     self.states[index] = nil
     return P.emptysubobj
   end
+  return s
+end
+
+function SubtitleStates:mes(index, obj)
+  local s = self:getlive(index, obj)
+  if s.notfound then
+    return s
+  end
   s:mes(obj)
+  return s
+end
+
+function SubtitleStates:mesfast(index, obj, mode)
+  local s = self:getlive(index, obj)
+  if s.notfound then
+    return s
+  end
+  s:mesfast(obj, mode)
   return s
 end
 

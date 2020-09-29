@@ -5,6 +5,7 @@ cd bin
   RelMovieHandle.* ^
   ZRamPreview.* ^
   かんしくん ^
+  キャッシュテキスト.* ^
   AudioMixer.auf ^
   PSDToolKit.* PSDToolKit script ^
   PSDToolKit説明書.html PSDToolKitDocs
