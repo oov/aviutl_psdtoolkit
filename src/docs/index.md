@@ -41,7 +41,7 @@ GCMZDrops/generic.lua
 GCMZDrops/textsjis.lua  
 GCMZDrops/wmvmask.lua  
 GCMZDrops/dropper/example.lua  
-GCMZDrops/dropper/clipboard.lua
+GCMZDrops/dropper/clipboard.lua  
   - 拡張編集ウィンドウへのファイルドロップを拡張する「ごちゃまぜドロップス」プラグイン
   - [別の場所で単独配布しているもの](https://github.com/oov/aviutl_GCMZDrops)を同梱しています
 - ZRamPreview.auf  
@@ -54,9 +54,19 @@ script/Extram.dll
 - かんしくん/forcepser.exe  
 かんしくん/_entrypoint.lua  
 かんしくん/forcepser.txt  
-かんしくん/setting.txt-template
+かんしくん/setting.txt-template  
+かんしくん/asas/asas.exe  
+かんしくん/asas/asas.txt  
+かんしくん/asas/asas32.dll  
+かんしくん/asas/asas64.dll  
   - 補助プログラム「かんしくん」
   - [別の場所で単独配布しているもの](https://github.com/oov/forcepser)を同梱しています
+- script/CacheText.anm  
+script/CacheText.lua  
+キャッシュテキスト.exa  
+キャッシュテキスト.txt  
+  - スクリプト「キャッシュテキスト」
+  - [別の場所で単独配布しているもの](https://github.com/oov/aviutl_cachetext)を同梱しています
 - script/PSDToolKit/PSDToolKitBridge.dll  
 script/PSDToolKit/PSDToolKit.exe
   - PSD ファイルの描画など
@@ -75,7 +85,8 @@ PSDToolKit/口パク準備.exa
 PSDToolKit/口パク準備（音素のみ）.exa  
 PSDToolKit/多目的スライダー.exa  
 PSDToolKit/字幕準備.exa  
-PSDToolKit/字幕表示.exa
+PSDToolKit/字幕表示.exa  
+PSDToolKit/字幕表示（キャッシュ）.exa  
   - 各種オブジェクトを作成するためのエイリアスファイル
 - GCMZDrops/psdtoolkit_psd.lua  
 GCMZDrops/psdtoolkit_wav.lua  
