@@ -120,13 +120,15 @@ end;
 
 function TExportLayerNames.ToReadable(const S: UTF8String): UTF8String;
 var
+  SS: UTF8String;
   P, PC: PChar;
 begin
-  P := PChar(S);
+  SS := StringReplace(S, '%00', '', [rfReplaceAll]);
+  P := PChar(SS);
   PC := StrRScan(P, '/');
   if PC = nil then
   begin
-    Result := DecodePercentEncoding(S);
+    Result := DecodePercentEncoding(SS);
     Exit;
   end;
   Result := DecodePercentEncoding(UTF8String(PC + 1));
