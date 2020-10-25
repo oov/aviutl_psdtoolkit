@@ -641,7 +641,7 @@ function SubtitleState:mes(obj)
 end
 
 function SubtitleState:mesfast(obj, mode)
-  require("CacheText").mes(self.text, mode)
+  require("CacheText").rawmes(self.text, mode)
 end
 
 local SubtitleStates = {}
