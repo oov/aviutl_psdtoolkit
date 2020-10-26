@@ -15,6 +15,15 @@ local function trimextension(filepath)
   return filepath:sub(1, #filepath - #ext)
 end
 
+local function fileexists(filepath)
+  local f = io.open(filepath, "rb")
+  if f ~= nil then
+    f:close()
+    return true
+  end
+  return false
+end
+
 local function fileread(filepath)
   local f = io.open(filepath, "rb")
   if f == nil then
@@ -315,20 +324,22 @@ function P.fire(files, state)
     for i, v in ipairs(files) do
       if getextension(v.filepath) == ".exo" then
         local orgwav, txt, j = P.parseexo(v.filepath)
-        local newwav = orgwav
-        if newwav ~= nil and GCMZDrops.needcopy(newwav) then
-          newwav = avoiddupP.getfile(newwav)
-          if newwav == '' then
-            newwav = nil
+        if fileexists(orgwav) then
+          local newwav = orgwav
+          if newwav ~= nil and GCMZDrops.needcopy(newwav) then
+            newwav = avoiddupP.getfile(newwav)
+            if newwav == '' then
+              newwav = nil
+            end
           end
-        end
-        if newwav ~= nil and txt ~= nil then
-          local subtitle = postprocesssubtitle(txt, "utf8", setting)
-          local exabase = P.resolvepath(orgwav, setting.wav_exafinder, setting)
-          if j == nil then
-            j = loadjson(trimextension(orgwav) .. ".json")
+          if newwav ~= nil and txt ~= nil then
+            local subtitle = postprocesssubtitle(txt, "utf8", setting)
+            local exabase = P.resolvepath(orgwav, setting.wav_exafinder, setting)
+            if j == nil then
+              j = loadjson(trimextension(orgwav) .. ".json")
+            end
+            return newwav, subtitle, exabase, j
           end
-          return newwav, subtitle, exabase, j
         end
       end
     end
