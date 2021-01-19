@@ -26,6 +26,12 @@ https://github.com/oov/aviutl_psdtoolkit/releases
 
 ダウンロードしたファイルに同梱されている `PSDToolKit説明書.html` を参照してください。
 
+また、初心者向けの使い方紹介動画が以下にあります。
+
+https://www.nicovideo.jp/watch/sm32904901
+
+説明書内の「チュートリアル」ではこれよりも更に詳しく書いてあるので、困ったときは参照してみてください。
+
 ## バイナリのビルドについて
 
 Windows Subsystem for Linux 上で `./build.bash` を行うと必要なファイルがビルドできます。
