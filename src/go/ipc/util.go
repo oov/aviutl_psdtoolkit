@@ -7,7 +7,7 @@ import (
 	"math"
 	"os"
 
-	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
+	"psdtoolkit/ods"
 )
 
 func nrgbaToNBGRA(p []byte) {

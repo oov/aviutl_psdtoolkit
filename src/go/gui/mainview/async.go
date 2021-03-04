@@ -6,8 +6,9 @@ import (
 	"math"
 	"time"
 
-	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
 	"github.com/oov/downscale"
+
+	"psdtoolkit/ods"
 )
 
 type viewResizeMode int

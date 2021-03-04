@@ -2,8 +2,9 @@ package tabview
 
 import (
 	"github.com/golang-ui/nuklear/nk"
-	"github.com/oov/aviutl_psdtoolkit/src/go/imgmgr/editing"
-	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
+
+	"psdtoolkit/imgmgr/editing"
+	"psdtoolkit/ods"
 )
 
 type TabView struct {

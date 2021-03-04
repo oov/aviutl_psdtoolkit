@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	"github.com/oov/aviutl_psdtoolkit/src/go/img"
-	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
+	"psdtoolkit/img"
+	"psdtoolkit/ods"
 )
 
 func updateRenderedImage(g *GUI, img *img.Image) {

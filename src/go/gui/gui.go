@@ -9,16 +9,16 @@ import (
 	"github.com/golang-ui/nuklear/nk"
 	"github.com/pkg/errors"
 
-	"github.com/oov/aviutl_psdtoolkit/src/go/clipboard"
-	"github.com/oov/aviutl_psdtoolkit/src/go/gc"
-	"github.com/oov/aviutl_psdtoolkit/src/go/gui/layerview"
-	"github.com/oov/aviutl_psdtoolkit/src/go/gui/mainview"
-	"github.com/oov/aviutl_psdtoolkit/src/go/gui/tabview"
-	"github.com/oov/aviutl_psdtoolkit/src/go/img"
-	"github.com/oov/aviutl_psdtoolkit/src/go/imgmgr/editing"
-	"github.com/oov/aviutl_psdtoolkit/src/go/imgmgr/source"
-	"github.com/oov/aviutl_psdtoolkit/src/go/nkhelper"
-	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
+	"psdtoolkit/clipboard"
+	"psdtoolkit/gc"
+	"psdtoolkit/gui/layerview"
+	"psdtoolkit/gui/mainview"
+	"psdtoolkit/gui/tabview"
+	"psdtoolkit/img"
+	"psdtoolkit/imgmgr/editing"
+	"psdtoolkit/imgmgr/source"
+	"psdtoolkit/nkhelper"
+	"psdtoolkit/ods"
 )
 
 const (

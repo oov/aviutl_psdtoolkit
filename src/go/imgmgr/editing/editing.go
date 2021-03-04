@@ -11,14 +11,14 @@ import (
 	"time"
 
 	"github.com/golang-ui/nuklear/nk"
+	"github.com/oov/downscale"
 	"github.com/pkg/errors"
 	"golang.org/x/image/draw"
 
-	"github.com/oov/aviutl_psdtoolkit/src/go/img"
-	"github.com/oov/aviutl_psdtoolkit/src/go/imgmgr/source"
-	"github.com/oov/aviutl_psdtoolkit/src/go/nkhelper"
-	"github.com/oov/aviutl_psdtoolkit/src/go/warn"
-	"github.com/oov/downscale"
+	"psdtoolkit/img"
+	"psdtoolkit/imgmgr/source"
+	"psdtoolkit/nkhelper"
+	"psdtoolkit/warn"
 )
 
 const (

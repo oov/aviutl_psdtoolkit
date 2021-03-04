@@ -6,11 +6,11 @@ import (
 	"time"
 
 	"github.com/disintegration/gift"
-	"github.com/pkg/errors"
-
-	"github.com/oov/aviutl_psdtoolkit/src/go/warn"
 	"github.com/oov/downscale"
 	"github.com/oov/psd/composite"
+	"github.com/pkg/errors"
+
+	"psdtoolkit/warn"
 )
 
 type Flip int

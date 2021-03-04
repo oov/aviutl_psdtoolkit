@@ -5,12 +5,12 @@ import (
 	"math"
 
 	"github.com/golang-ui/nuklear/nk"
+	"github.com/oov/psd/blend"
 	"github.com/pkg/errors"
 	"golang.org/x/image/draw"
 
-	"github.com/oov/aviutl_psdtoolkit/src/go/jobqueue"
-	"github.com/oov/aviutl_psdtoolkit/src/go/nkhelper"
-	"github.com/oov/psd/blend"
+	"psdtoolkit/jobqueue"
+	"psdtoolkit/nkhelper"
 )
 
 type MainView struct {

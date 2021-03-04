@@ -8,7 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/oov/aviutl_psdtoolkit/src/go/warn"
+	"psdtoolkit/warn"
 )
 
 type PFV struct {

@@ -4,12 +4,12 @@ import (
 	"encoding/binary"
 	"strings"
 
+	"github.com/oov/psd/composite"
 	"github.com/pkg/errors"
 
-	"github.com/oov/aviutl_psdtoolkit/src/go/img/prop"
-	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
-	"github.com/oov/aviutl_psdtoolkit/src/go/warn"
-	"github.com/oov/psd/composite"
+	"psdtoolkit/img/prop"
+	"psdtoolkit/ods"
+	"psdtoolkit/warn"
 )
 
 type flipPair map[int]*[2]int

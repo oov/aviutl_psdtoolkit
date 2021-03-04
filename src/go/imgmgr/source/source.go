@@ -11,11 +11,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/oov/psd/composite"
 	"github.com/pkg/errors"
 
-	"github.com/oov/aviutl_psdtoolkit/src/go/img"
-	"github.com/oov/aviutl_psdtoolkit/src/go/warn"
-	"github.com/oov/psd/composite"
+	"psdtoolkit/img"
+	"psdtoolkit/warn"
 )
 
 // Logger is the subset of log.Logger.

@@ -12,13 +12,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/oov/psd/blend"
 	"github.com/pkg/errors"
 
-	"github.com/oov/aviutl_psdtoolkit/src/go/img"
-	"github.com/oov/aviutl_psdtoolkit/src/go/imgmgr/source"
-	"github.com/oov/aviutl_psdtoolkit/src/go/imgmgr/temporary"
-	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
-	"github.com/oov/psd/blend"
+	"psdtoolkit/img"
+	"psdtoolkit/imgmgr/source"
+	"psdtoolkit/imgmgr/temporary"
+	"psdtoolkit/ods"
 )
 
 type cacheKey struct {

@@ -7,12 +7,12 @@ import (
 
 	// _ "net/http/pprof"
 
-	"github.com/oov/aviutl_psdtoolkit/src/go/assets"
-	"github.com/oov/aviutl_psdtoolkit/src/go/gc"
-	"github.com/oov/aviutl_psdtoolkit/src/go/gui"
-	"github.com/oov/aviutl_psdtoolkit/src/go/imgmgr/source"
-	"github.com/oov/aviutl_psdtoolkit/src/go/ipc"
-	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
+	"psdtoolkit/assets"
+	"psdtoolkit/gc"
+	"psdtoolkit/gui"
+	"psdtoolkit/imgmgr/source"
+	"psdtoolkit/ipc"
+	"psdtoolkit/ods"
 )
 
 func init() {

@@ -6,7 +6,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/oov/aviutl_psdtoolkit/src/go/img/internal/packbits"
+	"psdtoolkit/img/internal/packbits"
 )
 
 // serializeBits maps the bool value of the array to each bit and compresses the result with PackBits.

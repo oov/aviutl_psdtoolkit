@@ -5,8 +5,8 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/oov/aviutl_psdtoolkit/src/go/img"
-	"github.com/oov/aviutl_psdtoolkit/src/go/imgmgr/source"
+	"psdtoolkit/img"
+	"psdtoolkit/imgmgr/source"
 )
 
 type Key struct {

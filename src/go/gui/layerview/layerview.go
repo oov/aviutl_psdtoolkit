@@ -3,18 +3,18 @@ package layerview
 import (
 	"context"
 	"image"
-	"time"
 	"strings"
+	"time"
 
 	"github.com/golang-ui/nuklear/nk"
+	"github.com/oov/psd/composite"
 	"github.com/pkg/errors"
 
-	"github.com/oov/aviutl_psdtoolkit/src/go/img"
-	"github.com/oov/aviutl_psdtoolkit/src/go/img/prop"
-	"github.com/oov/aviutl_psdtoolkit/src/go/jobqueue"
-	"github.com/oov/aviutl_psdtoolkit/src/go/nkhelper"
-	"github.com/oov/aviutl_psdtoolkit/src/go/ods"
-	"github.com/oov/psd/composite"
+	"psdtoolkit/img"
+	"psdtoolkit/img/prop"
+	"psdtoolkit/jobqueue"
+	"psdtoolkit/nkhelper"
+	"psdtoolkit/ods"
 )
 
 const (
