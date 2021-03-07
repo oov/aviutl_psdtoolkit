@@ -27,11 +27,11 @@ PSDToolKit を使用したこと及び使用しなかったことによるいか
 - PSDToolKit.auf
   - メニューに「ウィンドウを表示（デフォルトショートカットキー `Ctrl+W`）」を追加
   - メニューに「環境設定」を追加
-  - プロジェクトファイルへの編集中 PSD データの保存／読み込み
+  - 開いている PSD ファイル情報をプロジェクトファイルに記録
 - AudioMixer.auf
-  - 拡張編集で使える「チャンネルストリップ」オーディオフィルタを追加
-  - 拡張編集で使える「Aux1 チャンネルストリップ」オーディオフィルタを追加
-  - 内部的に使用する「マスターチャンネルストリップ」を追加（常時有効）
+  - 拡張編集で使える「[チャンネルストリップ](audio.md#チャンネルストリップ)」オーディオフィルタを追加
+  - 拡張編集で使える「[Aux1 チャンネルストリップ](audio.md#Aux1_チャンネルストリップ)」オーディオフィルタを追加
+  - 内部的に使用する「[マスターチャンネルストリップ](audio.md#マスターチャンネルストリップ)」を追加（常時有効）
 - GCMZDrops.auf  
 GCMZDrops.txt  
 GCMZDrops/_entrypoint.lua  
@@ -42,31 +42,38 @@ GCMZDrops/textsjis.lua
 GCMZDrops/wmvmask.lua  
 GCMZDrops/dropper/example.lua  
 GCMZDrops/dropper/clipboard.lua  
-  - 拡張編集ウィンドウへのファイルドロップを拡張する「ごちゃまぜドロップス」プラグイン
-  - [別の場所で単独配布しているもの](https://github.com/oov/aviutl_GCMZDrops)を同梱しています
+  - プラグイン「[ごちゃまぜドロップス](https://github.com/oov/aviutl_GCMZDrops)」
+  - `GCMZDrops` フォルダーには上記以外に PSDToolKit で追加したファイルもあります
+- GCMZDrops/psdtoolkit_psd.lua  
+GCMZDrops/psdtoolkit_wav.lua  
+GCMZDrops/psdtoolkit_srt.lua  
+GCMZDrops/psdtoolkit_lab.lua  
+  - PSDToolKit が使用するごちゃまぜドロップス用スクリプト
+  - 拡張編集への PSD ファイルのドラッグ＆ドロップ対応や、Wave ファイルの拡張処理を行います
 - ZRamPreview.auf  
 ZRamPreview.auo  
 ZRamPreview.exe  
 ZRamPreview.txt  
 script/Extram.dll  
-  - RAMプレビューを実現する「拡張編集RAMプレビュー」プラグイン
-  - [別の場所で単独配布しているもの](https://github.com/oov/aviutl_rampreview)を同梱しています
-- かんしくん/forcepser.exe  
-かんしくん/_entrypoint.lua  
-かんしくん/forcepser.txt  
-かんしくん/setting.txt-template  
-かんしくん/asas/asas.exe  
-かんしくん/asas/asas.txt  
-かんしくん/asas/asas32.dll  
-かんしくん/asas/asas64.dll  
-  - 補助プログラム「かんしくん」
-  - [別の場所で単独配布しているもの](https://github.com/oov/forcepser)を同梱しています
+  - プラグイン「[拡張編集RAMプレビュー](https://github.com/oov/aviutl_rampreview)」
+  - 「キャッシュテキスト」スクリプトの動作に必要です
 - script/CacheText.anm  
 script/CacheText.lua  
 キャッシュテキスト.exa  
 キャッシュテキスト.txt  
-  - スクリプト「キャッシュテキスト」
-  - [別の場所で単独配布しているもの](https://github.com/oov/aviutl_cachetext)を同梱しています
+  - スクリプト「[キャッシュテキスト](https://github.com/oov/aviutl_cachetext)」
+  - 「[字幕表示（キャッシュ）](obj.md#字幕表示（キャッシュ）)」の動作に必要です
+- かんしくん/forcepser.exe  
+かんしくん/_entrypoint.lua  
+かんしくん/forcepser.txt  
+かんしくん/setting.txt-template  
+かんしくん/setting.txt-template-old  
+かんしくん/asas/asas.exe  
+かんしくん/asas/asas.txt  
+かんしくん/asas/changelog.txt  
+かんしくん/asas/asas32.dll  
+かんしくん/asas/asas64.dll
+  - 音声ファイル保存時に拡張編集に投げ込む補助プログラム「[かんしくん](https://github.com/oov/forcepser)」
 - script/PSDToolKit/PSDToolKitBridge.dll  
 script/PSDToolKit/PSDToolKit.exe
   - PSD ファイルの描画など
@@ -88,11 +95,6 @@ PSDToolKit/字幕準備.exa
 PSDToolKit/字幕表示.exa  
 PSDToolKit/字幕表示（キャッシュ）.exa  
   - 各種オブジェクトを作成するためのエイリアスファイル
-- GCMZDrops/psdtoolkit_psd.lua  
-GCMZDrops/psdtoolkit_wav.lua  
-GCMZDrops/psdtoolkit_srt.lua  
-GCMZDrops/psdtoolkit_lab.lua  
-  - ごちゃまぜドロップス用ファイル
 - PSDToolKit説明書.html  
 PSDToolKitDocs/*
   - ドキュメント
