@@ -82,13 +82,13 @@ PSDToolKit を使用したこと及び使用しなかったことによるいか
 <ul>
 <li>メニューに「ウィンドウを表示（デフォルトショートカットキー <code>Ctrl+W</code>）」を追加</li>
 <li>メニューに「環境設定」を追加</li>
-<li>プロジェクトファイルへの編集中 PSD データの保存／読み込み</li>
+<li>開いている PSD ファイル情報をプロジェクトファイルに記録</li>
 </ul></li>
 <li>AudioMixer.auf
 <ul>
-<li>拡張編集で使える「チャンネルストリップ」オーディオフィルタを追加</li>
-<li>拡張編集で使える「Aux1 チャンネルストリップ」オーディオフィルタを追加</li>
-<li>内部的に使用する「マスターチャンネルストリップ」を追加（常時有効）</li>
+<li>拡張編集で使える「<a href="audio.html#.E3.83.81.E3.83.A3.E3.83.B3.E3.83.8D.E3.83.AB.E3.82.B9.E3.83.88.E3.83.AA.E3.83.83.E3.83.97">チャンネルストリップ</a>」オーディオフィルタを追加</li>
+<li>拡張編集で使える「<a href="audio.html#Aux1_.E3.83.81.E3.83.A3.E3.83.B3.E3.83.8D.E3.83.AB.E3.82.B9.E3.83.88.E3.83.AA.E3.83.83.E3.83.97">Aux1 チャンネルストリップ</a>」オーディオフィルタを追加</li>
+<li>内部的に使用する「<a href="audio.html#.E3.83.9E.E3.82.B9.E3.82.BF.E3.83.BC.E3.83.81.E3.83.A3.E3.83.B3.E3.83.8D.E3.83.AB.E3.82.B9.E3.83.88.E3.83.AA.E3.83.83.E3.83.97">マスターチャンネルストリップ</a>」を追加（常時有効）</li>
 </ul></li>
 <li>GCMZDrops.auf<br />
 GCMZDrops.txt<br />
@@ -101,8 +101,16 @@ GCMZDrops/wmvmask.lua<br />
 GCMZDrops/dropper/example.lua<br />
 GCMZDrops/dropper/clipboard.lua
 <ul>
-<li>拡張編集ウィンドウへのファイルドロップを拡張する「ごちゃまぜドロップス」プラグイン</li>
-<li><a href="https://github.com/oov/aviutl_GCMZDrops">別の場所で単独配布しているもの</a>を同梱しています</li>
+<li>プラグイン「<a href="https://github.com/oov/aviutl_GCMZDrops">ごちゃまぜドロップス</a>」</li>
+<li><code>GCMZDrops</code> フォルダーには上記以外に PSDToolKit で追加したファイルもあります</li>
+</ul></li>
+<li>GCMZDrops/psdtoolkit_psd.lua<br />
+GCMZDrops/psdtoolkit_wav.lua<br />
+GCMZDrops/psdtoolkit_srt.lua<br />
+GCMZDrops/psdtoolkit_lab.lua
+<ul>
+<li>PSDToolKit が使用するごちゃまぜドロップス用スクリプト</li>
+<li>拡張編集への PSD ファイルのドラッグ＆ドロップ対応や、Wave ファイルの拡張処理を行います</li>
 </ul></li>
 <li>ZRamPreview.auf<br />
 ZRamPreview.auo<br />
@@ -110,28 +118,29 @@ ZRamPreview.exe<br />
 ZRamPreview.txt<br />
 script/Extram.dll
 <ul>
-<li>RAMプレビューを実現する「拡張編集RAMプレビュー」プラグイン</li>
-<li><a href="https://github.com/oov/aviutl_rampreview">別の場所で単独配布しているもの</a>を同梱しています</li>
-</ul></li>
-<li>かんしくん/forcepser.exe<br />
-かんしくん/_entrypoint.lua<br />
-かんしくん/forcepser.txt<br />
-かんしくん/setting.txt-template<br />
-かんしくん/asas/asas.exe<br />
-かんしくん/asas/asas.txt<br />
-かんしくん/asas/asas32.dll<br />
-かんしくん/asas/asas64.dll
-<ul>
-<li>補助プログラム「かんしくん」</li>
-<li><a href="https://github.com/oov/forcepser">別の場所で単独配布しているもの</a>を同梱しています</li>
+<li>プラグイン「<a href="https://github.com/oov/aviutl_rampreview">拡張編集RAMプレビュー</a>」</li>
+<li>「キャッシュテキスト」スクリプトの動作に必要です</li>
 </ul></li>
 <li>script/CacheText.anm<br />
 script/CacheText.lua<br />
 キャッシュテキスト.exa<br />
 キャッシュテキスト.txt
 <ul>
-<li>スクリプト「キャッシュテキスト」</li>
-<li><a href="https://github.com/oov/aviutl_cachetext">別の場所で単独配布しているもの</a>を同梱しています</li>
+<li>スクリプト「<a href="https://github.com/oov/aviutl_cachetext">キャッシュテキスト</a>」</li>
+<li>「<a href="obj.html#.E5.AD.97.E5.B9.95.E8.A1.A8.E7.A4.BA.EF.BC.88.E3.82.AD.E3.83.A3.E3.83.83.E3.82.B7.E3.83.A5.EF.BC.89">字幕表示（キャッシュ）</a>」の動作に必要です</li>
+</ul></li>
+<li>かんしくん/forcepser.exe<br />
+かんしくん/_entrypoint.lua<br />
+かんしくん/forcepser.txt<br />
+かんしくん/setting.txt-template<br />
+かんしくん/setting.txt-template-old<br />
+かんしくん/asas/asas.exe<br />
+かんしくん/asas/asas.txt<br />
+かんしくん/asas/changelog.txt<br />
+かんしくん/asas/asas32.dll<br />
+かんしくん/asas/asas64.dll
+<ul>
+<li>音声ファイル保存時に拡張編集に投げ込む補助プログラム「<a href="https://github.com/oov/forcepser">かんしくん</a>」</li>
 </ul></li>
 <li>script/PSDToolKit/PSDToolKitBridge.dll<br />
 script/PSDToolKit/PSDToolKit.exe
@@ -162,13 +171,6 @@ PSDToolKit/字幕表示（キャッシュ）.exa
 <ul>
 <li>各種オブジェクトを作成するためのエイリアスファイル</li>
 </ul></li>
-<li>GCMZDrops/psdtoolkit_psd.lua<br />
-GCMZDrops/psdtoolkit_wav.lua<br />
-GCMZDrops/psdtoolkit_srt.lua<br />
-GCMZDrops/psdtoolkit_lab.lua
-<ul>
-<li>ごちゃまぜドロップス用ファイル</li>
-</ul></li>
 <li>PSDToolKit説明書.html<br />
 PSDToolKitDocs/*
 <ul>
@@ -187,9 +189,9 @@ PSDToolKitDocs/*
 <dt>Written by</dt>
 <dd>oov</dd>
 <dt>Generated at</dt>
-<dd>2020-09-30 04:43:32</dd>
+<dd>2021-03-08 04:15:24</dd>
 <dt>for</dt>
-<dd>v0.2beta50 ( f75dc35 )</dd>
+<dd>v0.2beta51 ( ec71b32 )</dd>
 </dl>
 </footer>
 </div>
