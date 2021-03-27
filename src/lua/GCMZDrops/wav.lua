@@ -324,7 +324,7 @@ function P.fire(files, state)
     for i, v in ipairs(files) do
       if getextension(v.filepath) == ".exo" then
         local orgwav, txt, j = P.parseexo(v.filepath)
-        if fileexists(orgwav) then
+        if orgwav ~= nil and fileexists(orgwav) then
           local newwav = orgwav
           if newwav ~= nil and GCMZDrops.needcopy(newwav) then
             newwav = avoiddupP.getfile(newwav)
