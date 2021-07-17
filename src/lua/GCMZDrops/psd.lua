@@ -6,8 +6,9 @@ P.priority = 0
 
 function P.ondragenter(files, state)
   for i, v in ipairs(files) do
-    if v.filepath:match("[^.]+$"):lower() == "psd" then
-      -- ファイルの拡張子が psd のファイルがあったら処理できそうなので true
+    local ext = v.filepath:match("[^.]+$"):lower()
+    if ext == "psd" or ext == "psb" then
+      -- ファイルの拡張子が psd か psb のファイルがあったら処理できそうなので true
       return true
     end
   end
@@ -31,8 +32,9 @@ end
 
 function P.ondrop(files, state)
   for i, v in ipairs(files) do
-    -- ファイルの拡張子が psd だったら
-    if v.filepath:match("[^.]+$"):lower() == "psd" then
+    -- ファイルの拡張子が psd か psb だったら
+    local ext = v.filepath:match("[^.]+$"):lower()
+    if ext == "psd" or ext == "psb" then
       local filepath = v.filepath
       local filename = filepath:match("[^/\\]+$")
 
