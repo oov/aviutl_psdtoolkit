@@ -17,6 +17,7 @@
 -- ============================================================
 
 local P = {}
+local jp = not GCMZDrops.englishpatched()
 
 local function slidervalue(v)
   if type(v) == "number" then
@@ -79,7 +80,7 @@ function P:wav_examodifler_mpslider(exa, values, modifiers)
   local mpsidx = 0
   for i = 0, self.wav_mpslider-1 do
     local key = "vo." .. i
-    exa:set(key, "_name", i == 0 and "カスタムオブジェクト" or "アニメーション効果")
+    exa:set(key, "_name", i == 0 and (jp and "カスタムオブジェクト" or "Custom object") or (jp and "アニメーション効果" or "Animation effect"))
     exa:set(key, "track0", slidervalue(mpslidervalues[mpsidx+1]) or "0.00,0.00,3")
     exa:set(key, "track1", slidervalue(mpslidervalues[mpsidx+2]) or "0.00,0.00,3")
     exa:set(key, "track2", slidervalue(mpslidervalues[mpsidx+3]) or "0.00,0.00,3")
@@ -92,13 +93,13 @@ function P:wav_examodifler_mpslider(exa, values, modifiers)
     exa:set(key, "param", "")
   end
   local key = "vo." .. self.wav_mpslider
-  exa:set(key, "_name", "標準描画")
+  exa:set(key, "_name", jp and "標準描画" or "Standard drawing")
   exa:set(key, "X", "0.0")
   exa:set(key, "Y", "0.0")
   exa:set(key, "Z", "0.0")
-  exa:set(key, "拡大率", "100.00")
-  exa:set(key, "透明度", "100.0")
-  exa:set(key, "回転", "0.00")
+  exa:set(key, jp and "拡大率" or "Zoom%", "100.00")
+  exa:set(key, jp and "透明度" or "Clearness", "100.0")
+  exa:set(key, jp and "回転" or "Rotation", "0.00")
   exa:set(key, "blend", "0")
 end
 function P:wav_examodifler_subtitle(exa, values, modifiers)
@@ -119,12 +120,12 @@ function P:wav_examodifler_mergedprep(exa, values, modifiers)
   exa:set("vo", "group", "1")
   local idx = 0
   local key = "vo." .. idx
-  exa:set(key, "_name", "テキスト")
-  exa:set(key, "サイズ", "1")
-  exa:set(key, "表\示速度", "0.0")
-  exa:set(key, "文字毎に個別オブジェクト", "0")
-  exa:set(key, "移動座標上に表\示する", "0")
-  exa:set(key, "自動スクロール", "0")
+  exa:set(key, "_name", jp and "テキスト" or "Text")
+  exa:set(key, jp and "サイズ" or "Size", "1")
+  exa:set(key, jp and "表\示速度" or "vDisplay", "0.0")
+  exa:set(key, jp and "文字毎に個別オブジェクト" or "1char1obj", "0")
+  exa:set(key, jp and "移動座標上に表\示する" or "Show on motion coordinate", "0")
+  exa:set(key, jp and "自動スクロール" or "Automatic scrolling", "0")
   exa:set(key, "B", "0")
   exa:set(key, "I", "0")
   exa:set(key, "type", "0")
@@ -137,7 +138,7 @@ function P:wav_examodifler_mergedprep(exa, values, modifiers)
   exa:set(key, "precision", "0")
   exa:set(key, "color", "ffffff")
   exa:set(key, "color2", "000000")
-  exa:set(key, "font", "MS UI Gothic")
+  exa:set(key, "font", jp and "MS UI Gothic" or "Segoe UI")
   exa:set(key, "text", modifiers.ENCODE_TEXT(self:wav_mergedprep_scripter(self.wav_subtitle == 2 and values.SUBTITLE_TEXT or "", {
     st_mgl = values.SUBTITLE_START - 1,
     st_mgr = endlen - values.SUBTITLE_END,
@@ -150,7 +151,7 @@ function P:wav_examodifler_mergedprep(exa, values, modifiers)
 
   if self.wav_lipsync == 1 and values.LIPSYNC_PATH ~= nil then
     key = "vo." .. idx
-    exa:set(key, "_name", "アニメーション効果")
+    exa:set(key, "_name", jp and "アニメーション効果" or "Animation effect")
     exa:set(key, "track0", "0.00")
     exa:set(key, "track1", "0.00")
     exa:set(key, "track2", "0.00")
@@ -167,7 +168,7 @@ function P:wav_examodifler_mergedprep(exa, values, modifiers)
   local mpsidx = 0
   for i = 0, self.wav_mpslider-1 do
     key = "vo." .. idx
-    exa:set(key, "_name", "アニメーション効果")
+    exa:set(key, "_name", jp and "アニメーション効果" or "Animation effect")
     exa:set(key, "track0", slidervalue(mpslidervalues[mpsidx+1]) or "0.00,0.00,3")
     exa:set(key, "track1", slidervalue(mpslidervalues[mpsidx+2]) or "0.00,0.00,3")
     exa:set(key, "track2", slidervalue(mpslidervalues[mpsidx+3]) or "0.00,0.00,3")
@@ -181,13 +182,13 @@ function P:wav_examodifler_mergedprep(exa, values, modifiers)
     idx = idx + 1
   end
   key = "vo." .. idx
-  exa:set(key, "_name", "標準描画")
+  exa:set(key, "_name", jp and "標準描画" or "Standard drawing")
   exa:set(key, "X", "0.0")
   exa:set(key, "Y", "0.0")
   exa:set(key, "Z", "0.0")
-  exa:set(key, "拡大率", "100.00")
-  exa:set(key, "透明度", "100.0")
-  exa:set(key, "回転", "0.00")
+  exa:set(key, jp and "拡大率" or "Zoom%", "100.00")
+  exa:set(key, jp and "透明度" or "Clearness", "100.0")
+  exa:set(key, jp and "回転" or "Rotation", "0.00")
   exa:set(key, "blend", "0")
 end
 

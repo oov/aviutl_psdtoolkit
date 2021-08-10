@@ -229,12 +229,12 @@ function P.parseexo(filepath)
       return nil
     end
     local name = ini:get(i .. ".0", "_name", "")
-    if wav == nil and name == "音声ファイル" then
+    if wav == nil and ((name == "音声ファイル")or(name == "Audio file")) then
       wav = ini:get(i .. ".0", "file", nil)
       if j == nil or j == '' then
         j = ini:get(i .. ".0", "__json", nil)
       end
-    elseif txt == nil and name == "テキスト" then
+    elseif txt == nil and ((name == "テキスト")or(name == "Text")) then
       txt = ini:get(i .. ".0", "text", nil)
       if j == nil or j == '' then
         j = ini:get(i .. ".0", "__json", nil)

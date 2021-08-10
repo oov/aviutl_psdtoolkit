@@ -1,0 +1,23 @@
+[vo]
+length=64
+camera=0
+[vo.0]
+_name=Custom object
+track0=0.00
+track1=0.00
+track2=0.00
+track3=0.00
+check0=0
+type=0
+filter=2
+name=ŒûƒpƒN€”õ@PSDToolKit
+param=file=
+[vo.1]
+_name=Standard drawing
+X=0.0
+Y=0.0
+Z=0.0
+Zoom%=100.00
+Clearness=100.0
+Rotation=0.00
+blend=0

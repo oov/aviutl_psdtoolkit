@@ -1,0 +1,13 @@
+[ao]
+length=64
+[ao.0]
+_name=Audio file
+Playback position=0.00
+vPlay=100.0
+Loop playback=0
+Sync with video files=0
+file=
+[ao.1]
+_name=Standard playback
+Volume=100.0
+Left-Right=0.0
