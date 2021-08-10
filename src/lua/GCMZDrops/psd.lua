@@ -58,6 +58,7 @@ function P.ondrop(files, state)
       math.randomseed(os.time())
       local tag = math.floor(math.random()*0x7fffffff + 1)
       local proj = GCMZDrops.getexeditfileinfo()
+      local jp = not GCMZDrops.englishpatched()
       local exo = [[
 [exedit]
 width=]] .. proj.width .. "\r\n" .. [[
@@ -74,12 +75,12 @@ layer=1
 overlay=1
 camera=0
 [0.0]
-_name=テキスト
-サイズ=1
-表示速度=0.0
-文字毎に個別オブジェクト=0
-移動座標上に表示する=0
-自動スクロール=0
+_name=]] .. (jp and [[テキスト]] or [[Text]]) .. "\r\n" .. [[
+]] .. (jp and [[サイズ]] or [[Size]]) .. [[=1
+]] .. (jp and [[表示速度]] or [[vDisplay]]) .. [[=0.0
+]] .. (jp and [[文字毎に個別オブジェクト]] or [[1char1obj]]) .. [[=0
+]] .. (jp and [[移動座標上に表示する]] or [[Show on motion coordinate]]) .. [[=0
+]] .. (jp and [[自動スクロール]] or [[Automatic scrolling]]) .. [[=0
 B=0
 I=0
 type=0
@@ -95,7 +96,7 @@ color2=000000
 font=MS UI Gothic
 text=]] .. GCMZDrops.encodeexotext("<?-- " .. filename .. " \r\n\r\no={ -- オプション設定\r\nlipsync = 0    ,-- 口パク準備のレイヤー番号\r\nmpslider = 0    ,-- 多目的スライダーのレイヤー番号\r\nscene = 0    ,-- シーン番号\r\ntag = " .. tag .. "    ,-- 識別用タグ\r\n\r\n-- 口パク準備のデフォルト設定\r\nls_locut = 100    ,-- ローカット\r\nls_hicut = 1000    ,-- ハイカット\r\nls_threshold = 20    ,-- しきい値\r\nls_sensitivity = 1    ,-- 感度\r\n\r\n-- 以下は書き換えないでください\r\nptkf=" .. P.encodelua(filepath) .. ",ptkl=\"\"}PSD,subobj=require(\"PSDToolKit\").PSDState.init(obj,o)?>") .. "\r\n" .. [[
 [0.1]
-_name=アニメーション効果
+_name=]] .. (jp and [[アニメーション効果]] or [[Animation effect]]) .. "\r\n" .. [[
 track0=-1.00
 track1=100.00
 track2=0.00
@@ -106,13 +107,13 @@ filter=2
 name=描画@PSD
 param=
 [0.2]
-_name=標準描画
+_name=]] .. (jp and [[標準描画]] or [[Standard drawing]]) .. "\r\n" .. [[
 X=0.0
 Y=0.0
 Z=0.0
-拡大率=100.00
-透明度=0.0
-回転=0.00
+]] .. (jp and [[拡大率]] or [[Zoom%]]) .. [[=100.00
+]] .. (jp and [[透明度]] or [[Clearness]]) .. [[=0.0
+]] .. (jp and [[回転\]] or [[Rotation]]) .. [[=0.00
 blend=0
 ]]
 
