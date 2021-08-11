@@ -106,3 +106,6 @@ EOS
 
 make bin JP
 make bin_en EN
+cp bin/PSDToolKit.auf bin_en/PSDToolKit.auf
+cp bin/script/PSDToolKit/PSDToolKitBridge.dll bin_en/script/PSDToolKit/PSDToolKitBridge.dll
+cp bin/AudioMixer.auf bin_en/AudioMixer.auf
