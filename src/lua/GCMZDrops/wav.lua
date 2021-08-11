@@ -276,6 +276,9 @@ function P.fire(files, state)
       local j = loadjson(trimextension(v.orgfilepath or v.filepath) .. ".json")
       if firemode == 0 then
         if state.shift then
+          if subtitle == nil then
+            subtitle = ""
+          end
           return v.filepath, subtitle, exabase, j
         end
       elseif firemode == 1 then
@@ -494,7 +497,7 @@ function P.generateexo(wavfilepath, wavlen, subtitle, exabase, state, j)
     end
 
     -- Žš–‹€”õ‚ð‘g‚Ý—§‚Ä
-    if setting.wav_subtitle > 0 and values.SUBTITLE_TEXT ~= "" then
+    if setting.wav_subtitle > 0 then
       local aini = P.exaread(exabase, "subtitle")
       setting:wav_examodifler_subtitle(aini, values, modifiers)
       P.insertexa(oini, aini, index, index + 1)
