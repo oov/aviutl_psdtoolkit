@@ -1,18 +1,10 @@
 #!/bin/bash
 
-make () {
-  TARGET=$1
-  TARGET_LANG=$2
-  mkdir -p $TARGET/PSDToolKit $TARGET/script/PSDToolKit/exa $TARGET/GCMZDrops/dropper $TARGET/かんしくん/asas
-
-  # copy readme
-  sed 's/\r$//' README.md | sed 's/$/\r/' > $TARGET/PSDToolKit.txt
-
-  # update version string
-  VERSION='v0.2beta53'
-  GITHASH=`git rev-parse --short HEAD`
-  echo -n "$VERSION ( $GITHASH )" > "VERSION"
-  cat << EOS | sed 's/\r$//' | sed 's/$/\r/' > 'src/lazarus/ver.pas'
+# update version string
+VERSION='v0.2beta53'
+GITHASH=`git rev-parse --short HEAD`
+echo -n "$VERSION ( $GITHASH )" > "VERSION"
+cat << EOS | sed 's/\r$//' | sed 's/$/\r/' > 'src/lazarus/ver.pas'
 unit Ver;
 
 {\$mode objfpc}{\$H+}
@@ -27,16 +19,38 @@ implementation
 
 end.
 EOS
-  cat << EOS | sed 's/\r$//' | sed 's/$/\r/' > 'src/go/ver.go'
+cat << EOS | sed 's/\r$//' | sed 's/$/\r/' > 'src/go/ver.go'
 package main
 
 const version = "$VERSION ( $GITHASH )"
 EOS
 
-  # copy GCMZDrops script files
+# build src/go/assets/bindata.go
+pushd src/go/assets > /dev/null
+go.exe generate
+popd > /dev/null
+
+# build PSDToolKit.exe
+pushd src/go > /dev/null
+rsrc.exe -ico assets/datasrc/icon.ico -arch=amd64 -o PSDToolKit.syso
+env.exe go.exe build -x -tags gdip -ldflags="-s" -o ../../bin/script/PSDToolKit/PSDToolKit.exe
+popd > /dev/null
+
+# build lazarus projects
+cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/PSDToolKitBridge.lpi
+cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/AssistPlugin.lpi
+cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/AudioMixerPlugin.lpi
+
+make () {
+  TARGET=$1
+  TARGET_LANG=$2
   if [ "$TARGET_LANG" = "EN" ]; then
     SUFFIX=_en
   fi
+  mkdir -p $TARGET/PSDToolKit $TARGET/script/PSDToolKit/exa $TARGET/GCMZDrops/dropper $TARGET/かんしくん/asas
+
+  # copy readme
+  sed 's/\r$//' README.md | sed 's/$/\r/' > $TARGET/PSDToolKit.txt
 
   # copy alias files
   sed 's/\r$//' 'src/exa/TalkDetector'$SUFFIX'.exa' | sed 's/$/\r/' > $TARGET'/PSDToolKit/口パク準備.exa'
@@ -57,6 +71,7 @@ EOS
   sed 's/\r$//' 'src/lua/default.lua' | sed 's/$/\r/' > $TARGET'/script/PSDToolKit/default.lua'
   sed 's/\r$//' 'src/lua/setting.lua-template' | sed 's/$/\r/' > $TARGET'/script/PSDToolKit/setting.lua-template'
 
+  # copy GCMZDrops script files
   sed 's/\r$//' 'src/lua/GCMZDrops/psd.lua' | sed 's/$/\r/' > $TARGET'/GCMZDrops/psdtoolkit_psd.lua'
   sed 's/\r$//' 'src/lua/GCMZDrops/wav.lua' | sed 's/$/\r/' > $TARGET'/GCMZDrops/psdtoolkit_wav.lua'
   sed 's/\r$//' 'src/lua/GCMZDrops/srt.lua' | sed 's/$/\r/' > $TARGET'/GCMZDrops/psdtoolkit_srt.lua'
@@ -66,22 +81,6 @@ EOS
   sed 's/\r$//' 'src/lua/exa/wav'$SUFFIX'.exa' | sed 's/$/\r/' > $TARGET'/script/PSDToolKit/exa/wav.exa'
   sed 's/\r$//' 'src/lua/exa/srt'$SUFFIX'.exa' | sed 's/$/\r/' > $TARGET'/script/PSDToolKit/exa/srt.exa'
   sed 's/\r$//' 'src/lua/exa/lab'$SUFFIX'.exa' | sed 's/$/\r/' > $TARGET'/script/PSDToolKit/exa/lab.exa'
-
-  # build src/go/assets/bindata.go
-  pushd src/go/assets > /dev/null
-  go.exe generate
-  popd > /dev/null
-
-  # build PSDToolKit.exe
-  pushd src/go > /dev/null
-  rsrc.exe -ico assets/datasrc/icon.ico -arch=amd64 -o PSDToolKit.syso
-  env.exe go.exe build -x -tags gdip -ldflags="-s" -o ../../$TARGET/script/PSDToolKit/PSDToolKit.exe
-  popd > /dev/null
-
-  # build lazarus projects
-  cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/PSDToolKitBridge.lpi
-  cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/AssistPlugin.lpi
-  cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/AudioMixerPlugin.lpi
 
   # copy GCMZDrops release version
   cp ../aviutl_gcmzdrops/bin/GCMZDrops.* $TARGET/
@@ -108,4 +107,5 @@ make bin JP
 make bin_en EN
 cp bin/PSDToolKit.auf bin_en/PSDToolKit.auf
 cp bin/script/PSDToolKit/PSDToolKitBridge.dll bin_en/script/PSDToolKit/PSDToolKitBridge.dll
+cp bin/script/PSDToolKit/PSDToolKit.exe bin_en/script/PSDToolKit/PSDToolKit.exe
 cp bin/AudioMixer.auf bin_en/AudioMixer.auf
