@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # update version string
-VERSION='v0.2beta53'
+VERSION='v0.2beta54'
 GITHASH=`git rev-parse --short HEAD`
 echo -n "$VERSION ( $GITHASH )" > "VERSION"
 cat << EOS | sed 's/\r$//' | sed 's/$/\r/' > 'src/lazarus/ver.pas'
@@ -104,8 +104,8 @@ make () {
 }
 
 make bin JP
-make bin_en EN
-cp bin/PSDToolKit.auf bin_en/PSDToolKit.auf
-cp bin/script/PSDToolKit/PSDToolKitBridge.dll bin_en/script/PSDToolKit/PSDToolKitBridge.dll
-cp bin/script/PSDToolKit/PSDToolKit.exe bin_en/script/PSDToolKit/PSDToolKit.exe
-cp bin/AudioMixer.auf bin_en/AudioMixer.auf
+make bin_enpatched EN
+cp bin/PSDToolKit.auf bin_enpatched/PSDToolKit.auf
+cp bin/script/PSDToolKit/PSDToolKitBridge.dll bin_enpatched/script/PSDToolKit/PSDToolKitBridge.dll
+cp bin/script/PSDToolKit/PSDToolKit.exe bin_enpatched/script/PSDToolKit/PSDToolKit.exe
+cp bin/AudioMixer.auf bin_enpatched/AudioMixer.auf

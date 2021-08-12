@@ -12,7 +12,7 @@ cd bin
 cd ..
 
 cd bin_en
-..\7za.exe a -tzip ..\psdtoolkit_en.zip ^
+..\7za.exe a -tzip ..\psdtoolkit_enpatched.zip ^
   GCMZDrops.* GCMZDrops ^
   RelMovieHandle.* ^
   ZRamPreview.* ^
