@@ -11,7 +11,7 @@ cd bin
   PSDToolKitê‡ñæèë.html PSDToolKitDocs
 cd ..
 
-cd bin_en
+cd bin_enpatched
 ..\7za.exe a -tzip ..\psdtoolkit_enpatched.zip ^
   GCMZDrops.* GCMZDrops ^
   RelMovieHandle.* ^

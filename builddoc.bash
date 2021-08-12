@@ -25,3 +25,7 @@ popd > /dev/null
 cp src/docs/rootindex.html bin/PSDToolKit説明書.html
 rm -rf bin/PSDToolKitDocs
 cp -r docs bin/PSDToolKitDocs
+
+cp src/docs/rootindex.html bin_enpatched/PSDToolKit説明書.html
+rm -rf bin_enpatched/PSDToolKitDocs
+cp -r docs bin_enpatched/PSDToolKitDocs

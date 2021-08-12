@@ -1,5 +1,6 @@
 bin
-bin_en
+bin_enpatched
+release
 aviutl
 src/lazarus/ver.pas
 src/lazarus/lib
