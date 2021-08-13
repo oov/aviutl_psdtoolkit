@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # update version string
-VERSION='v0.2beta54'
+VERSION='v0.2beta55'
 GITHASH=`git rev-parse --short HEAD`
 echo -n "$VERSION ( $GITHASH )" > "VERSION"
 cat << EOS | sed 's/\r$//' | sed 's/$/\r/' > 'src/lazarus/ver.pas'
