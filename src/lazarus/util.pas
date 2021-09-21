@@ -107,7 +107,7 @@ begin
     OFN.lpStrInitialDir := PWideChar(InitialDir);
   OFN.lpStrFilter := PWideChar(Filter);
   SetLength(Result, MAX_PATH + Length(DefFileName));
-  FillChar(Result[1], SizeOf(WideChar)*Length(Result), 0);
+  FillChar(Result[1], SizeOf(widechar) * Length(Result), 0);
   Move(DefFileName[1], Result[1], SizeOf(widechar) * Length(DefFileName));
   OFN.lpstrFile := @Result[1];
   OFN.nMaxFile := Length(Result);
@@ -127,13 +127,13 @@ begin
   Result := False;
   if not OpenClipboard(hwnd) then
     Exit;
-  h := GlobalAlloc(GHND, Length(S)*2 + 2);
+  h := GlobalAlloc(GHND, Length(S) * 2 + 2);
   try
     p := GlobalLock(h);
     try
       if p = nil then
         Exit;
-      Move(S[1], p^, Length(S)*2);
+      Move(S[1], p^, Length(S) * 2);
       p[Length(S)] := #0;
     finally
       GlobalUnlock(h);
@@ -295,7 +295,8 @@ end;
 
 function StringifyForCSV(S: UTF8String): UTF8String;
 begin
-  if Pos(',', S) = 0 then begin
+  if Pos(',', S) = 0 then
+  begin
     Result := S;
     Exit;
   end;
@@ -329,7 +330,7 @@ begin
   L := Length(V);
   WriteInt32(S, L);
   if L > 0 then
-     S.WriteBuffer(V[1], L);
+    S.WriteBuffer(V[1], L);
 end;
 
 procedure WriteRawString(const S: TStream; const V: RawByteString);
@@ -353,7 +354,7 @@ var
 begin
   h := CreateFileW(PWideChar(FileName), GENERIC_WRITE, 0, nil, CREATE_ALWAYS, 0, 0);
   if h = INVALID_HANDLE_VALUE then
-    raise Exception.Create('cannot create file: '+FileName);
+    raise Exception.Create('cannot create file: ' + FileName);
   inherited Create(h);
 end;
 

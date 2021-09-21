@@ -36,7 +36,7 @@ type
 
   TCacheManager = class(TThread)
   private
-    FBuffer: array of Smallint;
+    FBuffer: array of smallint;
     FCacheMap: TCacheMap;
     FRDFT: TRDFT;
     FMovieMap: array[0..31] of TMovieEntry;
@@ -141,24 +141,29 @@ begin
   Result := nil;
   Unused := nil;
   Oldest := nil;
-  for I := Low(FMovieMap) to High(FMovieMap) do begin
-    if FMovieMap[I].H = nil then begin
+  for I := Low(FMovieMap) to High(FMovieMap) do
+  begin
+    if FMovieMap[I].H = nil then
+    begin
       if Unused = nil then
         Unused := @FMovieMap[I];
       continue;
     end;
-    if FMovieMap[I].FileName <> FileName then begin
-      if (Oldest = nil)or(Oldest^.LastUsed > FMovieMap[I].LastUsed) then
+    if FMovieMap[I].FileName <> FileName then
+    begin
+      if (Oldest = nil) or (Oldest^.LastUsed > FMovieMap[I].LastUsed) then
         Oldest := @FMovieMap[I];
       continue;
     end;
     Result := @FMovieMap[I];
     break;
   end;
-  if Result = nil then begin
+  if Result = nil then
+  begin
     if Unused <> nil then
       Result := Unused
-    else begin
+    else
+    begin
       FExFunc^.AVIFileClose(Oldest^.H);
       Result := Oldest;
     end;
@@ -215,8 +220,9 @@ begin
         CacheMapLast := Now;
       end;
 
-      for I := Low(FMovieMap) to High(FMovieMap) do begin
-        if (FMovieMap[I].H = nil)or(Now - FMovieMap[I].LastUsed < MOVIEMAP_LIFETIME) then
+      for I := Low(FMovieMap) to High(FMovieMap) do
+      begin
+        if (FMovieMap[I].H = nil) or (Now - FMovieMap[I].LastUsed < MOVIEMAP_LIFETIME) then
           continue;
         FExFunc^.AVIFileClose(FMovieMap[I].H);
         FMovieMap[I].H := nil;
@@ -262,8 +268,10 @@ begin
   end;
   FreeAndNil(FCacheMap);
 
-  if FExFunc <> nil then begin
-    for I := Low(FMovieMap) to High(FMovieMap) do begin
+  if FExFunc <> nil then
+  begin
+    for I := Low(FMovieMap) to High(FMovieMap) do
+    begin
       if FMovieMap[I].H = nil then
         continue;
       FExFunc^.AVIFileClose(FMovieMap[I].H);
@@ -364,12 +372,12 @@ begin
     I := Trunc(Pos * SampleRate);
     // avi_file_read_audio_sample seems to crash if you request a very small number of samples.
     // It should be almost inaudible, so treat it as zero.
-    if V^.CurSamples-I < 8 then
+    if V^.CurSamples - I < 8 then
       Exit;
 
     // It seems avi_file_read_audio_sample writes more samples than requested.
     // Therefore we have to reserve large buffer enough for that.
-    Read := FExFunc^.AVIFileReadAudioSample(V^.H, I, Min(RDFTSize, V^.CurSamples-I), A);
+    Read := FExFunc^.AVIFileReadAudioSample(V^.H, I, Min(RDFTSize, V^.CurSamples - I), A);
     V^.LastUsed := GetTickCount64();
     if Read = 0 then
       Exit;
@@ -401,10 +409,12 @@ procedure TCacheManager.SetExFuncPtr(const P: PExFunc);
 var
   I: integer;
 begin
-  if FExFunc = P then Exit;
+  if FExFunc = P then
+    Exit;
   if FExFunc <> nil then
   begin
-    for I := Low(FMovieMap) to High(FMovieMap) do begin
+    for I := Low(FMovieMap) to High(FMovieMap) do
+    begin
       if FMovieMap[I].H = nil then
         continue;
       FExFunc^.AVIFileClose(FMovieMap[I].H);

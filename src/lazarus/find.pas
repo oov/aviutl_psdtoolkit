@@ -89,6 +89,7 @@ begin
 end;
 
 function FindExtendedFilterClassFromSingleWindowWrapper(): THandle;
+
   function FindChild(hParent: THandle): THandle;
   var
     h: THandle;
@@ -111,6 +112,7 @@ function FindExtendedFilterClassFromSingleWindowWrapper(): THandle;
         Result := FindChild(h);
     end;
   end;
+
 var
   h: THandle;
 begin

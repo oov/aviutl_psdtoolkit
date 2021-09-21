@@ -275,12 +275,12 @@ var
   (*
   ** load string
   *)
-  luaL_loadstring: function (L: Plua_State; const s: PChar): Integer; cdecl;
+  luaL_loadstring: function(L: Plua_State; const s: PChar): integer; cdecl;
 
   (*
   ** error handler
   *)
-  luaL_error: function (L: Plua_State; const fmt: PChar): Integer; cdecl; varargs;
+  luaL_error: function(L: Plua_State; const fmt: PChar): integer; cdecl; varargs;
 
 (*
 ** ===============================================================

@@ -9,7 +9,8 @@ uses
   lua;
 
 function luaopen_PSDToolKitBridge(L: Plua_State): integer; cdecl;
-procedure SetCurrentFramePtr(ACurrentFrame, ACurrentFrameN, ACurrentRenderIndex: PInteger);
+procedure SetCurrentFramePtr(ACurrentFrame, ACurrentFrameN,
+  ACurrentRenderIndex: PInteger);
 procedure SetExFuncPtr(const ExFunc: Pointer);
 
 implementation
@@ -23,7 +24,8 @@ var
   CurrentFrame, CurrentFrameN, CurrentRenderIndex: PInteger;
   CurrentProjectPath: UTF8String;
 
-procedure SetCurrentFramePtr(ACurrentFrame, ACurrentFrameN, ACurrentRenderIndex: PInteger);
+procedure SetCurrentFramePtr(ACurrentFrame, ACurrentFrameN,
+  ACurrentRenderIndex: PInteger);
 begin
   CurrentFrame := ACurrentFrame;
   CurrentFrameN := ACurrentFrameN;
@@ -111,8 +113,9 @@ function LuaGetWavLabPath(L: Plua_State): integer; cdecl;
     try
       FilePath := UTF8String(ShiftJISString(lua_tostring(L, 1)));
       lua_pop(L, 1);
-      if (not FileExists(FilePath))and(CurrentProjectPath <> '') then
-        FilePath := IncludeTrailingPathDelimiter(ExtractFileDir(CurrentProjectPath)) + ExtractFileName(FilePath);
+      if (not FileExists(FilePath)) and (CurrentProjectPath <> '') then
+        FilePath := IncludeTrailingPathDelimiter(ExtractFileDir(CurrentProjectPath)) +
+          ExtractFileName(FilePath);
       S := ShiftJISString(UTF8String(ChangeFileExt(FilePath, '.wav')));
       if FileExists(S) then
         lua_pushlstring(L, @S[1], Length(S))
@@ -455,11 +458,15 @@ end;
 
 function LuaGetCurrentFrame(L: Plua_State): integer; cdecl;
 begin
-  if Assigned(CurrentFrame) and Assigned(CurrentFrameN) and Assigned(CurrentRenderIndex) then begin
+  if Assigned(CurrentFrame) and Assigned(CurrentFrameN) and
+    Assigned(CurrentRenderIndex) then
+  begin
     lua_pushnumber(L, InterlockedExchangeAdd(CurrentFrame^, 0));
     lua_pushnumber(L, InterlockedExchangeAdd(CurrentFrameN^, 0));
     lua_pushnumber(L, InterlockedExchangeAdd(CurrentRenderIndex^, 0));
-  end else begin
+  end
+  else
+  begin
     lua_pushnumber(L, -1);
     lua_pushnumber(L, -1);
     lua_pushnumber(L, -1);

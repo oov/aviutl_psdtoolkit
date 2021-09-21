@@ -36,8 +36,8 @@ type
     function GetLayerNames(id: integer; filename: UTF8String): UTF8String;
     procedure SetProperties(id: integer; filename: UTF8String;
       Tag: PDWord; Layer: PUTF8String; Scale: PSingle; OffsetX: System.PInteger;
-      OffsetY: System.PInteger; out Modified: boolean; out CacheKey: DWord; out Width: integer;
-      out Height: integer);
+      OffsetY: System.PInteger; out Modified: boolean; out CacheKey: DWord;
+      out Width: integer; out Height: integer);
     procedure ShowGUI();
     function Serialize(): RawByteString;
     procedure Deserialize(s: RawByteString);
@@ -55,7 +55,8 @@ begin
   inherited Create;
   InitCriticalSection(FCS);
   FRemoteProcess := TProcess.Create(nil);
-  FRemoteProcess.ApplicationName := string(ExtractFileDir(GetDLLName()) + '\PSDToolKit.exe');
+  FRemoteProcess.ApplicationName :=
+    string(ExtractFileDir(GetDLLName()) + '\PSDToolKit.exe');
   FRemoteProcess.Options := [poUsePipes, poNoConsole];
   FReceiver := nil;
 end;
@@ -173,8 +174,8 @@ end;
 
 procedure TPSDToolKitBridge.SetProperties(id: integer; filename: UTF8String;
   Tag: PDWord; Layer: PUTF8String; Scale: PSingle; OffsetX: System.PInteger;
-  OffsetY: System.PInteger; out Modified: boolean; out CacheKey: DWord; out Width: integer;
-  out Height: integer);
+  OffsetY: System.PInteger; out Modified: boolean; out CacheKey: DWord;
+  out Width: integer; out Height: integer);
 const
   PROPID_END = 0;
   PROPID_LAYER = 1;
@@ -305,11 +306,12 @@ begin
   try
     FRemoteProcess.Execute;
   except
-    on E: EProcess do begin
+    on E: EProcess do
+    begin
       raise Exception.Create(
-        'failed to execute: script\PSDToolKit\PSDToolKit.exe'#13#10+
-        E.Message+#13#10#13#10+
-        'Please check whether the antivirus software is blocking program execution.'#13#10+
+        'failed to execute: script\PSDToolKit\PSDToolKit.exe'#13#10 +
+        E.Message + #13#10#13#10 +
+        'Please check whether the antivirus software is blocking program execution.'#13#10 +
         'アンチウィルスソフトがプログラム実行を阻害していないか確認してください。');
     end;
   end;
@@ -367,11 +369,13 @@ begin
   Names := FReceiver.ReadString();
   Values := FReceiver.ReadString();
   SelectedIndex := FReceiver.ReadInt32();
-  ODS('  -> SliderName: %s / Names LEN: %d / Values LEN: %d / SelectedIndex: %d', [SliderName, Length(Names), Length(Values), SelectedIndex]);
+  ODS('  -> SliderName: %s / Names LEN: %d / Values LEN: %d / SelectedIndex: %d',
+    [SliderName, Length(Names), Length(Values), SelectedIndex]);
   EnterCS('EXFS');
   try
     WriteUInt32(FRemoteProcess.Input, $80000000);
-    TExportFaviewSlider.Create(FPSDToolWindow, FilePath, SliderName, Names, Values, SelectedIndex);
+    TExportFaviewSlider.Create(FPSDToolWindow, FilePath, SliderName,
+      Names, Values, SelectedIndex);
   finally
     LeaveCS('EXFS');
   end;
@@ -386,7 +390,8 @@ begin
   Names := FReceiver.ReadString();
   Values := FReceiver.ReadString();
   SelectedIndex := FReceiver.ReadInt32();
-  ODS('  -> Names LEN: %d / Values LEN: %d / SelectedIndex: %d', [Length(Names), Length(Values), SelectedIndex]);
+  ODS('  -> Names LEN: %d / Values LEN: %d / SelectedIndex: %d',
+    [Length(Names), Length(Values), SelectedIndex]);
   EnterCS('EXLN');
   try
     WriteUInt32(FRemoteProcess.Input, $80000000);

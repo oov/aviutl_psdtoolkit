@@ -71,11 +71,12 @@ const
   ADD_MENU_ITEM_FLAG_KEY_CTRL = 2;
   ADD_MENU_ITEM_FLAG_KEY_ALT = 4;
 
-  AVI_FILE_OPEN_FLAG_VIDEO_ONLY	= 16;
+  AVI_FILE_OPEN_FLAG_VIDEO_ONLY = 16;
   AVI_FILE_OPEN_FLAG_AUDIO_ONLY = 32;
-  AVI_FILE_OPEN_FLAG_ONLY_YUY2	= $10000;
-  AVI_FILE_OPEN_FLAG_ONLY_RGB24	= $20000;
-  AVI_FILE_OPEN_FLAG_ONLY_RGB32	= $40000;
+  AVI_FILE_OPEN_FLAG_ONLY_YUY2 = $10000;
+  AVI_FILE_OPEN_FLAG_ONLY_RGB24 = $20000;
+  AVI_FILE_OPEN_FLAG_ONLY_RGB32 = $40000;
+
 type
   AviUtlBool = integer;
 
@@ -145,14 +146,18 @@ type
     Buf: Pointer): integer; cdecl;
   TGetFilterPFunc = function(filterId: integer): PFilter; cdecl;
   TIniLoadIntFunc = function(fp: PFilter; key: PChar; default: integer): integer; cdecl;
-  TIniLoadStrFunc = function(fp: PFilter; key: PChar; str: PChar; default: PChar): AviUtlBool; cdecl;
+  TIniLoadStrFunc = function(fp: PFilter; key: PChar; str: PChar;
+    default: PChar): AviUtlBool; cdecl;
   TAddMenuItemFunc = function(fp: PFilter; Name: PChar; h: THandle;
     id: integer; def_key: integer; flag: integer): integer; cdecl;
 
-  TAVIFileOpenFunc = function(FileName: PChar; out FI: TFileInfo; Flag: integer): PAVIFileHandle; cdecl;
+  TAVIFileOpenFunc = function(FileName: PChar; out FI: TFileInfo;
+    Flag: integer): PAVIFileHandle; cdecl;
   TAVIFileCloseFunc = procedure(H: PAVIFileHandle); cdecl;
-  TAVIFileReadAudioSampleFunc = function(H: PAVIFileHandle; Start, Length: integer; Buf: Pointer): integer; cdecl;
-  TAVIFileSetAudioSampleRateFunc = function(H: PAVIFileHandle; AudioRate, AudioCh: integer): integer; cdecl;
+  TAVIFileReadAudioSampleFunc = function(H: PAVIFileHandle;
+    Start, Length: integer; Buf: Pointer): integer; cdecl;
+  TAVIFileSetAudioSampleRateFunc = function(H: PAVIFileHandle;
+    AudioRate, AudioCh: integer): integer; cdecl;
 
   TExFunc = record
     GetYCPOfs: Pointer;
