@@ -360,10 +360,16 @@ begin
   try
     A := @FBuffer[0];
     V := FindMovie(FileName);
+
+    I := Trunc(Pos * SampleRate);
+    // avi_file_read_audio_sample seems to crash if you request a very small number of samples.
+    // It should be almost inaudible, so treat it as zero.
+    if V^.CurSamples-I < 8 then
+      Exit;
+
     // It seems avi_file_read_audio_sample writes more samples than requested.
     // Therefore we have to reserve large buffer enough for that.
-    Read := FExFunc^.AVIFileReadAudioSample(V^.H, Trunc(Pos * SampleRate),
-      RDFTSize, A);
+    Read := FExFunc^.AVIFileReadAudioSample(V^.H, I, Min(RDFTSize, V^.CurSamples-I), A);
     V^.LastUsed := GetTickCount64();
     if Read = 0 then
       Exit;
