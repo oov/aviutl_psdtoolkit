@@ -37,8 +37,6 @@ env.exe go.exe build -x -tags gdip -ldflags="-s" -o ../../bin/script/PSDToolKit/
 popd > /dev/null
 
 # build lazarus projects
-cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/PSDToolKitBridge.lpi
-cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/AssistPlugin.lpi
 cmd.exe /c C:/lazarus/lazbuild.exe --build-all src/lazarus/AudioMixerPlugin.lpi
 
 make () {

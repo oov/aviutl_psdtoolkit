@@ -1,0 +1,5 @@
+BasedOnStyle: llvm
+ColumnLimit: 120
+BinPackArguments: false
+BinPackParameters: false
+IndentPPDirectives: AfterHash

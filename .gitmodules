@@ -1,0 +1,3 @@
+[submodule "src/c/3rd/base.c"]
+	path = src/c/3rd/base.c
+	url = https://github.com/oov/base.c

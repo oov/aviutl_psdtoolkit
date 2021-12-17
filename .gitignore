@@ -1,3 +1,4 @@
+.vscode
 bin
 bin_enpatched
 release
@@ -8,3 +9,4 @@ src/go/ver.go
 src/go/assets/bindata.go
 src/go/*.syso
 VERSION
+build

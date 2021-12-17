@@ -1,0 +1,3 @@
+#pragma once
+#define VERSION "@_git_tag@ ( @_git_revision@ )"
+#define VERSION_WIDE L"@_git_tag@ ( @_git_revision@ )"
