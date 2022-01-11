@@ -3,8 +3,6 @@
 package nkhelper
 
 /*
-// This is very poor approach...
-#cgo CFLAGS: -I ../../../../../../github.com/golang-ui/nuklear/nk/
 #define NK_INCLUDE_FIXED_TYPES 1
 #define NK_INCLUDE_STANDARD_IO 1
 #define NK_INCLUDE_DEFAULT_ALLOCATOR 1
