@@ -67,9 +67,9 @@ func main() {
 
 	if err := g.Init(
 		"PSDToolKit "+version,
-		assets.MustAsset("bg.png"),
-		assets.MustAsset("Ohruri-Regular.ttf"),
-		assets.MustAsset("symbols.ttf"),
+		assets.BG,
+		assets.Ohruri,
+		assets.Symbols,
 	); err != nil {
 		ipcm.Abort(err)
 		<-gcDone
