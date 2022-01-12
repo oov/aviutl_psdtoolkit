@@ -1,6 +1,6 @@
 #pragma once
 
-#include "3rd/base.c/include/base.h"
+#include "ovbase.h"
 
 struct speak;
 struct speak_callbacks {

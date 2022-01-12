@@ -1,6 +1,6 @@
 #include "ipc.h"
 
-#include "3rd/base.c/include/threads.h"
+#include "ovthreads.h"
 
 #include "error_ptk.h"
 #include "util.h"
@@ -450,7 +450,7 @@ NODISCARD static error read_reply(struct ipc *const ipc, uint32_t size) {
     goto cleanup;
   }
   rep = error_add_(
-      NULL, err_type_generic, err_fail, &tmp2, &(struct base_filepos){.file = "remote process", .func = __func__});
+      NULL, err_type_generic, err_fail, &tmp2, &(struct ovbase_filepos){.file = "remote process", .func = __func__});
 cleanup:
   cndvar_lock(&ipc->s2c);
   ipc->reply = rep;

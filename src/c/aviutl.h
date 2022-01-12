@@ -8,7 +8,7 @@
 
 #include "3rd/aviutl_sdk/filter.h"
 
-#include "3rd/base.c/include/base.h"
+#include "ovbase.h"
 
 void aviutl_set_pointers(FILTER const *const fp, void *const editp);
 NODISCARD error aviutl_init(void);

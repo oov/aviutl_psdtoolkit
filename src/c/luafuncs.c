@@ -104,7 +104,7 @@ static int luafn_draw(lua_State *L) {
     err = ethru(err);
     goto cleanup;
   }
-  void *p = base_deconster_(lua_topointer(L, 3));
+  void *p = ovbase_deconster_(lua_topointer(L, 3));
   int32_t const width = lua_tointeger(L, 4);
   int32_t const height = lua_tointeger(L, 5);
   err = ipc_draw(g_ipc, id, &path_utf8, p, width, height);
@@ -120,7 +120,7 @@ cleanup:
 static int luafn_getcache(lua_State *L) {
   error err = eok();
   char const *const key = lua_tostring(L, 1);
-  void *const dest = base_deconster_(lua_topointer(L, 2));
+  void *const dest = ovbase_deconster_(lua_topointer(L, 2));
   size_t const dest_len = (size_t)lua_tointeger(L, 3);
   void *src = NULL;
   size_t src_len = 0;
@@ -310,7 +310,7 @@ static int luafn_putcache(lua_State *L) {
   void *v = NULL;
   error err = eok();
   char const *const key = lua_tostring(L, 1);
-  void *const ptr = base_deconster_(lua_topointer(L, 2));
+  void *const ptr = ovbase_deconster_(lua_topointer(L, 2));
   size_t const len = (size_t)lua_tointeger(L, 3);
   err = mem(&v, len, sizeof(char));
   if (efailed(err)) {

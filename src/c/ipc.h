@@ -1,6 +1,6 @@
 #pragma once
 
-#include "3rd/base.c/include/base.h"
+#include "ovbase.h"
 
 struct ipc;
 struct ipc_update_editing_image_state_params {

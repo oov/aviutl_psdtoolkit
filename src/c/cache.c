@@ -1,6 +1,6 @@
 #include "cache.h"
 
-#include "3rd/base.c/include/threads.h"
+#include "ovthreads.h"
 
 struct cache {
   struct hmap store;
@@ -103,7 +103,7 @@ cleanup:
 
 static bool cache_scan_free(void const *const item, void *const userdata) {
   (void)userdata;
-  struct cache_item *const ci = base_deconster_(item);
+  struct cache_item *const ci = ovbase_deconster_(item);
   ereport(mem_free(&ci->key));
   ci->key_len = 0;
   ereport(mem_free(&ci->value));

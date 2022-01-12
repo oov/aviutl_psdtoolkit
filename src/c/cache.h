@@ -1,6 +1,6 @@
 #pragma once
 
-#include "3rd/base.c/include/base.h"
+#include "ovbase.h"
 
 NODISCARD error cache_init(void);
 void cache_exit(void);

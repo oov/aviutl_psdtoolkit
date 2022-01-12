@@ -2,7 +2,7 @@
 
 #include <math.h>
 
-#include "3rd/base.c/include/threads.h"
+#include "ovthreads.h"
 
 enum {
   audio_frequency = 24000,

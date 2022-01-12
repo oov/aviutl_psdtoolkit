@@ -2,7 +2,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
-#include "3rd/base.c/include/base.h"
+#include "ovbase.h"
 
 #include "aviutl.h"
 #include "cache.h"
@@ -1112,7 +1112,7 @@ FILTER_DLL __declspec(dllexport) * *__stdcall GetFilterTableList(void) {
 }
 
 static void
-error_reporter(error const e, struct NATIVE_STR const *const message, struct base_filepos const *const filepos) {
+error_reporter(error const e, struct NATIVE_STR const *const message, struct ovbase_filepos const *const filepos) {
   struct NATIVE_STR tmp = {0};
   struct NATIVE_STR msg = {0};
   error err = error_to_string(e, &tmp);
@@ -1139,7 +1139,7 @@ cleanup:
 }
 
 static BOOL main_init(HINSTANCE const inst) {
-  if (!base_init()) {
+  if (!ovbase_init()) {
     return FALSE;
   }
   error_register_reporter(error_reporter);
@@ -1149,7 +1149,7 @@ static BOOL main_init(HINSTANCE const inst) {
 }
 
 static BOOL main_exit(void) {
-  base_exit();
+  ovbase_exit();
   return TRUE;
 }
 

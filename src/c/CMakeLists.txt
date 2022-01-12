@@ -25,9 +25,10 @@ add_custom_target(${PROJECT_NAME}-format ALL
 
 option(LEAK_DETECTOR "" ON)
 option(ALLOCATE_LOGGER "" ON)
-add_subdirectory(3rd/base.c)
+add_subdirectory(3rd/ovbase)
 
 include_directories(
+  "${ovbase_SOURCE_DIR}/include"
   "${CMAKE_CURRENT_BINARY_DIR}" # for version.h
 )
 link_directories(
@@ -92,8 +93,8 @@ set_target_properties(psdtoolkit_assist PROPERTIES
 )
 add_dependencies(psdtoolkit_assist generate_version_h generate_lua51dl)
 target_link_libraries(psdtoolkit_assist PRIVATE
-  base
   lua51_delayed
+  ovbase
 )
 
 add_library(psdtoolkit_bridge SHARED
@@ -106,7 +107,6 @@ set_target_properties(psdtoolkit_bridge PROPERTIES
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/script/PSDToolKit"
 )
 target_link_libraries(psdtoolkit_bridge PRIVATE
-  base
   lua51_dynamic
 )
 add_dependencies(psdtoolkit_bridge generate_lua51dl)
