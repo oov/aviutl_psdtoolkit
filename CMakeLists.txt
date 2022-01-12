@@ -11,4 +11,4 @@ set(CMAKE_C_EXTENSIONS OFF)
 project(psdtoolkit C)
 enable_testing()
 
-add_subdirectory(src/c)
+add_subdirectory(src)

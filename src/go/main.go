@@ -15,6 +15,8 @@ import (
 	"psdtoolkit/ods"
 )
 
+var version string
+
 func init() {
 	runtime.LockOSThread()
 }
