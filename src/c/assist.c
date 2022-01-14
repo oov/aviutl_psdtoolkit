@@ -353,15 +353,21 @@ cleanup:
 
 #define ERRMSG_INIT L"PSDToolKit の初期化中にエラーが発生しました。"
 static BOOL filter_init(FILTER *const fp) {
+  SYSTEM_INFO si = {0};
+  GetNativeSystemInfo(&si);
+  if (si.wProcessorArchitecture != PROCESSOR_ARCHITECTURE_AMD64) {
+    error_message_box(eok(),
+                      fp->hwnd,
+                      ERRMSG_INIT L"\r\n\r\n"
+                                  L"PSDToolKit を使うには 64bit 版の Windows が必要です。");
+    return FALSE;
+  }
+
   aviutl_set_pointers(fp, NULL);
   error err = aviutl_init();
   if (efailed(err)) {
     wchar_t const *msg = NULL;
-    if (eis(err, err_type_ptk, err_ptk_arch_is_not_64bit)) {
-      msg = ERRMSG_INIT L"\r\n\r\n"
-                        L"PSDToolKit を使うには 64bit 版の Windows が必要です。";
-      efree(&err);
-    } else if (eis(err, err_type_ptk, err_ptk_unsupported_aviutl_version)) {
+    if (eis(err, err_type_ptk, err_ptk_unsupported_aviutl_version)) {
       msg = ERRMSG_INIT L"\r\n\r\n"
                         L"PSDToolKit を使うには AviUtl version 1.00 以降が必要です。";
       efree(&err);

@@ -182,16 +182,7 @@ error aviutl_init(void) {
   FILTER const *exedit_fp = NULL;
   bool is_enpatched = false;
   HMODULE lua51 = NULL;
-  error err = eok();
-
-  SYSTEM_INFO si = {0};
-  GetNativeSystemInfo(&si);
-  if (si.wProcessorArchitecture != PROCESSOR_ARCHITECTURE_AMD64) {
-    err = err(err_type_ptk, err_ptk_arch_is_not_64bit);
-    goto cleanup;
-  }
-
-  err = verify_installation();
+  error err = verify_installation();
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
