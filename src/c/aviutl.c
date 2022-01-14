@@ -1,9 +1,11 @@
 #include "aviutl.h"
 
+#include "ovutil/str.h"
+#include "ovutil/win32.h"
+
 #include <string.h>
 
 #include "error_ptk.h"
-#include "util.h"
 
 static FILTER const *g_fp = NULL;
 static void *g_editp = NULL;

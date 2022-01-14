@@ -24,9 +24,9 @@ message(STATUS "git revision: ${_git_revision}")
 add_custom_target(psdtoolkit_main
   COMMAND windres
     --output-format=coff
-    -o PSDToolKit.syso
-    PSDToolKit.rc
-  COMMAND go build
+    -o "${CMAKE_CURRENT_SOURCE_DIR}/PSDToolKit.syso"
+    "${CMAKE_CURRENT_SOURCE_DIR}/PSDToolKit.rc"
+  COMMAND go build -x
     -tags gdip
     "-ldflags=\"-s -X \\\"main.version=${_git_tag} ( ${_git_revision} )\\\"\""
     -o "${CMAKE_BINARY_DIR}/bin/script/PSDToolKit/PSDToolKit.exe"

@@ -1,13 +1,12 @@
 #include "setting.h"
 
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#include "ovutil/str.h"
+#include "ovutil/win32.h"
 
 #include <lua5.1/lauxlib.h>
 #include <lua5.1/lualib.h>
 
 #include "aviutl.h"
-#include "util.h"
 #include "version.h"
 
 static wchar_t const *const setting_dialog_prop = L"setting_dialog";

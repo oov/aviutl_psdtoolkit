@@ -1,6 +1,6 @@
 #include "find.h"
 
-#include "util.h"
+#include "ovutil/win32.h"
 
 static HWND find_extended_filter_class_from_single_window_wrapper_child(HWND parent) {
   HWND h = 0;

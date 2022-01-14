@@ -1,9 +1,11 @@
 #include "ptklayer.h"
 
+#include "ovutil/str.h"
+#include "ovutil/win32.h"
+
 #include <commdlg.h>
 
 #include "luastr.h"
-#include "util.h"
 
 NODISCARD static error copy_to_clipboard(HWND const owner, struct wstr *content) {
   if (!owner || !content) {

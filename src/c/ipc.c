@@ -1,9 +1,10 @@
 #include "ipc.h"
 
 #include "ovthreads.h"
+#include "ovutil/str.h"
+#include "ovutil/win32.h"
 
 #include "error_ptk.h"
-#include "util.h"
 
 #ifndef NDEBUG
 static void ods(wchar_t const *fmt, ...) {

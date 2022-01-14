@@ -1,17 +1,12 @@
 #include "luafuncs.h"
 
-#include <stdbool.h>
-#include <stddef.h>
-#include <stdint.h>
-
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
+#include "ovutil/str.h"
+#include "ovutil/win32.h"
 
 #include <lua5.1/lauxlib.h>
 #include <lua5.1/lualib.h>
 
 #include "cache.h"
-#include "util.h"
 
 struct ipc *g_ipc = NULL;
 struct speak *g_speak = NULL;

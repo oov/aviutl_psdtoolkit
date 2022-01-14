@@ -3,6 +3,8 @@
 #include <stdint.h>
 
 #include "ovbase.h"
+#include "ovutil/str.h"
+#include "ovutil/win32.h"
 
 #include "aviutl.h"
 #include "cache.h"
@@ -15,7 +17,6 @@
 #include "ptklayer.h"
 #include "setting.h"
 #include "speak.h"
-#include "util.h"
 #include "version.h"
 
 static HMODULE g_bridge = NULL;
