@@ -13,6 +13,7 @@ static HMODULE g_lua51 = NULL;
 
 static FILTER const *g_exedit_fp = NULL;
 static bool g_is_enpatched = false;
+static bool g_initialized = false;
 
 NODISCARD static error verify_installation(void) {
   struct wstr path = {0};
@@ -178,40 +179,47 @@ void aviutl_set_pointers(FILTER const *fp, void *editp) {
   g_editp = editp;
 }
 
-error aviutl_init(void) {
+error aviutl_init(size_t const options) {
   FILTER const *exedit_fp = NULL;
   bool is_enpatched = false;
   HMODULE lua51 = NULL;
-  error err = verify_installation();
+  error err = verify_aviutl_version();
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
-  err = verify_aviutl_version();
-  if (efailed(err)) {
-    err = ethru(err);
-    goto cleanup;
-  }
-  err = find_exedit_filter(&exedit_fp, &is_enpatched);
-  if (efailed(err)) {
-    err = ethru(err);
-    goto cleanup;
-  }
-  err = verify_exedit_version(exedit_fp);
-  if (efailed(err)) {
-    err = ethru(err);
-    goto cleanup;
-  }
-  // lua51.dll will be lazily loaded, but may fail if it is not on the search path.
-  // To avoid this, load with the full path first.
-  err = load_lua51(&lua51);
-  if (efailed(err)) {
-    err = ethru(err);
-    goto cleanup;
+  if (options & aviutl_init_options_find_exedit) {
+    err = find_exedit_filter(&exedit_fp, &is_enpatched);
+    if (efailed(err)) {
+      err = ethru(err);
+      goto cleanup;
+    }
+    err = verify_exedit_version(exedit_fp);
+    if (efailed(err)) {
+      err = ethru(err);
+      goto cleanup;
+    }
+    if (options & aviutl_init_options_module_must_exists_in_same_dir_to_exedit) {
+      err = verify_installation();
+      if (efailed(err)) {
+        err = ethru(err);
+        goto cleanup;
+      }
+    }
+    if (options & aviutl_init_options_preload_lua51_dll) {
+      // lua51.dll will be lazily loaded, but may fail if it is not on the search path.
+      // To avoid this, load with the full path first.
+      err = load_lua51(&lua51);
+      if (efailed(err)) {
+        err = ethru(err);
+        goto cleanup;
+      }
+    }
   }
   g_exedit_fp = exedit_fp;
   g_is_enpatched = is_enpatched;
   g_lua51 = lua51;
+  g_initialized = true;
   lua51 = NULL;
 
 cleanup:
@@ -222,13 +230,14 @@ cleanup:
   return err;
 }
 
-bool aviutl_initalized(void) { return g_exedit_fp; }
+bool aviutl_initalized(void) { return g_initialized; }
 
 error aviutl_exit(void) {
   if (g_lua51 != NULL) {
     FreeLibrary(g_lua51);
     g_lua51 = NULL;
   }
+  g_initialized = false;
   return eok();
 }
 

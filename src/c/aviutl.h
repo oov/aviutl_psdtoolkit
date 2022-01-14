@@ -1,17 +1,20 @@
 #pragma once
 
-#include <stdbool.h>
-#include <stdint.h>
+#include "ovbase.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
 #include "3rd/aviutl_sdk/filter.h"
 
-#include "ovbase.h"
+enum aviutl_init_options {
+  aviutl_init_options_find_exedit = 1,
+  aviutl_init_options_module_must_exists_in_same_dir_to_exedit = 2,
+  aviutl_init_options_preload_lua51_dll = 4,
+};
 
 void aviutl_set_pointers(FILTER const *const fp, void *const editp);
-NODISCARD error aviutl_init(void);
+NODISCARD error aviutl_init(size_t const options);
 NODISCARD bool aviutl_initalized(void);
 NODISCARD error aviutl_exit(void);
 NODISCARD error aviutl_exedit_is_enpatched(bool *const enpatched);

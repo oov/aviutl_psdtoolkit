@@ -364,7 +364,9 @@ static BOOL filter_init(FILTER *const fp) {
   }
 
   aviutl_set_pointers(fp, NULL);
-  error err = aviutl_init();
+  error err =
+      aviutl_init(aviutl_init_options_find_exedit | aviutl_init_options_module_must_exists_in_same_dir_to_exedit |
+                  aviutl_init_options_preload_lua51_dll);
   if (efailed(err)) {
     wchar_t const *msg = NULL;
     if (eis(err, err_type_ptk, err_ptk_unsupported_aviutl_version)) {
