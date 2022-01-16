@@ -10,14 +10,13 @@ add_custom_target(generate_version_h COMMAND
 )
 
 find_program(LUA51DLL lua51.dll CMAKE_FIND_ROOT_PATH_BOTH)
-add_custom_target(generate_lua51dl COMMAND
+add_custom_target(generate_importlib COMMAND
   ${CMAKE_COMMAND}
   -Dlocal_dir="${CMAKE_CURRENT_BINARY_DIR}"
   -Ddll="${LUA51DLL}"
   -Ddef="${CMAKE_CURRENT_BINARY_DIR}/lua51.def"
-  -Dlib="${CMAKE_CURRENT_BINARY_DIR}/liblua51_dynamic.a"
-  -Ddelayed_lib="${CMAKE_CURRENT_BINARY_DIR}/liblua51_delayed.a"
-  -P "${ovutil_SOURCE_DIR}/src/cmake/makelib.cmake"
+  -Dlib="${CMAKE_CURRENT_BINARY_DIR}/liblua51.a"
+  -P "${ovutil_SOURCE_DIR}/src/cmake/makelib-llvm.cmake"
 )
 
 add_library(psdtoolkit_assist SHARED
@@ -42,9 +41,10 @@ set_target_properties(psdtoolkit_assist PROPERTIES
   SUFFIX ""
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
 )
-add_dependencies(psdtoolkit_assist generate_version_h generate_lua51dl)
+add_dependencies(psdtoolkit_assist generate_version_h generate_importlib)
 target_link_libraries(psdtoolkit_assist PRIVATE
-  lua51_delayed
+  lua51
+  -Wl,-delayload,lua51.dll
   ovbase
   ovutil
 )
@@ -59,9 +59,9 @@ set_target_properties(psdtoolkit_bridge PROPERTIES
   SUFFIX ""
   RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/script/PSDToolKit"
 )
-add_dependencies(psdtoolkit_bridge generate_lua51dl)
+add_dependencies(psdtoolkit_bridge generate_importlib)
 target_link_libraries(psdtoolkit_bridge PRIVATE
-  lua51_dynamic
+  lua51
 )
 
 foreach(target ${targets})
@@ -92,8 +92,10 @@ foreach(target ${targets})
     -fdata-sections
     $<$<CONFIG:Debug>:-O0>
     $<$<CONFIG:Release>:-O2>
+    -flto
   )
   target_link_options(${target} PRIVATE
+    -fuse-ld=lld
     -Wl,--gc-sections
     # -Wl,--print-gc-sections
     -Wl,--kill-at
