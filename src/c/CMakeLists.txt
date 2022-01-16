@@ -1,3 +1,6 @@
+add_compile_options(-flto)
+add_link_options(-fuse-ld=lld)
+
 add_subdirectory(3rd/ovbase)
 add_subdirectory(3rd/ovutil)
 
