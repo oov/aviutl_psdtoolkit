@@ -1148,7 +1148,7 @@ cleanup:
 }
 
 static BOOL main_init(HINSTANCE const inst) {
-  if (!ovbase_init()) {
+  if (!ovbase_init(generic_error_message_mapper_jp)) {
     return FALSE;
   }
   error_register_reporter(error_reporter);

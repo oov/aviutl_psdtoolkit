@@ -37,11 +37,7 @@ NODISCARD static error get_ptk_message(uint_least32_t const code, struct NATIVE_
 }
 
 error error_ptk_init(void) {
-  error err = error_register_message_mapper(err_type_generic, generic_error_message_mapper_jp);
-  if (efailed(err)) {
-    return err;
-  }
-  err = error_register_message_mapper(err_type_ptk, get_ptk_message);
+  error err = error_register_message_mapper(err_type_ptk, get_ptk_message);
   if (efailed(err)) {
     return err;
   }
