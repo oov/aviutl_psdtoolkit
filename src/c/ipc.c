@@ -602,8 +602,7 @@ NODISCARD static error start_process(struct ipc *ipc) {
     } else if (hr == HRESULT_FROM_WIN32(ERROR_ACCESS_DENIED)) {
       err = err(err_type_ptk, err_ptk_ipc_target_access_denied);
     } else {
-      err = emsg(
-          err_type_hresult, (uint_least32_t)hr, &native_unmanaged_const(NSTR("外部プロセスの起動に失敗しました。")));
+      err = emsg(err_type_hresult, (int)hr, &native_unmanaged_const(NSTR("外部プロセスの起動に失敗しました。")));
     }
     goto cleanup;
   }

@@ -3,7 +3,7 @@
 #include "ovbase.h"
 
 enum {
-  err_type_ptk = 2,
+  err_type_ptk = 100,
 };
 
 enum err_ptk {

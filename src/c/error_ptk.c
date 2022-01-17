@@ -1,6 +1,6 @@
 #include "error_ptk.h"
 
-NODISCARD static error get_ptk_message(uint_least32_t const code, struct NATIVE_STR *const message) {
+NODISCARD static error get_ptk_message(int const code, struct NATIVE_STR *const message) {
   switch (code) {
   case err_ptk_arch_is_not_64bit:
     return scpy(message, NSTR("動作には64Bit版の Windows が必要です。"));
