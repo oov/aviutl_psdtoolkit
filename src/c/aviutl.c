@@ -55,8 +55,8 @@ cleanup:
 }
 
 NODISCARD static error find_exedit_filter(FILTER const **const exedit_fp, bool *const is_enpatched) {
-  static TCHAR const *const exedit_name_mbcs = "\x8a\x67\x92\xa3\x95\xd2\x8f\x57"; // "拡張編集"
-  static TCHAR const *const enpatched_exedit_name_mbcs = "Advanced Editing";
+  static TCHAR const exedit_name_mbcs[] = "\x8a\x67\x92\xa3\x95\xd2\x8f\x57"; // "拡張編集"
+  static TCHAR const enpatched_exedit_name_mbcs[] = "Advanced Editing";
 
   *exedit_fp = NULL;
   SYS_INFO si = {0};
@@ -115,7 +115,7 @@ static size_t atou32(TCHAR const *s, uint32_t *const ret) {
 }
 
 NODISCARD static error verify_exedit_version(FILTER const *const exedit_fp) {
-  static TCHAR const *const version_token = " version ";
+  static TCHAR const version_token[] = " version ";
   TCHAR const *verstr = strstr(exedit_fp->information, version_token);
   if (!verstr) {
     goto failed;

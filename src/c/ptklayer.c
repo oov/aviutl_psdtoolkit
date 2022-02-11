@@ -1,5 +1,6 @@
 #include "ptklayer.h"
 
+#include "ovnum.h"
 #include "ovutil/str.h"
 #include "ovutil/win32.h"
 
@@ -569,7 +570,7 @@ NODISCARD static error build_siblings_script(struct ptklayer *const pi, size_t c
   }
   struct wstr tmp = {0};
   struct wstr tmp2 = {0};
-  struct wstr tmp3 = {0};
+  wchar_t tmpbuf[32];
   struct size_t_array sibling_indices = {0};
   error err = enumerate_siblings(pi, idx, &sibling_indices);
   if (efailed(err)) {
@@ -586,12 +587,13 @@ NODISCARD static error build_siblings_script(struct ptklayer *const pi, size_t c
     err = ethru(err);
     goto cleanup;
   }
-  err = utoa64((uint64_t)sibling_indices.len, &tmp3);
-  if (efailed(err)) {
-    err = ethru(err);
-    goto cleanup;
-  }
-  err = scpym(&tmp, L"--track0:", tmp2.ptr, L",0,", tmp3.ptr, L",0,1\r\n", L"local values= {\r\n");
+  err = scpym(&tmp,
+              L"--track0:",
+              tmp2.ptr,
+              L",0,",
+              ovbase_utoa_wchar((uint64_t)sibling_indices.len, tmpbuf),
+              L",0,1\r\n",
+              L"local values= {\r\n");
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
@@ -620,7 +622,6 @@ NODISCARD static error build_siblings_script(struct ptklayer *const pi, size_t c
   }
 cleanup:
   ereport(afree(&sibling_indices));
-  ereport(sfree(&tmp3));
   ereport(sfree(&tmp2));
   ereport(sfree(&tmp));
   return err;

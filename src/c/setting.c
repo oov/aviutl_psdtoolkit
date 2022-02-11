@@ -9,7 +9,7 @@
 #include "aviutl.h"
 #include "version.h"
 
-static wchar_t const *const setting_dialog_prop = L"setting_dialog";
+static wchar_t const setting_dialog_prop[] = L"setting_dialog";
 
 enum {
   ID_CHK_GENERATE_LIPSYNC = 100,
@@ -72,7 +72,7 @@ static int get_int(HWND const window, int const control_id, int const def) {
     err = ethru(err);
     goto cleanup;
   }
-  err = atoi64(&ws, &v);
+  err = satoi(&ws, &v);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
