@@ -473,7 +473,7 @@ NODISCARD error aviutl_add_menu_item(
     err = ethru(err);
     goto cleanup;
   }
-  if (!g_fp->exfunc->add_menu_item(ovbase_deconster_(g_fp), tmp.ptr, window, id, def_key, flag)) {
+  if (!g_fp->exfunc->add_menu_item(ov_deconster_(g_fp), tmp.ptr, window, id, def_key, flag)) {
     err = errg(err_fail);
     goto cleanup;
   }

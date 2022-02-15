@@ -1121,7 +1121,7 @@ FILTER_DLL __declspec(dllexport) * *__stdcall GetFilterTableList(void) {
 }
 
 static void
-error_reporter(error const e, struct NATIVE_STR const *const message, struct ovbase_filepos const *const filepos) {
+error_reporter(error const e, struct NATIVE_STR const *const message, struct ov_filepos const *const filepos) {
   struct NATIVE_STR tmp = {0};
   struct NATIVE_STR msg = {0};
   error err = error_to_string(e, &tmp);
@@ -1148,7 +1148,7 @@ cleanup:
 }
 
 static BOOL main_init(HINSTANCE const inst) {
-  if (!ovbase_init(generic_error_message_mapper_jp)) {
+  if (!ov_init(generic_error_message_mapper_jp)) {
     return FALSE;
   }
   error_register_reporter(error_reporter);
@@ -1158,7 +1158,7 @@ static BOOL main_init(HINSTANCE const inst) {
 }
 
 static BOOL main_exit(void) {
-  ovbase_exit();
+  ov_exit();
   return TRUE;
 }
 

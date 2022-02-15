@@ -591,7 +591,7 @@ NODISCARD static error build_siblings_script(struct ptklayer *const pi, size_t c
               L"--track0:",
               tmp2.ptr,
               L",0,",
-              ovbase_utoa_wchar((uint64_t)sibling_indices.len, tmpbuf),
+              ov_utoa((uint64_t)sibling_indices.len, tmpbuf),
               L",0,1\r\n",
               L"local values= {\r\n");
   if (efailed(err)) {
