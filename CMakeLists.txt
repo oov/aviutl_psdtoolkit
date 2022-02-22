@@ -19,6 +19,13 @@ add_custom_target(extract_gcmzdrops COMMAND
   -Ddir="gcmzdrops"
   -P "${ovutil_SOURCE_DIR}/src/cmake/extract-zip.cmake"
 )
+add_custom_target(extract_audiomixer COMMAND
+  ${CMAKE_COMMAND}
+  -Dlocal_dir="${PROJECT_BINARY_DIR}"
+  -Durl="https://github.com/oov/aviutl_audiomixer/releases/download/v0.3.0beta0/AudioMixer_v0.3.0beta0.zip"
+  -Ddir="audiomixer"
+  -P "${ovutil_SOURCE_DIR}/src/cmake/extract-zip.cmake"
+)
 add_custom_target(extract_forcepser COMMAND
   ${CMAKE_COMMAND}
   -Dlocal_dir="${PROJECT_BINARY_DIR}"
@@ -73,12 +80,14 @@ add_custom_target(copy_gcmz_script
 )
 add_custom_target(make_package
   COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/gcmzdrops" "${PROJECT_BINARY_DIR}/bin"
+  COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/audiomixer" "${PROJECT_BINARY_DIR}/bin"
   COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/forcepser" "${PROJECT_BINARY_DIR}/bin/かんしくん"
   COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/rampreview" "${PROJECT_BINARY_DIR}/bin"
   COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/cachetext" "${PROJECT_BINARY_DIR}/bin"
 )
 add_dependencies(make_package
   extract_gcmzdrops
+  extract_audiomixer
   extract_forcepser
   extract_rampreview
   extract_cachetext
