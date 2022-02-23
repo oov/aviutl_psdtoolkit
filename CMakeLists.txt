@@ -22,7 +22,7 @@ add_custom_target(extract_gcmzdrops COMMAND
 add_custom_target(extract_audiomixer COMMAND
   ${CMAKE_COMMAND}
   -Dlocal_dir="${PROJECT_BINARY_DIR}"
-  -Durl="https://github.com/oov/aviutl_audiomixer/releases/download/v0.3.0beta0/AudioMixer_v0.3.0beta0.zip"
+  -Durl="https://github.com/oov/aviutl_audiomixer/releases/download/v0.3.0beta0/AudioMixer_v0.3.0beta1.zip"
   -Ddir="audiomixer"
   -P "${ovutil_SOURCE_DIR}/src/cmake/extract-zip.cmake"
 )
@@ -42,6 +42,7 @@ add_custom_target(extract_rampreview COMMAND
 )
 add_custom_target(extract_cachetext COMMAND
   ${CMAKE_COMMAND}
+  -Dcharset="sjis"
   -Dlocal_dir="${PROJECT_BINARY_DIR}"
   -Durl="https://github.com/oov/aviutl_cachetext/releases/download/v0.8/CacheText20210119.zip"
   -Ddir="cachetext"
@@ -94,6 +95,4 @@ add_dependencies(make_package
   copy_alias
   copy_script
   copy_gcmz_script
-  psdtoolkit_assist
-  psdtoolkit_bridge
 )

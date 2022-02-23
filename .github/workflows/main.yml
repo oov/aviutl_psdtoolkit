@@ -1,0 +1,127 @@
+name: releaser
+
+on:
+  push:
+    branches:
+      - main
+      - c
+#    tags:
+#      - "v[0-9]+.[0-9]+.[0-9]+alpha[0-9]+"
+#      - "v[0-9]+.[0-9]+.[0-9]+beta[0-9]+"
+#      - "v[0-9]+.[0-9]+.[0-9]+rc[0-9]+"
+#      - "v[0-9]+.[0-9]+.[0-9]+"
+
+jobs:
+  build64:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+          - msystem: MINGW64
+            arch: x86_64
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.msystem }}
+          install: >-
+            git
+            mingw-w64-${{ matrix.arch }}-clang
+            mingw-w64-${{ matrix.arch }}-cmake
+            mingw-w64-${{ matrix.arch }}-compiler-rt
+            mingw-w64-${{ matrix.arch }}-go
+            mingw-w64-${{ matrix.arch }}-lld
+            mingw-w64-${{ matrix.arch }}-ninja
+            mingw-w64-${{ matrix.arch }}-tools
+      - name: Run ninja
+        shell: msys2 {0}
+        run: |
+          mkdir build
+          cd build
+          rm -rf CMakeCache.txt && cmake -GNinja -DCMAKE_C_COMPILER=clang -DCMAKE_C_STANDARD=11 -DCMAKE_C_STANDARD_REQUIRED=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release .. && ninja -v psdtoolkit_main
+      - name: Upload binaries
+        uses: actions/upload-artifact@v2
+        with:
+          name: bin64
+          path: |
+            build/bin/**/*
+  build32:
+    runs-on: windows-latest
+    strategy:
+      matrix:
+        include:
+          - msystem: MINGW32
+            arch: i686
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - uses: msys2/setup-msys2@v2
+        with:
+          msystem: ${{ matrix.msystem }}
+          install: >-
+            git
+            mingw-w64-${{ matrix.arch }}-clang
+            mingw-w64-${{ matrix.arch }}-cmake
+            mingw-w64-${{ matrix.arch }}-compiler-rt
+            mingw-w64-${{ matrix.arch }}-lld
+            mingw-w64-${{ matrix.arch }}-lua51
+            mingw-w64-${{ matrix.arch }}-ninja
+            mingw-w64-${{ matrix.arch }}-tools
+      - name: Run ninja
+        shell: msys2 {0}
+        run: |
+          mkdir build
+          cd build
+          rm -rf CMakeCache.txt && cmake -GNinja -DCMAKE_C_COMPILER=clang -DCMAKE_C_STANDARD=11 -DCMAKE_C_STANDARD_REQUIRED=ON -DCMAKE_C_EXTENSIONS=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DLEAK_DETECTOR=OFF -DALLOCATE_LOGGER=OFF -DCMAKE_BUILD_TYPE=Release .. && ninja -v psdtoolkit_assist psdtoolkit_bridge
+      - name: Upload binaries
+        uses: actions/upload-artifact@v2
+        with:
+          name: bin32
+          path: |
+            build/bin/**/*
+  create-release:
+    needs: [build64, build32]
+    runs-on: ubuntu-latest
+    steps:
+      - name: setup
+        run: |
+          sudo apt install -y cmake ninja-build clang
+      - name: Get the version
+        id: get_version
+        run: echo ::set-output name=tag::${GITHUB_REF/refs\/tags\//}
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - name: Download artifacts
+        uses: actions/download-artifact@v2
+      - name: Create package
+        run: |
+          mkdir build
+          cd build
+          rm -rf CMakeCache.txt && cmake -GNinja -DCMAKE_C_COMPILER=clang -DCMAKE_RC_COMPILER=windres -DCMAKE_C_STANDARD=11 -DCMAKE_C_STANDARD_REQUIRED=ON -DCMAKE_C_EXTENSIONS=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release .. && ninja -v make_package
+          cp -r ../bin64/* bin/
+          cp -r ../bin32/* bin/
+          cd bin && zip -r ../../assets.zip *
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          release_name: ${{ github.ref }}
+          draft: true
+          prerelease: false
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: ./assets.zip
+          asset_name: psdtoolkit_${{ steps.get_version.outputs.tag }}.zip
+          asset_content_type: application/zip
