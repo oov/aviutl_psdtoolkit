@@ -11,6 +11,7 @@ add_custom_target(${PROJECT_NAME}-format ALL
 
 add_subdirectory(src/c)
 add_subdirectory(src/go)
+add_subdirectory(src/docs)
 
 add_custom_target(extract_gcmzdrops COMMAND
   ${CMAKE_COMMAND}
