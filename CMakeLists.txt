@@ -30,7 +30,7 @@ add_custom_target(extract_audiomixer COMMAND
 add_custom_target(extract_forcepser COMMAND
   ${CMAKE_COMMAND}
   -Dlocal_dir="${PROJECT_BINARY_DIR}"
-  -Durl="https://github.com/oov/forcepser/releases/download/v1.4/forcepser_v1.4.zip"
+  -Durl="https://github.com/oov/forcepser/releases/download/v1.5/forcepser_v1.5.zip"
   -Ddir="forcepser"
   -P "${ovutil_SOURCE_DIR}/src/cmake/extract-zip.cmake"
 )
