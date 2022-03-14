@@ -9,6 +9,13 @@ add_custom_target(${PROJECT_NAME}-format ALL
   COMMAND ${CLANG_FORMAT_EXE} -style=file -i ${sources}
 )
 
+set(EXPORT_DIR "bin" CACHE STRING "export directory")
+if ("${EXPORT_DIR}" STREQUAL "")
+  set(EXPORT_DIR "bin" CACHE STRING "export directory" FORCE)
+endif()
+
+set(EXA_SUFFIX ".exa" CACHE STRING "suffix for *.exa file names")
+
 add_subdirectory(src/c)
 add_subdirectory(src/go)
 add_subdirectory(src/docs)
@@ -50,42 +57,42 @@ add_custom_target(extract_cachetext COMMAND
   -P "${ovutil_SOURCE_DIR}/src/cmake/extract-zip.cmake"
 )
 add_custom_target(copy_alias
-  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/README.md" "${PROJECT_BINARY_DIR}/bin/PSDToolKit.txt"
-  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/exa/TalkDetector.exa" "${PROJECT_BINARY_DIR}/bin/PSDToolKit/口パク準備.exa"
-  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/exa/Phoneme.exa" "${PROJECT_BINARY_DIR}/bin/PSDToolKit/口パク準備（音素のみ）.exa"
-  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/exa/Subtitle.exa" "${PROJECT_BINARY_DIR}/bin/PSDToolKit/字幕表示.exa"
-  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/exa/SubtitleFast.exa" "${PROJECT_BINARY_DIR}/bin/PSDToolKit/字幕表示（キャッシュ）.exa"
-  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/exa/PrepSubtitle.exa" "${PROJECT_BINARY_DIR}/bin/PSDToolKit/字幕準備.exa"
-  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/exa/MultiPurposeSlider.exa" "${PROJECT_BINARY_DIR}/bin/PSDToolKit/多目的スライダー.exa"
+  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/README.md" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/PSDToolKit.txt"
+  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/exa/TalkDetector${EXA_SUFFIX}" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/PSDToolKit/口パク準備.exa"
+  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/exa/Phoneme${EXA_SUFFIX}" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/PSDToolKit/口パク準備（音素のみ）.exa"
+  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/exa/Subtitle${EXA_SUFFIX}" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/PSDToolKit/字幕表示.exa"
+  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/exa/SubtitleFast${EXA_SUFFIX}" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/PSDToolKit/字幕表示（キャッシュ）.exa"
+  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/exa/PrepSubtitle${EXA_SUFFIX}" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/PSDToolKit/字幕準備.exa"
+  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/exa/MultiPurposeSlider${EXA_SUFFIX}" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/PSDToolKit/多目的スライダー.exa"
 )
 add_custom_target(copy_script
-  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/PSDToolKit.lua" "${PROJECT_BINARY_DIR}/bin/script/PSDToolKit/PSDToolKit.lua"
-  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/PSDToolKitIndex.lua" "${PROJECT_BINARY_DIR}/bin/script/PSDToolKit.lua"
-  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/json.lua" "${PROJECT_BINARY_DIR}/bin/script/PSDToolKit/json.lua"
-  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/@PSD.anm" "${PROJECT_BINARY_DIR}/bin/script/PSDToolKit/@PSD.anm"
-  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/@PSDToolKit.anm" "${PROJECT_BINARY_DIR}/bin/script/PSDToolKit/@PSDToolKit.anm"
-  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/@PSDToolKit.obj" "${PROJECT_BINARY_DIR}/bin/script/PSDToolKit/@PSDToolKit.obj"
-  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/@subobj.anm" "${PROJECT_BINARY_DIR}/bin/script/PSDToolKit/@subobj.anm"
-  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/default.lua" "${PROJECT_BINARY_DIR}/bin/script/PSDToolKit/default.lua"
-  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/setting.lua-template" "${PROJECT_BINARY_DIR}/bin/script/PSDToolKit/setting.lua-template"
+  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/PSDToolKit.lua" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/script/PSDToolKit/PSDToolKit.lua"
+  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/PSDToolKitIndex.lua" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/script/PSDToolKit.lua"
+  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/json.lua" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/script/PSDToolKit/json.lua"
+  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/@PSD.anm" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/script/PSDToolKit/@PSD.anm"
+  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/@PSDToolKit.anm" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/script/PSDToolKit/@PSDToolKit.anm"
+  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/@PSDToolKit.obj" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/script/PSDToolKit/@PSDToolKit.obj"
+  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/@subobj.anm" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/script/PSDToolKit/@subobj.anm"
+  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/default.lua" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/script/PSDToolKit/default.lua"
+  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/setting.lua-template" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/script/PSDToolKit/setting.lua-template"
 )
 add_custom_target(copy_gcmz_script
-  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/GCMZDrops/psd.lua" "${PROJECT_BINARY_DIR}/bin/GCMZDrops/psdtoolkit_psd.lua"
-  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/GCMZDrops/wav.lua" "${PROJECT_BINARY_DIR}/bin/GCMZDrops/psdtoolkit_wav.lua"
-  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/GCMZDrops/srt.lua" "${PROJECT_BINARY_DIR}/bin/GCMZDrops/psdtoolkit_srt.lua"
-  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/GCMZDrops/lab.lua" "${PROJECT_BINARY_DIR}/bin/GCMZDrops/psdtoolkit_lab.lua"
-  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/exa/lipsync.exa" "${PROJECT_BINARY_DIR}/bin/script/PSDToolKit/exa/lipsync.exa"
-  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/exa/subtitle.exa" "${PROJECT_BINARY_DIR}/bin/script/PSDToolKit/exa/subtitle.exa"
-  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/exa/wav.exa" "${PROJECT_BINARY_DIR}/bin/script/PSDToolKit/exa/wav.exa"
-  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/exa/srt.exa" "${PROJECT_BINARY_DIR}/bin/script/PSDToolKit/exa/srt.exa"
-  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/exa/lab.exa" "${PROJECT_BINARY_DIR}/bin/script/PSDToolKit/exa/lab.exa"
+  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/GCMZDrops/psd.lua" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/GCMZDrops/psdtoolkit_psd.lua"
+  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/GCMZDrops/wav.lua" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/GCMZDrops/psdtoolkit_wav.lua"
+  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/GCMZDrops/srt.lua" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/GCMZDrops/psdtoolkit_srt.lua"
+  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/GCMZDrops/lab.lua" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/GCMZDrops/psdtoolkit_lab.lua"
+  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/exa/lipsync${EXA_SUFFIX}" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/script/PSDToolKit/exa/lipsync.exa"
+  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/exa/subtitle${EXA_SUFFIX}" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/script/PSDToolKit/exa/subtitle.exa"
+  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/exa/wav${EXA_SUFFIX}" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/script/PSDToolKit/exa/wav.exa"
+  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/exa/srt${EXA_SUFFIX}" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/script/PSDToolKit/exa/srt.exa"
+  COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/exa/lab${EXA_SUFFIX}" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/script/PSDToolKit/exa/lab.exa"
 )
 add_custom_target(make_package
-  COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/gcmzdrops" "${PROJECT_BINARY_DIR}/bin"
-  COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/audiomixer" "${PROJECT_BINARY_DIR}/bin"
-  COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/forcepser" "${PROJECT_BINARY_DIR}/bin/かんしくん"
-  COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/rampreview" "${PROJECT_BINARY_DIR}/bin"
-  COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/cachetext" "${PROJECT_BINARY_DIR}/bin"
+  COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/gcmzdrops" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}"
+  COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/audiomixer" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}"
+  COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/forcepser" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/かんしくん"
+  COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/rampreview" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}"
+  COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/cachetext" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}"
 )
 add_dependencies(make_package
   extract_gcmzdrops

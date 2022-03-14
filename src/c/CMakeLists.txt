@@ -1,6 +1,3 @@
-add_compile_options(-flto)
-add_link_options(-fuse-ld=lld)
-
 add_subdirectory(3rd/ovbase)
 add_subdirectory(3rd/ovutil)
 
@@ -42,7 +39,7 @@ set_target_properties(psdtoolkit_assist PROPERTIES
   OUTPUT_NAME "PSDToolKit.auf"
   PREFIX ""
   SUFFIX ""
-  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin"
+  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${EXPORT_DIR}"
 )
 add_dependencies(psdtoolkit_assist generate_version_h generate_importlib)
 target_link_libraries(psdtoolkit_assist PRIVATE
@@ -60,7 +57,7 @@ set_target_properties(psdtoolkit_bridge PROPERTIES
   OUTPUT_NAME "PSDToolKitBridge.dll"
   PREFIX ""
   SUFFIX ""
-  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/bin/script/PSDToolKit"
+  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${EXPORT_DIR}/script/PSDToolKit"
 )
 add_dependencies(psdtoolkit_bridge generate_importlib)
 target_link_libraries(psdtoolkit_bridge PRIVATE

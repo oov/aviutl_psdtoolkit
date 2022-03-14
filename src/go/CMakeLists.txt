@@ -29,6 +29,6 @@ add_custom_target(psdtoolkit_main
   COMMAND go build -x
     -tags gdip
     "-ldflags=\"-s -X \\\"main.version=${_git_tag} ( ${_git_revision} )\\\"\""
-    -o "${CMAKE_BINARY_DIR}/bin/script/PSDToolKit/PSDToolKit.exe"
+    -o "${CMAKE_BINARY_DIR}/${EXPORT_DIR}/script/PSDToolKit/PSDToolKit.exe"
   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 )

@@ -1,10 +1,4 @@
 .vscode
-bin
-bin_enpatched
-release
 aviutl
-src/lazarus/ver.pas
-src/lazarus/lib
 src/go/*.syso
-VERSION
 build
