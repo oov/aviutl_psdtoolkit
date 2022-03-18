@@ -26,8 +26,7 @@ jobs:
           cd ..
           mv build/bin/PSDToolKitDocs ../docs
           git checkout --orphan gh-pages
-          git clean -fdx
-          git rm -rf * .github .clang-format .gitattributes .gitignore .gitmodules
+          git rm -rf * .*
           mv ../docs/* ./
           git add .
           git config --local user.email "actions@github.com"
