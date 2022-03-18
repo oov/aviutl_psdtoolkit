@@ -34,12 +34,8 @@ https://www.nicovideo.jp/watch/sm32904901
 
 ## バイナリのビルドについて
 
-Windows Subsystem for Linux 上で `./build.bash` を行うと必要なファイルがビルドできます。
-なお、リポジトリは GOPATH 上にある前提でコードが書かれています。
-
-ソースコードのコンパイルには Go 1.16 windows/amd64、Lazarus 2.0.8 for Windows 32bit が必要です。  
-また、埋め込むリソースファイルのコンパイル用に https://github.com/akavel/rsrc が必要です。  
-Lazarus は C:\lazarus にインストールされているのを想定しています。
+[MSYS2](https://www.msys2.org/) + MINGW32/MINGW64 上で開発し、リリース用ファイルは GitHub Actions にて自動生成しています。  
+ビルド方法や必要になるパッケージなどは [GitHub Actions の設定ファイル](https://github.com/oov/aviutl_psdtoolkit/blob/main/.github/workflows/releaser.yml) を参照してください。
 
 ## Contributors
 
