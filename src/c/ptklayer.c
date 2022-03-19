@@ -551,6 +551,16 @@ NODISCARD static error enumerate_siblings(struct ptklayer *const pi, size_t cons
     goto cleanup;
   }
   for (size_t i = 0; i < pi->len; ++i) {
+    size_t pos2 = 0;
+    err = extract_layer_name(&pi->ptr[i].name, &pos2);
+    if (efailed(err)) {
+      err = ethru(err);
+      goto cleanup;
+    }
+    // parent tree is not same
+    if (pos != pos2) {
+      continue;
+    }
     if (wcsncmp(pi->ptr[i].name.ptr, pi->ptr[idx].name.ptr, pos) != 0) {
       continue;
     }
