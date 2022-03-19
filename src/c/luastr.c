@@ -78,14 +78,8 @@ NODISCARD error luastr_encode(struct wstr const *const src, struct wstr *dest) {
     case 0x27:
       c = 0x27;
       break;
-    case 0x5b:
-      c = 0x5b;
-      break;
     case 0x5c:
       c = 0x5c;
-      break;
-    case 0x5d:
-      c = 0x5d;
       break;
     default:
       tmp.ptr[tmp.len++] = src->ptr[i];
@@ -163,14 +157,8 @@ NODISCARD error luastr_decode(struct wstr const *const src, struct wstr *dest) {
     case 0x27:
       c = 0x27;
       break;
-    case 0x5b:
-      c = 0x5b;
-      break;
     case 0x5c:
       c = 0x5c;
-      break;
-    case 0x5d:
-      c = 0x5d;
       break;
     default:
       tmp.ptr[tmp.len++] = L'\\';
