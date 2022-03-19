@@ -440,11 +440,17 @@ NODISCARD static error read_reply(struct ipc *const ipc, uint32_t size) {
   if (!size) {
     goto cleanup;
   }
-  err = read_string_utf8(ipc, &tmp);
+  err = sgrow(&tmp, size + 1);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
+  err = read(ipc, tmp.ptr, size);
+  if (efailed(err)) {
+    err = ethru(err);
+    goto cleanup;
+  }
+  tmp.len = (size_t)size;
   err = from_utf8(&tmp, &tmp2);
   if (efailed(err)) {
     err = ethru(err);
@@ -452,6 +458,7 @@ NODISCARD static error read_reply(struct ipc *const ipc, uint32_t size) {
   }
   rep = error_add_(
       NULL, err_type_generic, err_fail, &tmp2, &(struct ov_filepos){.file = "remote process", .func = __func__});
+  tmp2.cap = 0;
 cleanup:
   cndvar_lock(&ipc->s2c);
   ipc->reply = rep;
