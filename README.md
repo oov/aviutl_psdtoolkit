@@ -18,8 +18,6 @@ PSDToolKit を使用したこと及び使用しなかったことによるいか
 
 ## ダウンロード
 
-以下の URL からダウンロードできます。
-
 https://github.com/oov/aviutl_psdtoolkit/releases
 
 ## 使い方
