@@ -30,7 +30,7 @@ add_custom_target(extract_gcmzdrops COMMAND
 add_custom_target(extract_audiomixer COMMAND
   ${CMAKE_COMMAND}
   -Dlocal_dir="${PROJECT_BINARY_DIR}"
-  -Durl="https://github.com/oov/aviutl_audiomixer/releases/download/v0.3.0beta1/AudioMixer_v0.3.0beta1.zip"
+  -Durl="https://github.com/oov/aviutl_audiomixer/releases/download/v0.3.0beta3/AudioMixer_v0.3.0beta3.zip"
   -Ddir="audiomixer"
   -P "${ovutil_SOURCE_DIR}/src/cmake/extract-zip.cmake"
 )
