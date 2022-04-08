@@ -1,4 +1,5 @@
-# PSDToolKit
+PSDToolKit
+==========
 
 PSDToolKit は AviUtl の拡張編集プラグイン上で PSD ファイルを扱えるようにするためのツールキットです。
 
@@ -9,18 +10,21 @@ PSDToolKit は AviUtl の拡張編集プラグイン上で PSD ファイルを�
 
 https://github.com/oov/aviutl_psdtoolkit/blob/master/CHANGELOG.md
 
-## 注意事項
+注意事項
+--------
 
 PSDToolKit は無保証で提供されます。  
 PSDToolKit を使用したこと及び使用しなかったことによるいかなる損害について、開発者は何も保証しません。
 
 これに同意できない場合、あなたは PSDToolKit を使用することができません。
 
-## ダウンロード
+ダウンロード
+------------
 
 https://github.com/oov/aviutl_psdtoolkit/releases
 
-## 使い方
+使い方
+------
 
 ダウンロードしたファイルに同梱されている `PSDToolKit説明書.html` を参照してください。
 
@@ -30,16 +34,19 @@ https://www.nicovideo.jp/watch/sm32904901
 
 説明書内の「チュートリアル」ではこれよりも更に詳しく書いてあるので、困ったときは参照してみてください。
 
-## バイナリのビルドについて
+バイナリのビルドについて
+------------------------
 
 [MSYS2](https://www.msys2.org/) + MINGW32/MINGW64 上で開発し、リリース用ファイルは GitHub Actions にて自動生成しています。  
 ビルド方法や必要になるパッケージなどは [GitHub Actions の設定ファイル](https://github.com/oov/aviutl_psdtoolkit/blob/main/.github/workflows/releaser.yml) を参照してください。
 
-## Contributors
+Contributors
+------------
 
 - mikan-megane
 
-## Credits
+Credits
+-------
 
 PSDToolKit is made possible by the following open source softwares.
 
@@ -95,7 +102,7 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 THE SOFTWARE.
 
-## hashmap.c
+### hashmap.c
 
 https://github.com/tidwall/hashmap.c
 
