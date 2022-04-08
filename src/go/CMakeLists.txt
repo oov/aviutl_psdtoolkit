@@ -1,3 +1,12 @@
+cmake_minimum_required(VERSION 3.0)
+project(psdtoolkit_go NONE)
+
+add_custom_target(${PROJECT_NAME}_format
+COMMAND ${CMAKE_COMMAND} -E env GOROOT="$ENV{MINGW_PREFIX}/lib/go" go fmt
+WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+USES_TERMINAL
+)
+
 find_package(Git REQUIRED)
 execute_process(
   COMMAND ${GIT_EXECUTABLE} tag --points-at HEAD
@@ -26,9 +35,11 @@ add_custom_target(psdtoolkit_main
     --output-format=coff
     -o "${CMAKE_CURRENT_SOURCE_DIR}/PSDToolKit.syso"
     "${CMAKE_CURRENT_SOURCE_DIR}/PSDToolKit.rc"
-  COMMAND go build -x
+  COMMAND ${CMAKE_COMMAND} -E env GOROOT="$ENV{MINGW_PREFIX}/lib/go" go build -x
     -tags gdip
     "-ldflags=\"-s -X \\\"main.version=${_git_tag} ( ${_git_revision} )\\\"\""
-    -o "${CMAKE_BINARY_DIR}/${EXPORT_DIR}/script/PSDToolKit/PSDToolKit.exe"
+    -o "${EXPORT_DIR}/script/PSDToolKit/PSDToolKit.exe"
   WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
+  USES_TERMINAL
 )
+add_dependencies(psdtoolkit_main ${PROJECT_NAME}_format)

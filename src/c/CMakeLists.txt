@@ -1,7 +1,17 @@
+cmake_minimum_required(VERSION 3.0)
+project(psdtoolkit_c C)
+enable_language(RC)
+
+find_program(CLANG_FORMAT_EXE clang-format)
+file(GLOB sources "${PROJECT_SOURCE_DIR}/src/c/*.c" "${PROJECT_SOURCE_DIR}/src/c/*.h")
+add_custom_target(${PROJECT_NAME}_format
+  COMMAND ${CLANG_FORMAT_EXE} -style=file -i ${sources}
+)
+
 add_subdirectory(3rd/ovbase)
 add_subdirectory(3rd/ovutil)
 
-add_custom_target(generate_version_h COMMAND
+add_custom_target(generate_${PROJECT_NAME}_version_h COMMAND
   ${CMAKE_COMMAND}
   -Dlocal_dir="${CMAKE_CURRENT_SOURCE_DIR}"
   -Dinput_file="${CMAKE_CURRENT_SOURCE_DIR}/version.h.in"
@@ -39,9 +49,9 @@ set_target_properties(psdtoolkit_assist PROPERTIES
   OUTPUT_NAME "PSDToolKit.auf"
   PREFIX ""
   SUFFIX ""
-  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${EXPORT_DIR}"
+  RUNTIME_OUTPUT_DIRECTORY "${EXPORT_DIR}"
 )
-add_dependencies(psdtoolkit_assist generate_version_h generate_importlib)
+add_dependencies(psdtoolkit_assist ${PROJECT_NAME}_format generate_${PROJECT_NAME}_version_h generate_importlib)
 target_link_libraries(psdtoolkit_assist PRIVATE
   lua51
   -Wl,-delayload,lua51.dll
@@ -57,9 +67,9 @@ set_target_properties(psdtoolkit_bridge PROPERTIES
   OUTPUT_NAME "PSDToolKitBridge.dll"
   PREFIX ""
   SUFFIX ""
-  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}/${EXPORT_DIR}/script/PSDToolKit"
+  RUNTIME_OUTPUT_DIRECTORY "${EXPORT_DIR}/script/PSDToolKit"
 )
-add_dependencies(psdtoolkit_bridge generate_importlib)
+add_dependencies(psdtoolkit_bridge ${PROJECT_NAME}_format generate_importlib)
 target_link_libraries(psdtoolkit_bridge PRIVATE
   lua51
 )

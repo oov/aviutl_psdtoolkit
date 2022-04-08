@@ -11,18 +11,16 @@ jobs:
     steps:
       - name: setup
         run: |
-          sudo apt install -y cmake ninja-build clang pandoc
+          sudo apt install -y cmake ninja-build pandoc
       - name: Get the version
         id: get_version
         run: echo ::set-output name=tag::${GITHUB_REF/refs\/tags\//}
       - uses: actions/checkout@v2
-        with:
-          submodules: recursive
       - name: Build docs
         run: |
           mkdir build
           cd build
-          rm -rf CMakeCache.txt && cmake -GNinja -DCMAKE_C_COMPILER=clang -DCMAKE_RC_COMPILER=windres -DCMAKE_C_STANDARD=11 -DCMAKE_C_STANDARD_REQUIRED=ON -DCMAKE_C_EXTENSIONS=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release .. && ninja -v make_doc
+          rm -rf CMakeCache.txt && cmake -GNinja -DBUILD_DOCS -DCMAKE_BUILD_TYPE=Release .. && cmake --build . --target make_doc
           cd ..
           mv build/bin/PSDToolKitDocs ../docs
           git checkout --orphan gh-pages

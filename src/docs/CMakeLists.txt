@@ -1,3 +1,6 @@
+cmake_minimum_required(VERSION 3.0)
+project(psdtoolkit_docs NONE)
+
 find_package(Git REQUIRED)
 execute_process(
   COMMAND ${GIT_EXECUTABLE} tag --points-at HEAD
@@ -27,8 +30,8 @@ find_program(DATE_EXECUTABLE date CMAKE_FIND_ROOT_PATH_BOTH)
 execute_process(COMMAND ${DATE_EXECUTABLE} "+%Y-%m-%d %H:%M:%S" OUTPUT_VARIABLE datetime OUTPUT_STRIP_TRAILING_WHITESPACE)
 
 add_custom_target(make_doc
-  COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/assets" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/PSDToolKitDocs/assets"
-  COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/rootindex.html" "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/PSDToolKit説明書.html"
+  COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/assets" "${EXPORT_DIR}/PSDToolKitDocs/assets"
+  COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/rootindex.html" "${EXPORT_DIR}/PSDToolKit説明書.html"
 )
 
 find_program(PANDOC_EXECUTABLE pandoc CMAKE_FIND_ROOT_PATH_BOTH)
@@ -39,10 +42,10 @@ macro(add_page id title)
     set(additional_script "script_unused=")
   endif()
   add_custom_target(make_doc_page_${id}
-    COMMAND ${CMAKE_COMMAND} -E make_directory "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/PSDToolKitDocs/"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "${EXPORT_DIR}/PSDToolKitDocs/"
     COMMAND ${PANDOC_EXECUTABLE}
     "${CMAKE_CURRENT_SOURCE_DIR}/${id}.md"
-    -o "${PROJECT_BINARY_DIR}/${EXPORT_DIR}/PSDToolKitDocs/${id}.html"
+    -o "${EXPORT_DIR}/PSDToolKitDocs/${id}.html"
     -f gfm
     -M curpage=${id}
     -M title=${title}

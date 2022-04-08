@@ -37,7 +37,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          rm -rf CMakeCache.txt && cmake -GNinja -DCMAKE_C_COMPILER=clang -DCMAKE_C_STANDARD=11 -DCMAKE_C_STANDARD_REQUIRED=ON -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release .. && ninja -v psdtoolkit_main
+          rm -rf CMakeCache.txt && cmake -GNinja -DBUILD_EXE=1 -DCMAKE_BUILD_TYPE=Release .. && cmake --build . --target psdtoolkit_main
       - name: Upload binaries
         uses: actions/upload-artifact@v2
         with:
@@ -72,7 +72,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          rm -rf CMakeCache.txt && cmake -GNinja -DCMAKE_C_COMPILER=clang -DCMAKE_C_STANDARD=11 -DCMAKE_C_STANDARD_REQUIRED=ON -DCMAKE_C_EXTENSIONS=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DLEAK_DETECTOR=OFF -DALLOCATE_LOGGER=OFF -DCMAKE_BUILD_TYPE=Release .. && ninja -v psdtoolkit_assist psdtoolkit_bridge
+          rm -rf CMakeCache.txt && cmake -GNinja -DBUILD_DLL=1 -DCMAKE_C_COMPILER=clang -DCMAKE_C_STANDARD=11 -DCMAKE_C_STANDARD_REQUIRED=ON -DCMAKE_C_EXTENSIONS=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DLEAK_DETECTOR=OFF -DALLOCATE_LOGGER=OFF -DCMAKE_BUILD_TYPE=Release .. && cmake --build . --target psdtoolkit_assist --target psdtoolkit_bridge
       - name: Upload binaries
         uses: actions/upload-artifact@v2
         with:
@@ -85,24 +85,22 @@ jobs:
     steps:
       - name: setup
         run: |
-          sudo apt install -y cmake ninja-build clang pandoc
+          sudo apt install -y cmake ninja-build pandoc
       - name: Get the version
         id: get_version
         run: echo ::set-output name=tag::${GITHUB_REF/refs\/tags\//}
       - uses: actions/checkout@v2
-        with:
-          submodules: recursive
       - name: Download artifacts
         uses: actions/download-artifact@v2
       - name: Create package
         run: |
           mkdir build
           cd build
-          rm -rf CMakeCache.txt && cmake -GNinja -DCMAKE_C_COMPILER=clang -DCMAKE_RC_COMPILER=windres -DCMAKE_C_STANDARD=11 -DCMAKE_C_STANDARD_REQUIRED=ON -DCMAKE_C_EXTENSIONS=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release .. && ninja -v make_package make_doc
+          rm -rf CMakeCache.txt && cmake -GNinja -DBUILD_DOCS=1 -DBUILD_PACKAGE=1 -DCMAKE_BUILD_TYPE=Release .. && cmake --build . --target make_doc --target make_package
           cp -r ../bin64/* bin/
           cp -r ../bin32/* bin/
           cd bin && zip -r ../../assets.zip * && cd ..
-          rm -rf CMakeCache.txt && cmake -GNinja -DCMAKE_C_COMPILER=clang -DCMAKE_RC_COMPILER=windres -DCMAKE_C_STANDARD=11 -DCMAKE_C_STANDARD_REQUIRED=ON -DCMAKE_C_EXTENSIONS=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DCMAKE_BUILD_TYPE=Release -DEXPORT_DIR=bin_en -DEXA_SUFFIX=_en.exa .. && ninja -v make_package make_doc
+          rm -rf CMakeCache.txt && cmake -GNinja -DBUILD_DOCS=1 -DBUILD_PACKAGE=1 -DCMAKE_BUILD_TYPE=Release -DEXPORT_DIR_NAME=bin_en -DEXA_SUFFIX=_en.exa .. && cmake --build . --target make_doc --target make_package
           cp -r ../bin64/* bin_en/
           cp -r ../bin32/* bin_en/
           cd bin_en && zip -r ../../assets_en.zip * && cd ..
