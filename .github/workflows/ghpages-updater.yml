@@ -15,17 +15,21 @@ jobs:
       - name: Get the version
         id: get_version
         run: echo ::set-output name=tag::${GITHUB_REF/refs\/tags\//}
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
+        with:
+          path: ./repo
       - name: Build docs
         run: |
+          cd repo
           mkdir build
           cd build
           rm -rf CMakeCache.txt && cmake -GNinja -DBUILD_DOCS=1 -DCMAKE_BUILD_TYPE=Release .. && cmake --build . --target make_doc
           cd ..
           mv build/bin/PSDToolKitDocs ../docs
           git checkout --orphan gh-pages
-          git rm -rf * .*
+          git rm -rf '*'
           mv ../docs/* ./
+          touch .nojekyll
           git add .
           git config --local user.email "actions@github.com"
           git config --local user.name "GitHub Actions"
