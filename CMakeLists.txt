@@ -27,7 +27,7 @@ if("${BUILD_PACKAGE}" STREQUAL "1")
     -Ddir="gcmzdrops"
     -P "${CMAKE_SOURCE_DIR}/src/cmake/extract-zip.cmake"
   )
-  set(AXR_VER "v0.3.0beta7")
+  set(AXR_VER "v0.3.0beta8")
   add_custom_target(extract_audiomixer COMMAND
     ${CMAKE_COMMAND}
     -Dlocal_dir="${PROJECT_BINARY_DIR}"
