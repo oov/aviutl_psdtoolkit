@@ -114,6 +114,41 @@ jobs:
           release_name: ${{ github.ref }}
           draft: true
           prerelease: false
+          body: |
+            ### 注意事項
+            
+            - 拡張編集 0.93rc1 との組み合わせには既知の問題があるため、**通常の動画制作には拡張編集 0.92** を強く推奨します。
+            - PSDToolKit は現在 ベータ版 です。バージョンアップの際には **バックアップを強く推奨** します。
+
+            ### ダウンロード
+            
+            - [psdtoolkit_${{ steps.get_version.outputs.tag }}.zip](https://github.com/oov/aviutl_psdtoolkit/releases/download/${{ steps.get_version.outputs.tag }}/psdtoolkit_${{ steps.get_version.outputs.tag }}.zip)
+            - [psdtoolkit_${{ steps.get_version.outputs.tag }}_enpatched.zip](https://github.com/oov/aviutl_psdtoolkit/releases/download/${{ steps.get_version.outputs.tag }}/psdtoolkit_${{ steps.get_version.outputs.tag }}_enpatched.zip) (for English patched AviUtl)
+            
+            ### バージョンアップ手順
+            
+            使用中のバージョン|バージョンアップ手順
+            ---|---
+            0.2beta14以降|バックアップした上で、全てのファイルを上書きしてください。
+            0.2beta13|現在の環境から `PSDToolKit\口パク準備 設定上書き.exa` を削除し、全てのファイルを上書きしてください。
+            それ以前|上書きできないため、以前導入した PSDToolKit を削除するか、あるいは環境を新規に作り直してください。
+            
+            ### 変更点
+            
+            - ＊＊＊＊
+            
+            ### 過去のバージョンとの互換性について
+
+            #### v0.2.0beta57 以降
+            
+            `AudioMixer.auf` は単体配布版を同梱する形になり、合わせて一部の仕様が変更になりました。
+            `チャンネルストリップ` を使用しているプロジェクトファイルでは一部再設定が必要になる場合があります。
+            
+            #### v0.2beta50 以降
+            
+            Krita で生成した PSD ファイル用の `*.anm` ファイルは、バグ修正の影響で v0.2beta50 以降で動かなくなりました。
+            お手数ですが、この症状が発生した場合は `*.anm` ファイルを作り直してください。
+            Krita を使用していない場合は影響ありません。
       - name: Upload Release Asset
         id: upload-release-asset
         uses: actions/upload-release-asset@v1
