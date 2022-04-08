@@ -20,7 +20,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          rm -rf CMakeCache.txt && cmake -GNinja -DBUILD_DOCS -DCMAKE_BUILD_TYPE=Release .. && cmake --build . --target make_doc
+          rm -rf CMakeCache.txt && cmake -GNinja -DBUILD_DOCS=1 -DCMAKE_BUILD_TYPE=Release .. && cmake --build . --target make_doc
           cd ..
           mv build/bin/PSDToolKitDocs ../docs
           git checkout --orphan gh-pages
