@@ -212,7 +212,7 @@ static void read_props(lua_State *L, struct setting_dialog *const sd) {
   sd->merge_preps = read_int_prop(L, "wav_mergedprep", 0) == 1;
   sd->fire_shift = read_int_prop(L, "wav_firemode", 0) == 0;
   sd->fire_wavtxt = read_int_prop(L, "wav_firemode_wavtxt", 0) == 1;
-  sd->fire_exo = read_int_prop(L, "wav_firemode_wavtxt", 0) == 1;
+  sd->fire_exo = read_int_prop(L, "wav_firemode_exo", 0) == 1;
 }
 
 NODISCARD static error
