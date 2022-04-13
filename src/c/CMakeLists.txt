@@ -3,7 +3,7 @@ project(psdtoolkit_c C)
 enable_language(RC)
 
 find_program(CLANG_FORMAT_EXE clang-format)
-file(GLOB sources "${PROJECT_SOURCE_DIR}/src/c/*.c" "${PROJECT_SOURCE_DIR}/src/c/*.h")
+file(GLOB sources "${CMAKE_CURRENT_SOURCE_DIR}/*.c" "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
 add_custom_target(${PROJECT_NAME}_format
   COMMAND ${CLANG_FORMAT_EXE} -style=file -i ${sources}
 )
@@ -11,7 +11,7 @@ add_custom_target(${PROJECT_NAME}_format
 add_subdirectory(3rd/ovbase)
 add_subdirectory(3rd/ovutil)
 
-add_custom_target(generate_${PROJECT_NAME}_version_h COMMAND
+add_custom_target(${PROJECT_NAME}_generate_version_h COMMAND
   ${CMAKE_COMMAND}
   -Dlocal_dir="${CMAKE_CURRENT_SOURCE_DIR}"
   -Dinput_file="${CMAKE_CURRENT_SOURCE_DIR}/version.h.in"
@@ -51,7 +51,7 @@ set_target_properties(psdtoolkit_assist PROPERTIES
   SUFFIX ""
   RUNTIME_OUTPUT_DIRECTORY "${EXPORT_DIR}"
 )
-add_dependencies(psdtoolkit_assist ${PROJECT_NAME}_format generate_${PROJECT_NAME}_version_h generate_importlib)
+add_dependencies(psdtoolkit_assist ${PROJECT_NAME}_format ${PROJECT_NAME}_generate_version_h generate_importlib)
 target_link_libraries(psdtoolkit_assist PRIVATE
   lua51
   -Wl,-delayload,lua51.dll
