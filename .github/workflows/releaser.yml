@@ -67,7 +67,7 @@ jobs:
             mingw-w64-${{ matrix.arch }}-lua51
             mingw-w64-${{ matrix.arch }}-ninja
             mingw-w64-${{ matrix.arch }}-tools
-      - name: Run ninja
+      - name: Build
         shell: msys2 {0}
         run: |
           mkdir build
