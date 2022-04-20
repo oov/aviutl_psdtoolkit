@@ -35,7 +35,7 @@ if("${BUILD_PACKAGE}" STREQUAL "1")
     -Ddir="audiomixer"
     -P "${CMAKE_SOURCE_DIR}/src/cmake/extract-zip.cmake"
   )
-  set(FORCEPSER_VER "v1.5.4")
+  set(FORCEPSER_VER "v1.5.5")
   add_custom_target(extract_forcepser COMMAND
     ${CMAKE_COMMAND}
     -Dlocal_dir="${PROJECT_BINARY_DIR}"
