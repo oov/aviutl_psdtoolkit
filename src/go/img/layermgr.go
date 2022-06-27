@@ -12,9 +12,9 @@ import (
 	"psdtoolkit/warn"
 )
 
-type flipPair map[int]*[2]int
+type flipPair map[SeqID]*[2]SeqID
 
-func (fp flipPair) FindOriginal(seqID int) int {
+func (fp flipPair) FindOriginal(seqID SeqID) SeqID {
 	p, ok := fp[seqID]
 	if !ok {
 		return -1
@@ -22,7 +22,7 @@ func (fp flipPair) FindOriginal(seqID int) int {
 	return p[0]
 }
 
-func (fp flipPair) FindMirror(seqID int) int {
+func (fp flipPair) FindMirror(seqID SeqID) SeqID {
 	p, ok := fp[seqID]
 	if !ok {
 		return -1
@@ -30,15 +30,18 @@ func (fp flipPair) FindMirror(seqID int) int {
 	return p[1]
 }
 
+type SeqID int
+type flatIndex int
+
 type LayerManager struct {
 	Renderer *composite.Renderer
 
-	Mapped   map[int]*composite.Layer
-	Flat     []int
-	FullPath map[string]int // int != SeqID, index in Flat
+	Mapped   map[SeqID]*composite.Layer
+	Flat     []SeqID
+	FullPath map[string]flatIndex
 
-	ForceVisible map[int]struct{}
-	Group        map[int]*[]int
+	ForceVisible map[SeqID]struct{}
+	Group        map[SeqID]*[]SeqID
 	FlipXPair    flipPair
 	FlipYPair    flipPair
 	FlipXYPair   flipPair
@@ -48,22 +51,22 @@ func NewLayerManager(tree *composite.Tree) *LayerManager {
 	m := &LayerManager{
 		Renderer: tree.Renderer,
 
-		Mapped:   map[int]*composite.Layer{},
-		Flat:     []int{},
-		FullPath: map[string]int{},
+		Mapped:   map[SeqID]*composite.Layer{},
+		Flat:     []SeqID{},
+		FullPath: map[string]flatIndex{},
 
-		ForceVisible: map[int]struct{}{},
-		Group:        map[int]*[]int{},
+		ForceVisible: map[SeqID]struct{}{},
+		Group:        map[SeqID]*[]SeqID{},
 		FlipXPair:    flipPair{},
 		FlipYPair:    flipPair{},
 		FlipXYPair:   flipPair{},
 	}
 	dup := map[string]int{}
-	var g []int
+	var g []SeqID
 	for i := range tree.Root.Children {
 		enumChildren(m, &tree.Root.Children[i], tree.Root.Children, nil, dup)
 		if isGroup(tree.Root.Children[i].Name) {
-			g = append(g, tree.Root.Children[i].SeqID)
+			g = append(g, SeqID(tree.Root.Children[i].SeqID))
 		}
 	}
 	for _, seqID := range g {
@@ -72,7 +75,7 @@ func NewLayerManager(tree *composite.Tree) *LayerManager {
 	return m
 }
 
-func (m *LayerManager) setVisible(seqID int, visible bool) bool {
+func (m *LayerManager) setVisible(seqID SeqID, visible bool) bool {
 	l := m.Mapped[seqID]
 	if _, ok := m.ForceVisible[seqID]; ok {
 		if !l.Visible {
@@ -131,33 +134,33 @@ func (m *LayerManager) setVisible(seqID int, visible bool) bool {
 	return true
 }
 
-func (m *LayerManager) SetVisible(seqID int, visible bool, flip Flip) bool {
+func (m *LayerManager) SetVisible(seqID SeqID, visible bool, flip Flip) bool {
 	modified := m.setVisible(seqID, visible)
 	modified = m.NormalizeFlipOne(seqID, flip) || modified
 	return modified
 }
 
-func (m *LayerManager) SetVisibleExclusive(seqID int, visible bool, flip Flip) bool {
+func (m *LayerManager) SetVisibleExclusive(seqID SeqID, visible bool, flip Flip) bool {
 	if _, ok := m.Group[seqID]; ok {
 		return m.SetVisible(seqID, visible, flip)
 	}
 	modified := false
 	for _, l := range m.Mapped[seqID].Parent.Children {
-		if _, ok := m.Group[l.SeqID]; ok {
+		if _, ok := m.Group[SeqID(l.SeqID)]; ok {
 			continue
 		}
-		modified = m.SetVisible(l.SeqID, l.SeqID == seqID && visible, flip) || modified
+		modified = m.SetVisible(SeqID(l.SeqID), SeqID(l.SeqID) == seqID && visible, flip) || modified
 	}
 	return modified
 }
 
-func (m *LayerManager) normalizeGroupMap(seqID int, layers map[int]*deserializingState) bool {
+func (m *LayerManager) normalizeGroupMap(seqID SeqID, layers map[SeqID]*deserializingState) bool {
 	g, ok := m.Group[seqID]
 	if !ok {
 		return false
 	}
 
-	found, maxPriority, maxPrioritySeqID := 0, -1, -1
+	found, maxPriority, maxPrioritySeqID := 0, -1, SeqID(-1)
 	for i := len(*g) - 1; i >= 0; i-- {
 		seqID := (*g)[i]
 		if !layers[seqID].Visible {
@@ -176,7 +179,7 @@ func (m *LayerManager) normalizeGroupMap(seqID int, layers map[int]*deserializin
 	return found > 1
 }
 
-func (m *LayerManager) normalizeFlipOne(seqID int, flip Flip) bool {
+func (m *LayerManager) normalizeFlipOne(seqID SeqID, flip Flip) bool {
 	idOrg := m.FlipXPair.FindOriginal(seqID)
 	if idOrg == -1 {
 		idOrg = m.FlipYPair.FindOriginal(seqID)
@@ -257,11 +260,11 @@ func (m *LayerManager) normalizeFlipOne(seqID int, flip Flip) bool {
 	return modified
 }
 
-func (m *LayerManager) NormalizeFlipOne(seqID int, flip Flip) bool {
+func (m *LayerManager) NormalizeFlipOne(seqID SeqID, flip Flip) bool {
 	return m.normalizeFlipOne(seqID, flip)
 }
 
-func (m *LayerManager) normalizeFlipOneMap(seqID int, flip Flip, layers map[int]*deserializingState, processed map[int]struct{}) bool {
+func (m *LayerManager) normalizeFlipOneMap(seqID SeqID, flip Flip, layers map[SeqID]*deserializingState, processed map[SeqID]struct{}) bool {
 	if _, ok := processed[seqID]; ok {
 		return false
 	}
@@ -357,7 +360,7 @@ func (m *LayerManager) normalizeFlipOneMap(seqID int, flip Flip, layers map[int]
 }
 
 func (m *LayerManager) Normalize(flip Flip) bool {
-	layers := make(map[int]*deserializingState, len(m.Flat))
+	layers := make(map[SeqID]*deserializingState, len(m.Flat))
 	for _, seqID := range m.Flat {
 		layers[seqID] = &deserializingState{Visible: m.Mapped[seqID].Visible}
 	}
@@ -374,7 +377,7 @@ func (m *LayerManager) Normalize(flip Flip) bool {
 	return true
 }
 
-func (m *LayerManager) NormalizeMap(layers map[int]*deserializingState, flip Flip) bool {
+func (m *LayerManager) NormalizeMap(layers map[SeqID]*deserializingState, flip Flip) bool {
 	modified := false
 	for seqID := range m.ForceVisible {
 		if layers[seqID].Visible == true {
@@ -384,7 +387,7 @@ func (m *LayerManager) NormalizeMap(layers map[int]*deserializingState, flip Fli
 		modified = true
 	}
 
-	processedGroup := map[*[]int]struct{}{}
+	processedGroup := map[*[]SeqID]struct{}{}
 	for seqID, g := range m.Group {
 		if _, ok := processedGroup[g]; ok {
 			continue
@@ -393,7 +396,7 @@ func (m *LayerManager) NormalizeMap(layers map[int]*deserializingState, flip Fli
 		processedGroup[g] = struct{}{}
 	}
 
-	processedFlip := map[int]struct{}{}
+	processedFlip := map[SeqID]struct{}{}
 	for seqID := range layers {
 		modified = m.normalizeFlipOneMap(seqID, flip, layers, processedFlip) || modified
 	}
@@ -435,18 +438,18 @@ func registerFlips(m *LayerManager, l *composite.Layer, sib []composite.Layer) {
 	if org == nil {
 		return
 	}
-	f := &[2]int{org.SeqID, l.SeqID}
+	f := &[2]SeqID{SeqID(org.SeqID), SeqID(l.SeqID)}
 	for i := len(tokens) - 1; i >= 0; i-- {
 		switch tokens[i] {
 		case "flipx":
-			m.FlipXPair[org.SeqID] = f
-			m.FlipXPair[l.SeqID] = f
+			m.FlipXPair[SeqID(org.SeqID)] = f
+			m.FlipXPair[SeqID(l.SeqID)] = f
 		case "flipy":
-			m.FlipYPair[org.SeqID] = f
-			m.FlipYPair[l.SeqID] = f
+			m.FlipYPair[SeqID(org.SeqID)] = f
+			m.FlipYPair[SeqID(l.SeqID)] = f
 		case "flipxy":
-			m.FlipXYPair[org.SeqID] = f
-			m.FlipXYPair[l.SeqID] = f
+			m.FlipXYPair[SeqID(org.SeqID)] = f
+			m.FlipXYPair[SeqID(l.SeqID)] = f
 		default:
 			return
 		}
@@ -466,21 +469,21 @@ func enumChildren(m *LayerManager, l *composite.Layer, sib []composite.Layer, di
 	}
 	dup[l.Name] = n
 
-	m.Mapped[l.SeqID] = l
-	m.FullPath[string(dir)] = len(m.Flat)
-	m.Flat = append(m.Flat, l.SeqID)
+	m.Mapped[SeqID(l.SeqID)] = l
+	m.FullPath[string(dir)] = flatIndex(len(m.Flat))
+	m.Flat = append(m.Flat, SeqID(l.SeqID))
 
 	if isForceVisible(l.Name) {
-		m.ForceVisible[l.SeqID] = struct{}{}
+		m.ForceVisible[SeqID(l.SeqID)] = struct{}{}
 	}
 	registerFlips(m, l, sib)
 
 	dup = map[string]int{}
-	var g []int
+	var g []SeqID
 	for i := range l.Children {
 		enumChildren(m, &l.Children[i], l.Children, dir, dup)
 		if isGroup(l.Children[i].Name) {
-			g = append(g, l.Children[i].SeqID)
+			g = append(g, SeqID(l.Children[i].SeqID))
 		}
 	}
 	for _, seqID := range g {
@@ -494,20 +497,20 @@ type deserializingState struct {
 }
 
 func (m *LayerManager) GetFullPathLayerNames() []string {
-	tmpMap := map[int]string{}
+	tmpMap := map[flatIndex]string{}
 	for fullpath, fi := range m.FullPath {
 		tmpMap[fi] = fullpath
 	}
 	r := make([]string, len(m.Flat))
 	for i := range m.Flat {
-		r[i] = tmpMap[i]
+		r[i] = tmpMap[flatIndex(i)]
 	}
 	return r
 }
 
 func (m *LayerManager) GetFlatIndex(l *composite.Layer) int {
 	for fidx, mi := range m.Flat {
-		if mi == l.SeqID {
+		if mi == SeqID(l.SeqID) {
 			return fidx
 		}
 	}
@@ -515,7 +518,7 @@ func (m *LayerManager) GetFlatIndex(l *composite.Layer) int {
 }
 
 func (m *LayerManager) Deserialize(s string, flip Flip, pfv *PFV) (bool, Flip, error) {
-	layers := make(map[int]*deserializingState, len(m.Flat))
+	layers := make(map[SeqID]*deserializingState, len(m.Flat))
 	n := make([]deserializingState, len(m.Flat))
 	for index, seqID := range m.Flat {
 		n[index].Visible = m.Mapped[seqID].Visible

@@ -280,7 +280,7 @@ func (lv *LayerView) layerTreeItem(ctx *nk.Context, indent, thumbSize float32, t
 	return clicked, ctrl
 }
 
-func (lv *LayerView) layoutLayer(ctx *nk.Context, img *img.Image, indent float32, l *composite.Layer, visible bool) bool {
+func (lv *LayerView) layoutLayer(ctx *nk.Context, image *img.Image, indent float32, l *composite.Layer, visible bool) bool {
 	modified := false
 	const (
 		indentSize = 16
@@ -290,33 +290,33 @@ func (lv *LayerView) layoutLayer(ctx *nk.Context, img *img.Image, indent float32
 	if l.Clipping && l.ClippedBy != nil {
 		visible = visible && l.ClippedBy.Visible
 	}
-	_, forceVisible := img.Layers.ForceVisible[l.SeqID]
+	_, forceVisible := image.Layers.ForceVisible[img.SeqID(l.SeqID)]
 	thumb, _ := lv.thumbnailChip[l.SeqID]
 	nk.NkLayoutSpaceBegin(ctx, nk.Static, 28, 3)
 	if clicked, ctrl := lv.layerTreeItem(ctx, indent, float32(lv.thumbnailSize), thumb, visible, forceVisible, l); clicked != 0 {
 		if clicked&1 == 1 {
 			if ctrl {
-				modified = img.Layers.SetVisibleExclusive(l.SeqID, !l.Visible, img.Flip) || modified
+				modified = image.Layers.SetVisibleExclusive(img.SeqID(l.SeqID), !l.Visible, image.Flip) || modified
 			} else {
-				modified = img.Layers.SetVisible(l.SeqID, !l.Visible, img.Flip) || modified
+				modified = image.Layers.SetVisible(img.SeqID(l.SeqID), !l.Visible, image.Flip) || modified
 			}
 			for r := l.Parent; r.SeqID != composite.SeqIDRoot; r = r.Parent {
-				modified = img.Layers.SetVisible(r.SeqID, true, img.Flip) || modified
+				modified = image.Layers.SetVisible(img.SeqID(r.SeqID), true, image.Flip) || modified
 			}
 		} else if clicked&2 == 2 {
-			names := img.Layers.GetFullPathLayerNames()
+			names := image.Layers.GetFullPathLayerNames()
 			values := make([]string, len(names))
 			for i := range names {
 				values[i] = "v1" + prop.Encode(names[i])
 			}
-			lv.ExportLayerNames(*img.FilePath, names, values, img.Layers.GetFlatIndex(l))
+			lv.ExportLayerNames(*image.FilePath, names, values, image.Layers.GetFlatIndex(l))
 		}
 	}
 	nk.NkLayoutSpaceEnd(ctx)
 
 	if l.FolderOpen {
 		for i := len(l.Children) - 1; i >= 0; i-- {
-			modified = lv.layoutLayer(ctx, img, indent+indentSize, &l.Children[i], visible) || modified
+			modified = lv.layoutLayer(ctx, image, indent+indentSize, &l.Children[i], visible) || modified
 		}
 	}
 	return modified
