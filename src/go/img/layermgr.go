@@ -380,7 +380,7 @@ func (m *LayerManager) Normalize(flip Flip) bool {
 func (m *LayerManager) NormalizeMap(layers map[SeqID]*deserializingState, flip Flip) bool {
 	modified := false
 	for seqID := range m.ForceVisible {
-		if layers[seqID].Visible == true {
+		if layers[seqID].Visible {
 			continue
 		}
 		layers[seqID].Visible = true
@@ -422,7 +422,6 @@ func registerFlips(m *LayerManager, l *composite.Layer, sib []composite.Layer) {
 			if i == len(tokens)-1 {
 				return // not found
 			}
-			break
 		}
 		orgName = strings.Join(tokens[:i+1], ":")
 		break
