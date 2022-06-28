@@ -500,6 +500,14 @@ type deserializingState struct {
 	Priority int
 }
 
+func (m *LayerManager) FindLayerByFullPathLayerName(name string) *composite.Layer {
+	fi, ok := m.FullPath[name]
+	if !ok {
+		return nil
+	}
+	return m.Mapped[m.Flat[fi]]
+}
+
 func (m *LayerManager) GetFullPathLayerNames() []string {
 	tmpMap := map[flatIndex]string{}
 	for fullpath, fi := range m.FullPath {
