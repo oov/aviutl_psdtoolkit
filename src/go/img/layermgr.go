@@ -12,27 +12,32 @@ import (
 	"psdtoolkit/warn"
 )
 
-type flipPair map[SeqID]*[2]SeqID
-
-func (fp flipPair) FindOriginal(seqID SeqID) SeqID {
-	p, ok := fp[seqID]
-	if !ok {
-		return -1
-	}
-	return p[0]
-}
-
-func (fp flipPair) FindMirror(seqID SeqID) SeqID {
-	p, ok := fp[seqID]
-	if !ok {
-		return -1
-	}
-	return p[1]
-}
-
 type SeqID int
-type flatIndex int
 
+type flipPair struct {
+	Original SeqID
+	Mirror   SeqID
+}
+
+type flipPairMap map[SeqID]*flipPair
+
+func (fp flipPairMap) FindOriginal(seqID SeqID) SeqID {
+	p, ok := fp[seqID]
+	if !ok {
+		return -1
+	}
+	return p.Original
+}
+
+func (fp flipPairMap) FindMirror(seqID SeqID) SeqID {
+	p, ok := fp[seqID]
+	if !ok {
+		return -1
+	}
+	return p.Mirror
+}
+
+type flatIndex int
 type LayerManager struct {
 	Renderer *composite.Renderer
 
@@ -42,9 +47,9 @@ type LayerManager struct {
 
 	ForceVisible map[SeqID]struct{}
 	Group        map[SeqID]*[]SeqID
-	FlipXPair    flipPair
-	FlipYPair    flipPair
-	FlipXYPair   flipPair
+	FlipXPair    flipPairMap
+	FlipYPair    flipPairMap
+	FlipXYPair   flipPairMap
 }
 
 func NewLayerManager(tree *composite.Tree) *LayerManager {
@@ -57,9 +62,9 @@ func NewLayerManager(tree *composite.Tree) *LayerManager {
 
 		ForceVisible: map[SeqID]struct{}{},
 		Group:        map[SeqID]*[]SeqID{},
-		FlipXPair:    flipPair{},
-		FlipYPair:    flipPair{},
-		FlipXYPair:   flipPair{},
+		FlipXPair:    flipPairMap{},
+		FlipYPair:    flipPairMap{},
+		FlipXYPair:   flipPairMap{},
 	}
 	dup := map[string]int{}
 	var g []SeqID
@@ -437,7 +442,7 @@ func registerFlips(m *LayerManager, l *composite.Layer, sib []composite.Layer) {
 	if org == nil {
 		return
 	}
-	f := &[2]SeqID{SeqID(org.SeqID), SeqID(l.SeqID)}
+	f := &flipPair{Original: SeqID(org.SeqID), Mirror: SeqID(l.SeqID)}
 	for i := len(tokens) - 1; i >= 0; i-- {
 		switch tokens[i] {
 		case "flipx":
