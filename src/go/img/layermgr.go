@@ -38,10 +38,16 @@ func (fp flipPairMap) FindMirror(seqID SeqID) SeqID {
 }
 
 type flatIndex int
+
+type Layer struct {
+	Layer    *composite.Layer
+	FullPath string
+}
+
 type LayerManager struct {
 	Renderer *composite.Renderer
 
-	Mapped   map[SeqID]*composite.Layer
+	Mapped   map[SeqID]*Layer
 	Flat     []SeqID
 	FullPath map[string]flatIndex
 
@@ -56,7 +62,7 @@ func NewLayerManager(tree *composite.Tree) *LayerManager {
 	m := &LayerManager{
 		Renderer: tree.Renderer,
 
-		Mapped:   map[SeqID]*composite.Layer{},
+		Mapped:   map[SeqID]*Layer{},
 		Flat:     []SeqID{},
 		FullPath: map[string]flatIndex{},
 
@@ -83,9 +89,9 @@ func NewLayerManager(tree *composite.Tree) *LayerManager {
 func (m *LayerManager) setVisible(seqID SeqID, visible bool) bool {
 	l := m.Mapped[seqID]
 	if _, ok := m.ForceVisible[seqID]; ok {
-		if !l.Visible {
-			l.Visible = true
-			m.Renderer.SetDirtyByLayer(l)
+		if !l.Layer.Visible {
+			l.Layer.Visible = true
+			m.Renderer.SetDirtyByLayer(l.Layer)
 			return true
 		}
 		return false
@@ -98,15 +104,15 @@ func (m *LayerManager) setVisible(seqID SeqID, visible bool) bool {
 					continue
 				}
 				l0 := m.Mapped[seqID0]
-				if l0.Visible {
-					l0.Visible = false
-					m.Renderer.SetDirtyByLayer(l0)
+				if l0.Layer.Visible {
+					l0.Layer.Visible = false
+					m.Renderer.SetDirtyByLayer(l0.Layer)
 					modified = true
 				}
 			}
-			if !l.Visible {
-				l.Visible = true
-				m.Renderer.SetDirtyByLayer(l)
+			if !l.Layer.Visible {
+				l.Layer.Visible = true
+				m.Renderer.SetDirtyByLayer(l.Layer)
 				modified = true
 			}
 			return modified
@@ -114,7 +120,7 @@ func (m *LayerManager) setVisible(seqID SeqID, visible bool) bool {
 
 		n := 0
 		for _, id := range *g {
-			if m.Mapped[id].Visible {
+			if m.Mapped[id].Layer.Visible {
 				n++
 				if n == 2 {
 					break
@@ -124,18 +130,18 @@ func (m *LayerManager) setVisible(seqID SeqID, visible bool) bool {
 		if n <= 1 {
 			return false
 		}
-		if !l.Visible {
+		if !l.Layer.Visible {
 			return false
 		}
-		l.Visible = false
-		m.Renderer.SetDirtyByLayer(l)
+		l.Layer.Visible = false
+		m.Renderer.SetDirtyByLayer(l.Layer)
 		return true
 	}
-	if l.Visible == visible {
+	if l.Layer.Visible == visible {
 		return false
 	}
-	l.Visible = visible
-	m.Renderer.SetDirtyByLayer(l)
+	l.Layer.Visible = visible
+	m.Renderer.SetDirtyByLayer(l.Layer)
 	return true
 }
 
@@ -150,7 +156,7 @@ func (m *LayerManager) SetVisibleExclusive(seqID SeqID, visible bool, flip Flip)
 		return m.SetVisible(seqID, visible, flip)
 	}
 	modified := false
-	for _, l := range m.Mapped[seqID].Parent.Children {
+	for _, l := range m.Mapped[seqID].Layer.Parent.Children {
 		if _, ok := m.Group[SeqID(l.SeqID)]; ok {
 			continue
 		}
@@ -200,7 +206,7 @@ func (m *LayerManager) normalizeFlipOne(seqID SeqID, flip Flip) bool {
 	idX := m.FlipXPair.FindMirror(idOrg)
 	idY := m.FlipYPair.FindMirror(idOrg)
 	idXY := m.FlipXYPair.FindMirror(idOrg)
-	var mrrX, mrrY, mrrXY *composite.Layer
+	var mrrX, mrrY, mrrXY *Layer
 	if idX != -1 {
 		mrrX = m.Mapped[idX]
 	}
@@ -210,56 +216,56 @@ func (m *LayerManager) normalizeFlipOne(seqID SeqID, flip Flip) bool {
 	if idXY != -1 {
 		mrrXY = m.Mapped[idXY]
 	}
-	if !org.Visible &&
-		(mrrX == nil || !mrrX.Visible) &&
-		(mrrY == nil || !mrrY.Visible) &&
-		(mrrXY == nil || !mrrXY.Visible) {
+	if !org.Layer.Visible &&
+		(mrrX == nil || !mrrX.Layer.Visible) &&
+		(mrrY == nil || !mrrY.Layer.Visible) &&
+		(mrrXY == nil || !mrrXY.Layer.Visible) {
 		return false
 	}
 
 	var modified bool
-	var active *composite.Layer
+	var active *Layer
 	switch flip {
 	case FlipX:
 		active = mrrX
-		if mrrX != nil && !mrrX.Visible {
-			mrrX.Visible = true
+		if mrrX != nil && !mrrX.Layer.Visible {
+			mrrX.Layer.Visible = true
 			modified = true
 		}
 	case FlipY:
 		active = mrrY
-		if mrrY != nil && !mrrY.Visible {
-			mrrY.Visible = true
+		if mrrY != nil && !mrrY.Layer.Visible {
+			mrrY.Layer.Visible = true
 			modified = true
 		}
 	case FlipXY:
 		active = mrrXY
-		if mrrXY != nil && !mrrXY.Visible {
-			mrrXY.Visible = true
+		if mrrXY != nil && !mrrXY.Layer.Visible {
+			mrrXY.Layer.Visible = true
 			modified = true
 		}
 	}
 	if active == nil {
 		active = org
-		if !org.Visible {
-			org.Visible = true
+		if !org.Layer.Visible {
+			org.Layer.Visible = true
 			modified = true
 		}
 	}
-	if org != active && org.Visible {
-		org.Visible = false
+	if org != active && org.Layer.Visible {
+		org.Layer.Visible = false
 		modified = true
 	}
-	if mrrX != nil && mrrX != active && mrrX.Visible {
-		mrrX.Visible = false
+	if mrrX != nil && mrrX != active && mrrX.Layer.Visible {
+		mrrX.Layer.Visible = false
 		modified = true
 	}
-	if mrrY != nil && mrrY != active && mrrY.Visible {
-		mrrY.Visible = false
+	if mrrY != nil && mrrY != active && mrrY.Layer.Visible {
+		mrrY.Layer.Visible = false
 		modified = true
 	}
-	if mrrXY != nil && mrrXY != active && mrrXY.Visible {
-		mrrXY.Visible = false
+	if mrrXY != nil && mrrXY != active && mrrXY.Layer.Visible {
+		mrrXY.Layer.Visible = false
 		modified = true
 	}
 	return modified
@@ -367,16 +373,16 @@ func (m *LayerManager) normalizeFlipOneMap(seqID SeqID, flip Flip, layers map[Se
 func (m *LayerManager) Normalize(flip Flip) bool {
 	layers := make(map[SeqID]*deserializingState, len(m.Flat))
 	for _, seqID := range m.Flat {
-		layers[seqID] = &deserializingState{Visible: m.Mapped[seqID].Visible}
+		layers[seqID] = &deserializingState{Visible: m.Mapped[seqID].Layer.Visible}
 	}
 	if !m.NormalizeMap(layers, flip) {
 		return false
 	}
 	for seqID, dstate := range layers {
 		l := m.Mapped[seqID]
-		if l.Visible != dstate.Visible {
-			l.Visible = dstate.Visible
-			m.Renderer.SetDirtyByLayer(l)
+		if l.Layer.Visible != dstate.Visible {
+			l.Layer.Visible = dstate.Visible
+			m.Renderer.SetDirtyByLayer(l.Layer)
 		}
 	}
 	return true
@@ -473,8 +479,12 @@ func enumChildren(m *LayerManager, l *composite.Layer, sib []composite.Layer, di
 	}
 	dup[l.Name] = n
 
-	m.Mapped[SeqID(l.SeqID)] = l
-	m.FullPath[string(dir)] = flatIndex(len(m.Flat))
+	fullPath := string(dir)
+	m.Mapped[SeqID(l.SeqID)] = &Layer{
+		Layer:    l,
+		FullPath: fullPath,
+	}
+	m.FullPath[fullPath] = flatIndex(len(m.Flat))
 	m.Flat = append(m.Flat, SeqID(l.SeqID))
 
 	if isForceVisible(l.Name) {
@@ -500,7 +510,7 @@ type deserializingState struct {
 	Priority int
 }
 
-func (m *LayerManager) FindLayerByFullPathLayerName(name string) *composite.Layer {
+func (m *LayerManager) FindLayerByFullPathLayerName(name string) *Layer {
 	fi, ok := m.FullPath[name]
 	if !ok {
 		return nil
@@ -533,7 +543,7 @@ func (m *LayerManager) Deserialize(s string, flip Flip, pfv *PFV) (bool, Flip, e
 	layers := make(map[SeqID]*deserializingState, len(m.Flat))
 	n := make([]deserializingState, len(m.Flat))
 	for index, seqID := range m.Flat {
-		n[index].Visible = m.Mapped[seqID].Visible
+		n[index].Visible = m.Mapped[seqID].Layer.Visible
 		layers[seqID] = &n[index]
 	}
 
@@ -701,9 +711,9 @@ func (m *LayerManager) Deserialize(s string, flip Flip, pfv *PFV) (bool, Flip, e
 	r := m.Renderer
 	for seqID, dstate := range layers {
 		l := m.Mapped[seqID]
-		if l.Visible != dstate.Visible {
-			l.Visible = dstate.Visible
-			r.SetDirtyByLayer(l)
+		if l.Layer.Visible != dstate.Visible {
+			l.Layer.Visible = dstate.Visible
+			r.SetDirtyByLayer(l.Layer)
 			modified = true
 		}
 	}
@@ -713,7 +723,7 @@ func (m *LayerManager) Deserialize(s string, flip Flip, pfv *PFV) (bool, Flip, e
 func (m *LayerManager) Serialize() (string, error) {
 	v := make([]bool, len(m.Flat))
 	for i, seqID := range m.Flat {
-		v[i] = m.Mapped[seqID].Visible
+		v[i] = m.Mapped[seqID].Layer.Visible
 	}
 	s, err := serializeBits(v)
 	if err != nil {
@@ -732,8 +742,8 @@ func (m *LayerManager) SerializeSafe() map[string]SerializedData {
 	for fullPath, idx := range m.FullPath {
 		l := m.Mapped[m.Flat[idx]]
 		v[fullPath] = SerializedData{
-			Visible:    l.Visible,
-			FolderOpen: l.Folder && l.FolderOpen,
+			Visible:    l.Layer.Visible,
+			FolderOpen: l.Layer.Folder && l.Layer.FolderOpen,
 		}
 	}
 	return v
@@ -744,9 +754,9 @@ func (m *LayerManager) DeserializeSafe(state map[string]SerializedData) (warn.Wa
 	for fullPath, d := range state {
 		if idx, ok := m.FullPath[fullPath]; ok {
 			l := m.Mapped[m.Flat[idx]]
-			l.Visible = d.Visible
-			if l.Folder {
-				l.FolderOpen = d.FolderOpen
+			l.Layer.Visible = d.Visible
+			if l.Layer.Folder {
+				l.Layer.FolderOpen = d.FolderOpen
 			}
 		} else {
 			wr = append(wr, errors.Errorf("img: layer %q not found", fullPath))
