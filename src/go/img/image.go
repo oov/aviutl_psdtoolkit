@@ -35,7 +35,6 @@ type Image struct {
 	PSD    *composite.Tree
 	image  *image.NRGBA
 	Layers *LayerManager
-	Flip   Flip
 
 	InitialLayerState *string
 
@@ -63,34 +62,39 @@ func (img *Image) Clone() *Image {
 }
 
 func (img *Image) FlipX() bool {
-	return img.Flip == FlipX || img.Flip == FlipXY
+	return img.Layers.Flip == FlipX || img.Layers.Flip == FlipXY
 }
 
 func (img *Image) FlipY() bool {
-	return img.Flip == FlipY || img.Flip == FlipXY
+	return img.Layers.Flip == FlipY || img.Layers.Flip == FlipXY
 }
 
 func (img *Image) SetFlipX(v bool) bool {
-	if (img.Flip&FlipX != 0) == v {
+	if (img.Layers.Flip&FlipX != 0) == v {
 		return false
 	}
+	f := img.Layers.Flip
 	if v {
-		img.Flip |= FlipX
+		f |= FlipX
 	} else {
-		img.Flip &= ^FlipX
+		f &= ^FlipX
 	}
+	img.Layers.SetFlip(f)
+	img.Layers.Flip = f
 	return true
 }
 
 func (img *Image) SetFlipY(v bool) bool {
-	if (img.Flip&FlipY != 0) == v {
+	if (img.Layers.Flip&FlipY != 0) == v {
 		return false
 	}
+	f := img.Layers.Flip
 	if v {
-		img.Flip |= FlipY
+		f |= FlipY
 	} else {
-		img.Flip &= ^FlipY
+		f &= ^FlipY
 	}
+	img.Layers.SetFlip(f)
 	return true
 }
 
@@ -127,7 +131,7 @@ func (img *Image) Render(ctx context.Context) (*image.NRGBA, error) {
 		}
 		nrgba = tmp
 	}
-	f := img.Flip
+	f := img.Layers.Flip
 	if f != FlipNone {
 		tmp := image.NewNRGBA(nrgba.Rect)
 		g := gift.New()
@@ -148,15 +152,14 @@ func (img *Image) Serialize() (string, error) {
 	if err != nil {
 		return "", errors.Wrap(err, "Image.Serialize: failed to serialize")
 	}
-	return "L." + itoa(int(img.Flip)) + " " + s, nil
+	return "L." + itoa(int(img.Layers.Flip)) + " " + s, nil
 }
 
 func (img *Image) Deserialize(s string) (bool, error) {
-	m, f, err := img.Layers.Deserialize(s, img.Flip, img.PFV)
+	m, err := img.Layers.Deserialize(s, img.PFV)
 	if err != nil {
 		return false, err
 	}
-	img.Flip = f
 	return m, nil
 }
 
@@ -164,7 +167,6 @@ func (img *Image) Deserialize(s string) (bool, error) {
 type ProjectState struct {
 	Version  int
 	FilePath string
-	Flip     Flip
 	Layer    map[string]SerializedData
 	PFV      PFVSerializedData
 }
@@ -173,7 +175,6 @@ func (img *Image) SerializeProject() *ProjectState {
 	return &ProjectState{
 		Version:  1,
 		FilePath: *img.FilePath,
-		Flip:     img.Flip,
 		Layer:    img.Layers.SerializeSafe(),
 		PFV:      img.PFV.Serialize(),
 	}
@@ -181,7 +182,6 @@ func (img *Image) SerializeProject() *ProjectState {
 
 func (img *Image) DeserializeProject(state *ProjectState) (warn.Warning, error) {
 	var wr warn.Warning
-	img.Flip = state.Flip
 	if w, err := img.Layers.DeserializeSafe(state.Layer); err != nil {
 		return wr, errors.Wrap(err, "Image.DeserializeProject: failed to deserialize")
 	} else if w != nil {

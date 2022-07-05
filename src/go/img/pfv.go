@@ -389,7 +389,7 @@ func insert(root *Node, typ string, name string, data []string, mgr *LayerManage
 	}
 	switch typ {
 	case "item":
-		set := make([]bool, len(mgr.Flat))
+		set := make([]bool, len(mgr.Layers))
 		for _, l := range data {
 			l, err = reencodeLayerName(l)
 			if err != nil {
@@ -420,7 +420,7 @@ func insert(root *Node, typ string, name string, data []string, mgr *LayerManage
 	case "folder":
 		// do nothing
 	case "filter":
-		set := make([]bool, len(mgr.Flat))
+		set := make([]bool, len(mgr.Layers))
 		for _, l := range data {
 			l, err = reencodeLayerName(l)
 			if err != nil {

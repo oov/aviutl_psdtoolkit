@@ -140,7 +140,7 @@ func (ipc *IPC) getLayerNames(id int, filePath string) (string, error) {
 	if err != nil {
 		return "", errors.Wrap(err, "ipc: could not load")
 	}
-	s := make([]string, len(img.Layers.Flat))
+	s := make([]string, len(img.Layers.Layers))
 	for path, index := range img.Layers.FullPath {
 		s[index] = path
 	}

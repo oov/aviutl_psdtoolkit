@@ -113,7 +113,7 @@ func (s *Sources) load(filePath string) (*Source, error) {
 		}
 	}
 
-	lm.Normalize(img.FlipNone)
+	lm.Normalize()
 	state, err := lm.Serialize()
 	if err != nil {
 		return nil, errors.Wrap(err, "source: cannot serialize")

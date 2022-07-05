@@ -296,12 +296,12 @@ func (lv *LayerView) layoutLayer(ctx *nk.Context, image *img.Image, indent float
 	if clicked, ctrl := lv.layerTreeItem(ctx, indent, float32(lv.thumbnailSize), thumb, visible, forceVisible, l); clicked != 0 {
 		if clicked&1 == 1 {
 			if ctrl {
-				modified = image.Layers.SetVisibleExclusive(img.SeqID(l.SeqID), !l.Visible, image.Flip) || modified
+				modified = image.Layers.SetVisibleExclusive(img.SeqID(l.SeqID), !l.Visible) || modified
 			} else {
-				modified = image.Layers.SetVisible(img.SeqID(l.SeqID), !l.Visible, image.Flip) || modified
+				modified = image.Layers.SetVisible(img.SeqID(l.SeqID), !l.Visible) || modified
 			}
 			for r := l.Parent; r.SeqID != composite.SeqIDRoot; r = r.Parent {
-				modified = image.Layers.SetVisible(img.SeqID(r.SeqID), true, image.Flip) || modified
+				modified = image.Layers.SetVisible(img.SeqID(r.SeqID), true) || modified
 			}
 		} else if clicked&2 == 2 {
 			names := image.Layers.GetFullPathLayerNames()

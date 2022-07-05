@@ -299,7 +299,7 @@ func (g *GUI) update() {
 					modified = g.layerView.Render(ctx, g.img) || modified
 					if modified {
 						g.img.Modified = true
-						g.img.Layers.Normalize(g.img.Flip)
+						g.img.Layers.Normalize()
 						updateRenderedImage(g, g.img)
 					}
 					nk.NkGroupEnd(ctx)
