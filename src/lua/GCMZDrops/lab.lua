@@ -30,7 +30,7 @@ function P.parse(filepath)
   local r = {}
   local maxendf = 0
   for line in f:lines() do
-    local st, ed, p = string.match(line, "([0-9.]+) ([0-9.]+) (%a+)")
+    local st, ed, p = string.match(line, "([0-9.]+) ([0-9.]+) (.+)")
     if st == nil then
       return nil -- unexpected format
     end

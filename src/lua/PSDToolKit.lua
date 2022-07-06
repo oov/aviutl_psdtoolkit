@@ -502,7 +502,7 @@ function TalkState:setphoneme(labfile, time)
     error("file not found: " .. labfile)
   end
   for line in f:lines() do
-    local st, ed, p = string.match(line, "([0-9.]+) ([0-9.]+) (%a+)")
+    local st, ed, p = string.match(line, "([0-9.]+) ([0-9.]+) (.+)")
     if st == nil then
       return nil -- unexpected format
     end
