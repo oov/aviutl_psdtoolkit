@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## 0.2.0beta62
 
 - AudioMixer.auf を v0.3.0beta9 に更新
 
