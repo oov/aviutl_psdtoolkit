@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- AudioMixer.auf を v0.3.0beta9 に更新
+
 ## 0.2.0beta61
 
 - ごちゃまぜドロップスを v0.4.0beta8 に更新
