@@ -1075,7 +1075,7 @@ static BOOL wndproc(HWND const window,
   case WM_FILTER_INIT:
     CreateWindowExW(0,
                     L"STATIC",
-                    L"まずは説明書を読みましょう。",
+                    L"説明書にあるチュートリアルを読んでください。",
                     WS_CHILD | WS_VISIBLE | ES_LEFT,
                     0,
                     0,
