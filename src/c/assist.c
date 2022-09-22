@@ -627,7 +627,14 @@ static void wndproc_receive_update_editing_image_state(struct ipc_update_editing
     err = ethru(err);
     goto cleanup;
   }
-  if (wcscmp(old_file_path.ptr, file_path.ptr) != 0) {
+
+  // if send_guard is 0, no confirmation.
+  int64_t send_guard = 1;
+  err = luastr_find_assign_number(&text, &wstr_unmanaged_const(L"sendguard"), &send_guard);
+  if (efailed(err)) {
+    efree(&err); // ignore any errors.
+  }
+  if (send_guard != 0 && wcscmp(old_file_path.ptr, file_path.ptr) != 0) {
     err = scpym(&tmp2,
                 L"送り先には別のPSDファイルが割り当てられています。\r\n"
                 L"本当に続行しますか？\r\n\r\n"
