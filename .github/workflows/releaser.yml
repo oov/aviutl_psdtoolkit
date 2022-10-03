@@ -125,6 +125,11 @@ jobs:
             - [psdtoolkit_${{ steps.get_version.outputs.tag }}.zip](https://github.com/oov/aviutl_psdtoolkit/releases/download/${{ steps.get_version.outputs.tag }}/psdtoolkit_${{ steps.get_version.outputs.tag }}.zip)
             - [psdtoolkit_${{ steps.get_version.outputs.tag }}_enpatched.zip](https://github.com/oov/aviutl_psdtoolkit/releases/download/${{ steps.get_version.outputs.tag }}/psdtoolkit_${{ steps.get_version.outputs.tag }}_enpatched.zip) (for English patched AviUtl)
             
+            #### 解凍したファイルが文字化けする場合
+            
+            お使いの解凍ソフトが原因です。
+            zip ファイルを右クリックし、メニューから `プログラムから開く` → `エクスプローラー` を選んでファイルを取り出してください。
+            
             ### バージョンアップ手順
             
             使用中のバージョン|バージョンアップ手順
