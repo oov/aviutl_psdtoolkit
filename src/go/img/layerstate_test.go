@@ -8,8 +8,8 @@ import (
 	"github.com/oov/psd/composite"
 )
 
-func LoadTestFile() (*LayerManager, error) {
-	file, err := os.Open("testdata/test.psd")
+func loadFile(path string) (*LayerManager, error) {
+	file, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
@@ -18,6 +18,10 @@ func LoadTestFile() (*LayerManager, error) {
 		return nil, err
 	}
 	return NewLayerManager(tree), nil
+}
+
+func loadTestFile() (*LayerManager, error) {
+	return loadFile("testdata/test.psd")
 }
 
 type VisibleTest struct {
@@ -51,9 +55,9 @@ func verifyNew(t *testing.T, lm *LayerManager, tests []VisibleTest) {
 }
 
 func TestInitial(t *testing.T) {
-	lm, err := LoadTestFile()
+	lm, err := loadTestFile()
 	if err != nil {
-		t.Error("failed to load test file.")
+		t.Fatal("failed to load test file.")
 	}
 	testData := []VisibleTest{
 		{"root", true, false},
@@ -74,9 +78,9 @@ func TestInitial(t *testing.T) {
 }
 
 func TestFlipX(t *testing.T) {
-	lm, err := LoadTestFile()
+	lm, err := loadTestFile()
 	if err != nil {
-		t.Error("failed to load test file.")
+		t.Fatal("failed to load test file.")
 	}
 	testData := []VisibleTest{
 		{"root", true, true},
@@ -105,9 +109,9 @@ func TestFlipX(t *testing.T) {
 }
 
 func TestFlipY(t *testing.T) {
-	lm, err := LoadTestFile()
+	lm, err := loadTestFile()
 	if err != nil {
-		t.Error("failed to load test file.")
+		t.Fatal("failed to load test file.")
 	}
 	testData := []VisibleTest{
 		{"root", true, true},
@@ -136,9 +140,9 @@ func TestFlipY(t *testing.T) {
 }
 
 func TestSetVisibleFalse(t *testing.T) {
-	lm, err := LoadTestFile()
+	lm, err := loadTestFile()
 	if err != nil {
-		t.Error("failed to load test file.")
+		t.Fatal("failed to load test file.")
 	}
 	testData := []VisibleTest{
 		{"root", true, false},
@@ -164,9 +168,9 @@ func TestSetVisibleFalse(t *testing.T) {
 }
 
 func TestSetVisibleTrue(t *testing.T) {
-	lm, err := LoadTestFile()
+	lm, err := loadTestFile()
 	if err != nil {
-		t.Error("failed to load test file.")
+		t.Fatal("failed to load test file.")
 	}
 	testData := []VisibleTest{
 		{"root", true, true},
@@ -192,9 +196,9 @@ func TestSetVisibleTrue(t *testing.T) {
 }
 
 func TestSetVisibleTrueSynced(t *testing.T) {
-	lm, err := LoadTestFile()
+	lm, err := loadTestFile()
 	if err != nil {
-		t.Error("failed to load test file.")
+		t.Fatal("failed to load test file.")
 	}
 	testData := []VisibleTest{
 		{"root", true, true},
@@ -220,9 +224,9 @@ func TestSetVisibleTrueSynced(t *testing.T) {
 }
 
 func TestSetVisibleGroupTrue(t *testing.T) {
-	lm, err := LoadTestFile()
+	lm, err := loadTestFile()
 	if err != nil {
-		t.Error("failed to load test file.")
+		t.Fatal("failed to load test file.")
 	}
 	testData := []VisibleTest{
 		{"root", true, true},
@@ -248,9 +252,9 @@ func TestSetVisibleGroupTrue(t *testing.T) {
 }
 
 func TestSetVisibleGroupTrueSynced(t *testing.T) {
-	lm, err := LoadTestFile()
+	lm, err := loadTestFile()
 	if err != nil {
-		t.Error("failed to load test file.")
+		t.Fatal("failed to load test file.")
 	}
 	testData := []VisibleTest{
 		{"root", true, true},
@@ -276,9 +280,9 @@ func TestSetVisibleGroupTrueSynced(t *testing.T) {
 }
 
 func TestSetVisibleExclusiveTrue(t *testing.T) {
-	lm, err := LoadTestFile()
+	lm, err := loadTestFile()
 	if err != nil {
-		t.Error("failed to load test file.")
+		t.Fatal("failed to load test file.")
 	}
 	testData := []VisibleTest{
 		{"root", true, true},
@@ -304,9 +308,9 @@ func TestSetVisibleExclusiveTrue(t *testing.T) {
 }
 
 func TestSetVisibleExclusiveGroupTrue(t *testing.T) {
-	lm, err := LoadTestFile()
+	lm, err := loadTestFile()
 	if err != nil {
-		t.Error("failed to load test file.")
+		t.Fatal("failed to load test file.")
 	}
 	testData := []VisibleTest{
 		{"root", true, true},
@@ -332,9 +336,9 @@ func TestSetVisibleExclusiveGroupTrue(t *testing.T) {
 }
 
 func TestSetVisibleExclusiveGroupTrue2(t *testing.T) {
-	lm, err := LoadTestFile()
+	lm, err := loadTestFile()
 	if err != nil {
-		t.Error("failed to load test file.")
+		t.Fatal("failed to load test file.")
 	}
 	testData := []VisibleTest{
 		{"root", true, true},
@@ -354,6 +358,28 @@ func TestSetVisibleExclusiveGroupTrue2(t *testing.T) {
 	verifyOld(t, lm, testData)
 	lm.SetVisible(SeqID(lm.FindLayerByFullPath("!folder:flipx/*chk2").Layer.SeqID), true)
 	r := lm.SetVisibleExclusive(SeqID(lm.FindLayerByFullPath("!folder/c2").Layer.SeqID), true)
+	if !r {
+		t.Errorf("expected %v got %v", true, r)
+	}
+	verifyNew(t, lm, testData)
+}
+
+func TestFlipX2(t *testing.T) {
+	lm, err := loadFile("testdata/flipx.psd")
+	if err != nil {
+		t.Fatal("failed to load test file.")
+	}
+	testData := []VisibleTest{
+		{"!n1/*c2/*cc1:flipx", false, false},
+		{"!n1/*c2/*cc1", false, true},
+		{"!n1/*c2/*cc2:flipx", false, false},
+		{"!n1/*c2/*cc2", true, false},
+	}
+	verifyOld(t, lm, testData)
+	r, err := lm.Deserialize("v1.!n1/*c2/*cc1 L.0", nil)
+	if err != nil {
+		t.Error("failed to set flip.")
+	}
 	if !r {
 		t.Errorf("expected %v got %v", true, r)
 	}

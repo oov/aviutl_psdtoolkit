@@ -74,6 +74,13 @@ func copyStateRecursive(ls *layerStates, fi0 flatIndex, fi1 flatIndex) {
 	}
 }
 
+func intminmax(a, b int) (int, int) {
+	if a > b {
+		return b, a
+	}
+	return a, b
+}
+
 func setFlipOne(ls *layerStates, fpMap flipPairMap, mirror bool, processed map[*flipPair]struct{}) error {
 	for _, fp := range fpMap {
 		if _, ok := processed[fp]; ok {
@@ -98,7 +105,7 @@ func setFlipOne(ls *layerStates, fpMap flipPairMap, mirror bool, processed map[*
 			continue
 		}
 		s0.Visible, s1.Visible = false, true
-		s0.Priority, s1.Priority = ls.priority, ls.priority
+		s0.Priority, s1.Priority = intminmax(s0.Priority, s1.Priority)
 		copyStateRecursive(ls, fi0, fi1)
 	}
 
