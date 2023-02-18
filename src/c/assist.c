@@ -642,7 +642,9 @@ static void wndproc_receive_update_editing_image_state(struct ipc_update_editing
                 old_file_path.ptr,
                 L"\r\n\r\n"
                 L"割り当てられるPSDファイル:\r\n",
-                file_path.ptr);
+                file_path.ptr,
+                L"\r\n\r\n"
+                L"※PSD オブジェクトの設定で sendguard = 0 にすると、この確認ダイアログは表示されなくなります。");
     if (efailed(err)) {
       err = ethru(err);
       goto cleanup;
