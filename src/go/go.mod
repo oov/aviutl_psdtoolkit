@@ -10,9 +10,9 @@ require (
 	github.com/oov/downscale v0.0.0-20170819221759-1bbcb5d498e2
 	github.com/oov/psd v0.0.0-20220121172623-5db5eafcecbb
 	github.com/pkg/errors v0.9.1
-	golang.org/x/image v0.0.0-20220617043117-41969df76e82
+	golang.org/x/image v0.5.0
 	golang.org/x/sys v0.0.0-20220722155257-8c9f86f7a55f
-	golang.org/x/text v0.3.8
+	golang.org/x/text v0.7.0
 )
 
 require (
