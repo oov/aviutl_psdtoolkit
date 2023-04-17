@@ -72,7 +72,7 @@ jobs:
         run: |
           mkdir build
           cd build
-          rm -rf CMakeCache.txt && cmake -GNinja -DBUILD_DLL=1 -DCMAKE_C_COMPILER=clang -DCMAKE_C_STANDARD=11 -DCMAKE_C_STANDARD_REQUIRED=ON -DCMAKE_C_EXTENSIONS=OFF -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DLEAK_DETECTOR=OFF -DALLOCATE_LOGGER=OFF -DCMAKE_BUILD_TYPE=Release .. && cmake --build . --target psdtoolkit_assist --target psdtoolkit_bridge
+          rm -rf CMakeCache.txt && cmake -GNinja -DBUILD_DLL=1 -DCMAKE_C_COMPILER=clang -DCMAKE_C_STANDARD=11 -DCMAKE_C_STANDARD_REQUIRED=ON -DCMAKE_C_EXTENSIONS=OFF -DCMAKE_RC_COMPILER=llvm-rc -DCMAKE_RC_FLAGS="-C 65001" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DLEAK_DETECTOR=OFF -DALLOCATE_LOGGER=OFF -DCMAKE_BUILD_TYPE=Release .. && cmake --build . --target psdtoolkit_assist --target psdtoolkit_bridge
       - name: Upload binaries
         uses: actions/upload-artifact@v2
         with:

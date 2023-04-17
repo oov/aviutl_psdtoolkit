@@ -25,4 +25,4 @@ enum err_ptk {
   err_ptk_lua = 300,
 };
 
-NODISCARD error error_ptk_init(void);
+NODISCARD error ptk_error_message(int const type, int const code, struct NATIVE_STR *const dest);

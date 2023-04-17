@@ -31,7 +31,6 @@ void aviutl_set_pointers(FILTER const *const fp, void *const editp);
 NODISCARD error aviutl_init(size_t const options);
 NODISCARD bool aviutl_initalized(void);
 NODISCARD error aviutl_exit(void);
-NODISCARD error aviutl_exedit_is_enpatched(bool *const enpatched);
 NODISCARD error aviutl_get_exedit_window(HWND *const h);
 NODISCARD HWND aviutl_get_exedit_window_must(void);
 NODISCARD error aviutl_get_my_window(HWND *const h);

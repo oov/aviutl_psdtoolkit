@@ -9,13 +9,13 @@
 このチュートリアルでは AviUtl の導入先は `C:\AviUtl` とします。  
 他のフォルダーでも基本的には動作しますが、フォルダー名が長すぎたり、日本語などが含まれていると動作しないことがあります。
 
-[AviUtl の配布元サイト](http://spring-fragrance.mints.ne.jp/aviutl/)から `aviutl100.zip` と `exedit92.zip` をダウンロードし、`C:\AviUtl` へ解凍します。
+[AviUtl の配布元サイト](http://spring-fragrance.mints.ne.jp/aviutl/)から `aviutl110.zip` と `exedit92.zip` をダウンロードし、`C:\AviUtl` へ解凍します。
 
 そして `exedit.auf` と同じ場所へ `psdtoolkit_vX.X.zip` も解凍します。
 
 ![すべてのファイルを完了した時の様子](assets/tutorial-extract.png)
 
-完了すると `C:\AviUtl` の中身は上記のようになります。
+完了すると `C:\AviUtl` の中身は概ね上記のようになります。
 
 ## 上手く動かないときは
 

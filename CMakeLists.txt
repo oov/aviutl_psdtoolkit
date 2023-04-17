@@ -19,7 +19,7 @@ endif()
 if("${BUILD_PACKAGE}" STREQUAL "1")
   set(EXA_SUFFIX ".exa" CACHE STRING "suffix for *.exa file names")
 
-  set(GCMZ_VER "v0.4.0beta9")
+  set(GCMZ_VER "v0.4.0beta11")
   add_custom_target(extract_gcmzdrops COMMAND
     ${CMAKE_COMMAND}
     -Dlocal_dir="${PROJECT_BINARY_DIR}"
@@ -27,7 +27,7 @@ if("${BUILD_PACKAGE}" STREQUAL "1")
     -Ddir="gcmzdrops"
     -P "${CMAKE_SOURCE_DIR}/src/cmake/extract-zip.cmake"
   )
-  set(AXR_VER "v0.3.0beta9")
+  set(AXR_VER "v0.3.0beta11")
   add_custom_target(extract_audiomixer COMMAND
     ${CMAKE_COMMAND}
     -Dlocal_dir="${PROJECT_BINARY_DIR}"

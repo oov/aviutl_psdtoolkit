@@ -1,3 +1,4 @@
+option(USE_COMPILER_RT "use compiler-rt runtime" OFF)
 cmake_minimum_required(VERSION 3.0)
 project(psdtoolkit_c C)
 enable_language(RC)
@@ -74,6 +75,8 @@ target_link_libraries(psdtoolkit_bridge PRIVATE
   lua51
 )
 
+set(is_clang "$<C_COMPILER_ID:Clang>")
+set(v16_or_later "$<VERSION_GREATER_EQUAL:$<C_COMPILER_VERSION>,16>")
 foreach(target ${targets})
   if(target MATCHES "^test_")
     add_test(NAME ${target} COMMAND ${target})
@@ -90,6 +93,7 @@ foreach(target ${targets})
     $<$<CONFIG:Release>:NDEBUG>
   )
   target_compile_options(${target} PRIVATE
+    $<$<AND:$<BOOL:${WIN32}>,$<BOOL:${USE_COMPILER_RT}>>:--rtlib=compiler-rt>
     -mstackrealign
     -Wall
     -Wextra
@@ -99,6 +103,8 @@ foreach(target ${targets})
     -Werror=return-type
     -pedantic-errors
     -Wno-declaration-after-statement
+    -Wno-padded
+    $<$<AND:${is_clang},${v16_or_later}>:-Wno-unsafe-buffer-usage>
     -ffunction-sections
     -fdata-sections
     $<$<CONFIG:Debug>:-O0>
