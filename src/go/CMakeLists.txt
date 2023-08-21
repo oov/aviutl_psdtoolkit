@@ -1,8 +1,24 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.10)
 project(psdtoolkit_go NONE)
 
+set(GO_URL "https://go.dev/dl/go1.20.7.windows-amd64.zip")
+string(REGEX MATCH "[^/]+$" GO_ARCHIVE_NAME "${GO_URL}")
+set(GO_ARCHIVE_PATH "${CMAKE_CURRENT_BINARY_DIR}/${GO_ARCHIVE_NAME}")
+string(REGEX REPLACE "\\.[^.]+$" "" GO_ARCHIVE_NOEXT "${GO_ARCHIVE_NAME}")
+set(GO_DIR "${CMAKE_CURRENT_BINARY_DIR}/go")
+set(GO_EXE "${GO_DIR}/bin/go.exe")
+if(NOT EXISTS "${GO_ARCHIVE_PATH}")
+  file(DOWNLOAD "${GO_URL}" "${GO_ARCHIVE_PATH}")
+endif()
+if(NOT EXISTS "${GO_DIR}")
+  execute_process(
+    COMMAND ${CMAKE_COMMAND} -E tar xzf ${GO_ARCHIVE_PATH}
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+  )
+endif()
+
 add_custom_target(${PROJECT_NAME}_format
-COMMAND ${CMAKE_COMMAND} -E env GOROOT="$ENV{MINGW_PREFIX}/lib/go" go fmt
+COMMAND ${CMAKE_COMMAND} -E env GOROOT="${GO_DIR}" ${GO_EXE} fmt
 WORKING_DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}"
 USES_TERMINAL
 )
@@ -35,7 +51,7 @@ add_custom_target(psdtoolkit_main
     --output-format=coff
     -o "${CMAKE_CURRENT_SOURCE_DIR}/PSDToolKit.syso"
     "${CMAKE_CURRENT_SOURCE_DIR}/PSDToolKit.rc"
-  COMMAND ${CMAKE_COMMAND} -E env GOROOT="$ENV{MINGW_PREFIX}/lib/go" go build -x
+  COMMAND ${CMAKE_COMMAND} -E env GOROOT="${GO_DIR}" CC=clang ${GO_EXE} build -x
     -tags gdip
     "-ldflags=\"-s -X \\\"main.version=${_git_tag} ( ${_git_revision} )\\\"\""
     -o "${EXPORT_DIR}/script/PSDToolKit/PSDToolKit.exe"

@@ -1,5 +1,5 @@
 option(USE_COMPILER_RT "use compiler-rt runtime" OFF)
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.10)
 project(psdtoolkit_c C)
 enable_language(RC)
 

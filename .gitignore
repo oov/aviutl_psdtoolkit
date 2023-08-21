@@ -2,3 +2,4 @@
 aviutl
 src/go/*.syso
 build
+build64
