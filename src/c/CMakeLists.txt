@@ -12,22 +12,81 @@ add_custom_target(${PROJECT_NAME}_format
 add_subdirectory(3rd/ovbase)
 add_subdirectory(3rd/ovutil)
 
-add_custom_target(${PROJECT_NAME}_generate_version_h COMMAND
+add_custom_target(${PROJECT_NAME}_generate_version_h SOURCES
+  ${CMAKE_CURRENT_BINARY_DIR}/version.h
+)
+add_custom_command(
+OUTPUT
+  ${CMAKE_CURRENT_BINARY_DIR}/version.h
+COMMAND
   ${CMAKE_COMMAND}
   -Dlocal_dir="${CMAKE_CURRENT_SOURCE_DIR}"
   -Dinput_file="${CMAKE_CURRENT_SOURCE_DIR}/version.h.in"
   -Doutput_file="${CMAKE_CURRENT_BINARY_DIR}/version.h"
   -P "${ovutil_SOURCE_DIR}/src/cmake/version.cmake"
+DEPENDS
+  ${CMAKE_CURRENT_SOURCE_DIR}/version.h.in
 )
 
 find_program(LUA51DLL lua51.dll CMAKE_FIND_ROOT_PATH_BOTH)
-add_custom_target(generate_importlib COMMAND
+add_custom_target(generate_importlib SOURCES
+  ${CMAKE_CURRENT_BINARY_DIR}/lua51.def
+  ${CMAKE_CURRENT_BINARY_DIR}/liblua51.a
+)
+add_custom_command(
+OUTPUT
+  ${CMAKE_CURRENT_BINARY_DIR}/lua51.def
+  ${CMAKE_CURRENT_BINARY_DIR}/liblua51.a
+COMMAND
   ${CMAKE_COMMAND}
   -Dlocal_dir="${CMAKE_CURRENT_BINARY_DIR}"
   -Ddll="${LUA51DLL}"
   -Ddef="${CMAKE_CURRENT_BINARY_DIR}/lua51.def"
   -Dlib="${CMAKE_CURRENT_BINARY_DIR}/liblua51.a"
   -P "${ovutil_SOURCE_DIR}/src/cmake/makelib-llvm.cmake"
+DEPENDS
+  ${LUA51DLL}
+)
+
+set(is_clang "$<C_COMPILER_ID:Clang>")
+set(v16_or_later "$<VERSION_GREATER_EQUAL:$<C_COMPILER_VERSION>,16>")
+add_library(psdtoolkit_intf INTERFACE)
+target_include_directories(psdtoolkit_intf INTERFACE
+  "${CMAKE_CURRENT_BINARY_DIR}" # for version.h
+)
+target_link_directories(psdtoolkit_intf INTERFACE
+  "${CMAKE_CURRENT_BINARY_DIR}" # for liblua51_*.a
+)
+target_compile_definitions(psdtoolkit_intf INTERFACE
+  $<$<BOOL:${WIN32}>:_WIN32_WINNT=0x0502>
+  _WINDOWS
+  $<$<CONFIG:Release>:NDEBUG>
+)
+target_compile_options(psdtoolkit_intf INTERFACE
+  $<$<AND:$<BOOL:${WIN32}>,$<BOOL:${USE_COMPILER_RT}>>:--rtlib=compiler-rt>
+  -mstackrealign
+  -Wall
+  -Wextra
+  -Werror
+  -Weverything
+  -Wshadow
+  -Werror=return-type
+  -pedantic-errors
+  -Wno-declaration-after-statement
+  -Wno-padded
+  $<$<AND:${is_clang},${v16_or_later}>:-Wno-unsafe-buffer-usage>
+  -ffunction-sections
+  -fdata-sections
+  $<$<CONFIG:Debug>:-O0>
+  $<$<CONFIG:Release>:-O2>
+  -flto
+)
+target_link_options(psdtoolkit_intf INTERFACE
+  -fuse-ld=lld
+  -Wl,--gc-sections
+  # -Wl,--print-gc-sections
+  -Wl,--kill-at
+  $<$<CONFIG:Release>:-s>
 )
 
 add_library(psdtoolkit_assist SHARED
@@ -45,7 +104,6 @@ add_library(psdtoolkit_assist SHARED
   setting.c
   speak.c
 )
-list(APPEND targets psdtoolkit_assist)
 set_target_properties(psdtoolkit_assist PROPERTIES
   OUTPUT_NAME "PSDToolKit.auf"
   PREFIX ""
@@ -54,6 +112,7 @@ set_target_properties(psdtoolkit_assist PROPERTIES
 )
 add_dependencies(psdtoolkit_assist ${PROJECT_NAME}_format ${PROJECT_NAME}_generate_version_h generate_importlib)
 target_link_libraries(psdtoolkit_assist PRIVATE
+  psdtoolkit_intf
   lua51
   -Wl,-delayload,lua51.dll
   ovbase
@@ -63,7 +122,6 @@ target_link_libraries(psdtoolkit_assist PRIVATE
 add_library(psdtoolkit_bridge SHARED
   bridge.c
 )
-list(APPEND targets psdtoolkit_bridge)
 set_target_properties(psdtoolkit_bridge PROPERTIES
   OUTPUT_NAME "PSDToolKitBridge.dll"
   PREFIX ""
@@ -72,50 +130,6 @@ set_target_properties(psdtoolkit_bridge PROPERTIES
 )
 add_dependencies(psdtoolkit_bridge ${PROJECT_NAME}_format generate_importlib)
 target_link_libraries(psdtoolkit_bridge PRIVATE
+  psdtoolkit_intf
   lua51
 )
-
-set(is_clang "$<C_COMPILER_ID:Clang>")
-set(v16_or_later "$<VERSION_GREATER_EQUAL:$<C_COMPILER_VERSION>,16>")
-foreach(target ${targets})
-  if(target MATCHES "^test_")
-    add_test(NAME ${target} COMMAND ${target})
-  endif()
-  target_include_directories(${target} PRIVATE
-    "${CMAKE_CURRENT_BINARY_DIR}" # for version.h
-  )
-  target_link_directories(${target} PRIVATE
-    "${CMAKE_CURRENT_BINARY_DIR}" # for liblua51_*.a
-  )
-  target_compile_definitions(${target} PRIVATE
-    $<$<BOOL:${WIN32}>:_WIN32_WINNT=0x0502>
-    _WINDOWS
-    $<$<CONFIG:Release>:NDEBUG>
-  )
-  target_compile_options(${target} PRIVATE
-    $<$<AND:$<BOOL:${WIN32}>,$<BOOL:${USE_COMPILER_RT}>>:--rtlib=compiler-rt>
-    -mstackrealign
-    -Wall
-    -Wextra
-    -Werror
-    -Weverything
-    -Wshadow
-    -Werror=return-type
-    -pedantic-errors
-    -Wno-declaration-after-statement
-    -Wno-padded
-    $<$<AND:${is_clang},${v16_or_later}>:-Wno-unsafe-buffer-usage>
-    -ffunction-sections
-    -fdata-sections
-    $<$<CONFIG:Debug>:-O0>
-    $<$<CONFIG:Release>:-O2>
-    -flto
-  )
-  target_link_options(${target} PRIVATE
-    -fuse-ld=lld
-    -Wl,--gc-sections
-    # -Wl,--print-gc-sections
-    -Wl,--kill-at
-    $<$<CONFIG:Release>:-s>
-  )
-endforeach(target)

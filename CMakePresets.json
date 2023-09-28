@@ -1,0 +1,60 @@
+{
+  "version": 2,
+  "cmakeMinimumRequired": {
+    "major": 3,
+    "minor": 20,
+    "patch": 0
+  },
+  "configurePresets": [
+    {
+      "name": "32bit",
+      "displayName": "32bit DLL build",
+      "description": "32bit DLL build using Ninja generator",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/32bit",
+      "cacheVariables": {
+        "CMAKE_BUILD_TYPE": "Release",
+        "CMAKE_C_COMPILER": "clang",
+        "CMAKE_C_STANDARD": "11",
+        "CMAKE_C_STANDARD_REQUIRED": "ON",
+        "CMAKE_C_EXTENSIONS": "OFF",
+        "CMAKE_RC_COMPILER": "llvm-rc",
+        "CMAKE_RC_FLAGS": "-C 65001",
+        "CMAKE_EXPORT_COMPILE_COMMANDS": "ON",
+        "BUILD_DLL": "1",
+        "LEAK_DETECTOR": "OFF",
+        "ALLOCATE_LOGGER": "OFF",
+        "FORMAT_SOURCES": "ON"
+      },
+      "environment": {}
+    },
+    {
+      "name": "64bit",
+      "displayName": "64bit EXE build",
+      "description": "64bit EXE build using Ninja generator",
+      "generator": "Ninja",
+      "binaryDir": "${sourceDir}/build/64bit",
+      "cacheVariables": {
+        "BUILD_EXE": "1"
+      }
+    }
+  ],
+  "buildPresets": [
+    {
+      "name": "32bit",
+      "configurePreset": "32bit"
+    },
+    {
+      "name": "64bit",
+      "configurePreset": "64bit"
+    }
+  ],
+  "testPresets": [
+    {
+      "name": "32bit",
+      "configurePreset": "32bit",
+      "output": {"outputOnFailure": true},
+      "execution": {"noTestsAction": "error", "stopOnFailure": true}
+    }
+  ]
+}

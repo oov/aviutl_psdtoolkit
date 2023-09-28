@@ -34,15 +34,16 @@ jobs:
       - name: Run ninja
         shell: msys2 {0}
         run: |
-          mkdir build
+          mkdir -p build/64bit
           cd build
-          rm -rf CMakeCache.txt && cmake -GNinja -DBUILD_EXE=1 -DCMAKE_BUILD_TYPE=Release .. && cmake --build . --target psdtoolkit_main
+          rm -f 64bit/CMakeCache.txt && cmake -S .. -B 64bit --preset 64bit && \
+          cmake --build 64bit --target psdtoolkit_main
       - name: Upload binaries
         uses: actions/upload-artifact@v2
         with:
           name: bin64
           path: |
-            build/bin/**/*
+            build/64bit/bin/**/*
   build32:
     runs-on: windows-latest
     strategy:
@@ -69,15 +70,16 @@ jobs:
       - name: Build
         shell: msys2 {0}
         run: |
-          mkdir build
+          mkdir -p build/32bit
           cd build
-          rm -rf CMakeCache.txt && cmake -GNinja -DBUILD_DLL=1 -DCMAKE_C_COMPILER=clang -DCMAKE_C_STANDARD=11 -DCMAKE_C_STANDARD_REQUIRED=ON -DCMAKE_C_EXTENSIONS=OFF -DCMAKE_RC_COMPILER=llvm-rc -DCMAKE_RC_FLAGS="-C 65001" -DCMAKE_EXPORT_COMPILE_COMMANDS=ON -DLEAK_DETECTOR=OFF -DALLOCATE_LOGGER=OFF -DCMAKE_BUILD_TYPE=Release .. && cmake --build . --target psdtoolkit_assist --target psdtoolkit_bridge
+          rm -f 32bit/CmakeCache.txt && cmake -S .. -B 32bit --preset 32bit -DFORMAT_SOURCES=ON && \
+          cmake --build 32bit --target psdtoolkit_assist --target psdtoolkit_bridge
       - name: Upload binaries
         uses: actions/upload-artifact@v2
         with:
           name: bin32
           path: |
-            build/bin/**/*
+            build/32bit/bin/**/*
   create-release:
     needs: [build64, build32]
     runs-on: ubuntu-latest
