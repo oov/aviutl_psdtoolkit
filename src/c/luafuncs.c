@@ -4,9 +4,11 @@
 #include "ovutil/win32.h"
 
 #include <lua5.1/lauxlib.h>
-#include <lua5.1/lualib.h>
 
 #include "cache.h"
+
+#include "luafuncs_wordwrap.h"
+#include "luautil.h"
 
 struct ipc *g_ipc = NULL;
 struct speak *g_speak = NULL;
@@ -15,52 +17,6 @@ struct wstr g_current_project_path = {0};
 int32_t g_current_frame = 0;
 int32_t g_current_frame_n = 0;
 int32_t g_current_render_index = 0;
-
-static int luafn_err_(lua_State *const L, error e, char const *const funcname) {
-  struct wstr msg = {0};
-  struct wstr errmsg = {0};
-  struct str s = {0};
-
-  luaL_where(L, 1);
-  if (strncmp(funcname, "luafn_", 6) == 0) {
-    lua_pushstring(L, "error on PSDToolKitBridge.");
-    lua_pushstring(L, funcname + 6);
-  } else {
-    lua_pushstring(L, "error on ");
-    lua_pushstring(L, funcname);
-  }
-  lua_pushstring(L, "():\r\n");
-  error err = error_to_string(e, &errmsg);
-  if (efailed(err)) {
-    err = ethru(err);
-    goto cleanup;
-  }
-  err = scat(&msg, errmsg.ptr);
-  if (efailed(err)) {
-    err = ethru(err);
-    goto cleanup;
-  }
-  err = to_mbcs(&errmsg, &s);
-  if (efailed(err)) {
-    err = ethru(err);
-    goto cleanup;
-  }
-  lua_pushlstring(L, s.ptr, s.len);
-  lua_concat(L, 5);
-
-cleanup:
-  if (efailed(err)) {
-    efree(&err);
-    lua_pushstring(L, "failed to build error message");
-    lua_concat(L, 5);
-  }
-  ereport(sfree(&msg));
-  ereport(sfree(&errmsg));
-  ereport(sfree(&s));
-  efree(&e);
-  return lua_error(L);
-}
-#define luafn_err(L, err) luafn_err_((L), (err), (__func__))
 
 NODISCARD static error mbcs_to_utf8(struct str const *const mbcs, struct str *const utf8) {
   struct wstr tmp = {0};
@@ -400,7 +356,7 @@ static int luafn_type(lua_State *L) {
   return 1;
 }
 
-int luaopen_PSDToolKitBridge(lua_State *L) {
+int luafuncs_init(lua_State *L) {
   static luaL_Reg funcs[] = {
       {"addfile", luafn_addfile},
       {"draw", luafn_draw},
@@ -408,6 +364,7 @@ int luaopen_PSDToolKitBridge(lua_State *L) {
       {"getcurrentframe", luafn_getcurrentframe},
       {"getlayernames", luafn_getlayernames},
       {"getspeaklevel", luafn_getspeaklevel},
+      {"wordwrap", luafn_wordwrap},
       {"getwavlabpath", luafn_getwavlabpath},
       {"putcache", luafn_putcache},
       {"setprops", luafn_setprops},
@@ -417,3 +374,5 @@ int luaopen_PSDToolKitBridge(lua_State *L) {
   luaL_register(L, "PSDToolKitBridge", funcs);
   return 1;
 }
+
+void luafuncs_cleanup(void) { cleanup_wordwrap(); }

@@ -64,7 +64,7 @@ NODISCARD static error bridge_dll_init(void) {
     err = errhr(HRESULT_FROM_WIN32(GetLastError()));
     goto cleanup;
   }
-  fn(luaopen_PSDToolKitBridge);
+  fn(luafuncs_init);
 
 cleanup:
   if (efailed(err)) {
@@ -78,6 +78,7 @@ cleanup:
 }
 
 static void bridge_dll_exit(void) {
+  luafuncs_cleanup();
   if (g_bridge) {
     FreeLibrary(g_bridge);
     g_bridge = NULL;

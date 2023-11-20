@@ -21,6 +21,8 @@ static FILTER const *g_exedit_fp = NULL;
 static enum aviutl_patched g_exedit_patch = aviutl_patched_default;
 static bool g_initialized = false;
 
+static bool g_exedit_is_092 = false;
+
 NODISCARD static error verify_installation(void) {
   struct wstr path = {0};
   error err = get_module_file_name(get_hinstance(), &path);
@@ -137,7 +139,10 @@ NODISCARD static error verify_exedit_version(FILTER const *const exedit_fp) {
   if (!len) {
     goto failed;
   }
-  verstr += len + 1; // skip dot
+  if (verstr[len] != '.') {
+    goto failed;
+  }
+  verstr += len + 1;
   len = atou32(verstr, &minor);
   if (!len) {
     goto failed;
@@ -145,11 +150,14 @@ NODISCARD static error verify_exedit_version(FILTER const *const exedit_fp) {
   if (major == 0 && minor < 92) {
     goto failed;
   }
+  g_exedit_is_092 = major == 0 && minor == 92;
   return eok();
 
 failed:
   return err(err_type_ptk, err_ptk_unsupported_exedit_version);
 }
+
+bool aviutl_exedit_is_092(void) { return g_exedit_is_092; }
 
 NODISCARD static error load_lua51(HMODULE *const lua51) {
   struct wstr path = {0};

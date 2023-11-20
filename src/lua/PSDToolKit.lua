@@ -51,6 +51,13 @@ local function isdead(subobj)
   return true
 end
 
+local function wordwrap(text, options)
+  if PSDToolKitBridge.wordwrap ~= nil then
+    return PSDToolKitBridge.wordwrap(text, options)
+  end
+  return text
+end
+
 local PSDState = {}
 
 -- スクリプトから呼び出す用
@@ -636,12 +643,43 @@ function SubtitleState.new(text, x, y, z, frame, time, totalframe, totaltime, un
   }, {__index = SubtitleState})
 end
 
-function SubtitleState:mes(obj)
-  obj.mes(self.text)
+function SubtitleState:mes(obj, opts)
+  -- v0.2.0beta64 以前
+  --   opts = nil -- 引数なし
+  -- v0.2.0beta65 以降
+  --   opts = {
+  --     wordwrap = {
+  --       mode = 0,
+  --       width = 0,
+  --     },
+  --   }
+  local text = self.text
+  if opts.wordwrap ~= nil then
+    text = wordwrap(text, opts.wordwrap)
+  end
+  obj.mes(text)
 end
 
-function SubtitleState:mesfast(obj, mode)
-  require("CacheText").rawmes(self.text, mode)
+function SubtitleState:mesfast(obj, opts)
+  -- v0.2.0beta64 以前
+  --   opts = 0 -- キャッシュモード
+  -- v0.2.0beta65 以降
+  --   opts = {
+  --     cache = 0,
+  --     wordwrap = {
+  --       mode = 0,
+  --       width = 0,
+  --     },
+  --   }
+  if PSDToolKitBridge.type(opts) == "number" then
+    -- v0.2.0beta64 以前の形式は変換する
+    opts = {cache = opts}
+  end
+  local text = self.text
+  if opts.wordwrap ~= nil then
+    text = wordwrap(text, opts.wordwrap)
+  end
+  require("CacheText").rawmes(text, opts.cache or 0)
 end
 
 local SubtitleStates = {}
@@ -687,21 +725,21 @@ function SubtitleStates:getlive(index, obj)
   return s
 end
 
-function SubtitleStates:mes(index, obj)
+function SubtitleStates:mes(index, obj, opts)
   local s = self:getlive(index, obj)
   if s.notfound then
     return s
   end
-  s:mes(obj)
+  s:mes(obj, opts)
   return s
 end
 
-function SubtitleStates:mesfast(index, obj, mode)
+function SubtitleStates:mesfast(index, obj, opts)
   local s = self:getlive(index, obj)
   if s.notfound then
     return s
   end
-  s:mesfast(obj, mode)
+  s:mesfast(obj, opts)
   return s
 end
 
@@ -922,6 +960,7 @@ P.emptysubobj = {
 }
 
 P.print = print
+P.wordwrap = wordwrap
 P.PSDState = PSDState
 P.Blinker = Blinker
 P.LipSyncSimple = LipSyncSimple

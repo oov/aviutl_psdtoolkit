@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 3.10)
 project(psdtoolkit NONE)
+enable_testing()
 
 set(EXPORT_DIR_NAME "bin" CACHE STRING "export directory")
 if ("${EXPORT_DIR_NAME}" STREQUAL "")

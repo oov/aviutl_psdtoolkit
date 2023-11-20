@@ -35,6 +35,7 @@ NODISCARD error aviutl_get_exedit_window(HWND *const h);
 NODISCARD HWND aviutl_get_exedit_window_must(void);
 NODISCARD error aviutl_get_my_window(HWND *const h);
 NODISCARD HWND aviutl_get_my_window_must(void);
+bool aviutl_exedit_is_092(void);
 
 NODISCARD error aviutl_get_sys_info(SYS_INFO *const si);
 NODISCARD error aviutl_get_editing_file_info(FILE_INFO *const fi);
