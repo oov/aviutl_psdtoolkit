@@ -49,6 +49,10 @@ function P.ondrop(files, state)
             filepath = filepath .. "|" .. pfv
             -- この pfv ファイルはドロップされるファイルからは取り除いておく
             table.remove(files, i2)
+            if i2 < i then
+              -- このファイルより前にあったファイルを取り除いたのでインデックスを調整
+              i = i - 1
+            end
             break
           end
         end
