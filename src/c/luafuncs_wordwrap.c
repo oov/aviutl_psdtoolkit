@@ -1039,6 +1039,8 @@ static uint64_t calc_hash(struct wordwrap_settings const *const wws, char const 
   return cyrb64_final(&ctx);
 }
 
+// TODO: support custom models and additinal languages.
+// TODO: support manually add or remove line break points.
 static struct budouxc *g_bodouxc_model = NULL;
 
 int luafn_wordwrap(lua_State *L) {
