@@ -40,6 +40,9 @@ local function postprocesssubtitle(subtitle, encoding, setting)
   if subtitle:sub(1, 3) == "\239\187\191" then
     encoding = "utf8"
     subtitle = subtitle:sub(4)
+  elseif GCMZDrops.isutf8(subtitle) then
+    -- BOM がなくてもテキストが UTF-8 として正しくエンコードされているなら UTF-8 として扱う
+    encoding = "utf8"
   elseif subtitle:sub(1, 2) == "\255\254" then
     encoding = "utf16le"
     subtitle = subtitle:sub(3)
