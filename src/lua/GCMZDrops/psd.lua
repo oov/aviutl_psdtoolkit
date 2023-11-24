@@ -31,7 +31,8 @@ function P.encodelua(s)
 end
 
 function P.ondrop(files, state)
-  for i, v in ipairs(files) do
+  for i=1, #files do
+    v = files[i]
     -- ファイルの拡張子が psd か psb だったら
     local ext = v.filepath:match("[^.]+$"):lower()
     if ext == "psd" or ext == "psb" then
