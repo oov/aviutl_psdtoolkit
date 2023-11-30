@@ -1,6 +1,7 @@
 #include "luafuncs_wordwrap.h"
 
 #include <ovarray.h>
+#include <ovthreads.h>
 #include <ovutf.h>
 #include <ovutil/win32.h>
 
@@ -969,7 +970,7 @@ cleanup:
 
 struct cache {
   uint64_t hash;
-  uint32_t used_at;
+  struct timespec used_at;
   struct str text;
 };
 
@@ -1002,11 +1003,15 @@ static struct cache g_caches[8] = {0};
 static struct cache *cache_find(uint64_t const hash) {
   for (size_t i = 0; i < sizeof(g_caches) / sizeof(g_caches[0]); ++i) {
     if (g_caches[i].hash == hash) {
-      g_caches[i].used_at = GetTickCount();
+      timespec_get(&g_caches[i].used_at, TIME_UTC);
       return &g_caches[i];
     }
   }
   return NULL;
+}
+
+static bool a_is_old_than_b(struct timespec const *const a, struct timespec const *const b) {
+  return a->tv_sec < b->tv_sec || (a->tv_sec == b->tv_sec && a->tv_nsec < b->tv_nsec);
 }
 
 static struct cache *cache_get(uint64_t const hash) {
@@ -1015,33 +1020,136 @@ static struct cache *cache_get(uint64_t const hash) {
     if (g_caches[i].hash == hash) {
       return &g_caches[i];
     }
-    if (g_caches[i].used_at < g_caches[oldest].used_at) {
+    if (a_is_old_than_b(&g_caches[i].used_at, &g_caches[oldest].used_at)) {
       oldest = i;
     }
   }
   return &g_caches[oldest];
 }
 
-static uint64_t calc_hash(struct wordwrap_settings const *const wws, char const *const text, size_t const text_len) {
+static uint64_t calc_hash(struct wordwrap_settings const *const wws,
+                          char const *const text,
+                          size_t const text_len,
+                          char const *const model_name,
+                          size_t const model_name_len) {
   struct cyrb64_context ctx = {0};
   _Static_assert(sizeof(struct wordwrap_settings) % 4 == 0,
                  "Size of struct wordwrap_settings must be a multiple of 4.");
   cyrb64_init(&ctx, 0x68f6bc15);
   cyrb64_update(&ctx, (uint32_t const *)wws, sizeof(struct wordwrap_settings) / 4);
-  size_t const n = text_len / 4;
-  cyrb64_update(&ctx, (void const *)text, n);
-  size_t const n4 = n * 4;
-  if (n4 < text_len) {
-    uint8_t buf[4] = {0};
-    memcpy(buf, text + n4, text_len - n4);
-    cyrb64_update(&ctx, (void const *)buf, 1);
+  if (text_len > 0) {
+    size_t const n = text_len / 4;
+    cyrb64_update(&ctx, (void const *)text, n);
+    size_t const n4 = n * 4;
+    if (n4 < text_len) {
+      uint8_t buf[4] = {0};
+      memcpy(buf, text + n4, text_len - n4);
+      cyrb64_update(&ctx, (void const *)buf, 1);
+    }
+  }
+  if (model_name_len > 0) {
+    size_t const n = model_name_len / 4;
+    cyrb64_update(&ctx, (void const *)model_name, n);
+    size_t const n4 = n * 4;
+    if (n4 < model_name_len) {
+      uint8_t buf[4] = {0};
+      memcpy(buf, model_name + n4, model_name_len - n4);
+      cyrb64_update(&ctx, (void const *)buf, 1);
+    }
   }
   return cyrb64_final(&ctx);
 }
 
-// TODO: support custom models and additinal languages.
 // TODO: support manually add or remove line break points.
-static struct budouxc *g_bodouxc_model = NULL;
+
+struct model {
+  char *name;
+  struct budouxc *model;
+  struct timespec used_at;
+};
+
+static struct model g_models[4] = {0};
+
+static NODISCARD error model_get(char const *const name, struct budouxc **const model) {
+  if (!name || !model) {
+    return errg(err_invalid_arugment);
+  }
+
+  size_t oldest = 0;
+  for (size_t i = 0; i < sizeof(g_models) / sizeof(g_models[0]); ++i) {
+    if (g_models[i].name && strcmp(g_models[i].name, name) == 0) {
+      *model = g_models[i].model;
+      return eok();
+    }
+    if (a_is_old_than_b(&g_models[i].used_at, &g_models[oldest].used_at)) {
+      oldest = i;
+    }
+  }
+
+  error err = eok();
+  HANDLE h = INVALID_HANDLE_VALUE;
+  char *json = NULL;
+
+  if (g_models[oldest].model) {
+    budouxc_destroy(g_models[oldest].model);
+    g_models[oldest].model = NULL;
+  }
+
+  char errormsg[128];
+  if (strcmp(name, "ja") == 0) {
+    g_models[oldest].model = budouxc_init_embedded_ja(NULL, errormsg);
+  } else if (strcmp(name, "zh_hans") == 0) {
+    g_models[oldest].model = budouxc_init_embedded_zh_hans(NULL, errormsg);
+  } else if (strcmp(name, "zh_hant") == 0) {
+    g_models[oldest].model = budouxc_init_embedded_zh_hant(NULL, errormsg);
+  } else {
+    h = CreateFileA(name, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+    if (h == INVALID_HANDLE_VALUE) {
+      err =
+          emsg_i18n(err_type_hresult, HRESULT_FROM_WIN32(GetLastError()), gettext("failed to open BudouX model file."));
+      goto cleanup;
+    }
+    LARGE_INTEGER sz;
+    if (!GetFileSizeEx(h, &sz)) {
+      err = emsg_i18n(err_type_hresult, HRESULT_FROM_WIN32(GetLastError()), gettext("failed to get file size."));
+      goto cleanup;
+    }
+    if (sz.HighPart != 0) {
+      err = emsg_i18n(err_type_generic, err_unexpected, gettext("file size is too large."));
+      goto cleanup;
+    }
+    err = mem(&json, sz.LowPart, 1);
+    if (efailed(err)) {
+      err = ethru(err);
+      goto cleanup;
+    }
+    if (!ReadFile(h, json, sz.LowPart, &sz.LowPart, NULL)) {
+      err = emsg_i18n(err_type_hresult, HRESULT_FROM_WIN32(GetLastError()), gettext("failed to read file."));
+      goto cleanup;
+    }
+    g_models[oldest].model = budouxc_init(NULL, json, sz.LowPart, errormsg);
+  }
+  if (!g_models[oldest].model) {
+    err = emsg_i18n(err_type_generic, err_fail, errormsg);
+    goto cleanup;
+  }
+  err = OV_ARRAY_GROW(&g_models[oldest].name, strlen(name) + 1);
+  if (efailed(err)) {
+    err = ethru(err);
+    goto cleanup;
+  }
+  strcpy(g_models[oldest].name, name);
+  timespec_get(&g_models[oldest].used_at, TIME_UTC);
+  *model = g_models[oldest].model;
+cleanup:
+  if (h != INVALID_HANDLE_VALUE) {
+    CloseHandle(h);
+  }
+  if (json) {
+    ereport(mem_free(json));
+  }
+  return err;
+}
 
 int luafn_wordwrap(lua_State *L) {
   error err = eok();
@@ -1076,7 +1184,16 @@ int luafn_wordwrap(lua_State *L) {
     goto cleanup;
   }
 
-  uint64_t const hash = calc_hash(&wws, text_mbcs, text_mbcs_len);
+  char const *model_name = "ja";
+  size_t model_name_len = strlen(model_name);
+  if (wws.mode == wwm_budoux && num_params >= 2 && lua_istable(L, 2)) {
+    lua_getfield(L, 2, "model");
+    if (lua_isstring(L, -1)) {
+      model_name = lua_tolstring(L, -1, &model_name_len);
+    }
+  }
+
+  uint64_t const hash = calc_hash(&wws, text_mbcs, text_mbcs_len, model_name, model_name_len);
 #if WW_DEBUG
   {
     wchar_t buf[128] = {0};
@@ -1117,11 +1234,11 @@ int luafn_wordwrap(lua_State *L) {
     goto cleanup;
   }
 
-  if (!g_bodouxc_model) {
-    char errormsg[128];
-    g_bodouxc_model = budouxc_init_embedded_ja(NULL, errormsg);
-    if (!g_bodouxc_model) {
-      err = emsg_i18n(err_type_generic, err_fail, errormsg);
+  struct budouxc *model = NULL;
+  if (wws.mode == wwm_budoux) {
+    err = model_get(model_name, &model);
+    if (efailed(err)) {
+      err = ethru(err);
       goto cleanup;
     }
   }
@@ -1204,7 +1321,7 @@ int luafn_wordwrap(lua_State *L) {
     } else if (wws.mode == wwm_rule) {
       break_gpos = find_breakpoint_rule(&lr, gpos);
     } else if (wws.mode == wwm_budoux) {
-      break_gpos = find_breakpoint_budoux(&lr, gpos, g_bodouxc_model, &boundaries);
+      break_gpos = find_breakpoint_budoux(&lr, gpos, model, &boundaries);
     }
 
     if (break_gpos == SIZE_MAX) {
@@ -1260,7 +1377,7 @@ int luafn_wordwrap(lua_State *L) {
 
   struct cache *c = cache_get(hash);
   c->hash = hash;
-  c->used_at = GetTickCount();
+  timespec_get(&c->used_at, TIME_UTC);
   err = to_mbcs(&processed, &c->text);
   if (efailed(err)) {
     err = ethru(err);
@@ -1287,13 +1404,18 @@ cleanup:
 }
 
 void cleanup_wordwrap(void) {
-  if (g_bodouxc_model) {
-    budouxc_destroy(g_bodouxc_model);
-    g_bodouxc_model = NULL;
-  }
   for (size_t i = 0; i < sizeof(g_caches) / sizeof(g_caches[0]); ++i) {
     if (g_caches[i].text.ptr) {
       eignore(sfree(&g_caches[i].text));
+    }
+  }
+  for (size_t i = 0; i < sizeof(g_models) / sizeof(g_models[0]); ++i) {
+    if (g_models[i].name) {
+      OV_ARRAY_DESTROY(&g_models[i].name);
+    }
+    if (g_models[i].model) {
+      budouxc_destroy(g_models[i].model);
+      g_models[i].model = NULL;
     }
   }
 }
