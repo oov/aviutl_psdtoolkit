@@ -103,6 +103,7 @@ target_compile_options(psdtoolkit_intf INTERFACE
   -fdata-sections
   $<$<CONFIG:Debug>:-O0>
   $<$<CONFIG:Release>:-O2>
+  $<$<BOOL:${USE_ADDRESS_SANITIZER}>:-fsanitize=address>
   -flto
 )
 target_link_options(psdtoolkit_intf INTERFACE
@@ -110,6 +111,7 @@ target_link_options(psdtoolkit_intf INTERFACE
   -Wl,--gc-sections
   # -Wl,--print-gc-sections
   -Wl,--kill-at
+  $<$<BOOL:${USE_ADDRESS_SANITIZER}>:-fsanitize=address>
   $<$<CONFIG:Release>:-s>
 )
 add_dependencies(psdtoolkit_intf ${PROJECT_NAME}_format generate_importlib budoux-c)
