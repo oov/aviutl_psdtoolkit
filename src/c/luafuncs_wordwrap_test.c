@@ -247,6 +247,8 @@ static void test_tag(void) {
       {L"return wordwrap('こん<nobr>にちは', {font='MS UI Gothic', size=12, width=4, mode=2})", L"こ\nん\nにちは"},
       {L"return wordwrap('<nobr>こん</nobr>にちは', {font='MS UI Gothic', size=12, width=4, mode=2})",
        L"こん\nに\nち\nは"},
+      {L"return wordwrap('hello\\nworld', {font='Arial', size=9, width=32, mode=1})", L"hello\nworld"},
+      {L"return wordwrap('hello\\n\\nworld', {font='Arial', size=9, width=32, mode=1})", L"hello\n\nworld"},
   };
 
   struct wstr ws = {0};

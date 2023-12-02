@@ -5,8 +5,9 @@ enable_language(RC)
 enable_testing()
 
 find_program(CLANG_FORMAT_EXE clang-format)
-file(GLOB sources "${CMAKE_CURRENT_SOURCE_DIR}/*.c" "${CMAKE_CURRENT_SOURCE_DIR}/*.h")
-add_custom_target(${PROJECT_NAME}_format
+file(GLOB_RECURSE sources LIST_DIRECTORIES false CONFIGURE_DEPENDS "*.c" "*.h")
+list(FILTER sources EXCLUDE REGEX "${CMAKE_CURRENT_SOURCE_DIR}/3rd")
+add_custom_target(${PROJECT_NAME}-format ALL
   COMMAND ${CLANG_FORMAT_EXE} -style=file -i ${sources}
 )
 
@@ -85,6 +86,7 @@ target_compile_definitions(psdtoolkit_intf INTERFACE
   $<$<BOOL:${WIN32}>:_WIN32_WINNT=0x0502>
   _WINDOWS
   $<$<CONFIG:Release>:NDEBUG>
+  # WW_DEBUG
 )
 target_compile_options(psdtoolkit_intf INTERFACE
   $<$<AND:$<BOOL:${WIN32}>,$<BOOL:${USE_COMPILER_RT}>>:--rtlib=compiler-rt>
@@ -116,11 +118,12 @@ target_link_options(psdtoolkit_intf INTERFACE
 )
 add_dependencies(psdtoolkit_intf ${PROJECT_NAME}_format generate_importlib budoux-c)
 
+add_subdirectory(wordwrap)
+
 add_library(psdtoolkit_assist SHARED
   assist.c
   assist.rc
   aviutl.c
-  aviutl_text.c
   cache.c
   error_ptk.c
   find.c
@@ -148,22 +151,17 @@ target_link_libraries(psdtoolkit_assist PRIVATE
   ovbase
   ovutil
   budoux-c
+  wordwrap
 )
 
-add_executable(test_aviutl_text aviutl_text.c aviutl_text_test.c)
-target_link_libraries(test_aviutl_text PRIVATE
-  psdtoolkit_intf
-  ovbase
-)
-add_test(NAME test_aviutl_text COMMAND test_aviutl_text)
-
-add_executable(test_luafuncs luafuncs_wordwrap_test.c aviutl.c aviutl_text.c luautil.c)
+add_executable(test_luafuncs luafuncs_wordwrap_test.c aviutl.c luautil.c)
 target_link_libraries(test_luafuncs PRIVATE
   psdtoolkit_intf
   lua51
   ovbase
   ovutil
   budoux-c
+  wordwrap
 )
 add_test(NAME test_luafuncs COMMAND test_luafuncs)
 
