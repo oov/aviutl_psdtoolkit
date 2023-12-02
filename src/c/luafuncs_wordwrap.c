@@ -315,7 +315,7 @@ initialize_params(lua_State *const L, int const table_index, struct wordwrap_set
   bool font_bold = false;
   bool font_italic = false;
 
-  double max_width = 400.;
+  double max_width = 800.;
   double adjust_last = 0.;
   int letter_spacing = 0;
   bool monospace = false;
