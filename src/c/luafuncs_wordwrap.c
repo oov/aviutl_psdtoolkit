@@ -915,8 +915,9 @@ static enum wordwrap_mode int_to_wordwrap_mode(int const v) {
 
 struct wordwrap_settings {
   LOGFONTW initial_font;
+  double adjust_last;
+  double max_width;
   enum wordwrap_mode mode;
-  size_t max_width;
   int letter_spacing;
   bool monospace;
   bool high_resolution;
@@ -994,7 +995,8 @@ initialize_params(lua_State *const L, int const table_index, struct wordwrap_set
   bool font_bold = false;
   bool font_italic = false;
 
-  size_t max_width = 400;
+  double max_width = 400.;
+  double adjust_last = 0.;
   int letter_spacing = 0;
   bool monospace = false;
   bool high_resolution = false;
@@ -1039,8 +1041,8 @@ initialize_params(lua_State *const L, int const table_index, struct wordwrap_set
 
       lua_getfield(L, table_index, "width");
       if (!lua_isnil(L, -1)) {
-        size_t const v = (size_t)(lua_tointeger(L, -1));
-        if (v != 0) {
+        double const v = lua_tonumber(L, -1);
+        if (v > 0) {
           max_width = v;
         }
       }
@@ -1066,6 +1068,14 @@ initialize_params(lua_State *const L, int const table_index, struct wordwrap_set
       lua_getfield(L, table_index, "high_resolution");
       if (!lua_isnil(L, -1)) {
         high_resolution = lua_toboolean(L, -1) ? true : false;
+      }
+
+      lua_getfield(L, table_index, "adjust_last");
+      if (!lua_isnil(L, -1)) {
+        double const v = lua_tonumber(L, -1);
+        if (v > 0) {
+          adjust_last = dmax(0., dmin(1., v));
+        }
       }
 
       lua_pop(L, 9);
@@ -1099,6 +1109,7 @@ initialize_params(lua_State *const L, int const table_index, struct wordwrap_set
       .letter_spacing = letter_spacing,
       .monospace = monospace,
       .high_resolution = high_resolution,
+      .adjust_last = adjust_last,
   };
   memcpy(wws->initial_font.lfFaceName, font_name, sizeof(wws->initial_font.lfFaceName));
 cleanup:
@@ -1328,6 +1339,63 @@ cleanup:
   return err;
 }
 
+static double calc_current_line_width(struct line_reader const *const lr, struct wordwrap_settings const *const wws) {
+  double x = 0;
+  double x_min = INT_MAX;
+  double x_max = INT_MIN;
+
+  size_t gpos = lr->linehead;
+  size_t const num_glyphs = OV_ARRAY_LENGTH(lr->glyphs);
+  while (gpos < num_glyphs) {
+    struct glyph const *const g = &lr->glyphs[gpos];
+    if (g->typ == gt_break) {
+      return x_max - x_min;
+    }
+    if (g->typ == gt_tag) {
+      // Tags other than "position" do not affect the drawing position so can be ignored.
+      if (g->u.tag.type != aviutl_text_tag_type_position) {
+        ++gpos;
+        continue;
+      }
+      struct aviutl_text_tag tag;
+      struct aviutl_text_tag_position tag_pos;
+      aviutl_text_parse_tag(lr->text->ptr, lr->text->len, g->pos, &tag);
+      aviutl_text_get_position(lr->text->ptr, &tag, &tag_pos);
+      if (tag_pos.x_type == aviutl_text_tag_position_type_absolute) {
+        return x_max - x_min;
+      }
+      x += tag_pos.x;
+      ++gpos;
+      continue;
+    }
+    if (g->typ == gt_original_tag) {
+      ++gpos;
+      continue;
+    }
+    x_min = dmin(x_min, x + (double)(g->u.metrics.ptGlyphOriginX));
+    x_max = dmax(x_max, x + (double)(g->u.metrics.ptGlyphOriginX + g->u.metrics.BlackBoxX));
+    x += (double)(g->u.metrics.CellIncX + wws->letter_spacing);
+    ++gpos;
+    continue;
+  }
+  return x_max - x_min;
+}
+
+static double calc_max_width(struct line_reader const *const lr, struct wordwrap_settings const *const wws) {
+  if (wws->adjust_last <= 0) {
+    return wws->max_width;
+  }
+  double const current_line_width = calc_current_line_width(lr, wws);
+  if (wws->max_width >= current_line_width) {
+    return wws->max_width;
+  }
+  double const adjust_width = (wws->adjust_last + 1.) * wws->max_width;
+  if (adjust_width >= current_line_width) {
+    return current_line_width * (1. - wws->adjust_last);
+  }
+  return wws->max_width;
+}
+
 int luafn_wordwrap(lua_State *L) {
   error err = eok();
   struct wstr text = {0};
@@ -1429,12 +1497,13 @@ int luafn_wordwrap(lua_State *L) {
   wchar_t buf[512] = {0};
 #endif
 
-  double x = 0;
-  double x_min = INT_MAX;
-  double x_max = INT_MIN;
   struct line_reader lr = {.text = &text, .glyphs = glyphs, .linehead = 0};
   size_t gpos = 0;
   size_t const num_glyphs = OV_ARRAY_LENGTH(glyphs);
+  double x = 0;
+  double x_min = INT_MAX;
+  double x_max = INT_MIN;
+  double max_width = calc_max_width(&lr, &wws);
   while (gpos < num_glyphs) {
     struct glyph const *const g = &glyphs[gpos];
     if (g->typ == gt_break) {
@@ -1447,6 +1516,7 @@ int luafn_wordwrap(lua_State *L) {
       x_min = INT_MAX;
       x_max = INT_MIN;
       lr.linehead = ++gpos;
+      max_width = calc_max_width(&lr, &wws);
       continue;
     }
     if (g->typ == gt_tag) {
@@ -1464,6 +1534,7 @@ int luafn_wordwrap(lua_State *L) {
         x_min = INT_MAX;
         x_max = INT_MIN;
         lr.linehead = ++gpos;
+        max_width = calc_max_width(&lr, &wws);
         continue;
       }
       x += tag_pos.x;
@@ -1478,7 +1549,7 @@ int luafn_wordwrap(lua_State *L) {
     x_max = dmax(x_max, x + (double)(g->u.metrics.ptGlyphOriginX + g->u.metrics.BlackBoxX));
     x += (double)(g->u.metrics.CellIncX + wws.letter_spacing);
 
-    if (x_max - x_min <= wws.max_width) {
+    if (x_max - x_min <= max_width) {
       ++gpos;
 #if WW_DEBUG
       wcsncpy(buf, text.ptr + g->pos, 1);
@@ -1551,6 +1622,7 @@ int luafn_wordwrap(lua_State *L) {
     x = 0;
     x_min = INT_MAX;
     x_max = INT_MIN;
+    max_width = calc_max_width(&lr, &wws);
   }
   if (lr.linehead < num_glyphs) {
     err = write_text(&text, glyphs, lr.linehead, num_glyphs, &processed);

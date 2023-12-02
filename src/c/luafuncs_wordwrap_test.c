@@ -119,12 +119,17 @@ static void compare_logfontw(LOGFONTW const *const expected, LOGFONTW const *con
   TEST_MSG("Expected lfFaceName: %ls, got: %ls", expected->lfFaceName, actual->lfFaceName);
 }
 
+static inline int fcompare(double x, double y, double tolerance) {
+  return (x > y + tolerance) ? 1 : (y > x + tolerance) ? -1 : 0;
+}
+#define fcmp(x, op, y, tolerance) ((fcompare((x), (y), (tolerance)))op 0)
+
 static void compare_wordwrap_settings(struct wordwrap_settings const *const expected,
                                       struct wordwrap_settings const *const actual) {
   TEST_CHECK(expected->mode == actual->mode);
   TEST_MSG("Expected mode: %d, got: %d", expected->mode, actual->mode);
-  TEST_CHECK(expected->max_width == actual->max_width);
-  TEST_MSG("Expected max_width: %d, got: %d", expected->max_width, actual->max_width);
+  TEST_CHECK(fcmp(expected->max_width, ==, actual->max_width, 1e-12));
+  TEST_MSG("Expected max_width: %f, got: %f", expected->max_width, actual->max_width);
   TEST_CHECK(expected->letter_spacing == actual->letter_spacing);
   TEST_MSG("Expected letter_spacing: %d, got: %d", expected->letter_spacing, actual->letter_spacing);
   TEST_CHECK(expected->monospace == actual->monospace);
