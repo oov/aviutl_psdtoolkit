@@ -229,6 +229,34 @@ cleanup:
   return err;
 }
 
+static void test_tag(void) {
+  if (GetACP() != 932) {
+    // This test is only for Japanese Windows.
+    return;
+  }
+  static const struct {
+    wchar_t *input;
+    wchar_t *expected;
+  } tests[] = {
+      {L"return wordwrap('ov<wbr>er flow',  {font='Arial', size=9, width=16, mode=1})", L"ove\nr fl\now"},
+      {L"return wordwrap('こん<nobr>にちは', {font='MS UI Gothic', size=12, width=4, mode=2})", L"こ\nん\nにちは"},
+      {L"return wordwrap('<nobr>こん</nobr>にちは', {font='MS UI Gothic', size=12, width=4, mode=2})",
+       L"こん\nに\nち\nは"},
+  };
+
+  struct wstr ws = {0};
+  for (size_t i = 0; i < sizeof(tests) / sizeof(tests[0]); i++) {
+    TEST_CASE_("%ls", tests[i].input);
+    if (!TEST_SUCCEEDED_F(do_wordwrap(tests[i].input, &ws))) {
+      goto cleanup;
+    }
+    TEST_CHECK(wcscmp(ws.ptr, tests[i].expected) == 0);
+    TEST_MSG("expected: %ls\n     got: %ls", tests[i].expected, ws.ptr);
+  }
+cleanup:
+  ereport(sfree(&ws));
+}
+
 static void test_wordwrap(void) {
   if (GetACP() != 932) {
     // This test is only for Japanese Windows.
@@ -337,6 +365,7 @@ static void test_budoux(void) {
 
 TEST_LIST = {
     {"test_initialize_params", test_initialize_params},
+    {"test_tag", test_tag},
     {"test_wordwrap", test_wordwrap},
     {"test_modes", test_modes},
     {"test_budoux", test_budoux},

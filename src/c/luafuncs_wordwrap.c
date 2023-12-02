@@ -300,15 +300,19 @@ enum glyph_type {
   gt_glyph = 0,
   gt_break = 1,
   gt_tag = 2,
+  gt_original_tag = 3,
 };
 
-enum glyph_budoux_flag {
-  gt_budoux_marked = 4,
-  gt_budoux_breakable = 8,
+enum glyph_flags {
+  gt_budoux_marked = 1,
+  gt_budoux_breakable = 2,
+  gt_breakable_by_wbr = 4,
+  gt_not_breakable_by_nobr = 8,
 };
 
 struct glyph {
-  uint16_t typ;
+  enum glyph_type typ : 2;
+  int flags : 4;
   uint16_t pos;
   union {
     struct {
@@ -316,11 +320,56 @@ struct glyph {
       int16_t ptGlyphOriginX;
       int16_t CellIncX;
     } metrics;
-    enum aviutl_text_tag_type tag_type;
+    struct {
+      enum aviutl_text_tag_type type;
+      uint16_t len;
+    } tag;
+    struct {
+      uint16_t len;
+    } original_tag;
   } u;
 };
 
-static inline enum glyph_type glyph_get_type(struct glyph const *const g) { return g->typ & 3; }
+#if WW_DEBUG
+static void dump_glyphs(struct glyph *glyphs) {
+  wchar_t buf[128];
+  wchar_t flags[64];
+  OutputDebugStringW(L"dump_glyphs ----");
+  for (size_t i = 0, ln = OV_ARRAY_LENGTH(glyphs); i < ln; ++i) {
+    struct glyph const *const g = &glyphs[i];
+    wchar_t const *t = NULL;
+    switch (g->typ) {
+    case gt_glyph:
+      t = L"gt_glyph";
+      break;
+    case gt_break:
+      t = L"gt_break";
+      break;
+    case gt_tag:
+      t = L"gt_tag";
+      break;
+    case gt_original_tag:
+      t = L"gt_original_tag";
+      break;
+    }
+    flags[0] = L'\0';
+    if (g->flags & gt_budoux_marked) {
+      wcscat(flags, L"marked ");
+    }
+    if (g->flags & gt_budoux_breakable) {
+      wcscat(flags, L"breakable ");
+    }
+    if (g->flags & gt_breakable_by_wbr) {
+      wcscat(flags, L"wbr ");
+    }
+    if (g->flags & gt_not_breakable_by_nobr) {
+      wcscat(flags, L"nobr ");
+    }
+    wsprintfW(buf, L"  %02d pos %d / typ %ls / flags %ls", i, g->pos, t, flags);
+    OutputDebugStringW(buf);
+  }
+}
+#endif
 
 struct line_reader {
   struct wstr const *text;
@@ -331,8 +380,10 @@ struct line_reader {
 static size_t line_reader_find_left(struct line_reader const *const lr, size_t const pos) {
   struct glyph const *const gmin = &lr->glyphs[lr->linehead];
   for (struct glyph const *g = &lr->glyphs[pos]; gmin <= g; --g) {
-    switch (glyph_get_type(g)) {
+    switch (g->typ) {
     case gt_tag:
+      continue;
+    case gt_original_tag:
       continue;
     case gt_break:
       return SIZE_MAX;
@@ -346,8 +397,10 @@ static size_t line_reader_find_left(struct line_reader const *const lr, size_t c
 static size_t line_reader_find_right(struct line_reader const *const lr, size_t const pos) {
   struct glyph const *const gmax = &lr->glyphs[OV_ARRAY_LENGTH(lr->glyphs) - 1];
   for (struct glyph const *g = &lr->glyphs[pos]; g <= gmax; ++g) {
-    switch (glyph_get_type(g)) {
+    switch (g->typ) {
     case gt_tag:
+      continue;
+    case gt_original_tag:
       continue;
     case gt_break:
       return SIZE_MAX;
@@ -369,11 +422,14 @@ line_reader_find_breakable_left(struct line_reader const *const lr, size_t const
     if (ppos == SIZE_MAX) {
       return SIZE_MAX;
     }
-    enum break_rule const br =
-        is_breakable(lr->text->ptr[lr->glyphs[ppos].pos], lr->text->ptr[lr->glyphs[cpos].pos], break_rule);
-    if ((br == br_breakable) || ((br == br_non_ascii_word || br == br_ascii_word) && (break_rule & br_budoux) &&
-                                 (lr->glyphs[cpos].typ & gt_budoux_breakable))) {
-      return cpos;
+    if (!(lr->glyphs[cpos].flags & gt_not_breakable_by_nobr) || (lr->glyphs[cpos].flags & gt_breakable_by_wbr)) {
+      enum break_rule const br =
+          is_breakable(lr->text->ptr[lr->glyphs[ppos].pos], lr->text->ptr[lr->glyphs[cpos].pos], break_rule);
+      if ((br == br_breakable) || (lr->glyphs[cpos].flags & gt_breakable_by_wbr) ||
+          ((br == br_non_ascii_word || br == br_ascii_word) && (break_rule & br_budoux) &&
+           (lr->glyphs[cpos].flags & gt_budoux_breakable))) {
+        return cpos;
+      }
     }
     cpos = ppos;
   }
@@ -390,11 +446,14 @@ line_reader_find_breakable_right(struct line_reader const *const lr, size_t cons
     if (npos == SIZE_MAX) {
       return SIZE_MAX;
     }
-    enum break_rule const br =
-        is_breakable(lr->text->ptr[lr->glyphs[cpos].pos], lr->text->ptr[lr->glyphs[npos].pos], break_rule);
-    if ((br == br_breakable) || ((br == br_non_ascii_word || br == br_ascii_word) && (break_rule & br_budoux) &&
-                                 (lr->glyphs[npos].typ & gt_budoux_breakable))) {
-      return npos;
+    if (!(lr->glyphs[npos].flags & gt_not_breakable_by_nobr) || (lr->glyphs[npos].flags & gt_breakable_by_wbr)) {
+      enum break_rule const br =
+          is_breakable(lr->text->ptr[lr->glyphs[cpos].pos], lr->text->ptr[lr->glyphs[npos].pos], break_rule);
+      if ((br == br_breakable) || (lr->glyphs[npos].flags & gt_breakable_by_wbr) ||
+          ((br == br_non_ascii_word || br == br_ascii_word) && (break_rule & br_budoux) &&
+           (lr->glyphs[npos].flags & gt_budoux_breakable))) {
+        return npos;
+      }
     }
     cpos = npos;
   }
@@ -415,7 +474,9 @@ static char32_t bdx_marker_get_char(void *userdata) {
   bmctx->nextpos = pos + 1;
 
 #if WW_DEBUG
-  OutputDebugStringW((wchar_t[]){bmctx->lr->text->ptr[bmctx->lr->glyphs[pos].pos], L'\0'});
+  wchar_t buf[128];
+  wsprintfW(buf, L"bdx_marker_get_char: %lc", bmctx->lr->text->ptr[bmctx->lr->glyphs[pos].pos]);
+  OutputDebugStringW(buf);
 #endif
 
   return bmctx->lr->text->ptr[bmctx->lr->glyphs[pos].pos];
@@ -425,7 +486,7 @@ static bool bdx_marker_add_boundary(size_t const boundary, void *userdata) {
   struct bdx_marker_context *const bmctx = userdata;
   error err = OV_ARRAY_PUSH(bmctx->boundaries, boundary);
   if (efailed(err)) {
-    eignore(err);
+    ereport(err);
     return false;
   }
   return true;
@@ -451,7 +512,7 @@ static NODISCARD error write_bdx_markers(struct line_reader const *lr,
   }
 
   // set a flag to indicate detection is complete.
-  lr->glyphs[lr->linehead].typ |= gt_budoux_marked;
+  lr->glyphs[lr->linehead].flags |= gt_budoux_marked;
 
   size_t pos = lr->linehead - 1;
   size_t nch = 0;
@@ -459,18 +520,32 @@ static NODISCARD error write_bdx_markers(struct line_reader const *lr,
     size_t const boundary = (*boundaries)[i];
     while (nch <= boundary) {
       pos = line_reader_find_right(lr, pos + 1);
+      if (pos == SIZE_MAX) {
+        break;
+      }
       ++nch;
     }
-    lr->glyphs[pos].typ |= gt_budoux_breakable;
+    if (pos == SIZE_MAX) {
+      break;
+    }
+
+#if WW_DEBUG
+    wchar_t buf[128];
+    wsprintfW(buf, L"bdx boundary: %d pos: %d", boundary, pos);
+    OutputDebugStringW(buf);
+#endif
+    lr->glyphs[pos].flags |= gt_budoux_breakable;
   }
   return eok();
 }
 
 static size_t find_breakpoint_norule(struct line_reader const *lr, size_t const overflow_pos) {
-  if (overflow_pos > lr->linehead) {
-    return overflow_pos;
+  static int const rule = br_surrogate_low;
+  size_t r = line_reader_find_breakable_left(lr, overflow_pos, rule);
+  if (r == SIZE_MAX) {
+    r = line_reader_find_breakable_right(lr, overflow_pos, rule);
   }
-  return line_reader_find_right(lr, overflow_pos + 1);
+  return r;
 }
 
 static size_t find_breakpoint_rule(struct line_reader const *lr, size_t const overflow_pos) {
@@ -487,12 +562,15 @@ static size_t find_breakpoint_budoux(struct line_reader const *lr,
                                      size_t const overflow_pos,
                                      struct budouxc *const model,
                                      size_t **boundaries) {
-  if (!(lr->glyphs[lr->linehead].typ & gt_budoux_marked)) {
+  if (!(lr->glyphs[lr->linehead].flags & gt_budoux_marked)) {
     error err = write_bdx_markers(lr, model, boundaries);
     if (efailed(err)) {
       ereport(err);
       return find_breakpoint_rule(lr, overflow_pos);
     }
+#if WW_DEBUG
+    dump_glyphs(lr->glyphs);
+#endif
   }
 
   static int const rule = br_no_first_line_char | br_no_last_line_char | br_no_break_char | br_surrogate_low |
@@ -699,6 +777,8 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
   }
 
   size_t gpos = 0;
+  int flags = 0;
+  bool nobr = false;
   for (size_t i = 0; i < text_len; ++i) {
     if (text[i] == L'\n') {
       glyphs[gpos++] = (struct glyph){
@@ -708,26 +788,81 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
       continue;
     }
     struct aviutl_text_tag tag;
-    if (text[i] == L'<' && aviutl_text_parse_tag(text, text_len, i, &tag)) {
-      if (tag.type == aviutl_text_tag_type_font) {
-        struct aviutl_text_tag_font font;
-        aviutl_text_get_font(text, &tag, &font);
-        err = canvas_context_set_font_tag(canvas, high_resolution, &font);
-        if (efailed(err)) {
-          err = ethru(err);
-          goto cleanup;
+    if (text[i] == L'<') {
+      if (aviutl_text_parse_tag(text, text_len, i, &tag)) {
+        if (tag.type == aviutl_text_tag_type_font) {
+          struct aviutl_text_tag_font font;
+          aviutl_text_get_font(text, &tag, &font);
+          err = canvas_context_set_font_tag(canvas, high_resolution, &font);
+          if (efailed(err)) {
+            err = ethru(err);
+            goto cleanup;
+          }
         }
+        glyphs[gpos++] = (struct glyph){
+            .typ = gt_tag,
+            .pos = (uint16_t)i,
+            .u =
+                {
+                    .tag =
+                        {
+                            .type = tag.type,
+                            .len = (uint16_t)tag.len,
+                        },
+                },
+        };
+        i += tag.len - 1;
+        continue;
+      } else if (text_len - i >= 5 && text[i + 1] == L'w' && text[i + 2] == L'b' && text[i + 3] == L'r' &&
+                 text[i + 4] == L'>') {
+        flags |= gt_breakable_by_wbr;
+        glyphs[gpos++] = (struct glyph){
+            .typ = gt_original_tag,
+            .pos = (uint16_t)i,
+            .u =
+                {
+                    .original_tag =
+                        {
+                            .len = 5,
+                        },
+                },
+        };
+        i += 4;
+        continue;
+      } else if (text_len - i >= 6 && text[i + 1] == L'n' && text[i + 2] == L'o' && text[i + 3] == L'b' &&
+                 text[i + 4] == L'r' && text[i + 5] == L'>') {
+        nobr = true;
+        glyphs[gpos++] = (struct glyph){
+            .typ = gt_original_tag,
+            .pos = (uint16_t)i,
+            .u =
+                {
+                    .original_tag =
+                        {
+                            .len = 6,
+                        },
+                },
+        };
+        i += 5;
+        continue;
+      } else if (text_len - i >= 7 && text[i + 1] == L'/' && text[i + 2] == L'n' && text[i + 3] == L'o' &&
+                 text[i + 4] == L'b' && text[i + 5] == L'r' && text[i + 6] == L'>') {
+        nobr = false;
+        flags &= ~gt_not_breakable_by_nobr;
+        glyphs[gpos++] = (struct glyph){
+            .typ = gt_original_tag,
+            .pos = (uint16_t)i,
+            .u =
+                {
+                    .original_tag =
+                        {
+                            .len = 7,
+                        },
+                },
+        };
+        i += 6;
+        continue;
       }
-      glyphs[gpos++] = (struct glyph){
-          .typ = gt_tag,
-          .pos = (uint16_t)i,
-          .u =
-              {
-                  .tag_type = tag.type,
-              },
-      };
-      i += tag.len - 1;
-      continue;
     }
     GLYPHMETRICS gm;
     if (!canvas_context_get_metrics(canvas, text[i], &gm, monospace, high_resolution)) {
@@ -736,6 +871,7 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
     }
     glyphs[gpos++] = (struct glyph){
         .typ = gt_glyph,
+        .flags = flags,
         .pos = (uint16_t)i,
         .u =
             {
@@ -747,6 +883,10 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
                     },
             },
     };
+    flags &= ~gt_breakable_by_wbr;
+    if (nobr) {
+      flags |= gt_not_breakable_by_nobr;
+    }
   }
   OV_ARRAY_SET_LENGTH(glyphs, gpos);
   *g = glyphs;
@@ -1060,8 +1200,6 @@ static uint64_t calc_hash(struct wordwrap_settings const *const wws,
   return cyrb64_final(&ctx);
 }
 
-// TODO: support manually add or remove line break points.
-
 struct model {
   char *name;
   struct budouxc *model;
@@ -1151,6 +1289,45 @@ cleanup:
   return err;
 }
 
+static NODISCARD error write_text(struct wstr const *const src,
+                                  struct glyph *glyphs,
+                                  size_t const linehead,
+                                  size_t const end,
+                                  struct wstr *const text) {
+  error err = eok();
+  size_t copypos = linehead, nch = 0;
+  for (size_t gpos = linehead; gpos < end; ++gpos) {
+    struct glyph const *const g = &glyphs[gpos];
+    switch (g->typ) {
+    case gt_glyph:
+    case gt_break:
+      ++nch;
+      break;
+    case gt_tag:
+      nch += g->u.tag.len;
+      break;
+    case gt_original_tag: {
+      err = sncat(text, src->ptr + glyphs[copypos].pos, nch);
+      if (efailed(err)) {
+        err = ethru(err);
+        goto cleanup;
+      }
+      copypos = gpos + 1;
+      nch = 0;
+    } break;
+    }
+  }
+  if (nch) {
+    err = sncat(text, src->ptr + glyphs[copypos].pos, nch);
+    if (efailed(err)) {
+      err = ethru(err);
+      goto cleanup;
+    }
+  }
+cleanup:
+  return err;
+}
+
 int luafn_wordwrap(lua_State *L) {
   error err = eok();
   struct wstr text = {0};
@@ -1228,6 +1405,10 @@ int luafn_wordwrap(lua_State *L) {
     goto cleanup;
   }
 
+#if WW_DEBUG
+  dump_glyphs(glyphs);
+#endif
+
   err = sgrow(&processed, text.len);
   if (efailed(err)) {
     err = ethru(err);
@@ -1256,10 +1437,8 @@ int luafn_wordwrap(lua_State *L) {
   size_t const num_glyphs = OV_ARRAY_LENGTH(glyphs);
   while (gpos < num_glyphs) {
     struct glyph const *const g = &glyphs[gpos];
-    enum glyph_type const gt = glyph_get_type(g);
-    if (gt == gt_break) {
-      size_t const ln = g->pos - glyphs[lr.linehead].pos + 1;
-      err = sncat(&processed, text.ptr + glyphs[lr.linehead].pos, ln);
+    if (g->typ == gt_break) {
+      err = write_text(&text, glyphs, lr.linehead, gpos, &processed);
       if (efailed(err)) {
         err = ethru(err);
         goto cleanup;
@@ -1270,9 +1449,9 @@ int luafn_wordwrap(lua_State *L) {
       lr.linehead = ++gpos;
       continue;
     }
-    if (gt == gt_tag) {
+    if (g->typ == gt_tag) {
       // Tags other than "position" do not affect the drawing position so can be ignored.
-      if (g->u.tag_type != aviutl_text_tag_type_position) {
+      if (g->u.tag.type != aviutl_text_tag_type_position) {
         ++gpos;
         continue;
       }
@@ -1288,6 +1467,10 @@ int luafn_wordwrap(lua_State *L) {
         continue;
       }
       x += tag_pos.x;
+      ++gpos;
+      continue;
+    }
+    if (g->typ == gt_original_tag) {
       ++gpos;
       continue;
     }
@@ -1332,8 +1515,7 @@ int luafn_wordwrap(lua_State *L) {
       continue;
     }
 
-    size_t const break_pos = glyphs[break_gpos].pos;
-    err = sncat(&processed, text.ptr + glyphs[lr.linehead].pos, break_pos - glyphs[lr.linehead].pos);
+    err = write_text(&text, glyphs, lr.linehead, break_gpos, &processed);
     if (efailed(err)) {
       err = ethru(err);
       goto cleanup;
@@ -1343,11 +1525,10 @@ int luafn_wordwrap(lua_State *L) {
       err = ethru(err);
       goto cleanup;
     }
-
     // Skip spaces at the beginning of the next line
     gpos = break_gpos;
     while (gpos < num_glyphs) {
-      if (glyph_get_type(&glyphs[gpos]) == gt_tag) {
+      if (glyphs[gpos].typ == gt_tag || glyphs[gpos].typ == gt_original_tag) {
         ++gpos;
         continue;
       }
@@ -1359,13 +1540,20 @@ int luafn_wordwrap(lua_State *L) {
       break;
     }
 
+    // if the line break point is detected again from the middle of the line,
+    // the result will change unexpectedly.
+    // so if it has already been detected, the same result must be reused on the next line.
+    if (wws.mode == wwm_budoux && glyphs[lr.linehead].flags & gt_budoux_marked) {
+      glyphs[gpos].flags |= gt_budoux_marked;
+    }
+
     lr.linehead = gpos;
     x = 0;
     x_min = INT_MAX;
     x_max = INT_MIN;
   }
   if (lr.linehead < num_glyphs) {
-    err = scat(&processed, text.ptr + glyphs[lr.linehead].pos);
+    err = write_text(&text, glyphs, lr.linehead, num_glyphs, &processed);
     if (efailed(err)) {
       err = ethru(err);
       goto cleanup;
