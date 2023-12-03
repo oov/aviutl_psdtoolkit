@@ -1,8 +1,16 @@
 #include "speak.h"
 
+// #define SPEAK_DEBUG
+
 #include <math.h>
 
-#include "ovthreads.h"
+#include <ovarray.h>
+#include <ovthreads.h>
+
+#ifdef SPEAK_DEBUG
+#  define WIN32_LEAN_AND_MEAN
+#  include <windows.h>
+#endif
 
 enum {
   audio_frequency = 24000,
@@ -275,19 +283,130 @@ cleanup:
   return err;
 }
 
+struct speak_level {
+  struct timespec used_at;
+  float pos;
+  float low_cut;
+  float high_cut;
+  float level;
+};
+
+struct speak_level_cache {
+  char *filepath;
+  struct timespec used_at;
+  struct speak_level levels[4];
+};
+
+static struct speak_level_cache g_speak_level_cache[4] = {0};
+
+NODISCARD static error get_from_cache(struct str const *const filepath, struct speak_level_cache **const cache) {
+  if (!filepath || !filepath->ptr) {
+    return errg(err_invalid_arugment);
+  }
+  error err = eok();
+  size_t const num_caches = sizeof(g_speak_level_cache) / sizeof(g_speak_level_cache[0]);
+  size_t oldest = num_caches;
+  for (size_t i = 0; i < num_caches; ++i) {
+    struct speak_level_cache *const c = &g_speak_level_cache[i];
+    if (c->filepath && strcmp(c->filepath, filepath->ptr) == 0) {
+      *cache = c;
+      if (timespec_get(&c->used_at, TIME_UTC) != TIME_UTC) {
+        err = errg(err_fail);
+        goto cleanup;
+      }
+      goto cleanup;
+    }
+    struct speak_level_cache const *const o = &g_speak_level_cache[oldest];
+    if (oldest == num_caches || o->used_at.tv_sec > c->used_at.tv_sec ||
+        (o->used_at.tv_sec == c->used_at.tv_sec && o->used_at.tv_nsec > c->used_at.tv_nsec)) {
+      oldest = i;
+    }
+  }
+  struct speak_level_cache *const c = &g_speak_level_cache[oldest];
+  err = OV_ARRAY_GROW(&c->filepath, filepath->len + 1);
+  if (efailed(err)) {
+    err = ethru(err);
+    goto cleanup;
+  }
+  strcpy(c->filepath, filepath->ptr);
+  OV_ARRAY_SET_LENGTH(c->filepath, filepath->len);
+  if (timespec_get(&c->used_at, TIME_UTC) != TIME_UTC) {
+    err = errg(err_fail);
+    goto cleanup;
+  }
+  memset(c->levels, 0, sizeof(c->levels));
+  *cache = c;
+cleanup:
+  return err;
+}
+
+static inline int fcompare(float const x, float const y, float const tolerance) {
+  return (x > y + tolerance) ? 1 : (y > x + tolerance) ? -1 : 0;
+}
+#define fcmp(x, op, y, tolerance) ((fcompare((x), (y), (tolerance)))op 0)
+
 NODISCARD error speak_get_level(struct speak *spk,
                                 struct str const *const filepath,
                                 float const pos,
                                 float const low_cut,
                                 float const high_cut,
                                 float *const level) {
+  if (!spk || !filepath || !filepath->ptr || !level) {
+    return errg(err_invalid_arugment);
+  }
+  struct speak_level_cache *cache = NULL;
+  error err = get_from_cache(filepath, &cache);
+  if (efailed(err)) {
+    err = ethru(err);
+    goto cleanup;
+  }
+
+  size_t const num_levels = sizeof(cache->levels) / sizeof(cache->levels[0]);
+  struct speak_level *lv = NULL;
+  size_t oldest = num_levels;
+  for (size_t i = 0; i < num_levels; ++i) {
+    struct speak_level *const l = &cache->levels[i];
+    if (fcmp(l->pos, ==, pos, 1e-12f) && fcmp(l->low_cut, ==, low_cut, 1e-12f) &&
+        fcmp(l->high_cut, ==, high_cut, 1e-12f)) {
+      lv = l;
+      break;
+    }
+    struct speak_level const *const o = &cache->levels[oldest];
+    if (oldest == num_levels || o->used_at.tv_sec > l->used_at.tv_sec ||
+        (o->used_at.tv_sec == l->used_at.tv_sec && o->used_at.tv_nsec > l->used_at.tv_nsec)) {
+      oldest = i;
+    }
+  }
+  if (lv) {
+    if (timespec_get(&lv->used_at, TIME_UTC) != TIME_UTC) {
+      err = errg(err_fail);
+      goto cleanup;
+    }
+    *level = lv->level;
+#ifdef SPEAK_DEBUG
+    OutputDebugStringA("speak_get_level: use cache");
+#endif
+    goto cleanup;
+  }
+
   mtx_lock(&spk->mtx);
-  error err = read(spk, filepath, pos, low_cut, high_cut, level);
+  err = read(spk, filepath, pos, low_cut, high_cut, level);
   mtx_unlock(&spk->mtx);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
+
+  lv = &cache->levels[oldest];
+  lv->pos = pos;
+  lv->low_cut = low_cut;
+  lv->high_cut = high_cut;
+  lv->level = *level;
+  if (timespec_get(&lv->used_at, TIME_UTC) != TIME_UTC) {
+    err = errg(err_fail);
+    goto cleanup;
+  }
+
 cleanup:
   return err;
 }
@@ -319,6 +438,11 @@ void speak_exit(struct speak **dest) {
   ereport(mem_free(&spk->fft_iw));
   ereport(mem_free(&spk->fft_buf));
   ereport(mem_free(dest));
+
+  for (size_t i = 0; i < sizeof(g_speak_level_cache) / sizeof(g_speak_level_cache[0]); ++i) {
+    struct speak_level_cache *const c = &g_speak_level_cache[i];
+    OV_ARRAY_DESTROY(&c->filepath);
+  }
 }
 
 #ifdef __GNUC__
