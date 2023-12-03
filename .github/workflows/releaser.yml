@@ -17,7 +17,7 @@ jobs:
           - msystem: CLANG64
             arch: clang-x86_64
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
       - uses: msys2/setup-msys2@v2
@@ -39,7 +39,7 @@ jobs:
           rm -f 64bit/CMakeCache.txt && cmake -S .. -B 64bit --preset 64bit && \
           cmake --build 64bit --target psdtoolkit_main
       - name: Upload binaries
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: bin64
           path: |
@@ -52,7 +52,7 @@ jobs:
           - msystem: CLANG32
             arch: clang-i686
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
         with:
           submodules: recursive
       - uses: msys2/setup-msys2@v2
@@ -76,7 +76,7 @@ jobs:
           rm -f 32bit/CmakeCache.txt && cmake -S .. -B 32bit --preset 32bit -DFORMAT_SOURCES=ON && \
           cmake --build 32bit --target psdtoolkit_assist --target psdtoolkit_bridge
       - name: Upload binaries
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: bin32
           path: |
@@ -90,36 +90,34 @@ jobs:
           sudo apt install -y cmake ninja-build pandoc
       - name: Get the version
         id: get_version
-        run: echo ::set-output name=tag::${GITHUB_REF/refs\/tags\//}
-      - uses: actions/checkout@v2
+        run: echo "tag=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
+      - uses: actions/checkout@v3
       - name: Download artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
       - name: Create package
         run: |
-          mkdir build
+          mkdir build release
           cd build
           rm -rf CMakeCache.txt && cmake -GNinja -DBUILD_DOCS=1 -DBUILD_PACKAGE=1 -DCMAKE_BUILD_TYPE=Release .. && cmake --build . --target make_doc --target make_package
           cp -r ../bin64/* bin/
           cp -r ../bin32/* bin/
-          cd bin && zip -r ../../assets.zip * && cd ..
+          cd bin && zip -r ../../release/psdtoolkit_${{ steps.get_version.outputs.tag }}.zip * && cd ..
           rm -rf CMakeCache.txt && cmake -GNinja -DBUILD_DOCS=1 -DBUILD_PACKAGE=1 -DCMAKE_BUILD_TYPE=Release -DEXPORT_DIR_NAME=bin_en -DEXA_SUFFIX=_en.exa .. && cmake --build . --target make_doc --target make_package
           cp -r ../bin64/* bin_en/
           cp -r ../bin32/* bin_en/
-          cd bin_en && zip -r ../../assets_en.zip * && cd ..
+          cd bin_en && zip -r ../../release/psdtoolkit_${{ steps.get_version.outputs.tag }}_enpatched.zip * && cd ..
       - name: Create Release
         id: create_release
-        uses: actions/create-release@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        uses: softprops/action-gh-release@v1
         with:
-          tag_name: ${{ github.ref }}
-          release_name: ${{ github.ref }}
+          tag_name: ${{ steps.get_version.outputs.tag }}
           draft: true
-          prerelease: false
+          prerelease: true
+          files: release/*
           body: |
             ### 注意事項
             
-            - 拡張編集 0.93rc1 との組み合わせには既知の問題があるため、**通常の動画制作には拡張編集 0.92** を強く推奨します。
+            - **拡張編集 0.93rc1 は使わないでください**。拡張編集側のバグの影響で正常に動作しません。
             - PSDToolKit は現在 ベータ版 です。バージョンアップの際には **バックアップを強く推奨** します。
 
             ### ダウンロード
@@ -161,23 +159,3 @@ jobs:
             Krita で生成した PSD ファイル用の `*.anm` ファイルは、バグ修正の影響で v0.2beta50 以降で動かなくなりました。
             お手数ですが、この症状が発生した場合は `*.anm` ファイルを作り直してください。
             Krita を使用していない場合は影響ありません。
-      - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./assets.zip
-          asset_name: psdtoolkit_${{ steps.get_version.outputs.tag }}.zip
-          asset_content_type: application/zip
-      - name: Upload Release English patched Asset
-        id: upload-release-enpatched-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./assets_en.zip
-          asset_name: psdtoolkit_${{ steps.get_version.outputs.tag }}_enpatched.zip
-          asset_content_type: application/zip
