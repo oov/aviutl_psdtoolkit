@@ -691,14 +691,6 @@ function SubtitleStates.new()
 end
 
 function SubtitleStates:set(text, obj, unescape)
-  if obj.frame > obj.totalframe then
-    -- この場合はシーンチェンジによってオブジェクトが強制的に引き伸ばされていると思われるが、
-    -- おそらく大多数のケースで字幕は引き伸ばして表示されることを意図していないはずなので、ここで打ち切る
-    -- これに伴う副作用で字幕表示をシーンチェンジを使ってフェードアウトしたりできなくなるが、
-    -- 地上波、YouTube、Netflix など大多数の映像配信においては字幕は動画とは別の仕組みで実現されており、
-    -- 字幕と映像は一緒にクロスフェードしたりしないのが一般的と思われるので問題にならないはず
-    return
-  end
   self.states[obj.layer] = SubtitleState.new(
     text,
     obj.x,
