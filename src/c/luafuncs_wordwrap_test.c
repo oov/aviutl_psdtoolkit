@@ -355,15 +355,18 @@ static void test_budoux(void) {
     };
     size_t *boundaries = NULL;
     TEST_CASE_("#%zu | pos = %zu", i, tests[i].overflow_pos);
-    size_t const found = find_breakpoint_budoux(&lr, tests[i].overflow_pos, bodouxc_model, &boundaries);
+    if (!TEST_SUCCEEDED_F(bdx_write_markers(glyphs, 0, bodouxc_model, &boundaries))) {
+      goto cleanup;
+    }
+    size_t const found = line_reader_find_breakable(&lr, tests[i].overflow_pos, wordwrap_mode_to_rule(wwm_budoux));
     TEST_CHECK(found == tests[i].expected_found);
     TEST_MSG("expected: %zu, got: %zu", tests[i].expected_found, found);
     OV_ARRAY_DESTROY(&boundaries);
   }
+cleanup:
   if (glyphs) {
     OV_ARRAY_DESTROY(&glyphs);
   }
-
   budouxc_destroy(bodouxc_model);
   bodouxc_model = NULL;
 }

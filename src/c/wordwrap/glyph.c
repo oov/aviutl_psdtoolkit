@@ -6,7 +6,7 @@
 #  define WIN32_LEAN_AND_MEAN
 #  include <windows.h>
 
-void glyph_dump(struct glyph *glyphs) {
+void glyph_dump(struct glyph const *const glyphs) {
   wchar_t buf[128];
   wchar_t flags[64];
   OutputDebugStringW(L"glyph_dump ----");

@@ -1,6 +1,7 @@
 add_library(wordwrap STATIC
   aviutl_text.c
   bdx.c
+  bdx_cache.c
   canvas.c
   glyph.c
   line_reader.c

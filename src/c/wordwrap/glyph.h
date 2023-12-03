@@ -46,5 +46,5 @@ struct glyph {
 };
 
 #ifdef WW_DEBUG
-void glyph_dump(struct glyph *glyphs);
+void glyph_dump(struct glyph const *const glyphs);
 #endif

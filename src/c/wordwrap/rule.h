@@ -14,4 +14,4 @@ enum break_rule {
   br_budoux = 128,
 };
 
-enum break_rule rule_is_breakable(wchar_t const ch1, wchar_t const ch2, int enabled_rules);
+enum break_rule rule_is_breakable(wchar_t const ch1, wchar_t const ch2, int const enabled_rules);

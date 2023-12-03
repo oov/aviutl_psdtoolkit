@@ -215,7 +215,7 @@ static bool is_ascii_word(wchar_t const ch1, wchar_t const ch2) { return is_grap
 
 static bool is_non_ascii_word(wchar_t const ch1, wchar_t const ch2) { return ch1 >= 128 && ch2 >= 128; }
 
-enum break_rule rule_is_breakable(wchar_t const ch1, wchar_t const ch2, int enabled_rules) {
+enum break_rule rule_is_breakable(wchar_t const ch1, wchar_t const ch2, int const enabled_rules) {
   enum break_rule br = br_breakable;
   if ((enabled_rules & br_no_first_line_char) != 0 && is_no_first_line_char(ch2)) {
     br = br_no_first_line_char;

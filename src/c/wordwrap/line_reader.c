@@ -40,7 +40,7 @@ size_t line_reader_find_right(struct line_reader const *const lr, size_t const p
   return SIZE_MAX;
 }
 
-size_t line_reader_find_breakable_left(struct line_reader const *const lr, size_t const pos, int const break_rule) {
+static size_t find_breakable_left(struct line_reader const *const lr, size_t const pos, int const break_rule) {
   size_t cpos = line_reader_find_left(lr, pos);
   if (cpos == SIZE_MAX) {
     return SIZE_MAX;
@@ -63,7 +63,7 @@ size_t line_reader_find_breakable_left(struct line_reader const *const lr, size_
   }
 }
 
-size_t line_reader_find_breakable_right(struct line_reader const *const lr, size_t const pos, int const break_rule) {
+static size_t find_breakable_right(struct line_reader const *const lr, size_t const pos, int const break_rule) {
   size_t cpos = line_reader_find_right(lr, pos);
   if (cpos == SIZE_MAX) {
     return SIZE_MAX;
@@ -84,4 +84,12 @@ size_t line_reader_find_breakable_right(struct line_reader const *const lr, size
     }
     cpos = npos;
   }
+}
+
+size_t line_reader_find_breakable(struct line_reader const *const lr, size_t const pos, int const break_rule) {
+  size_t r = find_breakable_left(lr, pos, break_rule);
+  if (r == SIZE_MAX) {
+    r = find_breakable_right(lr, pos, break_rule);
+  }
+  return r;
 }

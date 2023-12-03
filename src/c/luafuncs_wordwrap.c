@@ -1,8 +1,11 @@
 #include "luafuncs_wordwrap.h"
 
 #include <ovarray.h>
+#include <ovbase.h>
 #include <ovnum.h>
 #include <ovutil/win32.h>
+
+#include <lua5.1/lauxlib.h>
 
 #include "aviutl.h"
 #include "i18n.h"
@@ -10,55 +13,13 @@
 
 #include "wordwrap/aviutl_text.h"
 #include "wordwrap/bdx.h"
+#include "wordwrap/bdx_cache.h"
 #include "wordwrap/canvas.h"
 #include "wordwrap/cyrb64.h"
 #include "wordwrap/glyph.h"
 #include "wordwrap/line_reader.h"
 #include "wordwrap/rule.h"
 #include "wordwrap/text_cache.h"
-
-static size_t find_breakpoint_norule(struct line_reader const *lr, size_t const overflow_pos) {
-  static int const rule = br_surrogate_low;
-  size_t r = line_reader_find_breakable_left(lr, overflow_pos, rule);
-  if (r == SIZE_MAX) {
-    r = line_reader_find_breakable_right(lr, overflow_pos, rule);
-  }
-  return r;
-}
-
-static size_t find_breakpoint_rule(struct line_reader const *lr, size_t const overflow_pos) {
-  static int const rule = br_no_first_line_char | br_no_last_line_char | br_no_break_char | br_surrogate_low |
-                          br_signed_number | br_ascii_word;
-  size_t r = line_reader_find_breakable_left(lr, overflow_pos, rule);
-  if (r == SIZE_MAX) {
-    r = line_reader_find_breakable_right(lr, overflow_pos, rule);
-  }
-  return r;
-}
-
-static size_t find_breakpoint_budoux(struct line_reader const *lr,
-                                     size_t const overflow_pos,
-                                     struct budouxc *const model,
-                                     size_t **boundaries) {
-  if (!(lr->glyphs[lr->linehead].flags & gt_budoux_marked)) {
-    error err = bdx_write_markers(lr, model, boundaries);
-    if (efailed(err)) {
-      ereport(err);
-      return find_breakpoint_rule(lr, overflow_pos);
-    }
-#ifdef WW_DEBUG
-    glyph_dump(lr->glyphs);
-#endif
-  }
-
-  static int const rule = br_no_first_line_char | br_no_last_line_char | br_no_break_char | br_surrogate_low |
-                          br_signed_number | br_ascii_word | br_non_ascii_word | br_budoux;
-  size_t r = line_reader_find_breakable_left(lr, overflow_pos, rule);
-  if (r == SIZE_MAX) {
-    r = line_reader_find_breakable_right(lr, overflow_pos, rule);
-  }
-  return r;
-}
 
 NODISCARD static error measure_glyph(struct canvas *canvas,
                                      enum glyph_type const typ,
@@ -263,6 +224,22 @@ static enum wordwrap_mode int_to_wordwrap_mode(int const v) {
     return (enum wordwrap_mode)v;
   }
   return wwm_norule;
+}
+
+static int wordwrap_mode_to_rule(enum wordwrap_mode const mode) {
+  switch (mode) {
+  case wwm_norule:
+    return br_surrogate_low;
+  case wwm_rule:
+    return br_no_first_line_char | br_no_last_line_char | br_no_break_char | br_surrogate_low | br_signed_number |
+           br_ascii_word;
+  case wwm_budoux:
+    return br_no_first_line_char | br_no_last_line_char | br_no_break_char | br_surrogate_low | br_signed_number |
+           br_ascii_word | br_non_ascii_word | br_budoux;
+  case wwm_disabled:
+  case wwm_max:
+    return 0;
+  }
 }
 
 static inline int imax(int const a, int const b) { return a > b ? a : b; }
@@ -549,7 +526,9 @@ cleanup:
   return err;
 }
 
-static double calc_current_line_width(struct line_reader const *const lr, struct wordwrap_settings const *const wws) {
+static double calc_current_line_width(struct wstr const *const text,
+                                      struct line_reader const *const lr,
+                                      struct wordwrap_settings const *const wws) {
   double x = 0;
   double x_min = INT_MAX;
   double x_max = INT_MIN;
@@ -569,8 +548,8 @@ static double calc_current_line_width(struct line_reader const *const lr, struct
       }
       struct aviutl_text_tag tag;
       struct aviutl_text_tag_position tag_pos;
-      aviutl_text_parse_tag(lr->text->ptr, lr->text->len, g->pos, &tag);
-      aviutl_text_get_position(lr->text->ptr, &tag, &tag_pos);
+      aviutl_text_parse_tag(text->ptr, text->len, g->pos, &tag);
+      aviutl_text_get_position(text->ptr, &tag, &tag_pos);
       if (tag_pos.x_type == aviutl_text_tag_position_type_absolute) {
         return x_max - x_min;
       }
@@ -591,11 +570,13 @@ static double calc_current_line_width(struct line_reader const *const lr, struct
   return x_max - x_min;
 }
 
-static double calc_max_width(struct line_reader const *const lr, struct wordwrap_settings const *const wws) {
+static double calc_max_width(struct wstr const *const text,
+                             struct line_reader const *const lr,
+                             struct wordwrap_settings const *const wws) {
   if (wws->adjust_last <= 0) {
     return wws->max_width;
   }
-  double const current_line_width = calc_current_line_width(lr, wws);
+  double const current_line_width = calc_current_line_width(text, lr, wws);
   if (wws->max_width >= current_line_width) {
     return wws->max_width;
   }
@@ -707,13 +688,13 @@ int luafn_wordwrap(lua_State *L) {
   wchar_t buf[512] = {0};
 #endif
 
-  struct line_reader lr = {.text = &text, .glyphs = glyphs, .linehead = 0};
+  struct line_reader lr = {.glyphs = glyphs, .linehead = 0};
   size_t gpos = 0;
   size_t const num_glyphs = OV_ARRAY_LENGTH(glyphs);
   double x = 0;
   double x_min = INT_MAX;
   double x_max = INT_MIN;
-  double max_width = calc_max_width(&lr, &wws);
+  double max_width = calc_max_width(&text, &lr, &wws);
   while (gpos < num_glyphs) {
     struct glyph const *const g = &glyphs[gpos];
     if (g->typ == gt_break) {
@@ -726,7 +707,7 @@ int luafn_wordwrap(lua_State *L) {
       x_min = INT_MAX;
       x_max = INT_MIN;
       lr.linehead = ++gpos;
-      max_width = calc_max_width(&lr, &wws);
+      max_width = calc_max_width(&text, &lr, &wws);
       continue;
     }
     if (g->typ == gt_tag) {
@@ -744,7 +725,7 @@ int luafn_wordwrap(lua_State *L) {
         x_min = INT_MAX;
         x_max = INT_MIN;
         lr.linehead = ++gpos;
-        max_width = calc_max_width(&lr, &wws);
+        max_width = calc_max_width(&text, &lr, &wws);
         continue;
       }
       x += tag_pos.x;
@@ -776,18 +757,24 @@ int luafn_wordwrap(lua_State *L) {
       continue;
     }
 
-    // NOTE: Overflow is permitted only if the smallest unit exceeds the limit to prevent infinite loops.
-
-    size_t break_gpos = SIZE_MAX;
-
-    if (wws.mode == wwm_norule) {
-      break_gpos = find_breakpoint_norule(&lr, gpos);
-    } else if (wws.mode == wwm_rule) {
-      break_gpos = find_breakpoint_rule(&lr, gpos);
-    } else if (wws.mode == wwm_budoux) {
-      break_gpos = find_breakpoint_budoux(&lr, gpos, model, &boundaries);
+    int const rule = wordwrap_mode_to_rule(wws.mode);
+    if (!rule) {
+      err = emsg_i18nf(
+          err_type_generic, err_unexpected, NSTR("%d"), gettext("%1$d is invalid word wrap mode."), wws.mode);
+      goto cleanup;
+    }
+    if (wws.mode == wwm_budoux && !(glyphs[lr.linehead].flags & gt_budoux_marked)) {
+      err = bdx_write_markers(glyphs, lr.linehead, model, &boundaries);
+      if (efailed(err)) {
+        err = ethru(err);
+        goto cleanup;
+      }
+#ifdef WW_DEBUG
+      glyph_dump(lr.glyphs);
+#endif
     }
 
+    size_t const break_gpos = line_reader_find_breakable(&lr, gpos, rule);
     if (break_gpos == SIZE_MAX) {
 #ifdef WW_DEBUG
       OutputDebugStringW(L"== failed to wrap ==");
@@ -831,7 +818,7 @@ int luafn_wordwrap(lua_State *L) {
     x = 0;
     x_min = INT_MAX;
     x_max = INT_MIN;
-    max_width = calc_max_width(&lr, &wws);
+    max_width = calc_max_width(&text, &lr, &wws);
   }
   if (lr.linehead < num_glyphs) {
     err = write_text(&text, glyphs, lr.linehead, num_glyphs, &processed);
