@@ -32,7 +32,11 @@ end
 
 function P.ondrop(files, state)
   for i=1, #files do
-    v = files[i]
+    local v = files[i]
+    if v == nil then
+      -- 総数が減って範囲外になった
+      break
+    end
     -- ファイルの拡張子が psd か psb だったら
     local ext = v.filepath:match("[^.]+$"):lower()
     if ext == "psd" or ext == "psb" then
