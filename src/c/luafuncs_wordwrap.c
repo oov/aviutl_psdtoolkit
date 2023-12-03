@@ -275,8 +275,14 @@ static void read_exedit_params(wchar_t *const fontname,
   }
   FILTER const **filterpp = (void *)(h + 0x1B2B10);
   FILTER const *filterp = *filterpp;
-  static FILTER const *const text_filter = (void *)0x100B9878;
-  if (filterp != text_filter) {
+  if (!filterp) {
+    return;
+  }
+  static char const text_filter_name_jp[] = "\x83\x65\x83\x4C\x83\x58\x83\x67"; // "テキスト"
+  static char const text_filter_name_en[] = "Text";
+  static char const text_filter_name_zhcn[] = "\xce\xc4\xb1\xbe"; // "文本"
+  if (strcmp(filterp->name, text_filter_name_jp) != 0 && strcmp(filterp->name, text_filter_name_en) != 0 &&
+      strcmp(filterp->name, text_filter_name_zhcn) != 0) {
     return;
   }
   if (filterp->ex_data_size < 64) {
