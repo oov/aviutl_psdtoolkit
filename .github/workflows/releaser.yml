@@ -31,7 +31,6 @@ jobs:
             mingw-w64-${{ matrix.arch }}-lld
             mingw-w64-${{ matrix.arch }}-ninja
             mingw-w64-${{ matrix.arch }}-tools
-            vim
       - name: Run ninja
         shell: msys2 {0}
         run: |
@@ -61,6 +60,7 @@ jobs:
           msystem: ${{ matrix.msystem }}
           install: >-
             git
+            vim
             mingw-w64-${{ matrix.arch }}-clang
             mingw-w64-${{ matrix.arch }}-cmake
             mingw-w64-${{ matrix.arch }}-compiler-rt
