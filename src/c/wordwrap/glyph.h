@@ -3,10 +3,11 @@
 #include "aviutl_text.h"
 
 enum glyph_type {
-  gt_glyph = 0,
-  gt_break = 1,
-  gt_tag = 2,
-  gt_original_tag = 3,
+  gt_glyph,
+  gt_glyph_numref,
+  gt_break,
+  gt_tag,
+  gt_original_tag,
 };
 
 enum glyph_flags {
@@ -16,22 +17,30 @@ enum glyph_flags {
   gt_not_breakable_by_nobr = 8,
 };
 
+enum glyph_original_tag_type {
+  ot_unknown,
+  ot_nobr_open,
+  ot_nobr_close,
+  ot_wbr,
+};
+
 struct glyph {
-  enum glyph_type typ : 2;
-  int flags : 4;
-  uint16_t pos;
+  enum glyph_type typ : 16;
+  int flags : 16;
+  size_t pos : 16;
+  size_t len : 16;
   union {
     struct {
+      wchar_t ch;
       int16_t BlackBoxX;
       int16_t ptGlyphOriginX;
       int16_t CellIncX;
-    } metrics;
+    } glyph;
     struct {
       enum aviutl_text_tag_type type;
-      uint16_t len;
     } tag;
     struct {
-      uint16_t len;
+      enum glyph_original_tag_type type;
     } original_tag;
   } u;
 };

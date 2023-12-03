@@ -8,6 +8,7 @@ typedef wchar_t aviutl_text_char;
 
 enum aviutl_text_tag_type {
   aviutl_text_tag_type_unknown,
+  aviutl_text_tag_type_numcharref,
   aviutl_text_tag_type_color,
   aviutl_text_tag_type_position,
   aviutl_text_tag_type_font,
@@ -29,6 +30,14 @@ bool aviutl_text_parse_tag(aviutl_text_char const *const str,
                            size_t const len,
                            size_t const pos,
                            struct aviutl_text_tag *const tag);
+
+struct aviutl_text_tag_numcharref {
+  uint16_t ch;
+};
+
+void aviutl_text_get_numcharref(aviutl_text_char const *const str,
+                                struct aviutl_text_tag const *const tag,
+                                struct aviutl_text_tag_numcharref *const value);
 
 struct aviutl_text_tag_color {
   uint32_t color[2];

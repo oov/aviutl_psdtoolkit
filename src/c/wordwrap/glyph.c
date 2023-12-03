@@ -17,6 +17,9 @@ void glyph_dump(struct glyph *glyphs) {
     case gt_glyph:
       t = L"gt_glyph";
       break;
+    case gt_glyph_numref:
+      t = L"gt_glyph_numref";
+      break;
     case gt_break:
       t = L"gt_break";
       break;

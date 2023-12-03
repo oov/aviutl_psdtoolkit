@@ -130,11 +130,11 @@ static char32_t get_char(void *const userdata) {
 
 #ifdef WW_DEBUG
   wchar_t buf[128];
-  wsprintfW(buf, L"get_char: %lc", bmctx->lr->text->ptr[bmctx->lr->glyphs[pos].pos]);
+  wsprintfW(buf, L"get_char: %lc", bmctx->lr->glyphs[pos].u.glyph.ch);
   OutputDebugStringW(buf);
 #endif
 
-  return bmctx->lr->text->ptr[bmctx->lr->glyphs[pos].pos];
+  return bmctx->lr->glyphs[pos].u.glyph.ch;
 }
 
 static bool add_boundary(size_t const boundary, void *const userdata) {

@@ -347,11 +347,9 @@ static void test_budoux(void) {
     }
     OV_ARRAY_SET_LENGTH(glyphs, wcslen(tests[i].srcstr));
     for (size_t j = 0; j < OV_ARRAY_LENGTH(glyphs); ++j) {
-      glyphs[j] = (struct glyph){.pos = (uint16_t)j};
+      glyphs[j] = (struct glyph){.pos = (uint16_t)j, .u.glyph.ch = tests[i].srcstr[j]};
     }
-    struct wstr text = wstr_unmanaged_const(tests[i].srcstr);
     struct line_reader lr = {
-        .text = &text,
         .glyphs = glyphs,
         .linehead = 0,
     };

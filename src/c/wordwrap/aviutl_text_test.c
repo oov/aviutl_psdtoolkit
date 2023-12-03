@@ -46,6 +46,43 @@ static bool test_tag(struct aviutl_text_tag const *const expect,
 }
 #define TEST_TAG(expect, got) test_tag(expect, got, __FILE__, __LINE__, #expect " == " #got)
 
+static void test_aviutl_text_numcharref(void) {
+  struct aviutl_text_tag tag = {0};
+  struct aviutl_text_tag_numcharref numcharref = {0};
+  aviutl_text_char const *text = NULL;
+
+  text = L"&#1234;";
+  if (TEST_CHECK(aviutl_text_parse_tag(text, wcslen(text), 0, &tag) == true)) {
+    TEST_TAG(&((struct aviutl_text_tag){
+                 .type = aviutl_text_tag_type_numcharref,
+                 .pos = 0,
+                 .len = 7,
+                 .value_pos = {2, SIZE_MAX, SIZE_MAX},
+                 .value_len = {4, 0, 0},
+             }),
+             &tag);
+    aviutl_text_get_numcharref(text, &tag, &numcharref);
+    TEST_CHECK(numcharref.ch == 1234);
+  }
+
+  text = L"&#0;";
+  if (TEST_CHECK(aviutl_text_parse_tag(text, wcslen(text), 0, &tag) == true)) {
+    TEST_TAG(&((struct aviutl_text_tag){
+                 .type = aviutl_text_tag_type_numcharref,
+                 .pos = 0,
+                 .len = 4,
+                 .value_pos = {2, SIZE_MAX, SIZE_MAX},
+                 .value_len = {1, 0, 0},
+             }),
+             &tag);
+    aviutl_text_get_numcharref(text, &tag, &numcharref);
+    TEST_CHECK(numcharref.ch == 0);
+  }
+
+  text = L"&#;";
+  TEST_CHECK(aviutl_text_parse_tag(text, wcslen(text), 0, &tag) == false);
+}
+
 static inline int fcompare(double x, double y, double tolerance) {
   return (x > y + tolerance) ? 1 : (y > x + tolerance) ? -1 : 0;
 }
@@ -653,6 +690,7 @@ static void test_aviutl_text_script(void) {
 }
 
 TEST_LIST = {
+    {"test_aviutl_text_numcharref", test_aviutl_text_numcharref},
     {"test_aviutl_text_color", test_aviutl_text_color},
     {"test_aviutl_text_position", test_aviutl_text_position},
     {"test_aviutl_text_font", test_aviutl_text_font},

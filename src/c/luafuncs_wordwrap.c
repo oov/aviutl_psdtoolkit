@@ -1,6 +1,7 @@
 #include "luafuncs_wordwrap.h"
 
 #include <ovarray.h>
+#include <ovnum.h>
 #include <ovutil/win32.h>
 
 #include "aviutl.h"
@@ -59,6 +60,41 @@ static size_t find_breakpoint_budoux(struct line_reader const *lr,
   return r;
 }
 
+NODISCARD static error measure_glyph(struct canvas *canvas,
+                                     enum glyph_type const typ,
+                                     int const flags,
+                                     wchar_t const ch,
+                                     size_t const pos,
+                                     size_t const len,
+                                     bool const monospace,
+                                     bool const high_resolution,
+                                     struct glyph *const g) {
+  error err = eok();
+  GLYPHMETRICS gm;
+  if (!canvas_get_metrics(canvas, ch, &gm, monospace, high_resolution)) {
+    err = emsg_i18n(err_type_generic, err_unexpected, gettext("failed to get glyph metrics."));
+    goto cleanup;
+  }
+  *g = (struct glyph){
+      .typ = typ,
+      .flags = flags,
+      .pos = pos,
+      .len = len,
+      .u =
+          {
+              .glyph =
+                  {
+                      .ch = ch,
+                      .BlackBoxX = (int16_t)gm.gmBlackBoxX,
+                      .ptGlyphOriginX = (int16_t)gm.gmptGlyphOrigin.x,
+                      .CellIncX = (int16_t)gm.gmCellIncX,
+                  },
+          },
+  };
+cleanup:
+  return err;
+}
+
 NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
                                                  size_t const text_len,
                                                  bool const monospace,
@@ -92,17 +128,22 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
   size_t gpos = 0;
   int flags = 0;
   bool nobr = false;
+  struct aviutl_text_tag tag = {0};
   for (size_t i = 0; i < text_len; ++i) {
     if (text[i] == L'\n') {
       glyphs[gpos++] = (struct glyph){
           .typ = gt_break,
-          .pos = (uint16_t)i,
+          .pos = i,
+          .len = 1,
       };
       continue;
     }
-    struct aviutl_text_tag tag;
-    if (text[i] == L'<') {
+    tag.type = aviutl_text_tag_type_unknown;
+    if (text[i] == L'<' || text[i] == L'&') {
       if (aviutl_text_parse_tag(text, text_len, i, &tag)) {
+        if (tag.type == aviutl_text_tag_type_numcharref) {
+          goto measure_glyph;
+        }
         if (tag.type == aviutl_text_tag_type_font) {
           struct aviutl_text_tag_font font;
           aviutl_text_get_font(text, &tag, &font);
@@ -114,13 +155,13 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
         }
         glyphs[gpos++] = (struct glyph){
             .typ = gt_tag,
-            .pos = (uint16_t)i,
+            .pos = i,
+            .len = tag.len,
             .u =
                 {
                     .tag =
                         {
                             .type = tag.type,
-                            .len = (uint16_t)tag.len,
                         },
                 },
         };
@@ -131,12 +172,13 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
         flags |= gt_breakable_by_wbr;
         glyphs[gpos++] = (struct glyph){
             .typ = gt_original_tag,
-            .pos = (uint16_t)i,
+            .pos = i,
+            .len = 5,
             .u =
                 {
                     .original_tag =
                         {
-                            .len = 5,
+                            .type = ot_wbr,
                         },
                 },
         };
@@ -147,12 +189,13 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
         nobr = true;
         glyphs[gpos++] = (struct glyph){
             .typ = gt_original_tag,
-            .pos = (uint16_t)i,
+            .pos = i,
+            .len = 6,
             .u =
                 {
                     .original_tag =
                         {
-                            .len = 6,
+                            .type = ot_nobr_open,
                         },
                 },
         };
@@ -164,12 +207,13 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
         flags &= ~gt_not_breakable_by_nobr;
         glyphs[gpos++] = (struct glyph){
             .typ = gt_original_tag,
-            .pos = (uint16_t)i,
+            .pos = i,
+            .len = 7,
             .u =
                 {
                     .original_tag =
                         {
-                            .len = 7,
+                            .type = ot_nobr_close,
                         },
                 },
         };
@@ -177,25 +221,20 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
         continue;
       }
     }
-    GLYPHMETRICS gm;
-    if (!canvas_get_metrics(canvas, text[i], &gm, monospace, high_resolution)) {
-      err = emsg_i18n(err_type_generic, err_unexpected, gettext("failed to get glyph metrics."));
+  measure_glyph:
+    if (tag.type == aviutl_text_tag_type_numcharref) {
+      i += tag.len - 1;
+      struct aviutl_text_tag_numcharref ncr;
+      aviutl_text_get_numcharref(text, &tag, &ncr);
+      err = measure_glyph(
+          canvas, gt_glyph_numref, flags, ncr.ch, tag.pos, tag.len, monospace, high_resolution, &glyphs[gpos++]);
+    } else {
+      err = measure_glyph(canvas, gt_glyph, flags, text[i], i, 1, monospace, high_resolution, &glyphs[gpos++]);
+    }
+    if (efailed(err)) {
+      err = ethru(err);
       goto cleanup;
     }
-    glyphs[gpos++] = (struct glyph){
-        .typ = gt_glyph,
-        .flags = flags,
-        .pos = (uint16_t)i,
-        .u =
-            {
-                .metrics =
-                    {
-                        .BlackBoxX = (int16_t)gm.gmBlackBoxX,
-                        .ptGlyphOriginX = (int16_t)gm.gmptGlyphOrigin.x,
-                        .CellIncX = (int16_t)gm.gmCellIncX,
-                    },
-            },
-    };
     flags &= ~gt_breakable_by_wbr;
     if (nobr) {
       flags |= gt_not_breakable_by_nobr;
@@ -483,11 +522,10 @@ static NODISCARD error write_text(struct wstr const *const src,
     struct glyph const *const g = &glyphs[gpos];
     switch (g->typ) {
     case gt_glyph:
+    case gt_glyph_numref:
     case gt_break:
-      ++nch;
-      break;
     case gt_tag:
-      nch += g->u.tag.len;
+      nch += g->len;
       break;
     case gt_original_tag: {
       err = sncat(text, src->ptr + glyphs[copypos].pos, nch);
@@ -544,9 +582,9 @@ static double calc_current_line_width(struct line_reader const *const lr, struct
       ++gpos;
       continue;
     }
-    x_min = dmin(x_min, x + (double)(g->u.metrics.ptGlyphOriginX));
-    x_max = dmax(x_max, x + (double)(g->u.metrics.ptGlyphOriginX + g->u.metrics.BlackBoxX));
-    x += (double)(g->u.metrics.CellIncX + wws->letter_spacing);
+    x_min = dmin(x_min, x + (double)(g->u.glyph.ptGlyphOriginX));
+    x_max = dmax(x_max, x + (double)(g->u.glyph.ptGlyphOriginX + g->u.glyph.BlackBoxX));
+    x += (double)(g->u.glyph.CellIncX + wws->letter_spacing);
     ++gpos;
     continue;
   }
@@ -717,22 +755,22 @@ int luafn_wordwrap(lua_State *L) {
       ++gpos;
       continue;
     }
-    x_min = dmin(x_min, x + (double)(g->u.metrics.ptGlyphOriginX));
-    x_max = dmax(x_max, x + (double)(g->u.metrics.ptGlyphOriginX + g->u.metrics.BlackBoxX));
-    x += (double)(g->u.metrics.CellIncX + wws.letter_spacing);
+    x_min = dmin(x_min, x + (double)(g->u.glyph.ptGlyphOriginX));
+    x_max = dmax(x_max, x + (double)(g->u.glyph.ptGlyphOriginX + g->u.glyph.BlackBoxX));
+    x += (double)(g->u.glyph.CellIncX + wws.letter_spacing);
 
     if (x_max - x_min <= max_width) {
       ++gpos;
 #ifdef WW_DEBUG
-      wcsncpy(buf, text.ptr + g->pos, 1);
-      wsprintfW(&buf[1],
-                L"　w: %d min: %d max: %d ox: %d bbx: %d cix: %d",
+      wsprintfW(buf,
+                L"%lc w: %d min: %d max: %d ox: %d bbx: %d cix: %d",
+                g->u.glyph.ch,
                 (int)(x_max - x_min),
                 (int)x_min,
                 (int)x_max,
-                g->u.metrics.ptGlyphOriginX,
-                g->u.metrics.BlackBoxX,
-                g->u.metrics.CellIncX);
+                g->u.glyph.ptGlyphOriginX,
+                g->u.glyph.BlackBoxX,
+                g->u.glyph.CellIncX);
       OutputDebugStringW(buf);
 #endif
       continue;
@@ -775,8 +813,7 @@ int luafn_wordwrap(lua_State *L) {
         ++gpos;
         continue;
       }
-      wchar_t const ch = text.ptr[glyphs[gpos].pos];
-      if (ch == L' ') {
+      if (glyphs[gpos].u.glyph.ch == L' ') {
         ++gpos;
         continue;
       }

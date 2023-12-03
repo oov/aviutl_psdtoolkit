@@ -15,6 +15,7 @@ size_t line_reader_find_left(struct line_reader const *const lr, size_t const po
     case gt_break:
       return SIZE_MAX;
     case gt_glyph:
+    case gt_glyph_numref:
       return (size_t)(g - lr->glyphs);
     }
   }
@@ -32,6 +33,7 @@ size_t line_reader_find_right(struct line_reader const *const lr, size_t const p
     case gt_break:
       return SIZE_MAX;
     case gt_glyph:
+    case gt_glyph_numref:
       return (size_t)(g - lr->glyphs);
     }
   }
@@ -50,7 +52,7 @@ size_t line_reader_find_breakable_left(struct line_reader const *const lr, size_
     }
     if (!(lr->glyphs[cpos].flags & gt_not_breakable_by_nobr) || (lr->glyphs[cpos].flags & gt_breakable_by_wbr)) {
       enum break_rule const br =
-          rule_is_breakable(lr->text->ptr[lr->glyphs[ppos].pos], lr->text->ptr[lr->glyphs[cpos].pos], break_rule);
+          rule_is_breakable(lr->glyphs[ppos].u.glyph.ch, lr->glyphs[cpos].u.glyph.ch, break_rule);
       if ((br == br_breakable) || (lr->glyphs[cpos].flags & gt_breakable_by_wbr) ||
           ((br == br_non_ascii_word || br == br_ascii_word) && (break_rule & br_budoux) &&
            (lr->glyphs[cpos].flags & gt_budoux_breakable))) {
@@ -73,7 +75,7 @@ size_t line_reader_find_breakable_right(struct line_reader const *const lr, size
     }
     if (!(lr->glyphs[npos].flags & gt_not_breakable_by_nobr) || (lr->glyphs[npos].flags & gt_breakable_by_wbr)) {
       enum break_rule const br =
-          rule_is_breakable(lr->text->ptr[lr->glyphs[cpos].pos], lr->text->ptr[lr->glyphs[npos].pos], break_rule);
+          rule_is_breakable(lr->glyphs[cpos].u.glyph.ch, lr->glyphs[npos].u.glyph.ch, break_rule);
       if ((br == br_breakable) || (lr->glyphs[npos].flags & gt_breakable_by_wbr) ||
           ((br == br_non_ascii_word || br == br_ascii_word) && (break_rule & br_budoux) &&
            (lr->glyphs[npos].flags & gt_budoux_breakable))) {

@@ -48,11 +48,45 @@ static bool parse_script_tag(aviutl_text_char const *const str,
   return false;
 }
 
+static bool parse_num_ref(aviutl_text_char const *const str,
+                          size_t const len,
+                          size_t const pos,
+                          struct aviutl_text_tag *const tag) {
+  if (len - pos < 4) {
+    return false;
+  }
+  for (size_t i = pos + 2; i < len; ++i) {
+    if (str[i] == ';') {
+      tag->type = aviutl_text_tag_type_numcharref;
+      tag->pos = pos;
+      tag->len = i - pos + 1;
+      tag->value_pos[0] = pos + 2;
+      tag->value_pos[1] = SIZE_MAX;
+      tag->value_pos[2] = SIZE_MAX;
+      tag->value_len[0] = i - pos - 2;
+      tag->value_len[1] = 0;
+      tag->value_len[2] = 0;
+      return true;
+    }
+    if (is_digit(str[i])) {
+      continue;
+    }
+    return false;
+  }
+  return false;
+}
+
 bool aviutl_text_parse_tag(aviutl_text_char const *const str,
                            size_t const len,
                            size_t const pos,
                            struct aviutl_text_tag *const tag) {
-  if (len - pos < 3 || str[pos] != '<') {
+  if (len - pos < 3) {
+    return false;
+  }
+  if (str[pos] == '&' && str[pos + 1] == '#') {
+    return parse_num_ref(str, len, pos, tag);
+  }
+  if (str[pos] != '<') {
     return false;
   }
   int type = aviutl_text_tag_type_unknown;
@@ -193,6 +227,17 @@ bool aviutl_text_parse_tag(aviutl_text_char const *const str,
     }
   }
   return false;
+}
+
+void aviutl_text_get_numcharref(aviutl_text_char const *const str,
+                                struct aviutl_text_tag const *const tag,
+                                struct aviutl_text_tag_numcharref *const value) {
+  uint64_t u64 = 0;
+  if (ov_atou_wchar(str + tag->value_pos[0], &u64, false)) {
+    value->ch = (uint16_t)u64;
+  } else {
+    value->ch = 0xfffd;
+  }
 }
 
 static inline uint32_t hex2dec(aviutl_text_char const c) {
