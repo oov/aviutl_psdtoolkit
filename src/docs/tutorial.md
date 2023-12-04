@@ -81,9 +81,10 @@
 
 今回使用する PSD ファイルを、以下のリンクからダウンロードしてください。
 
-[im5467479.psd](https://oov.github.io/psdtool/img/im5467479.psd)（水梟るさん制作、一次配布元は[こちら](http://seiga.nicovideo.jp/seiga/im5467479)）  
+[im5467479.psd](https://oov.github.io/psdtool/img/im5467479.psd)（水梟るさん制作、一次配布元は[こちら](http://seiga.nicovideo.jp/seiga/im5467479)）
+
 <small>※動画制作に使用する場合は一次配布元の記載及び CeVIO キャラクターライセンスを厳守した上で利用してください。  
-※[さとうささら](http://satosasara.com/)はトーク・ソング対応音声合成ソフトウェア [CeVIO Creative Studio](http://cevio.jp/) のキャラクターです。</small>
+※さとうささらはトーク・ソング対応音声合成ソフトウェア [CeVIO Creative Studio](http://cevio.jp/) のキャラクターです。</small>
 
 ダウンロードしたファイルを `拡張編集` ウィンドウへドラッグ＆ドロップして読み込みます。
 

@@ -64,3 +64,9 @@ PSDToolKit では[ごちゃまぜドロップス](https://github.com/oov/aviutl_
 ## *.srt ファイル
 
 `*.srt` ファイルを投げ込むと複数の [`字幕準備`](prep.md#字幕準備) を一括で生成します。
+
+# AudioMixer.auf
+
+イコライザーやコンプレッサーが使える音声フィルターを追加します。
+
+使い方は [AudioMixer.auf のドキュメント](https://github.com/oov/aviutl_audiomixer#%E4%BD%BF%E3%81%84%E6%96%B9) を参照してください。

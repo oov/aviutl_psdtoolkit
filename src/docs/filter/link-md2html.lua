@@ -32,11 +32,14 @@ return {
       local other = elem.target:sub(1, #elem.target - #hash)
       if other:match("[^.]+$") == "md" and other:match("^https?://") == nil and other:sub(1, 1) ~= "/" then
         elem.target = other:sub(1, #other - 2) .. "html"
+        if #hash > 0 then
+          elem.target = elem.target .. "#" .. encode(hash:sub(2))
+        end
       else
         elem.target = other
-      end
-      if #hash > 0 then
-        elem.target = elem.target .. "#" .. encode(hash:sub(2))
+        if #hash > 0 then
+          elem.target = elem.target .. "#" .. hash:sub(2)
+        end
       end
       return elem
     end
