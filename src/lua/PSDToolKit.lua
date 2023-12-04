@@ -654,7 +654,7 @@ function SubtitleState:mes(obj, opts)
   --     },
   --   }
   local text = self.text
-  if opts.wordwrap ~= nil then
+  if opts ~= nil and opts.wordwrap ~= nil then
     text = wordwrap(text, opts.wordwrap)
   end
   obj.mes(text)
