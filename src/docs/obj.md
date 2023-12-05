@@ -91,7 +91,7 @@ AviUtl のメインメニューから `編集`→`PSDToolKit`→`ウィンドウ
 <?s,o=[==[
 こんにちは
 ]==],{mode = 3, width = 800}
-mes(require("PSDToolKit").wordwrap(s,o))?>
+mes(require("PSDToolKit").wordwrap(s:gsub("([\128-\160\224-\255]\092)\092", "%1"),o))?>
 ```
 
 キャッシュテキストとの併用もできます。
@@ -100,7 +100,7 @@ mes(require("PSDToolKit").wordwrap(s,o))?>
 <?m,s,o=    0    ,[==[
 ここにテキストを書く
 ]==],{mode = 3, width = 800}
-require("CacheText").mes(require("PSDToolKit").wordwrap(s,o),m)?>
+require("CacheText").mes(require("PSDToolKit").wordwrap(s:gsub("([\128-\160\224-\255]\092)\092", "%1"),o),m)?>
 ```
 
 上記の例では `{mode = 3, width = 800}` のみを指定していますが、実際には以下のように多数の設定があります。
