@@ -1,6 +1,6 @@
 README.md      text eol=crlf
-*.anm          text eol=crlf
-*.exa          text eol=crlf
-*.lua          text eol=crlf
-*.lua-template text eol=crlf
-*.obj          text eol=crlf
+*.anm          text eol=crlf encoding=cp932
+*.exa          text eol=crlf encoding=cp932
+*.lua          text eol=crlf encoding=cp932
+*.lua-template text eol=crlf encoding=cp932
+*.obj          text eol=crlf encoding=cp932
