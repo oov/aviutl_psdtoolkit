@@ -51,11 +51,11 @@ local function isdead(subobj)
   return true
 end
 
-local function wordwrap(text, options)
-  if PSDToolKitBridge.wordwrap ~= nil then
-    return PSDToolKitBridge.wordwrap(text, options)
+local function wordwrap(text, options, unescape)
+  if unescape then
+    text = text:gsub("([\128-\160\224-\255]\092)\092", "%1")
   end
-  return text
+  return PSDToolKitBridge.wordwrap(text, options)
 end
 
 local PSDState = {}
@@ -655,7 +655,7 @@ function SubtitleState:mes(obj, opts)
   --   }
   local text = self.text
   if opts ~= nil and opts.wordwrap ~= nil then
-    text = wordwrap(text, opts.wordwrap)
+    text = PSDToolKitBridge.wordwrap(text, opts.wordwrap)
   end
   obj.mes(text)
 end
@@ -677,7 +677,7 @@ function SubtitleState:mesfast(obj, opts)
   end
   local text = self.text
   if opts.wordwrap ~= nil then
-    text = wordwrap(text, opts.wordwrap)
+    text = PSDToolKitBridge.wordwrap(text, opts.wordwrap)
   end
   require("CacheText").rawmes(text, opts.cache or 0)
 end

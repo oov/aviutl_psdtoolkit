@@ -19,7 +19,7 @@ file(MAKE_DIRECTORY ${LOCAL_INSTALL_PREFIX}/include)
 include(ExternalProject)
 ExternalProject_Add(budoux-c-proj
   GIT_REPOSITORY https://github.com/oov/budoux-c
-  GIT_TAG 809d7ba32b0808cbcb72158cd65ece11180b666e
+  GIT_TAG 67d89ea8fd62bb798e35febc18d33ef73d19fa3c
   PREFIX "${LOCAL_INSTALL_PREFIX}/proj/budoux-c"
   SOURCE_DIR "${LOCAL_INSTALL_PREFIX}/src/budoux-c"
   CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${LOCAL_INSTALL_PREFIX}" "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}" -DBUILD_SHARED_LIBS=OFF

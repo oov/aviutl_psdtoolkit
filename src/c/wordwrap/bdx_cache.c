@@ -53,6 +53,8 @@ NODISCARD error bdx_cache_get(char const *const name, struct budouxc **const mod
     g_caches[oldest].model = budouxc_init_embedded_zh_hans(NULL, errormsg);
   } else if (strcmp(name, "zh_hant") == 0) {
     g_caches[oldest].model = budouxc_init_embedded_zh_hant(NULL, errormsg);
+  } else if (strcmp(name, "th") == 0) {
+    g_caches[oldest].model = budouxc_init_embedded_th(NULL, errormsg);
   } else {
     h = CreateFileA(name, GENERIC_READ, 0, NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
     if (h == INVALID_HANDLE_VALUE) {
