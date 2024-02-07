@@ -2,7 +2,7 @@
 
 #include "ovbase.h"
 
-#include <lua5.1/lualib.h>
+#include <lualib.h>
 
 #include "ipc.h"
 #include "speak.h"

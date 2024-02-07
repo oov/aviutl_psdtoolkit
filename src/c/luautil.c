@@ -1,6 +1,6 @@
 #include "luautil.h"
 
-#include <lua5.1/lauxlib.h>
+#include <lauxlib.h>
 #include <ovutil/win32.h>
 
 int luafn_err_(lua_State *const L, error e, char const *const funcname) {

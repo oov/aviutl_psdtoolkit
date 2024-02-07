@@ -9,111 +9,31 @@ on:
       - "v[0-9]+.[0-9]+.[0-9]+"
 
 jobs:
-  build64:
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        include:
-          - msystem: CLANG64
-            arch: clang-x86_64
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - uses: msys2/setup-msys2@v2
-        with:
-          msystem: ${{ matrix.msystem }}
-          install: >-
-            git
-            mingw-w64-${{ matrix.arch }}-clang
-            mingw-w64-${{ matrix.arch }}-cmake
-            mingw-w64-${{ matrix.arch }}-compiler-rt
-            mingw-w64-${{ matrix.arch }}-lld
-            mingw-w64-${{ matrix.arch }}-ninja
-            mingw-w64-${{ matrix.arch }}-tools
-      - name: Run ninja
-        shell: msys2 {0}
-        run: |
-          mkdir -p build/64bit
-          cd build
-          rm -f 64bit/CMakeCache.txt && cmake -S .. -B 64bit --preset 64bit && \
-          cmake --build 64bit --target psdtoolkit_main
-      - name: Upload binaries
-        uses: actions/upload-artifact@v3
-        with:
-          name: bin64
-          path: |
-            build/64bit/bin/**/*
-  build32:
-    runs-on: windows-latest
-    strategy:
-      matrix:
-        include:
-          - msystem: CLANG32
-            arch: clang-i686
-    steps:
-      - uses: actions/checkout@v3
-        with:
-          submodules: recursive
-      - uses: msys2/setup-msys2@v2
-        with:
-          msystem: ${{ matrix.msystem }}
-          install: >-
-            git
-            vim
-            mingw-w64-${{ matrix.arch }}-clang
-            mingw-w64-${{ matrix.arch }}-cmake
-            mingw-w64-${{ matrix.arch }}-compiler-rt
-            mingw-w64-${{ matrix.arch }}-lld
-            mingw-w64-${{ matrix.arch }}-lua51
-            mingw-w64-${{ matrix.arch }}-ninja
-            mingw-w64-${{ matrix.arch }}-tools
-      - name: Build
-        shell: msys2 {0}
-        run: |
-          mkdir -p build/32bit
-          cd build
-          rm -f 32bit/CmakeCache.txt && cmake -S .. -B 32bit --preset 32bit -DFORMAT_SOURCES=ON && \
-          cmake --build 32bit --target psdtoolkit_assist --target psdtoolkit_bridge
-      - name: Upload binaries
-        uses: actions/upload-artifact@v3
-        with:
-          name: bin32
-          path: |
-            build/32bit/bin/**/*
-  create-release:
-    needs: [build64, build32]
+  build:
     runs-on: ubuntu-latest
     steps:
-      - name: setup
-        run: |
-          sudo apt install -y cmake ninja-build pandoc
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
       - name: Get the version
         id: get_version
-        run: echo "tag=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
-      - uses: actions/checkout@v3
-      - name: Download artifacts
-        uses: actions/download-artifact@v3
-      - name: Create package
+        shell: bash
         run: |
-          mkdir build release
-          cd build
-          rm -rf CMakeCache.txt && cmake -GNinja -DBUILD_DOCS=1 -DBUILD_PACKAGE=1 -DCMAKE_BUILD_TYPE=Release .. && cmake --build . --target make_doc --target make_package
-          cp -r ../bin64/* bin/
-          cp -r ../bin32/* bin/
-          cd bin && zip -r ../../release/psdtoolkit_${{ steps.get_version.outputs.tag }}.zip * && cd ..
-          rm -rf CMakeCache.txt && cmake -GNinja -DBUILD_DOCS=1 -DBUILD_PACKAGE=1 -DCMAKE_BUILD_TYPE=Release -DEXPORT_DIR_NAME=bin_en -DEXA_SUFFIX=_en.exa .. && cmake --build . --target make_doc --target make_package
-          cp -r ../bin64/* bin_en/
-          cp -r ../bin32/* bin_en/
-          cd bin_en && zip -r ../../release/psdtoolkit_${{ steps.get_version.outputs.tag }}_enpatched.zip * && cd ..
+          echo "tag=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
+      - name: Build
+        shell: bash
+        run: |
+          docker run --net host --rm -i -v .:/root/repo -w /root/repo ubuntu:22.04 /bin/bash -c 'apt update && apt install -y git curl unzip pandoc && git config --system --add safe.directory "*" && LANG="C.UTF-8" TZ=JST-9 bash build.bash --skip-tests --zip'
+          mv build/Release/dist/Release_package.zip build/Release/dist/psdtoolkit_${{ steps.get_version.outputs.tag }}.zip
+          mv build/Release/dist/Release_package_en.zip build/Release/dist/psdtoolkit_${{ steps.get_version.outputs.tag }}_enpatched.zip
       - name: Create Release
         id: create_release
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{ steps.get_version.outputs.tag }}
           draft: true
-          prerelease: true
-          files: release/*
+          prerelease: false
+          files: build/Release/dist/*
           body: |
             ### 注意事項
             

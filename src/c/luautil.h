@@ -1,6 +1,6 @@
 #pragma once
 
-#include <lua5.1/lualib.h>
+#include <lualib.h>
 #include <ovbase.h>
 
 int luafn_err_(lua_State *const L, error e, char const *const funcname);

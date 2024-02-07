@@ -15,7 +15,8 @@ import (
 	"psdtoolkit/ods"
 )
 
-var version string
+var gitTag string
+var gitRevision string
 
 func init() {
 	runtime.LockOSThread()
@@ -68,7 +69,7 @@ func main() {
 	gcDone := gc.Start(exitCh)
 
 	if err := g.Init(
-		"PSDToolKit "+version,
+		"PSDToolKit "+gitTag+" ( "+gitRevision+" )",
 		assets.BG,
 		assets.Ohruri,
 		assets.Symbols,

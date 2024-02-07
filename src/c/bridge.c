@@ -1,4 +1,4 @@
-#include <lua5.1/lualib.h>
+#include <lualib.h>
 
 static lua_CFunction g_impl = NULL;
 

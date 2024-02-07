@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.20)
 
 string(REGEX MATCH "[^/]+$" FILENAME "${url}")
 set(ZIP_PATH "${local_dir}/${FILENAME}")

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0)
+cmake_minimum_required(VERSION 3.20)
 project(psdtoolkit_docs NONE)
 
 find_package(Git REQUIRED)
@@ -26,15 +26,15 @@ message(STATUS "git revision: ${_git_revision}")
 
 set(version "${_git_tag} \\( ${_git_revision} \\)")
 
-find_program(DATE_EXECUTABLE date CMAKE_FIND_ROOT_PATH_BOTH)
+find_program(DATE_EXECUTABLE date REQUIRED CMAKE_FIND_ROOT_PATH_BOTH)
 execute_process(COMMAND ${DATE_EXECUTABLE} "+%Y-%m-%d %H:%M:%S" OUTPUT_VARIABLE datetime OUTPUT_STRIP_TRAILING_WHITESPACE)
 
-add_custom_target(make_doc
+add_custom_target(make_doc ALL
   COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/assets" "${EXPORT_DIR}/PSDToolKitDocs/assets"
   COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/rootindex.html" "${EXPORT_DIR}/PSDToolKit説明書.html"
 )
 
-find_program(PANDOC_EXECUTABLE pandoc CMAKE_FIND_ROOT_PATH_BOTH)
+find_program(PANDOC_EXECUTABLE pandoc REQUIRED CMAKE_FIND_ROOT_PATH_BOTH)
 macro(add_page id title)
   if("${id}" STREQUAL "psd")
     set(additional_script "script=assets/script-builder.js")
