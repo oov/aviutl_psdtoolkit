@@ -12,6 +12,29 @@ if [ ! -e "setup-llvm-mingw.bash" ]; then
 fi
 . setup-llvm-mingw.bash --dir $PWD
 
+case "$(uname -s)" in
+  MINGW64_NT* | MINGW32_NT*)
+    SEVENZIP_URL="https://www.7-zip.org/a/7z2301-extra.7z"
+    SEVENZIP_DIR="7z-windows"
+    if [ ! -d "${SEVENZIP_DIR}" ]; then
+      filename="$(basename "${SEVENZIP_URL}")"
+      if [ ! -f "${filename}" ]; then
+        echo "Downloading: ${SEVENZIP_URL}"
+        curl -sOL "$SEVENZIP_URL"
+      fi
+      mkdir -p "${SEVENZIP_DIR}"
+      cd "${SEVENZIP_DIR}"
+      cmake -E tar xf "../${filename}"
+      cd ..
+    fi
+    export PATH="${PWD}/${SEVENZIP_DIR}:$PATH"
+    ;;
+  *)
+    echo "Unsupported platform: $(uname -s)"
+    exit 1
+    ;;
+esac
+
 cd ..
 
 REBUILD=0

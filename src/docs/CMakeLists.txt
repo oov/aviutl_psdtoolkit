@@ -26,15 +26,35 @@ message(STATUS "git revision: ${_git_revision}")
 
 set(version "${_git_tag} \\( ${_git_revision} \\)")
 
-find_program(DATE_EXECUTABLE date REQUIRED CMAKE_FIND_ROOT_PATH_BOTH)
-execute_process(COMMAND ${DATE_EXECUTABLE} "+%Y-%m-%d %H:%M:%S" OUTPUT_VARIABLE datetime OUTPUT_STRIP_TRAILING_WHITESPACE)
+string(TIMESTAMP datetime UTC)
+message(STATUS "datetime: ${datetime}")
 
 add_custom_target(make_doc ALL
   COMMAND ${CMAKE_COMMAND} -E copy_directory "${CMAKE_CURRENT_SOURCE_DIR}/assets" "${EXPORT_DIR}/PSDToolKitDocs/assets"
   COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/rootindex.html" "${EXPORT_DIR}/PSDToolKit説明書.html"
 )
 
-find_program(PANDOC_EXECUTABLE pandoc REQUIRED CMAKE_FIND_ROOT_PATH_BOTH)
+set(PANDOC_VERSION "3.1.11.1")
+set(PANDOC_DIR "${CMAKE_CURRENT_BINARY_DIR}/pandoc-${PANDOC_VERSION}")
+if (CMAKE_HOST_WIN32)
+  set(PANDOC_URL "https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/pandoc-${PANDOC_VERSION}-windows-x86_64.zip")
+  set(PANDOC_EXE "${PANDOC_DIR}/pandoc.exe")
+else()
+  set(PANDOC_URL "https://github.com/jgm/pandoc/releases/download/${PANDOC_VERSION}/pandoc-${PANDOC_VERSION}-linux-amd64.tar.gz")
+  set(PANDOC_EXE "${PANDOC_DIR}/bin/pandoc")
+endif()
+string(REGEX MATCH "[^/]+$" PANDOC_ARCHIVE_NAME "${PANDOC_URL}")
+set(PANDOC_ARCHIVE_PATH "${CMAKE_CURRENT_BINARY_DIR}/${PANDOC_ARCHIVE_NAME}")
+if(NOT EXISTS "${PANDOC_ARCHIVE_PATH}")
+  file(DOWNLOAD "${PANDOC_URL}" "${PANDOC_ARCHIVE_PATH}")
+endif()
+if(NOT EXISTS "${PANDOC_DIR}")
+  execute_process(
+    COMMAND ${CMAKE_COMMAND} -E tar xf ${PANDOC_ARCHIVE_PATH}
+    WORKING_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}"
+  )
+endif()
+
 macro(add_page id title)
   if("${id}" STREQUAL "psd")
     set(additional_script "script=assets/script-builder.js")
@@ -43,7 +63,7 @@ macro(add_page id title)
   endif()
   add_custom_target(make_doc_page_${id}
     COMMAND ${CMAKE_COMMAND} -E make_directory "${EXPORT_DIR}/PSDToolKitDocs/"
-    COMMAND ${PANDOC_EXECUTABLE}
+    COMMAND ${PANDOC_EXE}
     "${CMAKE_CURRENT_SOURCE_DIR}/${id}.md"
     -o "${EXPORT_DIR}/PSDToolKitDocs/${id}.html"
     -f gfm
