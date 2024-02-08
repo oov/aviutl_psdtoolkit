@@ -13,9 +13,9 @@ jobs:
         run: |
           sudo apt install -y cmake ninja-build pandoc
       - name: Get the version
-        id: get_version
-        run: echo ::set-output name=tag::${GITHUB_REF/refs\/tags\//}
-      - uses: actions/checkout@v3
+        run: |
+          echo "tag=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
+      - uses: actions/checkout@v4
         with:
           path: ./repo
       - name: Build docs
@@ -23,7 +23,7 @@ jobs:
           cd repo
           mkdir build
           cd build
-          rm -rf CMakeCache.txt && cmake -GNinja -DBUILD_DOCS=1 -DCMAKE_BUILD_TYPE=Release .. && cmake --build . --target make_doc
+          rm -rf CMakeCache.txt && cmake -GNinja -DBUILD_DOCS=1 -DCMAKE_BUILD_TYPE=Release .. && cmake --build .
           cd ..
           mv build/bin/PSDToolKitDocs ../docs
           git checkout --orphan gh-pages

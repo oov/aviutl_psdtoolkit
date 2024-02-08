@@ -3,7 +3,7 @@
 #include "ovutil/str.h"
 #include "ovutil/win32.h"
 
-#include <lua5.1/lauxlib.h>
+#include <lauxlib.h>
 
 #include "cache.h"
 

@@ -5,7 +5,7 @@
 #include <ovnum.h>
 #include <ovutil/win32.h>
 
-#include <lua5.1/lauxlib.h>
+#include <lauxlib.h>
 
 #include "aviutl.h"
 #include "i18n.h"

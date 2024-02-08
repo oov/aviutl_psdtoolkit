@@ -91,7 +91,7 @@ if("${BUILD_PACKAGE}" STREQUAL "1")
     COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/exa/srt${EXA_SUFFIX}" "${EXPORT_DIR}/script/PSDToolKit/exa/srt.exa"
     COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/exa/lab${EXA_SUFFIX}" "${EXPORT_DIR}/script/PSDToolKit/exa/lab.exa"
   )
-  add_custom_target(make_package
+  add_custom_target(make_package ALL
     COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/gcmzdrops" "${EXPORT_DIR}"
     COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/audiomixer" "${EXPORT_DIR}"
     COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/forcepser" "${EXPORT_DIR}/かんしくん"
