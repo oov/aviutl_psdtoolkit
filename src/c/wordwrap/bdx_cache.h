@@ -11,7 +11,7 @@
  * @return Success status.
  *
  * This function retrieves a model from the cache or loads a new one if not present.
- * "ja", "zh_hans", "zh_hant" are treated as embedded models, others as file paths.
+ * "ja", "zh_hans", "zh_hant", "th" are treated as embedded models, others as file paths.
  * If cache is full and a new model is needed, the oldest model is replaced.
  */
 NODISCARD error bdx_cache_get(char const *const name, struct budouxc **const model);

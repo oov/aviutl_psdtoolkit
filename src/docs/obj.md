@@ -100,7 +100,7 @@ mes(require("PSDToolKit").wordwrap(s,o,true))?>
 <?m,s,o=    0    ,[==[
 ここにテキストを書く
 ]==],{mode = 3, width = 800}
-require("CacheText").mes(require("PSDToolKit").wordwrap(s,o,true),m)?>
+require("Cache2").text_before(require("PSDToolKit").wordwrap(s,o,true),m)?>
 ```
 
 上記の例では `{mode = 3, width = 800}` のみを指定していますが、実際には以下のように多数の設定があります。
@@ -138,7 +138,8 @@ require("CacheText").mes(require("PSDToolKit").wordwrap(s,o,true),m)?>
 設定名|説明
 ---|---
 `layer`|[`字幕準備`](prep.md#字幕準備)があるレイヤー番号を半角整数で指定します。
-`cache`|キャッシュを有効にするかを設定します。<br>通常の用途では`0` が最適な設定です。<br>`-1` - 常時無効<br>`0` - オブジェクトを選択していなければ有効<br>`1` - 常時有効
+`cache.mode`|キャッシュを有効にするかを設定します。<br>通常の用途では `0` が最適な設定です。<br>`-1` - 常時無効<br>`0` - オブジェクトを選択していなければ有効<br>`1` - 常時有効
+`cache.save`|キャッシュデータを保存する場所を設定します。<br>通常の用途では `3` が最適な設定です。<br>`0` - AviUtl のメモリ上に配置（AviUtlのメモリ空間を圧迫する）<br>`1` - 外部プロセスに保存（AviUtlのメモリ空間を圧迫しないが少し遅い）<br>`2` - `0` の機能 + 拡張編集のキャッシュも使う<br>`3` - `1` の機能 + 拡張編集のキャッシュも使う
 `wordwrap.mode`|テキストの自動折り返しに関する設定です。<br>`0` - 自動折り返ししない<br>`1` - 自動折り返しする<br>`2` - 禁則処理付きで自動折り返しする<br>`3` - 文節を考慮して禁則処理付きで自動折り返しする
 `wordwrap.width`|自動折り返しの幅を指定します。<br>`wordwrap.mode` が `0` の場合は無視されます。
 `wordwrap.model`|使用する BudouX モデルを指定します。<br>`"ja"` - 日本語モデル<br>`JSONファイルへのパス` - カスタムモデルを読み込みます。<br>※ この設定は `wordwrap.mode = 3` のときのみ有効です。

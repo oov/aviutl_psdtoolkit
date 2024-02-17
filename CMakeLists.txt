@@ -60,6 +60,14 @@ if("${BUILD_PACKAGE}" STREQUAL "1")
     -Ddir="cachetext"
     -P "${CMAKE_SOURCE_DIR}/src/cmake/extract-zip.cmake"
   )
+  set(EXTRAM2_VER "v0.1.0beta6")
+  add_custom_target(extract_extram2 COMMAND
+    ${CMAKE_COMMAND}
+    -Dlocal_dir="${PROJECT_BINARY_DIR}"
+    -Durl="https://github.com/oov/aviutl_extram2/releases/download/${EXTRAM2_VER}/extram2_${EXTRAM2_VER}.zip"
+    -Ddir="extram2"
+    -P "${CMAKE_SOURCE_DIR}/src/cmake/extract-zip.cmake"
+  )
   add_custom_target(copy_alias
     COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/README.md" "${EXPORT_DIR}/PSDToolKit.txt"
     COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/exa/TalkDetector${EXA_SUFFIX}" "${EXPORT_DIR}/PSDToolKit/口パク準備.exa"
@@ -97,6 +105,7 @@ if("${BUILD_PACKAGE}" STREQUAL "1")
     COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/forcepser" "${EXPORT_DIR}/かんしくん"
     COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/rampreview" "${EXPORT_DIR}"
     COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/cachetext" "${EXPORT_DIR}"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${PROJECT_BINARY_DIR}/extram2" "${EXPORT_DIR}"
   )
   add_dependencies(make_package
     extract_gcmzdrops

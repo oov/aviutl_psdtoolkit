@@ -190,6 +190,7 @@ function PSDState:render(obj)
   if (not modified)or((PSDState.cachekeys[cacheid] or 0) == cachekey) then
     if obj.copybuffer("obj", cacheid) then
       self:adjustcenter(obj)
+      self.cachekey = cachekey
       return
     end
     local data, w, h = getpixeldata(obj, width, height)
@@ -197,6 +198,7 @@ function PSDState:render(obj)
       obj.putpixeldata(data)
       obj.copybuffer(cacheid, "obj")
       self:adjustcenter(obj)
+      self.cachekey = cachekey
       return
     end
   end
@@ -207,6 +209,9 @@ function PSDState:render(obj)
   obj.copybuffer(cacheid, "obj")
   self:adjustcenter(obj)
   PSDState.cachekeys[cacheid] = cachekey
+
+  -- 画像が変化したかどうか外部から判定できるように提供する
+  self.cachekey = cachekey
 end
 
 local Blinker = {}
@@ -660,26 +665,84 @@ function SubtitleState:mes(obj, opts)
   obj.mes(text)
 end
 
-function SubtitleState:mesfast(obj, opts)
-  -- v0.2.0beta64 以前
-  --   opts = 0 -- キャッシュモード
-  -- v0.2.0beta65 以降
-  --   opts = {
-  --     cache = 0,
-  --     wordwrap = {
-  --       mode = 0,
-  --       width = 0,
-  --     },
-  --   }
-  if PSDToolKitBridge.type(opts) == "number" then
-    -- v0.2.0beta64 以前の形式は変換する
-    opts = {cache = opts}
+-- 以前のバージョン用のパラメーターを最新形式に変換する
+local function convert_mesfast_opts(opts)
+  local opts_type = PSDToolKitBridge.type(opts)
+
+  if opts_type == "number" then
+    -- v0.2.0beta64 以前
+    --   opts = 0
+    return {
+      cache = {
+        mode = opts,
+        save = 3,
+      },
+    }
   end
+
+  if opts_type == "table" then
+    local cache_type = PSDToolKitBridge.type(opts.cache)
+    if cache_type == "number" then
+      -- v0.2.0beta65 以降
+      --   opts = {
+      --     cache = 0,
+      --     wordwrap = {
+      --       mode = 0,
+      --       width = 800,
+      --     },
+      --   }
+      opts.cache = {
+        mode = opts.cache,
+        save = 3,
+      }
+      return opts
+    end
+
+    if cache_type == "table" then
+      -- v0.2.0beta67 以降
+      --   opts = {
+      --     cache = {
+      --       mode = 0,
+      --       save = 3,
+      --     },
+      --     wordwrap = {
+      --       mode = 0,
+      --       width = 800,
+      --     },
+      --   }
+      return opts
+    end
+  end
+
+  if opts_type == "nil" then
+    return {
+      cache = {
+        mode = 0,
+        save = 3,
+      },
+    }
+  end
+end
+
+-- 字幕表示（キャッシュ）のキャッシュテキスト1版
+-- v0.2.0 正式リリース時に消す
+function SubtitleState:mesfast(obj, opts)
+  opts = convert_mesfast_opts(opts)
   local text = self.text
   if opts.wordwrap ~= nil then
     text = PSDToolKitBridge.wordwrap(text, opts.wordwrap)
   end
-  require("CacheText").rawmes(text, opts.cache or 0)
+  require("CacheText").rawmes(text, opts.cache.mode)
+end
+
+-- 字幕表示（キャッシュ）のキャッシュテキスト2版
+function SubtitleState:mesfast2(obj, opts)
+  opts = convert_mesfast_opts(opts)
+  local text = self.text
+  if opts.wordwrap ~= nil then
+    text = PSDToolKitBridge.wordwrap(text, opts.wordwrap)
+  end
+  require("Cache2").text_before(text, opts.cache.mode, opts.cache.save, false)
 end
 
 local SubtitleStates = {}
@@ -726,12 +789,24 @@ function SubtitleStates:mes(index, obj, opts)
   return s
 end
 
+-- 字幕表示（キャッシュ）のキャッシュテキスト1版
+-- v0.2.0 正式リリース時に消す
 function SubtitleStates:mesfast(index, obj, opts)
   local s = self:getlive(index, obj)
   if s.notfound then
     return s
   end
   s:mesfast(obj, opts)
+  return s
+end
+
+-- 字幕表示（キャッシュ）のキャッシュテキスト2版
+function SubtitleStates:mesfast2(index, obj, opts)
+  local s = self:getlive(index, obj)
+  if s.notfound then
+    return s
+  end
+  s:mesfast2(obj, opts)
   return s
 end
 
