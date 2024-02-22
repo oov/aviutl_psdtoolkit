@@ -15,9 +15,9 @@ target_link_libraries(wordwrap PRIVATE
   budoux-c
 )
 
-add_executable(test_aviutl_text aviutl_text.c aviutl_text_test.c)
-target_link_libraries(test_aviutl_text PRIVATE
+add_executable(aviutl_text_test aviutl_text.c aviutl_text_test.c)
+target_link_libraries(aviutl_text_test PRIVATE
   psdtoolkit_intf
   ovbase
 )
-add_test(NAME test_aviutl_text COMMAND test_aviutl_text)
+add_test(NAME aviutl_text_test COMMAND aviutl_text_test)

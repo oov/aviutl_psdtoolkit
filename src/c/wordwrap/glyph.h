@@ -6,6 +6,7 @@ enum glyph_type {
   gt_glyph,
   gt_glyph_numref,
   gt_break,
+  gt_kerning,
   gt_tag,
   gt_original_tag,
 };
@@ -22,6 +23,8 @@ enum glyph_original_tag_type {
   ot_nobr_open,
   ot_nobr_close,
   ot_wbr,
+  ot_kern_open,
+  ot_kern_close,
 };
 
 struct glyph {
@@ -42,6 +45,10 @@ struct glyph {
     struct {
       enum glyph_original_tag_type type;
     } original_tag;
+    struct {
+      int16_t x;
+      int16_t y;
+    } kerning;
   } u;
 };
 

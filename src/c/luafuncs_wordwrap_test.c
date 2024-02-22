@@ -7,6 +7,63 @@
 
 #include "luafuncs_wordwrap.c"
 
+static inline int fcompare(double x, double y, double tolerance) {
+  return (x > y + tolerance) ? 1 : (y > x + tolerance) ? -1 : 0;
+}
+#define fcmp(x, op, y, tolerance) ((fcompare((x), (y), (tolerance)))op 0)
+
+static void test_parse_kerning_tag(void) {
+  struct {
+    wchar_t *tag;
+    size_t len;
+    double distance;
+    double margin;
+    enum distance_find_nearest_method method;
+  } tests[] = {
+      {.tag = L"<kern>", .len = 6, .distance = 0.5, .margin = 0.0, .method = dfnm_convex_hull},
+      {.tag = L"<kern0.1>", .len = 9, .distance = 0.1, .margin = 0.0, .method = dfnm_convex_hull},
+      {.tag = L"<kern+0.1>", .len = 10, .distance = 0.1, .margin = 0.0, .method = dfnm_convex_hull},
+      {.tag = L"<kern-0.1>", .len = 10, .distance = -0.1, .margin = 0.0, .method = dfnm_convex_hull},
+      {.tag = L"<kerna>", .len = 0},
+      {.tag = L"<kern.1>", .len = 0},
+      {.tag = L"<kern1.>", .len = 0},
+      {.tag = L"<kern1..1>", .len = 0},
+      {.tag = L"<kern0.1+>", .len = 0},
+      {.tag = L"<kern0.1,0.1>", .len = 13, .distance = 0.1, .margin = 0.1, .method = dfnm_convex_hull},
+      {.tag = L"<kern0.1,+0.1>", .len = 14, .distance = 0.1, .margin = 0.1, .method = dfnm_convex_hull},
+      {.tag = L"<kern0.1,-0.1>", .len = 14, .distance = 0.1, .margin = -0.1, .method = dfnm_convex_hull},
+      {.tag = L"<kern0.1,a>", .len = 0},
+      {.tag = L"<kern0.1,.1>", .len = 0},
+      {.tag = L"<kern0.1,1.>", .len = 0},
+      {.tag = L"<kern0.1,1..1>", .len = 0},
+      {.tag = L"<kern0.1,0.1+>", .len = 0},
+      {.tag = L"<kern0.1,0.1,0>", .len = 15, .distance = 0.1, .margin = 0.1, .method = dfnm_convex_hull},
+      {.tag = L"<kern0.1,0.1,1>", .len = 15, .distance = 0.1, .margin = 0.1, .method = dfnm_box},
+      {.tag = L"<kern0.1,0.1,2>", .len = 0},
+      {.tag = L"<kern0.1,0.1,+1>", .len = 0},
+      {.tag = L"<kern0.1,0.1,-1>", .len = 0},
+      {.tag = L"<kern,,1>", .len = 9, .distance = 0.5, .margin = 0.0, .method = dfnm_box},
+      {.tag = L"<kern,0.1,>", .len = 11, .distance = 0.5, .margin = 0.1, .method = dfnm_convex_hull},
+      {.tag = L"<kern,,,>", .len = 0},
+  };
+
+  for (size_t i = 0; i < sizeof(tests) / sizeof(tests[0]); i++) {
+    TEST_CASE_("%ls", tests[i].tag);
+    struct kerning_style ks = {0};
+    size_t const len = parse_kerning_tag(&ks, tests[i].tag, wcslen(tests[i].tag), 0);
+    TEST_CHECK(len == tests[i].len);
+    TEST_MSG("Expected len: %zu, got: %zu", tests[i].len, len);
+    if (len) {
+      TEST_CHECK(fcmp(ks.distance, ==, tests[i].distance, 1e-12));
+      TEST_MSG("Expected distance: %f, got: %f", tests[i].distance, ks.distance);
+      TEST_CHECK(fcmp(ks.margin, ==, tests[i].margin, 1e-12));
+      TEST_MSG("Expected margin: %f, got: %f", tests[i].margin, ks.margin);
+      TEST_CHECK(ks.method == tests[i].method);
+      TEST_MSG("Expected method: %d, got: %d", tests[i].method, ks.method);
+    }
+  }
+}
+
 static void *lua_alloc(void *const ud, void *ptr, size_t const osize, size_t const nsize) {
   (void)ud;
   (void)osize;
@@ -119,11 +176,6 @@ static void compare_logfontw(LOGFONTW const *const expected, LOGFONTW const *con
   TEST_MSG("Expected lfFaceName: %ls, got: %ls", expected->lfFaceName, actual->lfFaceName);
 }
 
-static inline int fcompare(double x, double y, double tolerance) {
-  return (x > y + tolerance) ? 1 : (y > x + tolerance) ? -1 : 0;
-}
-#define fcmp(x, op, y, tolerance) ((fcompare((x), (y), (tolerance)))op 0)
-
 static void compare_wordwrap_settings(struct wordwrap_settings const *const expected,
                                       struct wordwrap_settings const *const actual) {
   TEST_CHECK(expected->mode == actual->mode);
@@ -232,6 +284,27 @@ cleanup:
   }
   cleanup_wordwrap();
   return err;
+}
+
+static void test_kerning(void) {
+  static const struct {
+    wchar_t *input;
+    wchar_t *expected;
+  } tests[] = {
+      {L"return wordwrap('<kern>hello world</kern>', {font='Arial', size=24, width=256, mode=1})",
+       L"h<p-2,+0>e<p-1,+0>l<p-2,+0>l<p-2,+0>o w<p-1,+0>o<p-1,+0>r<p-1,+0>l<p-2,+0>d"},
+  };
+  struct wstr ws = {0};
+  for (size_t i = 0; i < sizeof(tests) / sizeof(tests[0]); i++) {
+    TEST_CASE_("%ls", tests[i].input);
+    if (!TEST_SUCCEEDED_F(do_wordwrap(tests[i].input, &ws))) {
+      goto cleanup;
+    }
+    TEST_CHECK(wcscmp(ws.ptr, tests[i].expected) == 0);
+    TEST_MSG("expected: %ls\n     got: %ls", tests[i].expected, ws.ptr);
+  }
+cleanup:
+  ereport(sfree(&ws));
 }
 
 static void test_tag(void) {
@@ -372,7 +445,9 @@ cleanup:
 }
 
 TEST_LIST = {
+    {"test_parse_kerning_tag", test_parse_kerning_tag},
     {"test_initialize_params", test_initialize_params},
+    {"test_kerning", test_kerning},
     {"test_tag", test_tag},
     {"test_wordwrap", test_wordwrap},
     {"test_modes", test_modes},

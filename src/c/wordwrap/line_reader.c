@@ -14,6 +14,8 @@ size_t line_reader_find_left(struct line_reader const *const lr, size_t const po
       continue;
     case gt_break:
       return SIZE_MAX;
+    case gt_kerning:
+      continue;
     case gt_glyph:
     case gt_glyph_numref:
       return (size_t)(g - lr->glyphs);
@@ -32,6 +34,8 @@ size_t line_reader_find_right(struct line_reader const *const lr, size_t const p
       continue;
     case gt_break:
       return SIZE_MAX;
+    case gt_kerning:
+      continue;
     case gt_glyph:
     case gt_glyph_numref:
       return (size_t)(g - lr->glyphs);
