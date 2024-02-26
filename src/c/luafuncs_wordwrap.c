@@ -493,6 +493,7 @@ static void read_exedit_params(wchar_t *const fontname,
                                bool *const bold,
                                bool *const italic,
                                int *const letter_spacing,
+                               bool *const vertical,
                                bool *const monospace,
                                bool *const high_resolution) {
   if (!aviutl_exedit_is_092()) {
@@ -529,6 +530,8 @@ static void read_exedit_params(wchar_t *const fontname,
 
   int8_t const *const ex_data_ptr = filterp->ex_data_ptr;
   *monospace = ex_data_ptr[3] & 1;
+  int const align = ex_data_ptr[4];
+  *vertical = 9 <= align && align <= 17;
   *letter_spacing = (int)ex_data_ptr[5];
   *high_resolution = ex_data_ptr[7] & 1;
 
@@ -563,10 +566,12 @@ initialize_params(lua_State *const L, int const table_index, struct wordwrap_set
   double max_width = 800.;
   double adjust_last = 0.;
   int letter_spacing = 0;
+  bool vertical = false;
   bool monospace = false;
   bool high_resolution = false;
 
-  read_exedit_params(font_name, &font_size, &font_bold, &font_italic, &letter_spacing, &monospace, &high_resolution);
+  read_exedit_params(
+      font_name, &font_size, &font_bold, &font_italic, &letter_spacing, &vertical, &monospace, &high_resolution);
 
   if (L) {
     if (lua_istable(L, table_index)) {
@@ -625,6 +630,11 @@ initialize_params(lua_State *const L, int const table_index, struct wordwrap_set
         }
       }
 
+      lua_getfield(L, table_index, "vertical");
+      if (!lua_isnil(L, -1)) {
+        vertical = lua_toboolean(L, -1) ? true : false;
+      }
+
       lua_getfield(L, table_index, "monospace");
       if (!lua_isnil(L, -1)) {
         monospace = lua_toboolean(L, -1) ? true : false;
@@ -676,7 +686,12 @@ initialize_params(lua_State *const L, int const table_index, struct wordwrap_set
       .high_resolution = high_resolution,
       .adjust_last = adjust_last,
   };
-  memcpy(wws->initial_font.lfFaceName, font_name, sizeof(wws->initial_font.lfFaceName));
+  if (vertical) {
+    wws->initial_font.lfFaceName[0] = '@';
+    memcpy(wws->initial_font.lfFaceName + 1, font_name, sizeof(wws->initial_font.lfFaceName) - 1);
+  } else {
+    memcpy(wws->initial_font.lfFaceName, font_name, sizeof(wws->initial_font.lfFaceName));
+  }
 cleanup:
   if (name.ptr) {
     eignore(sfree(&name));
