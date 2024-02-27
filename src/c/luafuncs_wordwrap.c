@@ -657,19 +657,26 @@ NODISCARD static error write_text(struct wstr const *const src,
         struct aviutl_text_ex_tag_position tag_pos;
         aviutl_text_ex_parse_tag(src->ptr, src->len, g->pos, &tag_ex);
         aviutl_text_ex_get_position(src->ptr, &tag_ex, &tag_pos);
-        wchar_t num[32], buf[64];
+        wchar_t num[64], buf[256];
         buf[0] = L'\0';
         wcscat(buf, L"<p");
         if (tag_pos.x_type == aviutl_text_ex_tag_position_type_relative && tag_pos.x >= 0) {
           wcscat(buf, L"+");
         }
         double const current_unit = (double)(g->u.tag_ex.current_unit) * .1;
-        wcscat(buf, ov_itoa_wchar((int64_t)(tag_pos.x * current_unit + .5), num));
+        wcscat(buf, ov_ftoa_wchar(tag_pos.x * current_unit, 2, L'.', num));
         wcscat(buf, L",");
         if (tag_pos.y_type == aviutl_text_ex_tag_position_type_relative && tag_pos.y >= 0) {
           wcscat(buf, L"+");
         }
-        wcscat(buf, ov_itoa_wchar((int64_t)(tag_pos.y * current_unit + .5), num));
+        wcscat(buf, ov_ftoa_wchar(tag_pos.y * current_unit, 2, L'.', num));
+        if (tag_ex.value_len[2] > 0) {
+          wcscat(buf, L",");
+          if (tag_pos.z_type == aviutl_text_ex_tag_position_type_relative && tag_pos.z >= 0) {
+            wcscat(buf, L"+");
+          }
+          wcscat(buf, ov_ftoa_wchar(tag_pos.z * current_unit, 2, L'.', num));
+        }
         wcscat(buf, L">");
         err = scat(text, buf);
         if (efailed(err)) {
