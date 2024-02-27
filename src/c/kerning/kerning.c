@@ -259,6 +259,7 @@ void kerning_reset(struct kerning_context *const ctx) {
   }
   ctx->pos.x = ctx->pos.y = 0;
   OV_ARRAY_SET_LENGTH(ctx->prev, 0);
+  OV_ARRAY_SET_LENGTH(ctx->cur, 0);
   ctx->prev_width = 0;
   ctx->cur_width = 0;
 }
