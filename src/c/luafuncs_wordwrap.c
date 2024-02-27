@@ -126,7 +126,7 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
     goto cleanup;
   }
 
-  LONG const base_unit = canvas->current_font_text_metric.tmHeight / (high_resolution ? 2 : 1);
+  LONG const initial_unit = -canvas->initial_font->lfHeight / (high_resolution ? 2 : 1);
   size_t gpos = 0;
   int flags = 0;
   bool nobr = false;
@@ -181,7 +181,7 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
       case aviutl_text_ex_tag_type_font: {
         struct aviutl_text_ex_tag_font font;
         aviutl_text_ex_get_font(text, &tag_ex, &font);
-        size_t const font_size = (size_t)(font.size * (double)(base_unit));
+        size_t const font_size = tag_ex.value_len[0] > 0 ? (size_t)(font.size * (double)(initial_unit) * .01 + .5) : 0;
         err = canvas_set_font_params(canvas, font.name, font_size, font.bold, font.italic, high_resolution);
         if (efailed(err)) {
           err = ethru(err);
@@ -244,7 +244,7 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
                   .tag_ex =
                       {
                           .type = tag_ex.type,
-                          .initial_unit = (int16_t)base_unit,
+                          .initial_unit = (int16_t)initial_unit,
                           .current_unit =
                               (int16_t)(canvas->current_font_text_metric.tmHeight / (high_resolution ? 2 : 1)),
                       },
@@ -686,7 +686,7 @@ NODISCARD static error write_text(struct wstr const *const src,
         wcscat(buf, L"<s");
         if (tag_ex.value_len[0] > 0) {
           double const initial_unit = (double)(g->u.tag_ex.initial_unit);
-          wcscat(buf, ov_itoa_wchar((int64_t)(tag_font.size * initial_unit + .5), num));
+          wcscat(buf, ov_itoa_wchar((int64_t)(tag_font.size * initial_unit * .01 + .5), num));
         }
         if (tag_ex.value_len[1] + tag_ex.value_len[2] > 0) {
           wcscat(buf, L",");
