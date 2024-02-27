@@ -119,6 +119,7 @@ target_link_options(psdtoolkit_intf INTERFACE
 add_dependencies(psdtoolkit_intf ${PROJECT_NAME}_format budoux-c)
 
 add_subdirectory(wordwrap)
+add_subdirectory(kerning)
 
 add_library(psdtoolkit_assist SHARED
   assist.c
@@ -151,6 +152,7 @@ target_link_libraries(psdtoolkit_assist PRIVATE
   ovbase
   ovutil
   budoux-c
+  kerning
   wordwrap
 )
 
@@ -161,6 +163,7 @@ target_link_libraries(test_luafuncs PRIVATE
   ovbase
   ovutil
   budoux-c
+  kerning
   wordwrap
 )
 add_test(NAME test_luafuncs COMMAND test_luafuncs)

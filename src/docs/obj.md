@@ -114,6 +114,7 @@ require("Cache2").text_before(require("PSDToolKit").wordwrap(s,o,true),m)?>
   width = 800,             -- 自動折り返しの幅
   mode = 0,                -- 自動折り返しのモード(0 ~ 3)
   spacing = 0,             -- 文字間隔(-100 ~ 100)
+  vertical = false,        -- 縦書き
   monospace = false,       -- 等間隔モード
   high_resolution = false, -- 高精度モード
   adjust_last = 0,         -- 最終行調整(0.0 ~ 1.0)

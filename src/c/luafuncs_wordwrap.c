@@ -6,12 +6,16 @@
 #include <ovutil/win32.h>
 
 #include <lauxlib.h>
+#include <math.h>
 
 #include "aviutl.h"
 #include "i18n.h"
 #include "luautil.h"
 
+#include "kerning/kerning.h"
+
 #include "wordwrap/aviutl_text.h"
+#include "wordwrap/aviutl_text_ex.h"
 #include "wordwrap/bdx.h"
 #include "wordwrap/bdx_cache.h"
 #include "wordwrap/canvas.h"
@@ -20,6 +24,8 @@
 #include "wordwrap/line_reader.h"
 #include "wordwrap/rule.h"
 #include "wordwrap/text_cache.h"
+
+static struct kerning_context *g_kerning_ctx = NULL;
 
 NODISCARD static error measure_glyph(struct canvas *canvas,
                                      enum glyph_type const typ,
@@ -56,6 +62,39 @@ cleanup:
   return err;
 }
 
+NODISCARD static error add_kerning(struct canvas *canvas,
+                                   bool const high_resolution,
+                                   struct kerning_style const *const ks,
+                                   wchar_t const ch,
+                                   size_t const pos,
+                                   struct glyph *const g) {
+  struct point distance = {0};
+  error err = kerning_calculate_distance(g_kerning_ctx, ks, canvas->dc, ch, &distance);
+  if (efailed(err)) {
+    err = ethru(err);
+    goto cleanup;
+  }
+  if (high_resolution) {
+    distance.x *= .5;
+    distance.y *= .5;
+  }
+  *g = (struct glyph){
+      .typ = gt_kerning,
+      .pos = pos,
+      .len = 0,
+      .u =
+          {
+              .kerning =
+                  {
+                      .x = (int16_t)(round(distance.x)),
+                      .y = (int16_t)(round(distance.y)),
+                  },
+          },
+  };
+cleanup:
+  return err;
+}
+
 NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
                                                  size_t const text_len,
                                                  bool const monospace,
@@ -72,6 +111,7 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
   }
 
   struct glyph *glyphs = NULL;
+  size_t glyphs_len = text_len;
   error err = eok();
 
   err = canvas_set_initial_font(canvas, initial_font, high_resolution);
@@ -80,16 +120,22 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
     goto cleanup;
   }
 
-  err = OV_ARRAY_GROW(&glyphs, text_len);
+  err = OV_ARRAY_GROW(&glyphs, glyphs_len);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
 
+  LONG const initial_unit = -canvas->initial_font->lfHeight / (high_resolution ? 2 : 1);
   size_t gpos = 0;
   int flags = 0;
   bool nobr = false;
+
+  bool kerning = false;
+  struct kerning_style ks = {0};
+
   struct aviutl_text_tag tag = {0};
+  struct aviutl_text_ex_tag tag_ex = {0};
   for (size_t i = 0; i < text_len; ++i) {
     if (text[i] == L'\n') {
       glyphs[gpos++] = (struct glyph){
@@ -97,101 +143,152 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
           .pos = i,
           .len = 1,
       };
+      if (kerning) {
+        kerning_reset(g_kerning_ctx);
+      }
       continue;
     }
-    tag.type = aviutl_text_tag_type_unknown;
-    if (text[i] == L'<' || text[i] == L'&') {
-      if (aviutl_text_parse_tag(text, text_len, i, &tag)) {
-        if (tag.type == aviutl_text_tag_type_numcharref) {
-          goto measure_glyph;
+    if ((text[i] == L'<' || text[i] == L'&') && aviutl_text_parse_tag(text, text_len, i, &tag)) {
+      if (tag.type == aviutl_text_tag_type_numcharref) {
+        goto measure_glyph;
+      }
+      if (tag.type == aviutl_text_tag_type_font) {
+        struct aviutl_text_tag_font font;
+        aviutl_text_get_font(text, &tag, &font);
+        err = canvas_set_font_params(canvas, font.name, font.size, font.bold, font.italic, high_resolution);
+        if (efailed(err)) {
+          err = ethru(err);
+          goto cleanup;
         }
-        if (tag.type == aviutl_text_tag_type_font) {
-          struct aviutl_text_tag_font font;
-          aviutl_text_get_font(text, &tag, &font);
-          err = canvas_set_font_params(canvas, font.name, font.size, font.bold, font.italic, high_resolution);
+      }
+      glyphs[gpos++] = (struct glyph){
+          .typ = gt_tag,
+          .pos = i,
+          .len = tag.len,
+          .u =
+              {
+                  .tag =
+                      {
+                          .type = tag.type,
+                      },
+              },
+      };
+      i += tag.len - 1;
+      continue;
+    }
+    if (text[i] == L'<' && aviutl_text_ex_parse_tag(text, text_len, i, &tag_ex)) {
+      switch (tag_ex.type) {
+      case aviutl_text_ex_tag_type_font: {
+        struct aviutl_text_ex_tag_font font;
+        aviutl_text_ex_get_font(text, &tag_ex, &font);
+        size_t const font_size = tag_ex.value_len[0] > 0 ? (size_t)(font.size * (double)(initial_unit) * .01 + .5) : 0;
+        err = canvas_set_font_params(canvas, font.name, font_size, font.bold, font.italic, high_resolution);
+        if (efailed(err)) {
+          err = ethru(err);
+          goto cleanup;
+        }
+      } break;
+      case aviutl_text_ex_tag_type_position:
+        break;
+      case aviutl_text_ex_tag_type_wbr:
+        flags |= gt_breakable_by_wbr;
+        break;
+      case aviutl_text_ex_tag_type_nobr:
+        nobr = true;
+        break;
+      case aviutl_text_ex_tag_type_nobr_close:
+        nobr = false;
+        flags &= ~gt_not_breakable_by_nobr;
+        break;
+      case aviutl_text_ex_tag_type_kerning: {
+        struct aviutl_text_ex_tag_kerning kern;
+        aviutl_text_ex_get_kerning(text, &tag_ex, &kern);
+        ks.distance = kern.distance;
+        ks.margin = kern.margin;
+        switch (kern.method) {
+        case aviutl_text_ex_tag_kerning_method_convexhull:
+          ks.method = dfnm_convex_hull;
+          break;
+        case aviutl_text_ex_tag_kerning_method_box:
+          ks.method = dfnm_box;
+          break;
+        case aviutl_text_ex_tag_kerning_method_unknown:
+          ks.method = dfnm_convex_hull;
+          break;
+        }
+        ks.margin_unit = (double)(canvas->current_font_text_metric.tmHeight) * .1;
+        kerning = true;
+        if (g_kerning_ctx) {
+          kerning_reset(g_kerning_ctx);
+        } else {
+          err = kerning_context_create(&g_kerning_ctx);
           if (efailed(err)) {
             err = ethru(err);
             goto cleanup;
           }
         }
-        glyphs[gpos++] = (struct glyph){
-            .typ = gt_tag,
-            .pos = i,
-            .len = tag.len,
-            .u =
-                {
-                    .tag =
-                        {
-                            .type = tag.type,
-                        },
-                },
-        };
-        i += tag.len - 1;
-        continue;
-      } else if (text_len - i >= 5 && text[i + 1] == L'w' && text[i + 2] == L'b' && text[i + 3] == L'r' &&
-                 text[i + 4] == L'>') {
-        flags |= gt_breakable_by_wbr;
-        glyphs[gpos++] = (struct glyph){
-            .typ = gt_original_tag,
-            .pos = i,
-            .len = 5,
-            .u =
-                {
-                    .original_tag =
-                        {
-                            .type = ot_wbr,
-                        },
-                },
-        };
-        i += 4;
-        continue;
-      } else if (text_len - i >= 6 && text[i + 1] == L'n' && text[i + 2] == L'o' && text[i + 3] == L'b' &&
-                 text[i + 4] == L'r' && text[i + 5] == L'>') {
-        nobr = true;
-        glyphs[gpos++] = (struct glyph){
-            .typ = gt_original_tag,
-            .pos = i,
-            .len = 6,
-            .u =
-                {
-                    .original_tag =
-                        {
-                            .type = ot_nobr_open,
-                        },
-                },
-        };
-        i += 5;
-        continue;
-      } else if (text_len - i >= 7 && text[i + 1] == L'/' && text[i + 2] == L'n' && text[i + 3] == L'o' &&
-                 text[i + 4] == L'b' && text[i + 5] == L'r' && text[i + 6] == L'>') {
-        nobr = false;
-        flags &= ~gt_not_breakable_by_nobr;
-        glyphs[gpos++] = (struct glyph){
-            .typ = gt_original_tag,
-            .pos = i,
-            .len = 7,
-            .u =
-                {
-                    .original_tag =
-                        {
-                            .type = ot_nobr_close,
-                        },
-                },
-        };
-        i += 6;
-        continue;
+
+      } break;
+      case aviutl_text_ex_tag_type_kerning_close:
+        kerning = false;
+        break;
+      case aviutl_text_ex_tag_type_unknown:
+        break;
       }
+      glyphs[gpos++] = (struct glyph){
+          .typ = gt_tag_ex,
+          .pos = i,
+          .len = tag_ex.len,
+          .u =
+              {
+                  .tag_ex =
+                      {
+                          .type = tag_ex.type,
+                          .initial_unit = (int16_t)initial_unit,
+                          .current_unit =
+                              (int16_t)(canvas->current_font_text_metric.tmHeight / (high_resolution ? 2 : 1)),
+                      },
+              },
+      };
+      i += tag_ex.len - 1;
+      continue;
     }
-  measure_glyph:
+  measure_glyph: {
+    enum glyph_type gt;
+    wchar_t ch;
+    size_t pos;
+    size_t len;
     if (tag.type == aviutl_text_tag_type_numcharref) {
       i += tag.len - 1;
+      gt = gt_glyph_numref;
       struct aviutl_text_tag_numcharref ncr;
       aviutl_text_get_numcharref(text, &tag, &ncr);
-      err = measure_glyph(
-          canvas, gt_glyph_numref, flags, ncr.ch, tag.pos, tag.len, monospace, high_resolution, &glyphs[gpos++]);
+      ch = ncr.ch;
+      pos = tag.pos;
+      len = tag.len;
     } else {
-      err = measure_glyph(canvas, gt_glyph, flags, text[i], i, 1, monospace, high_resolution, &glyphs[gpos++]);
+      gt = gt_glyph;
+      ch = text[i];
+      pos = i;
+      len = 1;
     }
+    if (kerning) {
+      err = add_kerning(canvas, high_resolution, &ks, ch, i, &glyphs[gpos]);
+      if (efailed(err)) {
+        err = ethru(err);
+        goto cleanup;
+      }
+      if (glyphs[gpos].u.kerning.x != 0 || glyphs[gpos].u.kerning.y != 0) {
+        ++gpos;
+        err = OV_ARRAY_GROW(&glyphs, ++glyphs_len);
+        if (efailed(err)) {
+          err = ethru(err);
+          goto cleanup;
+        }
+      }
+    }
+    err = measure_glyph(canvas, gt, flags, ch, pos, len, monospace, high_resolution, &glyphs[gpos++]);
+  }
     if (efailed(err)) {
       err = ethru(err);
       goto cleanup;
@@ -264,6 +361,7 @@ static void read_exedit_params(wchar_t *const fontname,
                                bool *const bold,
                                bool *const italic,
                                int *const letter_spacing,
+                               bool *const vertical,
                                bool *const monospace,
                                bool *const high_resolution) {
   if (!aviutl_exedit_is_092()) {
@@ -300,6 +398,8 @@ static void read_exedit_params(wchar_t *const fontname,
 
   int8_t const *const ex_data_ptr = filterp->ex_data_ptr;
   *monospace = ex_data_ptr[3] & 1;
+  int const align = ex_data_ptr[4];
+  *vertical = 9 <= align && align <= 17;
   *letter_spacing = (int)ex_data_ptr[5];
   *high_resolution = ex_data_ptr[7] & 1;
 
@@ -334,10 +434,12 @@ initialize_params(lua_State *const L, int const table_index, struct wordwrap_set
   double max_width = 800.;
   double adjust_last = 0.;
   int letter_spacing = 0;
+  bool vertical = false;
   bool monospace = false;
   bool high_resolution = false;
 
-  read_exedit_params(font_name, &font_size, &font_bold, &font_italic, &letter_spacing, &monospace, &high_resolution);
+  read_exedit_params(
+      font_name, &font_size, &font_bold, &font_italic, &letter_spacing, &vertical, &monospace, &high_resolution);
 
   if (L) {
     if (lua_istable(L, table_index)) {
@@ -396,6 +498,11 @@ initialize_params(lua_State *const L, int const table_index, struct wordwrap_set
         }
       }
 
+      lua_getfield(L, table_index, "vertical");
+      if (!lua_isnil(L, -1)) {
+        vertical = lua_toboolean(L, -1) ? true : false;
+      }
+
       lua_getfield(L, table_index, "monospace");
       if (!lua_isnil(L, -1)) {
         monospace = lua_toboolean(L, -1) ? true : false;
@@ -447,7 +554,12 @@ initialize_params(lua_State *const L, int const table_index, struct wordwrap_set
       .high_resolution = high_resolution,
       .adjust_last = adjust_last,
   };
-  memcpy(wws->initial_font.lfFaceName, font_name, sizeof(wws->initial_font.lfFaceName));
+  if (vertical) {
+    wws->initial_font.lfFaceName[0] = '@';
+    memcpy(wws->initial_font.lfFaceName + 1, font_name, sizeof(wws->initial_font.lfFaceName) - 1);
+  } else {
+    memcpy(wws->initial_font.lfFaceName, font_name, sizeof(wws->initial_font.lfFaceName));
+  }
 cleanup:
   if (name.ptr) {
     eignore(sfree(&name));
@@ -488,7 +600,7 @@ static uint64_t calc_hash(struct wordwrap_settings const *const wws,
   return cyrb64_final(&ctx);
 }
 
-static NODISCARD error write_text(struct wstr const *const src,
+NODISCARD static error write_text(struct wstr const *const src,
                                   struct glyph *glyphs,
                                   size_t const linehead,
                                   size_t const end,
@@ -504,11 +616,97 @@ static NODISCARD error write_text(struct wstr const *const src,
     case gt_tag:
       nch += g->len;
       break;
-    case gt_original_tag: {
+    case gt_kerning: {
+      if (g->u.kerning.x == 0 && g->u.kerning.y == 0) {
+        break;
+      }
       err = sncat(text, src->ptr + glyphs[copypos].pos, nch);
       if (efailed(err)) {
         err = ethru(err);
         goto cleanup;
+      }
+      wchar_t num[32], buf[32];
+      buf[0] = L'\0';
+      wcscat(buf, L"<p");
+      if (g->u.kerning.x >= 0) {
+        wcscat(buf, L"+");
+      }
+      wcscat(buf, ov_itoa_wchar(g->u.kerning.x, num));
+      wcscat(buf, L",");
+      if (g->u.kerning.y >= 0) {
+        wcscat(buf, L"+");
+      }
+      wcscat(buf, ov_itoa_wchar(g->u.kerning.y, num));
+      wcscat(buf, L">");
+      err = scat(text, buf);
+      if (efailed(err)) {
+        err = ethru(err);
+        goto cleanup;
+      }
+      copypos = gpos + 1;
+      nch = 0;
+    } break;
+    case gt_tag_ex: {
+      err = sncat(text, src->ptr + glyphs[copypos].pos, nch);
+      if (efailed(err)) {
+        err = ethru(err);
+        goto cleanup;
+      }
+      if (g->u.tag_ex.type == aviutl_text_ex_tag_type_position) {
+        struct aviutl_text_ex_tag tag_ex;
+        struct aviutl_text_ex_tag_position tag_pos;
+        aviutl_text_ex_parse_tag(src->ptr, src->len, g->pos, &tag_ex);
+        aviutl_text_ex_get_position(src->ptr, &tag_ex, &tag_pos);
+        wchar_t num[32], buf[64];
+        buf[0] = L'\0';
+        wcscat(buf, L"<p");
+        if (tag_pos.x_type == aviutl_text_ex_tag_position_type_relative && tag_pos.x >= 0) {
+          wcscat(buf, L"+");
+        }
+        double const current_unit = (double)(g->u.tag_ex.current_unit) * .1;
+        wcscat(buf, ov_itoa_wchar((int64_t)(tag_pos.x * current_unit + .5), num));
+        wcscat(buf, L",");
+        if (tag_pos.y_type == aviutl_text_ex_tag_position_type_relative && tag_pos.y >= 0) {
+          wcscat(buf, L"+");
+        }
+        wcscat(buf, ov_itoa_wchar((int64_t)(tag_pos.y * current_unit + .5), num));
+        wcscat(buf, L">");
+        err = scat(text, buf);
+        if (efailed(err)) {
+          err = ethru(err);
+          goto cleanup;
+        }
+      } else if (g->u.tag_ex.type == aviutl_text_ex_tag_type_font) {
+        struct aviutl_text_ex_tag tag_ex;
+        struct aviutl_text_ex_tag_font tag_font;
+        aviutl_text_ex_parse_tag(src->ptr, src->len, g->pos, &tag_ex);
+        aviutl_text_ex_get_font(src->ptr, &tag_ex, &tag_font);
+        wchar_t num[32], buf[128];
+        buf[0] = L'\0';
+        wcscat(buf, L"<s");
+        if (tag_ex.value_len[0] > 0) {
+          double const initial_unit = (double)(g->u.tag_ex.initial_unit);
+          wcscat(buf, ov_itoa_wchar((int64_t)(tag_font.size * initial_unit * .01 + .5), num));
+        }
+        if (tag_ex.value_len[1] + tag_ex.value_len[2] > 0) {
+          wcscat(buf, L",");
+          wcsncat(buf, tag_font.name, tag_ex.value_len[1]);
+          if (tag_ex.value_len[2] > 0) {
+            wcscat(buf, L",");
+            if (tag_font.bold) {
+              wcscat(buf, L"B");
+            }
+            if (tag_font.italic) {
+              wcscat(buf, L"I");
+            }
+          }
+        }
+        wcscat(buf, L">");
+        err = scat(text, buf);
+        if (efailed(err)) {
+          err = ethru(err);
+          goto cleanup;
+        }
       }
       copypos = gpos + 1;
       nch = 0;
@@ -540,6 +738,11 @@ static double calc_current_line_width(struct wstr const *const text,
     if (g->typ == gt_break) {
       return x_max - x_min;
     }
+    if (g->typ == gt_kerning) {
+      x += g->u.kerning.x;
+      ++gpos;
+      continue;
+    }
     if (g->typ == gt_tag) {
       // Tags other than "position" do not affect the drawing position so can be ignored.
       if (g->u.tag.type != aviutl_text_tag_type_position) {
@@ -557,7 +760,19 @@ static double calc_current_line_width(struct wstr const *const text,
       ++gpos;
       continue;
     }
-    if (g->typ == gt_original_tag) {
+    if (g->typ == gt_tag_ex) {
+      if (g->u.tag_ex.type != aviutl_text_ex_tag_type_position) {
+        ++gpos;
+        continue;
+      }
+      struct aviutl_text_ex_tag tag_ex;
+      struct aviutl_text_ex_tag_position tag_ex_pos;
+      aviutl_text_ex_parse_tag(text->ptr, text->len, g->pos, &tag_ex);
+      aviutl_text_ex_get_position(text->ptr, &tag_ex, &tag_ex_pos);
+      if (tag_ex_pos.x_type == aviutl_text_ex_tag_position_type_absolute) {
+        return x_max - x_min;
+      }
+      x += tag_ex_pos.x * (double)(g->u.tag_ex.current_unit) * .1;
       ++gpos;
       continue;
     }
@@ -710,6 +925,11 @@ int luafn_wordwrap(lua_State *L) {
       max_width = calc_max_width(&text, &lr, &wws);
       continue;
     }
+    if (g->typ == gt_kerning) {
+      x += g->u.kerning.x;
+      ++gpos;
+      continue;
+    }
     if (g->typ == gt_tag) {
       // Tags other than "position" do not affect the drawing position so can be ignored.
       if (g->u.tag.type != aviutl_text_tag_type_position) {
@@ -732,7 +952,24 @@ int luafn_wordwrap(lua_State *L) {
       ++gpos;
       continue;
     }
-    if (g->typ == gt_original_tag) {
+    if (g->typ == gt_tag_ex) {
+      if (g->u.tag_ex.type != aviutl_text_ex_tag_type_position) {
+        ++gpos;
+        continue;
+      }
+      struct aviutl_text_ex_tag tag_ex;
+      struct aviutl_text_ex_tag_position tag_ex_pos;
+      aviutl_text_ex_parse_tag(text.ptr, text.len, g->pos, &tag_ex);
+      aviutl_text_ex_get_position(text.ptr, &tag_ex, &tag_ex_pos);
+      if (tag_ex_pos.x_type == aviutl_text_ex_tag_position_type_absolute) {
+        x = 0;
+        x_min = INT_MAX;
+        x_max = INT_MIN;
+        lr.linehead = ++gpos;
+        max_width = calc_max_width(&text, &lr, &wws);
+        continue;
+      }
+      x += tag_ex_pos.x * (double)(g->u.tag_ex.current_unit) * .1;
       ++gpos;
       continue;
     }
@@ -796,7 +1033,7 @@ int luafn_wordwrap(lua_State *L) {
     // Skip spaces at the beginning of the next line
     gpos = break_gpos;
     while (gpos < num_glyphs) {
-      if (glyphs[gpos].typ == gt_tag || glyphs[gpos].typ == gt_original_tag) {
+      if (glyphs[gpos].typ == gt_kerning || glyphs[gpos].typ == gt_tag || glyphs[gpos].typ == gt_tag_ex) {
         ++gpos;
         continue;
       }
@@ -858,6 +1095,9 @@ cleanup:
 }
 
 void cleanup_wordwrap(void) {
+  if (g_kerning_ctx) {
+    kerning_context_destroy(&g_kerning_ctx);
+  }
   text_cache_cleanup();
   bdx_cache_cleanup();
 }

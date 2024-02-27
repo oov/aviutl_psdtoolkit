@@ -7,6 +7,11 @@
 
 #include "luafuncs_wordwrap.c"
 
+static inline int fcompare(double x, double y, double tolerance) {
+  return (x > y + tolerance) ? 1 : (y > x + tolerance) ? -1 : 0;
+}
+#define fcmp(x, op, y, tolerance) ((fcompare((x), (y), (tolerance)))op 0)
+
 static void *lua_alloc(void *const ud, void *ptr, size_t const osize, size_t const nsize) {
   (void)ud;
   (void)osize;
@@ -119,11 +124,6 @@ static void compare_logfontw(LOGFONTW const *const expected, LOGFONTW const *con
   TEST_MSG("Expected lfFaceName: %ls, got: %ls", expected->lfFaceName, actual->lfFaceName);
 }
 
-static inline int fcompare(double x, double y, double tolerance) {
-  return (x > y + tolerance) ? 1 : (y > x + tolerance) ? -1 : 0;
-}
-#define fcmp(x, op, y, tolerance) ((fcompare((x), (y), (tolerance)))op 0)
-
 static void compare_wordwrap_settings(struct wordwrap_settings const *const expected,
                                       struct wordwrap_settings const *const actual) {
   TEST_CHECK(expected->mode == actual->mode);
@@ -232,6 +232,27 @@ cleanup:
   }
   cleanup_wordwrap();
   return err;
+}
+
+static void test_kerning(void) {
+  static const struct {
+    wchar_t *input;
+    wchar_t *expected;
+  } tests[] = {
+      {L"return wordwrap('<kern>hello world</kern>', {font='Arial', size=24, width=256, mode=1})",
+       L"h<p-2,+0>e<p-1,+0>l<p-2,+0>l<p-2,+0>o w<p-1,+0>o<p-1,+0>r<p-1,+0>l<p-2,+0>d"},
+  };
+  struct wstr ws = {0};
+  for (size_t i = 0; i < sizeof(tests) / sizeof(tests[0]); i++) {
+    TEST_CASE_("%ls", tests[i].input);
+    if (!TEST_SUCCEEDED_F(do_wordwrap(tests[i].input, &ws))) {
+      goto cleanup;
+    }
+    TEST_CHECK(wcscmp(ws.ptr, tests[i].expected) == 0);
+    TEST_MSG("expected: %ls\n     got: %ls", tests[i].expected, ws.ptr);
+  }
+cleanup:
+  ereport(sfree(&ws));
 }
 
 static void test_tag(void) {
@@ -373,6 +394,7 @@ cleanup:
 
 TEST_LIST = {
     {"test_initialize_params", test_initialize_params},
+    {"test_kerning", test_kerning},
     {"test_tag", test_tag},
     {"test_wordwrap", test_wordwrap},
     {"test_modes", test_modes},
