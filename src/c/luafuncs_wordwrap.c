@@ -948,6 +948,11 @@ int luafn_wordwrap(lua_State *L) {
       aviutl_text_parse_tag(text.ptr, text.len, g->pos, &tag);
       aviutl_text_get_position(text.ptr, &tag, &tag_pos);
       if (tag_pos.x_type == aviutl_text_tag_position_type_absolute) {
+        err = write_text(&text, glyphs, lr.linehead, gpos + 1, &processed);
+        if (efailed(err)) {
+          err = ethru(err);
+          goto cleanup;
+        }
         x = 0;
         x_min = INT_MAX;
         x_max = INT_MIN;
@@ -969,6 +974,11 @@ int luafn_wordwrap(lua_State *L) {
       aviutl_text_ex_parse_tag(text.ptr, text.len, g->pos, &tag_ex);
       aviutl_text_ex_get_position(text.ptr, &tag_ex, &tag_ex_pos);
       if (tag_ex_pos.x_type == aviutl_text_ex_tag_position_type_absolute) {
+        err = write_text(&text, glyphs, lr.linehead, gpos + 1, &processed);
+        if (efailed(err)) {
+          err = ethru(err);
+          goto cleanup;
+        }
         x = 0;
         x_min = INT_MAX;
         x_max = INT_MIN;
