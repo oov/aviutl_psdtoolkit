@@ -1,6 +1,7 @@
 #pragma once
 
 #include "aviutl_text.h"
+#include "aviutl_text_ex.h"
 
 enum glyph_type {
   gt_glyph,
@@ -8,7 +9,7 @@ enum glyph_type {
   gt_break,
   gt_kerning,
   gt_tag,
-  gt_original_tag,
+  gt_tag_ex,
 };
 
 enum glyph_flags {
@@ -16,15 +17,6 @@ enum glyph_flags {
   gt_budoux_breakable = 2,
   gt_breakable_by_wbr = 4,
   gt_not_breakable_by_nobr = 8,
-};
-
-enum glyph_original_tag_type {
-  ot_unknown,
-  ot_nobr_open,
-  ot_nobr_close,
-  ot_wbr,
-  ot_kern_open,
-  ot_kern_close,
 };
 
 struct glyph {
@@ -43,8 +35,10 @@ struct glyph {
       enum aviutl_text_tag_type type;
     } tag;
     struct {
-      enum glyph_original_tag_type type;
-    } original_tag;
+      enum aviutl_text_ex_tag_type type;
+      int16_t initial_unit;
+      int16_t current_unit;
+    } tag_ex;
     struct {
       int16_t x;
       int16_t y;

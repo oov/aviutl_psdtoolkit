@@ -15,6 +15,7 @@
 #include "kerning/kerning.h"
 
 #include "wordwrap/aviutl_text.h"
+#include "wordwrap/aviutl_text_ex.h"
 #include "wordwrap/bdx.h"
 #include "wordwrap/bdx_cache.h"
 #include "wordwrap/canvas.h"
@@ -94,111 +95,6 @@ cleanup:
   return err;
 }
 
-static size_t
-parse_kerning_tag(struct kerning_style *ks, wchar_t const *const text, size_t const text_len, size_t const pos) {
-  wchar_t const *const end = text + text_len;
-  wchar_t const *p = text + pos;
-  if (p + 6 > end) {
-    return 0;
-  }
-  if (p[0] != L'<' || p[1] != L'k' || p[2] != L'e' || p[3] != L'r' || p[4] != L'n') {
-    return 0;
-  }
-  p += 5;
-  double distance = 0.5;
-  double margin = 0.;
-  enum distance_find_nearest_method method = dfnm_convex_hull;
-  int sign = 0, dot = 0, i = 0, f = 0;
-  size_t token = 0;
-  wchar_t const *token_start = p;
-  while (p < end) {
-    switch (*p) {
-    case L'0':
-    case L'1':
-    case L'2':
-    case L'3':
-    case L'4':
-    case L'5':
-    case L'6':
-    case L'7':
-    case L'8':
-    case L'9':
-      if (!dot) {
-        ++i; // integer part
-      } else {
-        ++f; // fractional part
-      }
-      ++p;
-      continue;
-    case L'.':
-      if (dot) {
-        return 0; // 1..1 or 1.1. is invalid
-      }
-      dot = 1;
-      ++p;
-      continue;
-    case L'+':
-    case L'-':
-      if (sign || i || f || dot) {
-        return 0; // ++1 or 1+ is invalid
-      }
-      sign = *p == L'+' ? 1 : -1;
-      ++p;
-      continue;
-    case L'>':
-    case L',':
-      if (dot && (!f || !i)) {
-        return 0; // 1. or .1 is invalid
-      }
-      if (i + f > 0) {
-        switch (token) {
-        case 0:
-          ov_atof_wchar(token_start, &distance, false);
-          break;
-        case 1:
-          ov_atof_wchar(token_start, &margin, false);
-          break;
-        case 2:
-          if (f || dot || sign) {
-            return 0;
-          } else {
-            int64_t v;
-            ov_atoi_wchar(token_start, &v, false);
-            method = (enum distance_find_nearest_method)v;
-            if (method != dfnm_convex_hull && method != dfnm_box) {
-              return 0;
-            }
-          }
-          break;
-        default:
-          return 0;
-        }
-      }
-      if (*p == L'>') {
-        goto cleanup;
-      }
-      if (token == 2) {
-        return 0;
-      }
-      ++p;
-      token_start = p;
-      ++token;
-      sign = 0;
-      dot = 0;
-      i = 0;
-      f = 0;
-      continue;
-    default:
-      return 0;
-    }
-  }
-cleanup:
-  ks->distance = distance;
-  ks->margin = margin;
-  ks->method = method;
-  return (size_t)(p - (text + pos) + 1);
-}
-
 NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
                                                  size_t const text_len,
                                                  bool const monospace,
@@ -230,6 +126,7 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
     goto cleanup;
   }
 
+  LONG const base_unit = canvas->current_font_text_metric.tmHeight / (high_resolution ? 2 : 1);
   size_t gpos = 0;
   int flags = 0;
   bool nobr = false;
@@ -238,6 +135,7 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
   struct kerning_style ks = {0};
 
   struct aviutl_text_tag tag = {0};
+  struct aviutl_text_ex_tag tag_ex = {0};
   for (size_t i = 0; i < text_len; ++i) {
     if (text[i] == L'\n') {
       glyphs[gpos++] = (struct glyph){
@@ -250,140 +148,110 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
       }
       continue;
     }
-    tag.type = aviutl_text_tag_type_unknown;
-    if (text[i] == L'<' || text[i] == L'&') {
-      if (aviutl_text_parse_tag(text, text_len, i, &tag)) {
-        if (tag.type == aviutl_text_tag_type_numcharref) {
-          goto measure_glyph;
+    if ((text[i] == L'<' || text[i] == L'&') && aviutl_text_parse_tag(text, text_len, i, &tag)) {
+      if (tag.type == aviutl_text_tag_type_numcharref) {
+        goto measure_glyph;
+      }
+      if (tag.type == aviutl_text_tag_type_font) {
+        struct aviutl_text_tag_font font;
+        aviutl_text_get_font(text, &tag, &font);
+        err = canvas_set_font_params(canvas, font.name, font.size, font.bold, font.italic, high_resolution);
+        if (efailed(err)) {
+          err = ethru(err);
+          goto cleanup;
         }
-        if (tag.type == aviutl_text_tag_type_font) {
-          struct aviutl_text_tag_font font;
-          aviutl_text_get_font(text, &tag, &font);
-          err = canvas_set_font_params(canvas, font.name, font.size, font.bold, font.italic, high_resolution);
+      }
+      glyphs[gpos++] = (struct glyph){
+          .typ = gt_tag,
+          .pos = i,
+          .len = tag.len,
+          .u =
+              {
+                  .tag =
+                      {
+                          .type = tag.type,
+                      },
+              },
+      };
+      i += tag.len - 1;
+      continue;
+    }
+    if (text[i] == L'<' && aviutl_text_ex_parse_tag(text, text_len, i, &tag_ex)) {
+      switch (tag_ex.type) {
+      case aviutl_text_ex_tag_type_font: {
+        struct aviutl_text_ex_tag_font font;
+        aviutl_text_ex_get_font(text, &tag_ex, &font);
+        size_t const font_size = (size_t)(font.size * (double)(base_unit));
+        err = canvas_set_font_params(canvas, font.name, font_size, font.bold, font.italic, high_resolution);
+        if (efailed(err)) {
+          err = ethru(err);
+          goto cleanup;
+        }
+      } break;
+      case aviutl_text_ex_tag_type_position:
+        break;
+      case aviutl_text_ex_tag_type_wbr:
+        flags |= gt_breakable_by_wbr;
+        break;
+      case aviutl_text_ex_tag_type_nobr:
+        nobr = true;
+        break;
+      case aviutl_text_ex_tag_type_nobr_close:
+        nobr = false;
+        flags &= ~gt_not_breakable_by_nobr;
+        break;
+      case aviutl_text_ex_tag_type_kerning: {
+        struct aviutl_text_ex_tag_kerning kern;
+        aviutl_text_ex_get_kerning(text, &tag_ex, &kern);
+        ks.distance = kern.distance;
+        ks.margin = kern.margin;
+        switch (kern.method) {
+        case aviutl_text_ex_tag_kerning_method_convexhull:
+          ks.method = dfnm_convex_hull;
+          break;
+        case aviutl_text_ex_tag_kerning_method_box:
+          ks.method = dfnm_box;
+          break;
+        case aviutl_text_ex_tag_kerning_method_unknown:
+          ks.method = dfnm_convex_hull;
+          break;
+        }
+        ks.margin_unit = (double)(canvas->current_font_text_metric.tmHeight) * .1;
+        kerning = true;
+        if (g_kerning_ctx) {
+          kerning_reset(g_kerning_ctx);
+        } else {
+          err = kerning_context_create(&g_kerning_ctx);
           if (efailed(err)) {
             err = ethru(err);
             goto cleanup;
           }
         }
-        glyphs[gpos++] = (struct glyph){
-            .typ = gt_tag,
-            .pos = i,
-            .len = tag.len,
-            .u =
-                {
-                    .tag =
-                        {
-                            .type = tag.type,
-                        },
-                },
-        };
-        i += tag.len - 1;
-        continue;
-      } else if (text_len - i >= 5 && text[i + 1] == L'w' && text[i + 2] == L'b' && text[i + 3] == L'r' &&
-                 text[i + 4] == L'>') {
-        flags |= gt_breakable_by_wbr;
-        glyphs[gpos++] = (struct glyph){
-            .typ = gt_original_tag,
-            .pos = i,
-            .len = 5,
-            .u =
-                {
-                    .original_tag =
-                        {
-                            .type = ot_wbr,
-                        },
-                },
-        };
-        i += 4;
-        continue;
-      } else if (text_len - i >= 6 && text[i + 1] == L'n' && text[i + 2] == L'o' && text[i + 3] == L'b' &&
-                 text[i + 4] == L'r' && text[i + 5] == L'>') {
-        nobr = true;
-        glyphs[gpos++] = (struct glyph){
-            .typ = gt_original_tag,
-            .pos = i,
-            .len = 6,
-            .u =
-                {
-                    .original_tag =
-                        {
-                            .type = ot_nobr_open,
-                        },
-                },
-        };
-        i += 5;
-        continue;
-      } else if (text_len - i >= 7 && text[i + 1] == L'/' && text[i + 2] == L'n' && text[i + 3] == L'o' &&
-                 text[i + 4] == L'b' && text[i + 5] == L'r' && text[i + 6] == L'>') {
-        nobr = false;
-        flags &= ~gt_not_breakable_by_nobr;
-        glyphs[gpos++] = (struct glyph){
-            .typ = gt_original_tag,
-            .pos = i,
-            .len = 7,
-            .u =
-                {
-                    .original_tag =
-                        {
-                            .type = ot_nobr_close,
-                        },
-                },
-        };
-        i += 6;
-        continue;
-      } else if (text_len - i >= 6 && text[i + 1] == L'k' && text[i + 2] == L'e' && text[i + 3] == L'r' &&
-                 text[i + 4] == L'n') {
-        size_t const tag_len = parse_kerning_tag(&ks, text, text_len, i);
-        if (tag_len) {
-          glyphs[gpos++] = (struct glyph){
-              .typ = gt_original_tag,
-              .pos = i,
-              .len = tag_len,
-              .u =
-                  {
-                      .original_tag =
-                          {
-                              .type = ot_kern_open,
-                          },
-                  },
-          };
-          i += tag_len - 1;
-          TEXTMETRICW tm;
-          if (!GetTextMetricsW(canvas->dc, &tm)) {
-            err = errg(err_fail);
-            goto cleanup;
-          }
-          ks.margin_unit = (double)(tm.tmHeight) * .1;
-          kerning = true;
-          if (g_kerning_ctx) {
-            kerning_reset(g_kerning_ctx);
-          } else {
-            err = kerning_context_create(&g_kerning_ctx);
-            if (efailed(err)) {
-              err = ethru(err);
-              goto cleanup;
-            }
-          }
-          continue;
-        }
-      } else if (text_len - i >= 7 && text[i + 1] == L'/' && text[i + 2] == L'k' && text[i + 3] == L'e' &&
-                 text[i + 4] == L'r' && text[i + 5] == L'n' && text[i + 6] == L'>') {
-        glyphs[gpos++] = (struct glyph){
-            .typ = gt_original_tag,
-            .pos = i,
-            .len = 7,
-            .u =
-                {
-                    .original_tag =
-                        {
-                            .type = ot_kern_close,
-                        },
-                },
-        };
-        i += 6;
+
+      } break;
+      case aviutl_text_ex_tag_type_kerning_close:
         kerning = false;
-        continue;
+        break;
+      case aviutl_text_ex_tag_type_unknown:
+        break;
       }
+      glyphs[gpos++] = (struct glyph){
+          .typ = gt_tag_ex,
+          .pos = i,
+          .len = tag_ex.len,
+          .u =
+              {
+                  .tag_ex =
+                      {
+                          .type = tag_ex.type,
+                          .initial_unit = (int16_t)base_unit,
+                          .current_unit =
+                              (int16_t)(canvas->current_font_text_metric.tmHeight / (high_resolution ? 2 : 1)),
+                      },
+              },
+      };
+      i += tag_ex.len - 1;
+      continue;
     }
   measure_glyph: {
     enum glyph_type gt;
@@ -778,11 +646,67 @@ NODISCARD static error write_text(struct wstr const *const src,
       copypos = gpos + 1;
       nch = 0;
     } break;
-    case gt_original_tag: {
+    case gt_tag_ex: {
       err = sncat(text, src->ptr + glyphs[copypos].pos, nch);
       if (efailed(err)) {
         err = ethru(err);
         goto cleanup;
+      }
+      if (g->u.tag_ex.type == aviutl_text_ex_tag_type_position) {
+        struct aviutl_text_ex_tag tag_ex;
+        struct aviutl_text_ex_tag_position tag_pos;
+        aviutl_text_ex_parse_tag(src->ptr, src->len, g->pos, &tag_ex);
+        aviutl_text_ex_get_position(src->ptr, &tag_ex, &tag_pos);
+        wchar_t num[32], buf[64];
+        buf[0] = L'\0';
+        wcscat(buf, L"<p");
+        if (tag_pos.x_type == aviutl_text_ex_tag_position_type_relative && tag_pos.x >= 0) {
+          wcscat(buf, L"+");
+        }
+        double const current_unit = (double)(g->u.tag_ex.current_unit) * .1;
+        wcscat(buf, ov_itoa_wchar((int64_t)(tag_pos.x * current_unit + .5), num));
+        wcscat(buf, L",");
+        if (tag_pos.y_type == aviutl_text_ex_tag_position_type_relative && tag_pos.y >= 0) {
+          wcscat(buf, L"+");
+        }
+        wcscat(buf, ov_itoa_wchar((int64_t)(tag_pos.y * current_unit + .5), num));
+        wcscat(buf, L">");
+        err = scat(text, buf);
+        if (efailed(err)) {
+          err = ethru(err);
+          goto cleanup;
+        }
+      } else if (g->u.tag_ex.type == aviutl_text_ex_tag_type_font) {
+        struct aviutl_text_ex_tag tag_ex;
+        struct aviutl_text_ex_tag_font tag_font;
+        aviutl_text_ex_parse_tag(src->ptr, src->len, g->pos, &tag_ex);
+        aviutl_text_ex_get_font(src->ptr, &tag_ex, &tag_font);
+        wchar_t num[32], buf[128];
+        buf[0] = L'\0';
+        wcscat(buf, L"<s");
+        if (tag_ex.value_len[0] > 0) {
+          double const initial_unit = (double)(g->u.tag_ex.initial_unit);
+          wcscat(buf, ov_itoa_wchar((int64_t)(tag_font.size * initial_unit + .5), num));
+        }
+        if (tag_ex.value_len[1] + tag_ex.value_len[2] > 0) {
+          wcscat(buf, L",");
+          wcsncat(buf, tag_font.name, tag_ex.value_len[1]);
+          if (tag_ex.value_len[2] > 0) {
+            wcscat(buf, L",");
+            if (tag_font.bold) {
+              wcscat(buf, L"B");
+            }
+            if (tag_font.italic) {
+              wcscat(buf, L"I");
+            }
+          }
+        }
+        wcscat(buf, L">");
+        err = scat(text, buf);
+        if (efailed(err)) {
+          err = ethru(err);
+          goto cleanup;
+        }
       }
       copypos = gpos + 1;
       nch = 0;
@@ -836,7 +760,19 @@ static double calc_current_line_width(struct wstr const *const text,
       ++gpos;
       continue;
     }
-    if (g->typ == gt_original_tag) {
+    if (g->typ == gt_tag_ex) {
+      if (g->u.tag_ex.type != aviutl_text_ex_tag_type_position) {
+        ++gpos;
+        continue;
+      }
+      struct aviutl_text_ex_tag tag_ex;
+      struct aviutl_text_ex_tag_position tag_ex_pos;
+      aviutl_text_ex_parse_tag(text->ptr, text->len, g->pos, &tag_ex);
+      aviutl_text_ex_get_position(text->ptr, &tag_ex, &tag_ex_pos);
+      if (tag_ex_pos.x_type == aviutl_text_ex_tag_position_type_absolute) {
+        return x_max - x_min;
+      }
+      x += tag_ex_pos.x * (double)(g->u.tag_ex.current_unit) * .1;
       ++gpos;
       continue;
     }
@@ -1016,7 +952,24 @@ int luafn_wordwrap(lua_State *L) {
       ++gpos;
       continue;
     }
-    if (g->typ == gt_original_tag) {
+    if (g->typ == gt_tag_ex) {
+      if (g->u.tag_ex.type != aviutl_text_ex_tag_type_position) {
+        ++gpos;
+        continue;
+      }
+      struct aviutl_text_ex_tag tag_ex;
+      struct aviutl_text_ex_tag_position tag_ex_pos;
+      aviutl_text_ex_parse_tag(text.ptr, text.len, g->pos, &tag_ex);
+      aviutl_text_ex_get_position(text.ptr, &tag_ex, &tag_ex_pos);
+      if (tag_ex_pos.x_type == aviutl_text_ex_tag_position_type_absolute) {
+        x = 0;
+        x_min = INT_MAX;
+        x_max = INT_MIN;
+        lr.linehead = ++gpos;
+        max_width = calc_max_width(&text, &lr, &wws);
+        continue;
+      }
+      x += tag_ex_pos.x * (double)(g->u.tag_ex.current_unit) * .1;
       ++gpos;
       continue;
     }
@@ -1080,7 +1033,7 @@ int luafn_wordwrap(lua_State *L) {
     // Skip spaces at the beginning of the next line
     gpos = break_gpos;
     while (gpos < num_glyphs) {
-      if (glyphs[gpos].typ == gt_kerning || glyphs[gpos].typ == gt_tag || glyphs[gpos].typ == gt_original_tag) {
+      if (glyphs[gpos].typ == gt_kerning || glyphs[gpos].typ == gt_tag || glyphs[gpos].typ == gt_tag_ex) {
         ++gpos;
         continue;
       }

@@ -10,7 +10,7 @@ size_t line_reader_find_left(struct line_reader const *const lr, size_t const po
     switch (g->typ) {
     case gt_tag:
       continue;
-    case gt_original_tag:
+    case gt_tag_ex:
       continue;
     case gt_break:
       return SIZE_MAX;
@@ -30,7 +30,7 @@ size_t line_reader_find_right(struct line_reader const *const lr, size_t const p
     switch (g->typ) {
     case gt_tag:
       continue;
-    case gt_original_tag:
+    case gt_tag_ex:
       continue;
     case gt_break:
       return SIZE_MAX;

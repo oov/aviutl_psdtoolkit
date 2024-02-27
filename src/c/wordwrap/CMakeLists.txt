@@ -1,4 +1,5 @@
 add_library(wordwrap STATIC
+  aviutl_text_ex.c
   aviutl_text.c
   bdx.c
   bdx_cache.c
@@ -21,3 +22,10 @@ target_link_libraries(aviutl_text_test PRIVATE
   ovbase
 )
 add_test(NAME aviutl_text_test COMMAND aviutl_text_test)
+
+add_executable(aviutl_text_ex_test aviutl_text_ex.c aviutl_text_ex_test.c)
+target_link_libraries(aviutl_text_ex_test PRIVATE
+  psdtoolkit_intf
+  ovbase
+)
+add_test(NAME aviutl_text_ex_test COMMAND aviutl_text_ex_test)
