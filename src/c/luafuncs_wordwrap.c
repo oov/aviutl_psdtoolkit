@@ -203,7 +203,7 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
       case aviutl_text_ex_tag_type_kerning: {
         struct aviutl_text_ex_tag_kerning kern;
         aviutl_text_ex_get_kerning(text, &tag_ex, &kern);
-        ks.distance = kern.distance;
+        ks.distance = kern.distance * .01;
         ks.margin = kern.margin;
         switch (kern.method) {
         case aviutl_text_ex_tag_kerning_method_convexhull:

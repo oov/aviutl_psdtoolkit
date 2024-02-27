@@ -306,8 +306,8 @@ static void test_aviutl_text_ex_kerning(void) {
               },
           .expected_kerning_tag =
               {
-                  .distance = .5,
-                  .margin = .0,
+                  .distance = 50,
+                  .margin = 0.,
                   .method = aviutl_text_ex_tag_kerning_method_convexhull,
               },
       },
@@ -325,8 +325,8 @@ static void test_aviutl_text_ex_kerning(void) {
               },
           .expected_kerning_tag =
               {
-                  .distance = 0.1,
-                  .margin = 0.0,
+                  .distance = .1,
+                  .margin = 0.,
                   .method = aviutl_text_ex_tag_kerning_method_convexhull,
               },
       },
@@ -344,8 +344,8 @@ static void test_aviutl_text_ex_kerning(void) {
               },
           .expected_kerning_tag =
               {
-                  .distance = 0.1,
-                  .margin = 0.1,
+                  .distance = .1,
+                  .margin = .1,
                   .method = aviutl_text_ex_tag_kerning_method_convexhull,
               },
       },
@@ -361,8 +361,8 @@ static void test_aviutl_text_ex_kerning(void) {
                   .value_pos = {5, 9, 13},
                   .value_len = {3, 3, 1},
               },
-          .expected_kerning_tag = {.distance = 0.1,
-                                   .margin = 0.1,
+          .expected_kerning_tag = {.distance = .1,
+                                   .margin = .1,
                                    .method = aviutl_text_ex_tag_kerning_method_convexhull},
       },
       {
@@ -379,8 +379,8 @@ static void test_aviutl_text_ex_kerning(void) {
               },
           .expected_kerning_tag =
               {
-                  .distance = 0.1,
-                  .margin = 0.1,
+                  .distance = .1,
+                  .margin = .1,
                   .method = aviutl_text_ex_tag_kerning_method_box,
               },
       },
@@ -398,8 +398,8 @@ static void test_aviutl_text_ex_kerning(void) {
               },
           .expected_kerning_tag =
               {
-                  .distance = 0.5,
-                  .margin = 0.0,
+                  .distance = 50.,
+                  .margin = 0.,
                   .method = aviutl_text_ex_tag_kerning_method_box,
               },
       },
@@ -417,8 +417,8 @@ static void test_aviutl_text_ex_kerning(void) {
               },
           .expected_kerning_tag =
               {
-                  .distance = 0.5,
-                  .margin = 0.1,
+                  .distance = 50.,
+                  .margin = .1,
                   .method = aviutl_text_ex_tag_kerning_method_convexhull,
               },
       },
@@ -436,8 +436,8 @@ static void test_aviutl_text_ex_kerning(void) {
               },
           .expected_kerning_tag =
               {
-                  .distance = 0.1,
-                  .margin = 0.0,
+                  .distance = .1,
+                  .margin = 0.,
                   .method = aviutl_text_ex_tag_kerning_method_convexhull,
               },
       },
@@ -456,7 +456,7 @@ static void test_aviutl_text_ex_kerning(void) {
           .expected_kerning_tag =
               {
                   .distance = 1.,
-                  .margin = 0.0,
+                  .margin = 0.,
                   .method = aviutl_text_ex_tag_kerning_method_convexhull,
               },
       },
@@ -474,8 +474,8 @@ static void test_aviutl_text_ex_kerning(void) {
               },
           .expected_kerning_tag =
               {
-                  .distance = 0.1,
-                  .margin = 0.1,
+                  .distance = .1,
+                  .margin = .1,
                   .method = aviutl_text_ex_tag_kerning_method_convexhull,
               },
       },
@@ -493,7 +493,7 @@ static void test_aviutl_text_ex_kerning(void) {
               },
           .expected_kerning_tag =
               {
-                  .distance = 0.1,
+                  .distance = .1,
                   .margin = 1.,
                   .method = aviutl_text_ex_tag_kerning_method_convexhull,
               },
