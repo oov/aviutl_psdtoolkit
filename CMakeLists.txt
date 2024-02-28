@@ -20,7 +20,7 @@ endif()
 if("${BUILD_PACKAGE}" STREQUAL "1")
   set(EXA_SUFFIX ".exa" CACHE STRING "suffix for *.exa file names")
 
-  set(GCMZ_VER "v0.4.1")
+  set(GCMZ_VER "v0.4.2")
   add_custom_target(extract_gcmzdrops COMMAND
     ${CMAKE_COMMAND}
     -Dlocal_dir="${PROJECT_BINARY_DIR}"
@@ -36,7 +36,7 @@ if("${BUILD_PACKAGE}" STREQUAL "1")
     -Ddir="audiomixer"
     -P "${CMAKE_SOURCE_DIR}/src/cmake/extract-zip.cmake"
   )
-  set(FORCEPSER_VER "v1.6.0beta2")
+  set(FORCEPSER_VER "v1.6.0beta3")
   add_custom_target(extract_forcepser COMMAND
     ${CMAKE_COMMAND}
     -Dlocal_dir="${PROJECT_BINARY_DIR}"
@@ -60,7 +60,7 @@ if("${BUILD_PACKAGE}" STREQUAL "1")
     -Ddir="cachetext"
     -P "${CMAKE_SOURCE_DIR}/src/cmake/extract-zip.cmake"
   )
-  set(EXTRAM2_VER "v0.1.0beta6")
+  set(EXTRAM2_VER "v0.1.0beta8")
   add_custom_target(extract_extram2 COMMAND
     ${CMAKE_COMMAND}
     -Dlocal_dir="${PROJECT_BINARY_DIR}"
@@ -114,6 +114,7 @@ if("${BUILD_PACKAGE}" STREQUAL "1")
     extract_forcepser
     extract_rampreview
     extract_cachetext
+    extract_extram2
     copy_alias
     copy_script
     copy_gcmz_script
