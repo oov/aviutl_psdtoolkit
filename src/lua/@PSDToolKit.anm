@@ -28,6 +28,9 @@ end
 @字幕表示（キャッシュ）
 require("Cache2").text_after()
 
+@自動折り返しテキスト
+require("Cache2").text_after()
+
 @吹き出し
 --track0:透明度,0,100,0,0.01
 --dialog:色/col,local col=0xffffff;余白 縦,local mtb=12;余白 横,local mlr=24;角丸,local corner=16;配置(0-8),local pos=7;しっぽ(0-12),local tailpos=8;しっぽX,local tx=0;しっぽY,local ty=0;しっぽ幅,local tw=12;しっぽ高さ,local th=12;しっぽ先X,local ex=0;しっぽ先Y,local ey=0

@@ -58,6 +58,10 @@ local function wordwrap(text, options, unescape)
   return PSDToolKitBridge.wordwrap(text, options)
 end
 
+local function wordwrap_with_cache(text, options, unescape)
+  require("Cache2").text_before(wordwrap(text, options.wordwrap, unescase), options.cache.mode, options.cache.save, false)
+end
+
 local PSDState = {}
 
 -- スクリプトから呼び出す用
@@ -1028,6 +1032,7 @@ P.emptysubobj = {
 
 P.print = print
 P.wordwrap = wordwrap
+P.text = wordwrap_with_cache
 P.PSDState = PSDState
 P.Blinker = Blinker
 P.LipSyncSimple = LipSyncSimple

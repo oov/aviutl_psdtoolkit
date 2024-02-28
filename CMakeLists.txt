@@ -76,6 +76,7 @@ if("${BUILD_PACKAGE}" STREQUAL "1")
     COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/exa/SubtitleFast${EXA_SUFFIX}" "${EXPORT_DIR}/PSDToolKit/字幕表示（キャッシュ）.exa"
     COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/exa/PrepSubtitle${EXA_SUFFIX}" "${EXPORT_DIR}/PSDToolKit/字幕準備.exa"
     COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/exa/MultiPurposeSlider${EXA_SUFFIX}" "${EXPORT_DIR}/PSDToolKit/多目的スライダー.exa"
+    COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/exa/WordWrapText${EXA_SUFFIX}" "${EXPORT_DIR}/PSDToolKit/自動折り返しテキスト.exa"
   )
   add_custom_target(copy_script
     COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/PSDToolKit.lua" "${EXPORT_DIR}/script/PSDToolKit/PSDToolKit.lua"
