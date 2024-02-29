@@ -286,7 +286,7 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
                   .tag_ex =
                       {
                           .type = tag_ex.type,
-                          .initial_unit = (int16_t)initial_unit,
+                          .initial_unit = (int16_t)-canvas->initial_font->lfHeight, // should use lfHeight directly
                           .current_unit =
                               (int16_t)(canvas->current_font_text_metric.tmHeight / (high_resolution ? 2 : 1)),
                       },
