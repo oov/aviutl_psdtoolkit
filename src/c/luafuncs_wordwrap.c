@@ -254,7 +254,7 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
           ks.method = dfnm_convex_hull;
           break;
         }
-        ks.margin_unit = (double)(canvas->current_font_text_metric.tmHeight) * .1;
+        ks.margin_unit = (double)(canvas->current_font_text_metric.tmHeight) * .01;
         kerning = true;
         if (g_kerning_ctx) {
           kerning_reset(g_kerning_ctx);
@@ -705,7 +705,7 @@ NODISCARD static error write_text(struct wstr const *const src,
         if (tag_pos.x_type == aviutl_text_ex_tag_position_type_relative && tag_pos.x >= 0) {
           wcscat(buf, L"+");
         }
-        double const current_unit = (double)(g->u.tag_ex.current_unit) * .1;
+        double const current_unit = (double)(g->u.tag_ex.current_unit) * .01;
         wcscat(buf, ov_ftoa_wchar(tag_pos.x * current_unit, 2, L'.', num));
         wcscat(buf, L",");
         if (tag_pos.y_type == aviutl_text_ex_tag_position_type_relative && tag_pos.y >= 0) {
@@ -821,7 +821,7 @@ static double calc_current_line_width(struct wstr const *const text,
       if (tag_ex_pos.x_type == aviutl_text_ex_tag_position_type_absolute) {
         return x_max - x_min;
       }
-      x += tag_ex_pos.x * (double)(g->u.tag_ex.current_unit) * .1;
+      x += tag_ex_pos.x * (double)(g->u.tag_ex.current_unit) * .01;
       ++gpos;
       continue;
     }
@@ -1028,7 +1028,7 @@ int luafn_wordwrap(lua_State *L) {
         max_width = calc_max_width(&text, &lr, &wws);
         continue;
       }
-      x += tag_ex_pos.x * (double)(g->u.tag_ex.current_unit) * .1;
+      x += tag_ex_pos.x * (double)(g->u.tag_ex.current_unit) * .01;
       ++gpos;
       continue;
     }
