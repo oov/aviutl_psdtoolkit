@@ -306,7 +306,7 @@ static void test_aviutl_text_ex_kerning(void) {
               },
           .expected_kerning_tag =
               {
-                  .distance = 50,
+                  .distance = 100.,
                   .margin = 0.,
                   .method = aviutl_text_ex_tag_kerning_method_convexhull,
               },
@@ -398,7 +398,7 @@ static void test_aviutl_text_ex_kerning(void) {
               },
           .expected_kerning_tag =
               {
-                  .distance = 50.,
+                  .distance = 100.,
                   .margin = 0.,
                   .method = aviutl_text_ex_tag_kerning_method_box,
               },
@@ -417,7 +417,7 @@ static void test_aviutl_text_ex_kerning(void) {
               },
           .expected_kerning_tag =
               {
-                  .distance = 50.,
+                  .distance = 100.,
                   .margin = .1,
                   .method = aviutl_text_ex_tag_kerning_method_convexhull,
               },

@@ -239,7 +239,7 @@ static void test_kerning(void) {
     wchar_t *input;
     wchar_t *expected;
   } tests[] = {
-      {L"return wordwrap('<kern>hello world</kern>', {font='Arial', size=24, width=256, mode=1})",
+      {L"return wordwrap('<kern50>hello world</kern>', {font='Arial', size=24, width=256, mode=1})",
        L"h<p-2,+0>e<p-1,+0>l<p-2,+0>l<p-2,+0>o w<p-1,+0>o<p-1,+0>r<p-1,+0>l<p-2,+0>d"},
   };
   struct wstr ws = {0};

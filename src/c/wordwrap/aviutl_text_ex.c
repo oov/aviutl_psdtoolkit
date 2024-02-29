@@ -250,7 +250,7 @@ void aviutl_text_ex_get_kerning(aviutl_text_ex_char const *const str,
     ov_atof_wchar(str + tag->value_pos[0], &d, false);
     value->distance = d;
   } else {
-    value->distance = 50;
+    value->distance = 100;
   }
 
   if (tag->value_len[1] != 0) {
