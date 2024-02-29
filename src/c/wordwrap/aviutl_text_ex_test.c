@@ -498,13 +498,49 @@ static void test_aviutl_text_ex_kerning(void) {
                   .method = aviutl_text_ex_tag_kerning_method_convexhull,
               },
       },
+      {
+          .text = L"<kern0.1,+0.1>",
+          .parse_pos = 0,
+          .expected_result = true,
+          .expected_tag =
+              {
+                  .type = aviutl_text_ex_tag_type_kerning,
+                  .pos = 0,
+                  .len = 14,
+                  .value_pos = {5, 9, SIZE_MAX},
+                  .value_len = {3, 4, 0},
+              },
+          .expected_kerning_tag =
+              {
+                  .distance = .1,
+                  .margin = .1,
+                  .method = aviutl_text_ex_tag_kerning_method_convexhull,
+              },
+      },
+      {
+          .text = L"<kern0.1,-0.1>",
+          .parse_pos = 0,
+          .expected_result = true,
+          .expected_tag =
+              {
+                  .type = aviutl_text_ex_tag_type_kerning,
+                  .pos = 0,
+                  .len = 14,
+                  .value_pos = {5, 9, SIZE_MAX},
+                  .value_len = {3, 4, 0},
+              },
+          .expected_kerning_tag =
+              {
+                  .distance = .1,
+                  .margin = -.1,
+                  .method = aviutl_text_ex_tag_kerning_method_convexhull,
+              },
+      },
       {.text = L"<kern+0.1>", .parse_pos = 0, .expected_result = false},
       {.text = L"<kern-0.1>", .parse_pos = 0, .expected_result = false},
       {.text = L"<kerna>", .parse_pos = 0, .expected_result = false},
       {.text = L"<kern1..1>", .parse_pos = 0, .expected_result = false},
       {.text = L"<kern0.1+>", .parse_pos = 0, .expected_result = false},
-      {.text = L"<kern0.1,+0.1>", .parse_pos = 0, .expected_result = false},
-      {.text = L"<kern0.1,-0.1>", .parse_pos = 0, .expected_result = false},
       {.text = L"<kern0.1,a>", .parse_pos = 0, .expected_result = false},
       {.text = L"<kern0.1,1..1>", .parse_pos = 0, .expected_result = false},
       {.text = L"<kern0.1,0.1+>", .parse_pos = 0, .expected_result = false},

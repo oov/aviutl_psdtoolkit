@@ -265,9 +265,8 @@ void aviutl_text_get_color(aviutl_text_char const *const str,
 void aviutl_text_get_position(aviutl_text_char const *const str,
                               struct aviutl_text_tag const *const tag,
                               struct aviutl_text_tag_position *const value) {
-  double d = 0;
-
   if (tag->value_len[0] != 0) {
+    double d = 0;
     ov_atof_wchar(str + tag->value_pos[0], &d, false);
     value->x = d;
   } else {
@@ -278,6 +277,7 @@ void aviutl_text_get_position(aviutl_text_char const *const str,
                                                                              : aviutl_text_tag_position_type_absolute;
 
   if (tag->value_len[1] != 0) {
+    double d = 0;
     ov_atof_wchar(str + tag->value_pos[1], &d, false);
     value->y = d;
   } else {
@@ -288,6 +288,7 @@ void aviutl_text_get_position(aviutl_text_char const *const str,
                                                                              : aviutl_text_tag_position_type_absolute;
 
   if (tag->value_len[2] != 0) {
+    double d = 0;
     ov_atof_wchar(str + tag->value_pos[2], &d, false);
     value->z = d;
   } else {

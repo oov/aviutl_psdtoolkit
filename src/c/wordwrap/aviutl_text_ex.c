@@ -152,7 +152,11 @@ bool aviutl_text_ex_parse_tag(aviutl_text_ex_char const *const str,
         }
         break;
       case 1: // margin
-        if (!is_decimal(str[end], &found_dot)) {
+        if (is_sign(str[end])) {
+          if (value_pos[token] != end) {
+            return false;
+          }
+        } else if (!is_decimal(str[end], &found_dot)) {
           return false;
         }
         break;
@@ -172,9 +176,8 @@ bool aviutl_text_ex_parse_tag(aviutl_text_ex_char const *const str,
 void aviutl_text_ex_get_position(aviutl_text_ex_char const *const str,
                                  struct aviutl_text_ex_tag const *const tag,
                                  struct aviutl_text_ex_tag_position *const value) {
-  double d = 0;
-
   if (tag->value_len[0] != 0) {
+    double d = 0;
     ov_atof_wchar(str + tag->value_pos[0], &d, false);
     value->x = d;
   } else {
@@ -186,6 +189,7 @@ void aviutl_text_ex_get_position(aviutl_text_ex_char const *const str,
                       : aviutl_text_ex_tag_position_type_absolute;
 
   if (tag->value_len[1] != 0) {
+    double d = 0;
     ov_atof_wchar(str + tag->value_pos[1], &d, false);
     value->y = d;
   } else {
@@ -197,6 +201,7 @@ void aviutl_text_ex_get_position(aviutl_text_ex_char const *const str,
                       : aviutl_text_ex_tag_position_type_absolute;
 
   if (tag->value_len[2] != 0) {
+    double d = 0;
     ov_atof_wchar(str + tag->value_pos[2], &d, false);
     value->z = d;
   } else {
@@ -220,8 +225,8 @@ static size_t find_char_reverse(aviutl_text_ex_char const *const str, size_t con
 void aviutl_text_ex_get_font(aviutl_text_ex_char const *const str,
                              struct aviutl_text_ex_tag const *const tag,
                              struct aviutl_text_ex_tag_font *const value) {
-  double d = 0;
   if (tag->value_len[0] != 0) {
+    double d = 0;
     ov_atof_wchar(str + tag->value_pos[0], &d, false);
     value->size = d;
   } else {
@@ -245,8 +250,8 @@ void aviutl_text_ex_get_font(aviutl_text_ex_char const *const str,
 void aviutl_text_ex_get_kerning(aviutl_text_ex_char const *const str,
                                 struct aviutl_text_ex_tag const *const tag,
                                 struct aviutl_text_ex_tag_kerning *const value) {
-  double d = 0;
   if (tag->value_len[0] != 0) {
+    double d = 0;
     ov_atof_wchar(str + tag->value_pos[0], &d, false);
     value->distance = d;
   } else {
@@ -254,6 +259,7 @@ void aviutl_text_ex_get_kerning(aviutl_text_ex_char const *const str,
   }
 
   if (tag->value_len[1] != 0) {
+    double d = 0;
     ov_atof_wchar(str + tag->value_pos[1], &d, false);
     value->margin = d;
   } else {
