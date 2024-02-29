@@ -78,8 +78,7 @@ macro(add_page id title)
     --template="${CMAKE_CURRENT_SOURCE_DIR}/template.html"
     -s
     --toc
-    # --shift-heading-level-by=1 # pandoc 2.8~
-    --base-header-level=2
+    --shift-heading-level-by=1
     --toc-depth=5
   )
   add_dependencies(make_doc make_doc_page_${id})
@@ -87,6 +86,7 @@ endmacro(add_page)
 
 add_page(index "はじめに")
 add_page(tutorial "チュートリアル")
+add_page(decorate "テキストの装飾")
 add_page(forcepser "かんしくん")
 add_page(obj "独自のオブジェクト")
 add_page(psd "PSD アニメーション効果")

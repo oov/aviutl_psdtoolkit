@@ -55,7 +55,7 @@ body {
 
 #ptk-menu.ptk-selected-index .ptk-menu-item-index,
 #ptk-menu.ptk-selected-tutorial .ptk-menu-item-tutorial,
-#ptk-menu.ptk-selected-tutorial2 .ptk-menu-item-tutorial2,
+#ptk-menu.ptk-selected-decorate .ptk-menu-item-decorate,
 #ptk-menu.ptk-selected-pfv .ptk-menu-item-pfv,
 #ptk-menu.ptk-selected-forcepser .ptk-menu-item-forcepser,
 #ptk-menu.ptk-selected-plugins .ptk-menu-item-plugins,
@@ -64,8 +64,8 @@ body {
 #ptk-menu.ptk-selected-obj .ptk-menu-item-obj,
 #ptk-menu.ptk-selected-psd .ptk-menu-item-psd,
 #ptk-menu.ptk-selected-subobj .ptk-menu-item-subobj,
-#ptk-menu.ptk-selected-prep .ptk-menu-item-prep,
-#ptk-menu.ptk-selected-audio .ptk-menu-item-audio {
+#ptk-menu.ptk-selected-otheranm .ptk-menu-item-otheranm,
+#ptk-menu.ptk-selected-prep .ptk-menu-item-prep {
     font-weight: bold;
 }
 
