@@ -161,6 +161,9 @@ static bool add_convex_point(void *const userdata, enum point_op const op, struc
 }
 
 static struct point get_normalized_forward_vector(GLYPHMETRICS *gm) {
+  if (gm->gmCellIncX == 0 && gm->gmCellIncY == 0) {
+    return (struct point){1., 0};
+  }
   double const x = gm->gmCellIncX;
   double const y = gm->gmCellIncY;
   double const l = sqrt(x * x + y * y);
