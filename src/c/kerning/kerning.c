@@ -5,14 +5,17 @@
 
 #include "convexhull.h"
 #include "glyphoutline.h"
+#include "kerning_pairs.h"
 
 struct kerning_context {
   struct point pos;
   char *ggo_buffer;
   struct point *glyph;
+  wchar_t cur_ch, prev_ch;
   double cur_width, prev_width;
   struct point *prev, *cur;
   struct convexhull_context *chctx;
+  struct kerning_pairs *kp;
 };
 
 NODISCARD error kerning_context_create(struct kerning_context **const ctx) {
@@ -26,6 +29,36 @@ NODISCARD error kerning_context_create(struct kerning_context **const ctx) {
     goto cleanup;
   }
   *c = (struct kerning_context){0};
+  err = OV_ARRAY_GROW(&c->ggo_buffer, 4096);
+  if (efailed(err)) {
+    err = ethru(err);
+    goto cleanup;
+  }
+  err = OV_ARRAY_GROW(&c->glyph, 32);
+  if (efailed(err)) {
+    err = ethru(err);
+    goto cleanup;
+  }
+  err = OV_ARRAY_GROW(&c->prev, 32);
+  if (efailed(err)) {
+    err = ethru(err);
+    goto cleanup;
+  }
+  err = OV_ARRAY_GROW(&c->cur, 32);
+  if (efailed(err)) {
+    err = ethru(err);
+    goto cleanup;
+  }
+  err = convexhull_context_create(&c->chctx);
+  if (efailed(err)) {
+    err = ethru(err);
+    goto cleanup;
+  }
+  err = kerning_pairs_create(&c->kp);
+  if (efailed(err)) {
+    err = ethru(err);
+    goto cleanup;
+  }
   *ctx = c;
 cleanup:
   if (efailed(err)) {
@@ -39,47 +72,12 @@ void kerning_context_destroy(struct kerning_context **const ctx) {
     return;
   }
   struct kerning_context *const c = *ctx;
+  kerning_pairs_destroy(&c->kp);
   convexhull_context_destroy(&c->chctx);
   OV_ARRAY_DESTROY(&c->cur);
   OV_ARRAY_DESTROY(&c->prev);
   OV_ARRAY_DESTROY(&c->glyph);
   eignore(mem_free(ctx));
-}
-
-NODISCARD static error initialize_context(struct kerning_context *const ctx) {
-  if (!ctx) {
-    return errg(err_invalid_arugment);
-  }
-  if (ctx->prev && ctx->cur && ctx->chctx) {
-    return eok();
-  }
-  error err = OV_ARRAY_GROW(&ctx->ggo_buffer, 4096);
-  if (efailed(err)) {
-    err = ethru(err);
-    goto cleanup;
-  }
-  err = OV_ARRAY_GROW(&ctx->glyph, 32);
-  if (efailed(err)) {
-    err = ethru(err);
-    goto cleanup;
-  }
-  err = OV_ARRAY_GROW(&ctx->prev, 32);
-  if (efailed(err)) {
-    err = ethru(err);
-    goto cleanup;
-  }
-  err = OV_ARRAY_GROW(&ctx->cur, 32);
-  if (efailed(err)) {
-    err = ethru(err);
-    goto cleanup;
-  }
-  err = convexhull_context_create(&ctx->chctx);
-  if (efailed(err)) {
-    err = ethru(err);
-    goto cleanup;
-  }
-cleanup:
-  return err;
 }
 
 struct userdata {
@@ -180,17 +178,14 @@ NODISCARD error kerning_calculate_distance(struct kerning_context *const ctx,
     return errg(err_invalid_arugment);
   }
 
-  error err = initialize_context(ctx);
-  if (efailed(err)) {
-    err = ethru(err);
-    goto cleanup;
-  }
+  error err = eok();
 
   struct point *const tmp = ctx->prev;
   ctx->prev = ctx->cur;
   ctx->cur = tmp;
   OV_ARRAY_SET_LENGTH(ctx->cur, 0);
   ctx->prev_width = ctx->cur_width;
+  ctx->prev_ch = ctx->cur_ch;
 
   TEXTMETRICW tm;
   GLYPHMETRICS gm;
@@ -200,7 +195,11 @@ NODISCARD error kerning_calculate_distance(struct kerning_context *const ctx,
     goto cleanup;
   }
 
+  ctx->cur_ch = ch;
   ctx->cur_width = (double)(lmax(tm.tmHeight, lmax(tm.tmAveCharWidth, tm.tmMaxCharWidth)));
+
+  int const kern = kerning_pairs_get_kerning(ctx->kp, ctx->prev_ch, ctx->cur_ch);
+
   ctx->pos.x += gm.gmCellIncX;
   ctx->pos.y += gm.gmCellIncY;
   if (OV_ARRAY_LENGTH(ctx->glyph) == 0) {
@@ -246,8 +245,9 @@ NODISCARD error kerning_calculate_distance(struct kerning_context *const ctx,
 
   double d =
       distance_find_nearest(ks->method, ctx->prev, OV_ARRAY_LENGTH(ctx->prev), ctx->cur, OV_ARRAY_LENGTH(ctx->cur), v) -
-      safe_width;
-  d = d * (ks->distance - 1.) + ks->margin * ks->margin_unit;
+      safe_width + (double)(kern);
+  d = d * (ks->distance - 1.) + ks->margin * ks->margin_unit + (double)(kern);
+
   *distance = (struct point){v.x * d, v.y * d};
 cleanup:
   return err;
@@ -260,6 +260,22 @@ void kerning_reset(struct kerning_context *const ctx) {
   ctx->pos.x = ctx->pos.y = 0;
   OV_ARRAY_SET_LENGTH(ctx->prev, 0);
   OV_ARRAY_SET_LENGTH(ctx->cur, 0);
+  ctx->prev_ch = 0;
+  ctx->cur_ch = 0;
   ctx->prev_width = 0;
   ctx->cur_width = 0;
+}
+
+NODISCARD error kerning_update_font(struct kerning_context *const ctx, HDC const hdc) {
+  if (!ctx || !hdc) {
+    return errg(err_invalid_arugment);
+  }
+  error err = kerning_pairs_update_database(ctx->kp, hdc);
+  if (efailed(err)) {
+    err = ethru(err);
+    goto cleanup;
+  }
+  ctx->prev_ch = 0;
+cleanup:
+  return err;
 }

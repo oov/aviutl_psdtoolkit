@@ -27,3 +27,4 @@ NODISCARD error kerning_calculate_distance(struct kerning_context *const ctx,
                                            wchar_t const ch,
                                            struct point *const distance);
 void kerning_reset(struct kerning_context *const ctx);
+NODISCARD error kerning_update_font(struct kerning_context *const ctx, HDC const hdc);

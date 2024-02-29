@@ -160,6 +160,13 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
           err = ethru(err);
           goto cleanup;
         }
+        if (kerning && g_kerning_ctx) {
+          err = kerning_update_font(g_kerning_ctx, canvas->dc);
+          if (efailed(err)) {
+            err = ethru(err);
+            goto cleanup;
+          }
+        }
       }
       glyphs[gpos++] = (struct glyph){
           .typ = gt_tag,
@@ -186,6 +193,13 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
         if (efailed(err)) {
           err = ethru(err);
           goto cleanup;
+        }
+        if (kerning && g_kerning_ctx) {
+          err = kerning_update_font(g_kerning_ctx, canvas->dc);
+          if (efailed(err)) {
+            err = ethru(err);
+            goto cleanup;
+          }
         }
       } break;
       case aviutl_text_ex_tag_type_position:
@@ -227,7 +241,11 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
             goto cleanup;
           }
         }
-
+        err = kerning_update_font(g_kerning_ctx, canvas->dc);
+        if (efailed(err)) {
+          err = ethru(err);
+          goto cleanup;
+        }
       } break;
       case aviutl_text_ex_tag_type_kerning_close:
         kerning = false;
