@@ -80,7 +80,8 @@ if("${BUILD_PACKAGE}" STREQUAL "1")
   )
   add_custom_target(copy_script
     COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/PSDToolKit.lua" "${EXPORT_DIR}/script/PSDToolKit/PSDToolKit.lua"
-    COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/PSDToolKitIndex.lua" "${EXPORT_DIR}/script/PSDToolKit.lua"
+    COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/PSDToolKitRedirect.lua" "${EXPORT_DIR}/script/PSDToolKit.lua"
+    COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/Cache2Redirect.lua" "${EXPORT_DIR}/script/PSDToolKit/Cache2.lua"
     COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/json.lua" "${EXPORT_DIR}/script/PSDToolKit/json.lua"
     COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/@PSD.anm" "${EXPORT_DIR}/script/PSDToolKit/@PSD.anm"
     COMMAND ${CMAKE_COMMAND} -E copy "${PROJECT_SOURCE_DIR}/src/lua/@PSDToolKit.anm" "${EXPORT_DIR}/script/PSDToolKit/@PSDToolKit.anm"
