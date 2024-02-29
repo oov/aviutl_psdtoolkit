@@ -317,6 +317,9 @@ static void test_tag(void) {
        L"こん\nに\nち\nは"},
       {L"return wordwrap('hello\\nworld', {font='Arial', size=9, width=32, mode=1})", L"hello\nworld"},
       {L"return wordwrap('hello\\n\\nworld', {font='Arial', size=9, width=32, mode=1})", L"hello\n\nworld"},
+      {L"return wordwrap('<pp+0,+0>hello world', {font='Arial', size=9, width=256, mode=1})",
+       L"<p+0.00,+0.00>hello world"},
+      {L"return wordwrap('&#60;ss&#62;', {font='Arial', size=9, width=256, mode=1})", L"<s>"},
   };
 
   struct wstr ws = {0};

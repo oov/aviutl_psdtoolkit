@@ -27,6 +27,27 @@
 
 static struct kerning_context *g_kerning_ctx = NULL;
 
+static void unescape_number_refs(struct wstr *const text) {
+  wchar_t const *const end = text->ptr + text->len;
+  wchar_t const *src = text->ptr;
+  wchar_t *dst = text->ptr;
+  struct aviutl_text_tag tag = {0};
+  struct aviutl_text_tag_numcharref numref = {0};
+  while (src < end) {
+    if (*src == L'&' && aviutl_text_parse_tag(text->ptr, text->len, (size_t)(src - text->ptr), &tag) &&
+        tag.type == aviutl_text_tag_type_numcharref) {
+      aviutl_text_get_numcharref(text->ptr, &tag, &numref);
+      if (numref.ch < 0x80) {
+        *dst++ = (wchar_t)numref.ch;
+        src += tag.len;
+        continue;
+      }
+    }
+    *dst++ = *src++;
+  }
+  text->len = (size_t)(dst - text->ptr);
+}
+
 NODISCARD static error measure_glyph(struct canvas *canvas,
                                      enum glyph_type const typ,
                                      int const flags,
@@ -912,6 +933,9 @@ int luafn_wordwrap(lua_State *L) {
     err = ethru(err);
     goto cleanup;
   }
+
+  // ExEdit supports tags like &#60;s&#62;
+  unescape_number_refs(&text);
 
   err = canvas_create(&canvas);
   if (efailed(err)) {
