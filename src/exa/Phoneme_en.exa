@@ -1,6 +1,3 @@
-[vo]
-length=64
-camera=0
 [vo.0]
 _name=Text
 Size=1
