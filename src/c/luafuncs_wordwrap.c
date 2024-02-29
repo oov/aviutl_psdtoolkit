@@ -149,10 +149,10 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
       continue;
     }
     if ((text[i] == L'<' || text[i] == L'&') && aviutl_text_parse_tag(text, text_len, i, &tag)) {
-      if (tag.type == aviutl_text_tag_type_numcharref) {
+      switch (tag.type) {
+      case aviutl_text_tag_type_numcharref:
         goto measure_glyph;
-      }
-      if (tag.type == aviutl_text_tag_type_font) {
+      case aviutl_text_tag_type_font: {
         struct aviutl_text_tag_font font;
         aviutl_text_get_font(text, &tag, &font);
         err = canvas_set_font_params(canvas, font.name, font.size, font.bold, font.italic, high_resolution);
@@ -167,6 +167,23 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
             goto cleanup;
           }
         }
+      } break;
+      case aviutl_text_tag_type_position: {
+        if (kerning) {
+          struct aviutl_text_tag_position position;
+          aviutl_text_get_position(text, &tag, &position);
+          if (position.x_type == aviutl_text_tag_position_type_absolute) {
+            kerning_reset(g_kerning_ctx);
+          }
+        }
+      } break;
+      case aviutl_text_tag_type_unknown:
+      case aviutl_text_tag_type_color:
+      case aviutl_text_tag_type_speed:
+      case aviutl_text_tag_type_wait:
+      case aviutl_text_tag_type_clear:
+      case aviutl_text_tag_type_script:
+        break;
       }
       glyphs[gpos++] = (struct glyph){
           .typ = gt_tag,
@@ -202,8 +219,15 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
           }
         }
       } break;
-      case aviutl_text_ex_tag_type_position:
-        break;
+      case aviutl_text_ex_tag_type_position: {
+        if (kerning) {
+          struct aviutl_text_ex_tag_position position;
+          aviutl_text_ex_get_position(text, &tag_ex, &position);
+          if (position.x_type == aviutl_text_ex_tag_position_type_absolute) {
+            kerning_reset(g_kerning_ctx);
+          }
+        }
+      } break;
       case aviutl_text_ex_tag_type_wbr:
         flags |= gt_breakable_by_wbr;
         break;
