@@ -63,27 +63,12 @@ function P.ondrop(files, state)
         end
       end
 
-      -- ファイルを直接読み込む代わりに exo ファイルを組み立てる
+      -- ファイルを直接読み込む代わりに exa ファイルを組み立てる
       math.randomseed(os.time())
       local tag = math.floor(math.random()*0x7fffffff + 1)
-      local proj = GCMZDrops.getexeditfileinfo()
       local jp = not GCMZDrops.englishpatched()
-      local exo = [[
-[exedit]
-width=]] .. proj.width .. "\r\n" .. [[
-height=]] .. proj.height .. "\r\n" .. [[
-rate=]] .. proj.rate .. "\r\n" .. [[
-scale=]] .. proj.scale .. "\r\n" .. [[
-length=64
-audio_rate=]] .. proj.audio_rate .. "\r\n" .. [[
-audio_ch=]] .. proj.audio_ch .. "\r\n" .. [[
-[0]
-start=1
-end=64
-layer=1
-overlay=1
-camera=0
-[0.0]
+      local exa = [[
+[vo.0]
 _name=]] .. (jp and [[テキスト]] or [[Text]]) .. "\r\n" .. [[
 ]] .. (jp and [[サイズ]] or [[Size]]) .. [[=1
 ]] .. (jp and [[表示速度]] or [[vDisplay]]) .. [[=0.0
@@ -104,7 +89,7 @@ color=ffffff
 color2=000000
 font=]] .. (jp and [[MS UI Gothic]] or [[Segoe UI]]) .. "\r\n" .. [[
 text=]] .. GCMZDrops.encodeexotext("<?-- " .. filename .. " \r\n\r\no={ -- オプション設定\r\nlipsync = 0    ,-- 口パク準備のレイヤー番号\r\nmpslider = 0    ,-- 多目的スライダーのレイヤー番号\r\nscene = 0    ,-- シーン番号\r\ntag = " .. tag .. "    ,-- 識別用タグ\r\nsendguard = 1    ,-- 「送る」誤送信保護\r\n\r\n-- 口パク準備のデフォルト設定\r\nls_locut = 100    ,-- ローカット\r\nls_hicut = 1000    ,-- ハイカット\r\nls_threshold = 20    ,-- しきい値\r\nls_sensitivity = 1    ,-- 感度\r\n\r\n-- 以下は書き換えないでください\r\nptkf=" .. P.encodelua(filepath) .. ",ptkl=\"\"}PSD,subobj=require(\"PSDToolKit\").PSDState.init(obj,o)?>") .. "\r\n" .. [[
-[0.1]
+[vo.1]
 _name=]] .. (jp and [[アニメーション効果]] or [[Animation effect]]) .. "\r\n" .. [[
 track0=-1.00
 track1=100.00
@@ -115,7 +100,7 @@ type=0
 filter=2
 name=描画@PSD
 param=
-[0.2]
+[vo.2]
 _name=]] .. (jp and [[標準描画]] or [[Standard drawing]]) .. "\r\n" .. [[
 X=0.0
 Y=0.0
@@ -133,14 +118,14 @@ blend=0
       require('PSDToolKitBridge').addfile(GCMZDrops.convertencoding(filepath, "sjis", "utf8"), tag)
       package.cpath = origcpath
 
-      local filepath = GCMZDrops.createtempfile("psd", ".exo")
+      local filepath = GCMZDrops.createtempfile("psd", ".exa")
       f, err = io.open(filepath, "wb")
       if f == nil then
         error(err)
       end
-      f:write(exo)
+      f:write(exa)
       f:close()
-      debug_print("["..P.name.."] が " .. v.filepath .. " を exo ファイルに差し替えました。元のファイルは orgfilepath で取得できます。")
+      debug_print("["..P.name.."] が " .. v.filepath .. " を exa ファイルに差し替えました。元のファイルは orgfilepath で取得できます。")
       files[i] = {filepath=filepath, orgfilepath=v.filepath}
     end
   end
