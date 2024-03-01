@@ -11,7 +11,7 @@ jobs:
     steps:
       - name: setup
         run: |
-          sudo apt install -y cmake ninja-build pandoc
+          sudo apt install -y cmake ninja-build
       - name: Get the version
         run: |
           echo "tag=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
@@ -29,6 +29,7 @@ jobs:
           git checkout --orphan gh-pages
           git rm -rf '*'
           mv ../docs/* ./
+          rm -rf build
           touch .nojekyll
           git add .
           git config --local user.email "actions@github.com"
