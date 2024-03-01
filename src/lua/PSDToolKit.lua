@@ -59,7 +59,8 @@ local function wordwrap(text, options, unescape)
 end
 
 local function wordwrap_with_cache(text, options, unescape)
-  require("Cache2").text_before(wordwrap(text, options.wordwrap, unescase), options.cache.mode, options.cache.save, false)
+  text = wordwrap(text, options.wordwrap, unescape)
+  require("Cache2").text_before(text, options.cache.mode, options.cache.save, false)
 end
 
 local PSDState = {}
