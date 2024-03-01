@@ -319,6 +319,7 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
     size_t len;
     if (tag.type == aviutl_text_tag_type_numcharref) {
       i += tag.len - 1;
+      tag.type = aviutl_text_tag_type_unknown;
       gt = gt_glyph_numref;
       struct aviutl_text_tag_numcharref ncr;
       aviutl_text_get_numcharref(text, &tag, &ncr);

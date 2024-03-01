@@ -320,6 +320,8 @@ static void test_tag(void) {
       {L"return wordwrap('<pp+0,+0>hello world', {font='Arial', size=9, width=256, mode=1})",
        L"<p+0.00,+0.00>hello world"},
       {L"return wordwrap('&#60;ss&#62;', {font='Arial', size=9, width=256, mode=1})", L"<s>"},
+      {L"return wordwrap('&#9899;<ss>aaaaaaa', {font='MS UI Gothic', size=9, width=256, mode=1})",
+       L"&#9899;<s>aaaaaaa"},
   };
 
   struct wstr ws = {0};
