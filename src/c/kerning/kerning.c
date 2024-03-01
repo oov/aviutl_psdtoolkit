@@ -7,6 +7,8 @@
 #include "glyphoutline.h"
 #include "kerning_pairs.h"
 
+#define REPORT_GET_GLYPH_OUTLINE_ERROR 0
+
 struct kerning_context {
   struct point pos;
   char *ggo_buffer;
@@ -16,6 +18,7 @@ struct kerning_context {
   struct point *prev, *cur;
   struct convexhull_context *chctx;
   struct kerning_pairs *kp;
+  TEXTMETRICW tm;
 };
 
 NODISCARD error kerning_context_create(struct kerning_context **const ctx) {
@@ -101,22 +104,30 @@ static bool add_glyph_point(void *const userdata, enum point_op const op, struct
   return true;
 }
 
-NODISCARD static error get_glyph(
-    struct kerning_context *const ctx, HDC const hdc, wchar_t const ch, TEXTMETRICW *const tm, GLYPHMETRICS *const gm) {
+NODISCARD static error
+get_glyph(struct kerning_context *const ctx, HDC const hdc, wchar_t const ch, GLYPHMETRICS *const gm) {
   error err = eok();
-  if (!GetTextMetricsW(hdc, tm)) {
-    err = errg(err_fail);
-    goto cleanup;
-  }
   static MAT2 const mat = {{0, 1}, {0, 0}, {0, 0}, {0, 1}};
   DWORD size = GetGlyphOutlineW(hdc, ch, GGO_NATIVE | GGO_UNHINTED, gm, 0, NULL, &mat);
   if (size == GDI_ERROR) {
     size = GetGlyphOutlineW(hdc, ch, GGO_METRICS, gm, 0, NULL, &mat);
     if (size != GDI_ERROR) {
-      err = eok();
       goto cleanup;
     }
-    err = errg(err_fail);
+#if REPORT_GET_GLYPH_OUTLINE_ERROR
+    LOGFONTW lf;
+    HFONT const current = (HFONT)SelectObject(hdc, GetStockObject(SYSTEM_FONT));
+    GetObjectW(current, sizeof(LOGFONTW), &lf);
+    SelectObject(hdc, current);
+    ereport(emsg_i18nf(err_type_generic,
+                       err_fail,
+                       NULL,
+                       "GetGlyphOutlineW(font:%ls / char:%lc / GGO_NATIVE) failed.",
+                       lf.lfFaceName,
+                       ch));
+#endif
+    // This path will likely become a hot path on processing with abnormal font.
+    // Therefore, keep the error handling to a minimum.
     goto cleanup;
   }
   if (size > OV_ARRAY_CAPACITY(ctx->ggo_buffer)) {
@@ -128,7 +139,7 @@ NODISCARD static error get_glyph(
   }
   size = GetGlyphOutlineW(hdc, ch, GGO_NATIVE | GGO_UNHINTED, gm, size, ctx->ggo_buffer, &mat);
   if (size == GDI_ERROR) {
-    err = errg(err_fail);
+    err = emsg_i18n(err_type_generic, err_fail, "GetGlyphOutlineW(GGO_NATIVE) failed");
     goto cleanup;
   }
 
@@ -190,18 +201,15 @@ NODISCARD error kerning_calculate_distance(struct kerning_context *const ctx,
   ctx->prev_width = ctx->cur_width;
   ctx->prev_ch = ctx->cur_ch;
 
-  TEXTMETRICW tm;
-  GLYPHMETRICS gm;
-  err = get_glyph(ctx, hdc, ch, &tm, &gm);
+  GLYPHMETRICS gm = {0};
+  err = get_glyph(ctx, hdc, ch, &gm);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
 
   ctx->cur_ch = ch;
-  ctx->cur_width = (double)(lmax(tm.tmHeight, lmax(tm.tmAveCharWidth, tm.tmMaxCharWidth)));
-
-  int const kern = kerning_pairs_get_kerning(ctx->kp, ctx->prev_ch, ctx->cur_ch);
+  ctx->cur_width = (double)(lmax(ctx->tm.tmHeight, lmax(ctx->tm.tmAveCharWidth, ctx->tm.tmMaxCharWidth)));
 
   ctx->pos.x += gm.gmCellIncX;
   ctx->pos.y += gm.gmCellIncY;
@@ -246,6 +254,7 @@ NODISCARD error kerning_calculate_distance(struct kerning_context *const ctx,
     goto cleanup;
   }
 
+  int const kern = kerning_pairs_get_kerning(ctx->kp, ctx->prev_ch, ctx->cur_ch);
   double d =
       distance_find_nearest(ks->method, ctx->prev, OV_ARRAY_LENGTH(ctx->prev), ctx->cur, OV_ARRAY_LENGTH(ctx->cur), v) -
       safe_width + (double)(kern);
@@ -273,7 +282,12 @@ NODISCARD error kerning_update_font(struct kerning_context *const ctx, HDC const
   if (!ctx || !hdc) {
     return errg(err_invalid_arugment);
   }
-  error err = kerning_pairs_update_database(ctx->kp, hdc);
+  error err = eok();
+  if (!GetTextMetricsW(hdc, &ctx->tm)) {
+    err = emsg_i18n(err_type_generic, err_fail, "GetTextMetricsW failed");
+    goto cleanup;
+  }
+  err = kerning_pairs_update_database(ctx->kp, hdc);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;

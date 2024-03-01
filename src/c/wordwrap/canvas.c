@@ -1,5 +1,7 @@
 #include "canvas.h"
 
+#define REPORT_GET_GLYPH_OUTLINE_ERROR 0
+
 void canvas_destroy(struct canvas **const ctxpp) {
   if (!ctxpp) {
     return;
@@ -141,6 +143,18 @@ bool canvas_get_metrics(struct canvas *const ctx,
   static MAT2 const mat = {{0, 1}, {0, 0}, {0, 0}, {0, 1}};
   bool const r = GetGlyphOutlineW(ctx->dc, ch, GGO_METRICS, gm, 0, NULL, &mat) != GDI_ERROR;
   if (!r) {
+#if REPORT_GET_GLYPH_OUTLINE_ERROR
+    LOGFONTW lf;
+    HFONT const current = (HFONT)SelectObject(ctx->dc, GetStockObject(SYSTEM_FONT));
+    GetObjectW(current, sizeof(LOGFONTW), &lf);
+    SelectObject(ctx->dc, current);
+    ereport(emsg_i18nf(err_type_generic,
+                       err_fail,
+                       NULL,
+                       "GetGlyphOutlineW(font:%ls / char:%lc / GGO_METRICS) failed.",
+                       lf.lfFaceName,
+                       ch));
+#endif
     return false;
   }
   if (gm->gmBlackBoxX == 1) {

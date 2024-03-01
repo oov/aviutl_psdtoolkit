@@ -48,20 +48,18 @@ static void unescape_number_refs(struct wstr *const text) {
   text->len = (size_t)(dst - text->ptr);
 }
 
-NODISCARD static error measure_glyph(struct canvas *canvas,
-                                     enum glyph_type const typ,
-                                     int const flags,
-                                     wchar_t const ch,
-                                     size_t const pos,
-                                     size_t const len,
-                                     bool const monospace,
-                                     bool const high_resolution,
-                                     struct glyph *const g) {
-  error err = eok();
+static void measure_glyph(struct canvas *canvas,
+                          enum glyph_type const typ,
+                          int const flags,
+                          wchar_t const ch,
+                          size_t const pos,
+                          size_t const len,
+                          bool const monospace,
+                          bool const high_resolution,
+                          struct glyph *const g) {
   GLYPHMETRICS gm;
   if (!canvas_get_metrics(canvas, ch, &gm, monospace, high_resolution)) {
-    err = emsg_i18n(err_type_generic, err_unexpected, gettext("failed to get glyph metrics."));
-    goto cleanup;
+    gm = (GLYPHMETRICS){0};
   }
   *g = (struct glyph){
       .typ = typ,
@@ -79,8 +77,6 @@ NODISCARD static error measure_glyph(struct canvas *canvas,
                   },
           },
   };
-cleanup:
-  return err;
 }
 
 NODISCARD static error add_kerning(struct canvas *canvas,
@@ -350,7 +346,7 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
         }
       }
     }
-    err = measure_glyph(canvas, gt, flags, ch, pos, len, monospace, high_resolution, &glyphs[gpos++]);
+    measure_glyph(canvas, gt, flags, ch, pos, len, monospace, high_resolution, &glyphs[gpos++]);
   }
     if (efailed(err)) {
       err = ethru(err);
