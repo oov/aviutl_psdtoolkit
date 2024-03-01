@@ -30,8 +30,6 @@ case "$(uname -s)" in
     export PATH="${PWD}/${SEVENZIP_DIR}:$PATH"
     ;;
   *)
-    echo "Unsupported platform: $(uname -s)"
-    exit 1
     ;;
 esac
 
