@@ -38,7 +38,11 @@ return {
       else
         elem.target = other
         if #hash > 0 then
-          elem.target = elem.target .. "#" .. hash:sub(2)
+          if #other > 0 then
+            elem.target = elem.target .. "#" .. hash:sub(2)
+          else
+            elem.target = elem.target .. "#" .. encode(hash:sub(2))
+          end
         end
       end
       return elem

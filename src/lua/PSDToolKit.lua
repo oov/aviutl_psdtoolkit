@@ -662,9 +662,25 @@ function SubtitleState:mes(obj, opts)
   --       width = 0,
   --     },
   --   }
+  -- v0.2.0beta67 à»ç~
+  --   opts = {
+  --     modifier = "",
+  --     wordwrap = {
+  --       mode = 0,
+  --       width = 0,
+  --     },
+  --   }
   local text = self.text
-  if opts ~= nil and opts.wordwrap ~= nil then
-    text = PSDToolKitBridge.wordwrap(text, opts.wordwrap)
+  if opts ~= nil then
+    local t = PSDToolKitBridge.type(opts.modifier)
+    if t == "function" then
+      text = opts.modifier(text)
+    elseif t == "string" and opts.modifier ~= "" then
+      text = opts.modifier .. text
+    end
+    if opts.wordwrap ~= nil then
+      text = PSDToolKitBridge.wordwrap(text, opts.wordwrap)
+    end
   end
   obj.mes(text)
 end
@@ -705,6 +721,7 @@ local function convert_mesfast_opts(opts)
     if cache_type == "table" then
       -- v0.2.0beta67 à»ç~
       --   opts = {
+      --     modifier = "",
       --     cache = {
       --       mode = 0,
       --       save = 3,
@@ -743,6 +760,12 @@ end
 function SubtitleState:mesfast2(obj, opts)
   opts = convert_mesfast_opts(opts)
   local text = self.text
+  local t = PSDToolKitBridge.type(opts.modifier)
+  if t == "function" then
+    text = opts.modifier(text)
+  elseif t == "string" and opts.modifier ~= "" then
+    text = opts.modifier .. text
+  end
   if opts.wordwrap ~= nil then
     text = PSDToolKitBridge.wordwrap(text, opts.wordwrap)
   end
