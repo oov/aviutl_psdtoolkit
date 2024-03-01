@@ -265,7 +265,7 @@ void aviutl_text_get_color(aviutl_text_char const *const str,
 void aviutl_text_get_position(aviutl_text_char const *const str,
                               struct aviutl_text_tag const *const tag,
                               struct aviutl_text_tag_position *const value) {
-  if (tag->value_len[0] != 0) {
+  if (tag->value_len[0] > 0) {
     double d = 0;
     ov_atof_wchar(str + tag->value_pos[0], &d, false);
     value->x = d;
@@ -276,7 +276,7 @@ void aviutl_text_get_position(aviutl_text_char const *const str,
                   : tag->value_len[0] > 0 && is_sign(str[tag->value_pos[0]]) ? aviutl_text_tag_position_type_relative
                                                                              : aviutl_text_tag_position_type_absolute;
 
-  if (tag->value_len[1] != 0) {
+  if (tag->value_len[1] > 0) {
     double d = 0;
     ov_atof_wchar(str + tag->value_pos[1], &d, false);
     value->y = d;
@@ -287,7 +287,7 @@ void aviutl_text_get_position(aviutl_text_char const *const str,
                   : tag->value_len[1] > 0 && is_sign(str[tag->value_pos[1]]) ? aviutl_text_tag_position_type_relative
                                                                              : aviutl_text_tag_position_type_absolute;
 
-  if (tag->value_len[2] != 0) {
+  if (tag->value_len[2] > 0) {
     double d = 0;
     ov_atof_wchar(str + tag->value_pos[2], &d, false);
     value->z = d;
@@ -312,7 +312,7 @@ void aviutl_text_get_font(aviutl_text_char const *const str,
                           struct aviutl_text_tag const *const tag,
                           struct aviutl_text_tag_font *const value) {
   uint64_t u64 = 0;
-  if (tag->value_len[0] != 0) {
+  if (tag->value_len[0] > 0) {
     ov_atou_wchar(str + tag->value_pos[0], &u64, false);
     value->size = (size_t)u64;
   } else {
@@ -336,7 +336,7 @@ void aviutl_text_get_font(aviutl_text_char const *const str,
 void aviutl_text_get_speed(aviutl_text_char const *const str,
                            struct aviutl_text_tag const *const tag,
                            struct aviutl_text_tag_speed *const value) {
-  if (tag->value_len[0] != 0) {
+  if (tag->value_len[0] > 0) {
     double d = 0;
     ov_atof_wchar(str + tag->value_pos[0], &d, false);
     value->v = d;
@@ -349,7 +349,7 @@ void aviutl_text_get_wait(aviutl_text_char const *const str,
                           struct aviutl_text_tag const *const tag,
                           struct aviutl_text_tag_wait *const value) {
   value->per_char = tag->value_len[0] > 0 && str[tag->value_pos[0]] == '*';
-  if (tag->value_len[0] != 0) {
+  if (tag->value_len[0] > 0) {
     double d = 0;
     ov_atof_wchar(str + tag->value_pos[0] + (value->per_char ? 1 : 0), &d, false);
     value->v = d;
@@ -362,7 +362,7 @@ void aviutl_text_get_clear(aviutl_text_char const *const str,
                            struct aviutl_text_tag const *const tag,
                            struct aviutl_text_tag_clear *const value) {
   value->per_char = tag->value_len[0] > 0 && str[tag->value_pos[0]] == '*';
-  if (tag->value_len[0] != 0) {
+  if (tag->value_len[0] > 0) {
     double d = 0;
     ov_atof_wchar(str + tag->value_pos[0] + (value->per_char ? 1 : 0), &d, false);
     value->v = d;
