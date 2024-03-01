@@ -23,7 +23,7 @@ jobs:
       - name: Build
         shell: bash
         run: |
-          docker run --net host --rm -i -v .:/root/repo -w /root/repo ubuntu:22.04 /bin/bash -c 'apt update && apt install -y git curl unzip && git config --system --add safe.directory "*" && LANG="C.UTF-8" TZ=JST-9 bash build.bash --skip-tests --zip'
+          docker run --net host --rm -i -v .:/root/repo -w /root/repo ubuntu:22.04 /bin/bash -c 'apt update && apt install -y git curl unzip && git config --system --add safe.directory "*" && LANG="C.UTF-8" TZ="JST-9" bash build.bash --skip-tests --zip'
           mv build/Release/dist/Release_package.zip build/Release/dist/psdtoolkit_${{ steps.get_version.outputs.tag }}.zip
           mv build/Release/dist/Release_package_en.zip build/Release/dist/psdtoolkit_${{ steps.get_version.outputs.tag }}_enpatched.zip
       - name: Create Release
