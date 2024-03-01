@@ -240,7 +240,7 @@ static void test_kerning(void) {
     wchar_t *expected;
   } tests[] = {
       {L"return wordwrap('<kern50>hello world</kern>', {font='Arial', size=24, width=256, mode=1})",
-       L"h<p-2,+0>e<p-1,+0>l<p-2,+0>l<p-2,+0>o w<p-1,+0>o<p-1,+0>r<p-1,+0>l<p-2,+0>d"},
+       L"h<p-2,+0>e<p-1,+0>l<p-2,+0>l<p-2,+0>o<p-4,+0> w<p-1,+0>o<p-1,+0>r<p-1,+0>l<p-2,+0>d"},
   };
   struct wstr ws = {0};
   for (size_t i = 0; i < sizeof(tests) / sizeof(tests[0]); i++) {

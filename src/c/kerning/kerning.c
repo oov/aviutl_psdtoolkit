@@ -194,6 +194,7 @@ NODISCARD error kerning_calculate_distance(struct kerning_context *const ctx,
 
   error err = eok();
 
+  double d;
   struct point *const tmp = ctx->prev;
   ctx->prev = ctx->cur;
   ctx->cur = tmp;
@@ -210,13 +211,15 @@ NODISCARD error kerning_calculate_distance(struct kerning_context *const ctx,
 
   ctx->cur_ch = ch;
   ctx->cur_width = (double)(lmax(ctx->tm.tmHeight, lmax(ctx->tm.tmAveCharWidth, ctx->tm.tmMaxCharWidth)));
+  int const kern = kerning_pairs_get_kerning(ctx->kp, ctx->prev_ch, ctx->cur_ch);
+  struct point const v = get_normalized_forward_vector(&gm);
 
   ctx->pos.x += gm.gmCellIncX;
   ctx->pos.y += gm.gmCellIncY;
   if (OV_ARRAY_LENGTH(ctx->glyph) == 0) {
     // space or etc.
-    *distance = (struct point){0, 0};
-    goto cleanup;
+    d = (double)(gm.gmCellIncX + kern);
+    goto calc_distance;
   }
   error err2 = eok();
   err = convexhull_create(ctx->chctx,
@@ -238,8 +241,6 @@ NODISCARD error kerning_calculate_distance(struct kerning_context *const ctx,
 
   convexhull_sort(ctx->cur, OV_ARRAY_LENGTH(ctx->cur));
 
-  struct point const v = get_normalized_forward_vector(&gm);
-
   // To ensure accurate distance calculation between characters,
   // we need to move the previous character's position down significantly.
   double const safe_width = ctx->prev_width * 10.;
@@ -254,12 +255,11 @@ NODISCARD error kerning_calculate_distance(struct kerning_context *const ctx,
     goto cleanup;
   }
 
-  int const kern = kerning_pairs_get_kerning(ctx->kp, ctx->prev_ch, ctx->cur_ch);
-  double d =
-      distance_find_nearest(ks->method, ctx->prev, OV_ARRAY_LENGTH(ctx->prev), ctx->cur, OV_ARRAY_LENGTH(ctx->cur), v) -
+  d = distance_find_nearest(ks->method, ctx->prev, OV_ARRAY_LENGTH(ctx->prev), ctx->cur, OV_ARRAY_LENGTH(ctx->cur), v) -
       safe_width + (double)(kern);
-  d = d * (ks->distance - 1.) + ks->margin * ks->margin_unit + (double)(kern);
 
+calc_distance:
+  d = d * (ks->distance - 1.) + ks->margin * ks->margin_unit + (double)(kern);
   *distance = (struct point){v.x * d, v.y * d};
 cleanup:
   return err;
