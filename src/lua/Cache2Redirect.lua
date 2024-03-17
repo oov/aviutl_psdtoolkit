@@ -2,7 +2,11 @@
 -- ×H‚µ‚Ä³‚µ‚¢ƒtƒ@ƒCƒ‹‚ğ“Ç‚İ‚İ‚È‚¨‚·
 package.loaded["Cache2"] = nil
 local origpath = package.path
-package.path = obj.getinfo("script_path") .. "?.lua"
+local origcpath = package.cpath
+require("PSDToolKit")
+package.path = require("PSDToolKitBridge").getscriptpath() .. "?.lua"
+package.cpath = require("PSDToolKitBridge").getscriptpath() .. "?.dll"
 local p = require("Cache2")
 package.path = origpath
+package.cpath = origcpath
 return p

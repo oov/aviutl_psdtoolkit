@@ -131,6 +131,36 @@ cleanup:
   return efailed(err) ? luafn_err(L, err) : 1;
 }
 
+static int luafn_getscriptpath(lua_State *L) {
+  HMODULE const h = GetModuleHandleW(L"exedit.auf");
+  struct str mbcs = {0};
+  struct wstr path = {0};
+  error err = get_module_file_name(h, &path);
+  if (efailed(err)) {
+    err = ethru(err);
+    goto cleanup;
+  }
+  wchar_t *p = wcsrchr(path.ptr, L'\\');
+  if (p) {
+    *p = L'\0';
+  }
+  err = scat(&path, L"\\script\\");
+  if (efailed(err)) {
+    err = ethru(err);
+    goto cleanup;
+  }
+  err = to_mbcs(&path, &mbcs);
+  if (efailed(err)) {
+    err = ethru(err);
+    goto cleanup;
+  }
+  lua_pushlstring(L, mbcs.ptr, mbcs.len);
+cleanup:
+  ereport(sfree(&mbcs));
+  ereport(sfree(&path));
+  return efailed(err) ? luafn_err(L, err) : 1;
+}
+
 static int luafn_getspeaklevel(lua_State *L) {
   char const *const filepath = lua_tostring(L, 1);
   float const pos = (float)lua_tonumber(L, 2);
@@ -363,6 +393,7 @@ int luafuncs_init(lua_State *L) {
       {"getcache", luafn_getcache},
       {"getcurrentframe", luafn_getcurrentframe},
       {"getlayernames", luafn_getlayernames},
+      {"getscriptpath", luafn_getscriptpath},
       {"getspeaklevel", luafn_getspeaklevel},
       {"wordwrap", luafn_wordwrap},
       {"getwavlabpath", luafn_getwavlabpath},
