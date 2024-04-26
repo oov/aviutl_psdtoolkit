@@ -8,7 +8,7 @@ mkdir -p build/tools
 cd build/tools
 
 if [ ! -e "setup-llvm-mingw.bash" ]; then
-  curl -sOL https://raw.githubusercontent.com/oov/ovbase/471d0270eb097a62b6f5edb88cec74164d9ca224/setup-llvm-mingw.bash
+  curl -sOL https://raw.githubusercontent.com/oov/ovbase/a1fdda073538272e4c1a4b710f87da4a2b1bb6ae/setup-llvm-mingw.bash
 fi
 . setup-llvm-mingw.bash --dir $PWD
 

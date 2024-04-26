@@ -19,7 +19,7 @@ file(MAKE_DIRECTORY ${LOCAL_INSTALL_PREFIX}/include)
 include(ExternalProject)
 ExternalProject_Add(budoux-c-proj
   GIT_REPOSITORY https://github.com/oov/budoux-c
-  GIT_TAG 6931d394fe1c36c9778d9db8c9238e3a030e302c
+  GIT_TAG 91aa6565c555ebb4939cf0ada422e58cc0cb3fda
   PREFIX "${LOCAL_INSTALL_PREFIX}/proj/budoux-c"
   SOURCE_DIR "${LOCAL_INSTALL_PREFIX}/src/budoux-c"
   CMAKE_ARGS "-DCMAKE_INSTALL_PREFIX=${LOCAL_INSTALL_PREFIX}" "-DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}" -DBUILD_SHARED_LIBS=OFF -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
@@ -77,6 +77,7 @@ endif()
 
 set(is_clang "$<C_COMPILER_ID:Clang>")
 set(v16_or_later "$<VERSION_GREATER_EQUAL:$<C_COMPILER_VERSION>,16>")
+set(v18_or_later "$<VERSION_GREATER_EQUAL:$<C_COMPILER_VERSION>,18>")
 add_library(psdtoolkit_intf INTERFACE)
 target_include_directories(psdtoolkit_intf INTERFACE
   "${CMAKE_CURRENT_BINARY_DIR}" # for version.h
@@ -100,6 +101,7 @@ target_compile_options(psdtoolkit_intf INTERFACE
   -pedantic-errors
   -Wno-declaration-after-statement
   -Wno-padded
+  $<$<AND:${is_clang},${v18_or_later}>:-Wno-switch-default>
   $<$<AND:${is_clang},${v16_or_later}>:-Wno-unsafe-buffer-usage>
   -ffunction-sections
   -fdata-sections
