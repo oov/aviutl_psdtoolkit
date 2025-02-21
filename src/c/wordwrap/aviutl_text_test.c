@@ -16,7 +16,7 @@ static bool test_tag(struct aviutl_text_tag const *const expect,
                           "%s",
                           msg);
   if (expect->type != got->type) {
-    TEST_MSG("expect->type: %d, got->type: %d", expect->type, got->type);
+    TEST_MSG("expect->type: %u, got->type: %u", expect->type, got->type);
   }
   if (expect->pos != got->pos) {
     TEST_MSG("expect->pos: %zu, got->pos: %zu", expect->pos, got->pos);

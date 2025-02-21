@@ -127,7 +127,7 @@ static void compare_logfontw(LOGFONTW const *const expected, LOGFONTW const *con
 static void compare_wordwrap_settings(struct wordwrap_settings const *const expected,
                                       struct wordwrap_settings const *const actual) {
   TEST_CHECK(expected->mode == actual->mode);
-  TEST_MSG("Expected mode: %d, got: %d", expected->mode, actual->mode);
+  TEST_MSG("Expected mode: %u, got: %u", expected->mode, actual->mode);
   TEST_CHECK(fcmp(expected->max_width, ==, actual->max_width, 1e-12));
   TEST_MSG("Expected max_width: %f, got: %f", expected->max_width, actual->max_width);
   TEST_CHECK(expected->letter_spacing == actual->letter_spacing);

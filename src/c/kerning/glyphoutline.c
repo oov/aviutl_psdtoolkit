@@ -18,7 +18,7 @@ static inline FIXED fixed_avg3(FIXED a, FIXED b, FIXED c) {
 
 static inline double fixed_to_double(FIXED f) {
   static double const divider = 1. / 65536.;
-  return (double)(fixed_to_int(f)) * divider;
+  return (double)(fixed_to_int(f))*divider;
 }
 
 static bool quadratic_bezier_interpolate(struct point const a,

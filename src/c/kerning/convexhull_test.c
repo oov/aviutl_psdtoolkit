@@ -17,7 +17,7 @@ static bool callback(void *const userdata, enum point_op const op, struct point 
   TEST_CHECK(fabs(ctx->golden[ctx->n].y - pt.y) < 1e-6);
   TEST_MSG("want ctx->golden[%zu].y = %f, got pt.y = %f", ctx->n, ctx->golden[ctx->n].y, pt.y);
   TEST_CHECK(ctx->golden_ops[ctx->n] == op);
-  TEST_MSG("want ctx->golden_ops[%zu] = %d, got op = %d", ctx->n, ctx->golden_ops[ctx->n], op);
+  TEST_MSG("want ctx->golden_ops[%zu] = %u, got op = %u", ctx->n, ctx->golden_ops[ctx->n], op);
   ++ctx->n;
   return true;
 }

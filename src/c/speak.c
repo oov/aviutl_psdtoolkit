@@ -132,7 +132,7 @@ NODISCARD static error read(struct speak *const spk,
     goto cleanup;
   }
   struct item *const item = spk->items + idx;
-  size_t const sample_pos = (size_t)(truncf(pos * audio_frequency));
+  size_t const sample_pos = (size_t)(truncf(pos * (float)audio_frequency));
   int16_t *const buf = spk->buf;
   size_t samples = 0;
   err = spk->cbs.read(spk->cbs.userdata, item->h, sample_pos, audio_rdft_size, buf, &samples);
