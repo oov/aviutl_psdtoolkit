@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="oov" />
+  <title>テキストの装飾</title>
+  <style type="text/css">
+  </style>
+  <style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="ptk-outer">
+<div id="ptk-menu" class="ptk-selected-decorate">
+  <ul>
+    <li class="ptk-menu-item-index"><a href="index.html">はじめに</a></li>
+    <li class="ptk-menu-item-tutorial"><a href="tutorial.html">チュートリアル</a></li>
+    <li class="ptk-menu-item-decorate"><a href="decorate.html">テキストの装飾</a></li>
+    <li class="ptk-menu-item-pfv"><a href="pfv.html">PSDTool のお気に入りを使う</a></li>
+    <li class="ptk-menu-item-forcepser"><a href="forcepser.html">かんしくん</a></li>
+    <li class="ptk-menu-item-obj ptk-menu-item-psd ptk-menu-item-subobj ptk-menu-item-otheranm ptk-menu-item-prep">オブジェクトリファレンス
+      <ul>
+        <li class="ptk-menu-item-obj"><a href="obj.html">独自のオブジェクト</a>
+          <ul>
+            <li><a href="obj.html#PSD_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.AA.E3.83.96.E3.82.B8.E3.82.A7.E3.82.AF.E3.83.88">PSD ファイルオブジェクト</a></li>
+            <li><a href="obj.html#.E5.AD.97.E5.B9.95.E8.A1.A8.E7.A4.BA">字幕表示</a></li>
+            <li><a href="obj.html#.E5.AD.97.E5.B9.95.E8.A1.A8.E7.A4.BA.EF.BC.88.E3.82.AD.E3.83.A3.E3.83.83.E3.82.B7.E3.83.A5.EF.BC.89">字幕表示（キャッシュ）</a></li>
+            <li><a href="obj.html#.E8.87.AA.E5.8B.95.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.83.86.E3.82.AD.E3.82.B9.E3.83.88">自動折り返しテキスト</a></li>
+          </ul>
+        </li>
+        <li class="ptk-menu-item-psd"><a href="psd.html">PSD アニメーション効果</a>
+          <ul>
+            <li><a href="psd.html#.E7.9B.AE.E3.83.91.E3.83.81.40PSD">目パチ</a> | <a href="psd.html#.E7.9B.AE.E3.83.91.E3.83.81_.E3.82.92_Lua_.E3.82.B9.E3.82.AF.E3.83.AA.E3.83.97.E3.83.88.E3.81.8B.E3.82.89.E4.BD.BF.E3.81.86">フォーム</a></li>
+            <li><a href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E9.96.8B.E9.96.89.E3.81.AE.E3.81.BF.40PSD">口パク 開閉のみ</a> | <a href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E9.96.8B.E9.96.89.E3.81.AE.E3.81.BF_.E3.82.92_Lua_.E3.82.B9.E3.82.AF.E3.83.AA.E3.83.97.E3.83.88.E3.81.8B.E3.82.89.E4.BD.BF.E3.81.86">フォーム</a></li>
+            <li><a href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E3.81.82.E3.81.84.E3.81.86.E3.81.88.E3.81.8A.40PSD">口パク あいうえお</a> | <a href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E3.81.82.E3.81.84.E3.81.86.E3.81.88.E3.81.8A_.E3.82.92_Lua_.E3.82.B9.E3.82.AF.E3.83.AA.E3.83.97.E3.83.88.E3.81.8B.E3.82.89.E4.BD.BF.E3.81.86">フォーム</a></li>
+          </ul>
+        </li>
+        <li class="ptk-menu-item-subobj"><a href="subobj.html">subobj アニメーション効果</a></li>
+        <li class="ptk-menu-item-otheranm"><a href="otheranm.html">その他のアニメーション効果</a></li>
+        <li class="ptk-menu-item-prep"><a href="prep.html">準備オブジェクト</a></li>
+      </ul>
+    </li>
+    <li class="ptk-menu-item-plugins"><a href="plugins.html">付属プラグイン</a></li>
+    <li class="ptk-menu-item-setting"><a href="setting.html">設定</a></li>
+    <li class="ptk-menu-item-faq"><a href="faq.html">よくある質問</a></li>
+  </ul>
+</div>
+<div id="ptk-main">
+<header>
+<h1 class="title">テキストの装飾</h1>
+</header>
+<nav id="TOC">
+<ul>
+<li><a href="#.E3.81.AF.E3.81.98.E3.82.81.E3.81.AB"
+id="toc-.E3.81.AF.E3.81.98.E3.82.81.E3.81.AB">はじめに</a></li>
+<li><a
+href="#.E3.82.AD.E3.83.A3.E3.83.83.E3.82.B7.E3.83.A5.E8.A8.AD.E5.AE.9A"
+id="toc-.E3.82.AD.E3.83.A3.E3.83.83.E3.82.B7.E3.83.A5.E8.A8.AD.E5.AE.9A">キャッシュ設定</a></li>
+<li><a
+href="#.E3.83.86.E3.82.AD.E3.82.B9.E3.83.88.E3.81.AE.E8.87.AA.E5.8B.95.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97"
+id="toc-.E3.83.86.E3.82.AD.E3.82.B9.E3.83.88.E3.81.AE.E8.87.AA.E5.8B.95.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97">テキストの自動折り返し</a>
+<ul>
+<li><a
+href="#.E8.87.AA.E5.8B.95.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.81.AE.E3.83.A2.E3.83.BC.E3.83.89.E3.81.AB.E3.81.A4.E3.81.84.E3.81.A6"
+id="toc-.E8.87.AA.E5.8B.95.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.81.AE.E3.83.A2.E3.83.BC.E3.83.89.E3.81.AB.E3.81.A4.E3.81.84.E3.81.A6">自動折り返しのモードについて</a>
+<ul>
+<li><a
+href="#0_-_.E8.87.AA.E5.8B.95.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.81.97.E3.81.AA.E3.81.84"
+id="toc-0_-_.E8.87.AA.E5.8B.95.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.81.97.E3.81.AA.E3.81.84"><code>0</code>
+- 自動折り返ししない</a></li>
+<li><a
+href="#1_-_.E8.87.AA.E5.8B.95.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.81.99.E3.82.8B"
+id="toc-1_-_.E8.87.AA.E5.8B.95.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.81.99.E3.82.8B"><code>1</code>
+- 自動折り返しする</a></li>
+<li><a
+href="#2_-_.E7.A6.81.E5.89.87.E5.87.A6.E7.90.86.E4.BB.98.E3.81.8D.E3.81.A7.E8.87.AA.E5.8B.95.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.81.99.E3.82.8B"
+id="toc-2_-_.E7.A6.81.E5.89.87.E5.87.A6.E7.90.86.E4.BB.98.E3.81.8D.E3.81.A7.E8.87.AA.E5.8B.95.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.81.99.E3.82.8B"><code>2</code>
+- 禁則処理付きで自動折り返しする</a></li>
+<li><a
+href="#3_-_.E6.96.87.E7.AF.80.E3.82.92.E8.80.83.E6.85.AE.E3.81.97.E3.81.A6.E7.A6.81.E5.89.87.E5.87.A6.E7.90.86.E4.BB.98.E3.81.8D.E3.81.A7.E8.87.AA.E5.8B.95.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.81.99.E3.82.8B"
+id="toc-3_-_.E6.96.87.E7.AF.80.E3.82.92.E8.80.83.E6.85.AE.E3.81.97.E3.81.A6.E7.A6.81.E5.89.87.E5.87.A6.E7.90.86.E4.BB.98.E3.81.8D.E3.81.A7.E8.87.AA.E5.8B.95.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.81.99.E3.82.8B"><code>3</code>
+- 文節を考慮して禁則処理付きで自動折り返しする</a>
+<ul>
+<li><a
+href="#.E6.96.87.E7.AF.80.E5.8C.BA.E5.88.87.E3.82.8A.E3.81.AE.E7.B2.BE.E5.BA.A6.E3.81.8C.E4.BD.8E.E3.81.84.E3.81.A8.E6.84.9F.E3.81.98.E3.82.8B.E3.81.A8.E3.81.8D"
+id="toc-.E6.96.87.E7.AF.80.E5.8C.BA.E5.88.87.E3.82.8A.E3.81.AE.E7.B2.BE.E5.BA.A6.E3.81.8C.E4.BD.8E.E3.81.84.E3.81.A8.E6.84.9F.E3.81.98.E3.82.8B.E3.81.A8.E3.81.8D">文節区切りの精度が低いと感じるとき</a></li>
+</ul></li>
+</ul></li>
+</ul></li>
+<li><a href="#.E5.88.B6.E5.BE.A1.E6.96.87.E5.AD.97"
+id="toc-.E5.88.B6.E5.BE.A1.E6.96.87.E5.AD.97">制御文字</a>
+<ul>
+<li><a href="#.E8.89.B2.E3.81.AE.E5.A4.89.E6.9B.B4"
+id="toc-.E8.89.B2.E3.81.AE.E5.A4.89.E6.9B.B4">色の変更</a>
+<ul>
+<li><a href="#.E4.BD.BF.E7.94.A8.E4.BE.8B"
+id="toc-.E4.BD.BF.E7.94.A8.E4.BE.8B">使用例</a></li>
+</ul></li>
+<li><a
+href="#.E3.82.B5.E3.82.A4.E3.82.BA.E3.80.81.E3.83.95.E3.82.A9.E3.83.B3.E3.83.88.E3.81.AE.E5.A4.89.E6.9B.B4"
+id="toc-.E3.82.B5.E3.82.A4.E3.82.BA.E3.80.81.E3.83.95.E3.82.A9.E3.83.B3.E3.83.88.E3.81.AE.E5.A4.89.E6.9B.B4">サイズ、フォントの変更</a>
+<ul>
+<li><a href="#.E4.BD.BF.E7.94.A8.E4.BE.8B"
+id="toc-.E4.BD.BF.E7.94.A8.E4.BE.8B">使用例</a></li>
+</ul></li>
+<li><a
+href="#.E3.82.B5.E3.82.A4.E3.82.BA.E3.80.81.E3.83.95.E3.82.A9.E3.83.B3.E3.83.88.E3.81.AE.E5.A4.89.E6.9B.B4.EF.BC.88.E3.83.95.E3.82.A9.E3.83.B3.E3.83.88.E3.82.B5.E3.82.A4.E3.82.BA.E4.BE.9D.E5.AD.98.EF.BC.89"
+id="toc-.E3.82.B5.E3.82.A4.E3.82.BA.E3.80.81.E3.83.95.E3.82.A9.E3.83.B3.E3.83.88.E3.81.AE.E5.A4.89.E6.9B.B4.EF.BC.88.E3.83.95.E3.82.A9.E3.83.B3.E3.83.88.E3.82.B5.E3.82.A4.E3.82.BA.E4.BE.9D.E5.AD.98.EF.BC.89">サイズ、フォントの変更（フォントサイズ依存）</a>
+<ul>
+<li><a href="#.E4.BD.BF.E7.94.A8.E4.BE.8B"
+id="toc-.E4.BD.BF.E7.94.A8.E4.BE.8B">使用例</a></li>
+</ul></li>
+<li><a href="#.E5.BA.A7.E6.A8.99.E3.81.AE.E6.8C.87.E5.AE.9A"
+id="toc-.E5.BA.A7.E6.A8.99.E3.81.AE.E6.8C.87.E5.AE.9A">座標の指定</a>
+<ul>
+<li><a href="#.E4.BD.BF.E7.94.A8.E4.BE.8B"
+id="toc-.E4.BD.BF.E7.94.A8.E4.BE.8B">使用例</a></li>
+</ul></li>
+<li><a
+href="#.E5.BA.A7.E6.A8.99.E3.81.AE.E6.8C.87.E5.AE.9A.EF.BC.88.E3.83.95.E3.82.A9.E3.83.B3.E3.83.88.E3.82.B5.E3.82.A4.E3.82.BA.E4.BE.9D.E5.AD.98.EF.BC.89"
+id="toc-.E5.BA.A7.E6.A8.99.E3.81.AE.E6.8C.87.E5.AE.9A.EF.BC.88.E3.83.95.E3.82.A9.E3.83.B3.E3.83.88.E3.82.B5.E3.82.A4.E3.82.BA.E4.BE.9D.E5.AD.98.EF.BC.89">座標の指定（フォントサイズ依存）</a>
+<ul>
+<li><a href="#.E4.BD.BF.E7.94.A8.E4.BE.8B"
+id="toc-.E4.BD.BF.E7.94.A8.E4.BE.8B">使用例</a></li>
+</ul></li>
+<li><a href="#.E3.82.AB.E3.83.BC.E3.83.8B.E3.83.B3.E3.82.B0"
+id="toc-.E3.82.AB.E3.83.BC.E3.83.8B.E3.83.B3.E3.82.B0">カーニング</a>
+<ul>
+<li><a
+href="#.E3.83.A1.E3.83.88.E3.83.AA.E3.82.AF.E3.82.B9.E3.82.AB.E3.83.BC.E3.83.8B.E3.83.B3.E3.82.B0"
+id="toc-.E3.83.A1.E3.83.88.E3.83.AA.E3.82.AF.E3.82.B9.E3.82.AB.E3.83.BC.E3.83.8B.E3.83.B3.E3.82.B0">メトリクスカーニング</a></li>
+<li><a
+href="#.E3.82.AA.E3.83.97.E3.83.86.E3.82.A3.E3.82.AB.E3.83.AB.E3.82.AB.E3.83.BC.E3.83.8B.E3.83.B3.E3.82.B0"
+id="toc-.E3.82.AA.E3.83.97.E3.83.86.E3.82.A3.E3.82.AB.E3.83.AB.E3.82.AB.E3.83.BC.E3.83.8B.E3.83.B3.E3.82.B0">オプティカルカーニング</a></li>
+<li><a href="#.E3.83.9E.E3.83.BC.E3.82.B8.E3.83.B3"
+id="toc-.E3.83.9E.E3.83.BC.E3.82.B8.E3.83.B3">マージン</a></li>
+<li><a href="#.E4.BD.BF.E7.94.A8.E4.BE.8B"
+id="toc-.E4.BD.BF.E7.94.A8.E4.BE.8B">使用例</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E5.88.B6.E5.BE.A1"
+id="toc-.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E5.88.B6.E5.BE.A1">折り返し制御</a>
+<ul>
+<li><a
+href="#.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.81.AE.E7.A6.81.E6.AD.A2"
+id="toc-.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.81.AE.E7.A6.81.E6.AD.A2">折り返しの禁止</a>
+<ul>
+<li><a href="#.E4.BD.BF.E7.94.A8.E4.BE.8B"
+id="toc-.E4.BD.BF.E7.94.A8.E4.BE.8B">使用例</a></li>
+</ul></li>
+<li><a
+href="#.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.81.AE.E8.A8.B1.E5.8F.AF"
+id="toc-.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.81.AE.E8.A8.B1.E5.8F.AF">折り返しの許可</a>
+<ul>
+<li><a href="#.E4.BD.BF.E7.94.A8.E4.BE.8B"
+id="toc-.E4.BD.BF.E7.94.A8.E4.BE.8B">使用例</a></li>
+</ul></li>
+</ul></li>
+</ul>
+</nav>
+<h2 id=".E3.81.AF.E3.81.98.E3.82.81.E3.81.AB">はじめに</h2>
+<p><a
+href="obj.html#.E5.AD.97.E5.B9.95.E8.A1.A8.E7.A4.BA"><code>字幕表示</code></a>、<a
+href="obj.html#.E5.AD.97.E5.B9.95.E8.A1.A8.E7.A4.BA.EF.BC.88.E3.82.AD.E3.83.A3.E3.83.83.E3.82.B7.E3.83.A5.EF.BC.89"><code>字幕表示（キャッシュ）</code></a>、<a
+href="obj.html#.E8.87.AA.E5.8B.95.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.83.86.E3.82.AD.E3.82.B9.E3.83.88"><code>自動折り返しテキスト</code></a>
+には同じような設定項目があり、上手く活用することで処理効率や作業効率を向上させることができる、かもしれません。</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="va">cache</span> <span class="op">=</span> <span class="op">{</span>          <span class="co">-- キャッシュ設定</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="va">mode</span> <span class="op">=</span> <span class="dv">0</span>      <span class="op">,</span><span class="co">-- キャッシュモード（通常は変更不要） | -1 無効 | 0 選択時のみ無効 | 1 有効</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="va">save</span> <span class="op">=</span> <span class="dv">3</span>      <span class="op">,</span><span class="co">-- 保存場所（通常は変更不要、0-3）</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="op">},</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="va">wordwrap</span> <span class="op">=</span> <span class="op">{</span>       <span class="co">-- テキストの自動折り返し</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    <span class="va">mode</span> <span class="op">=</span> <span class="dv">3</span>      <span class="op">,</span><span class="co">-- 0 しない | 1 する | 2 禁則処理 | 3 文節区切り</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    <span class="va">width</span> <span class="op">=</span> <span class="dv">10000</span> <span class="op">,</span><span class="co">-- 折り返す幅</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="va">model</span> <span class="op">=</span> <span class="st">&quot;ja&quot;</span>  <span class="op">,</span><span class="co">-- 読み込む BudouX モデル</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="op">},</span></span></code></pre></div>
+<p>このページでは各種設定や使い方などについて説明します。</p>
+<h2
+id=".E3.82.AD.E3.83.A3.E3.83.83.E3.82.B7.E3.83.A5.E8.A8.AD.E5.AE.9A">キャッシュ設定</h2>
+<p>「文字を表示する」というのはそれなりに重い処理で、表示のために作ったデータを捨てずに再利用できれば効率が良くなります。<br />
+キャッシュ設定は、そのような再利用を行うための設定です。</p>
+<table>
+<thead>
+<tr class="header">
+<th>設定名</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>cache.mode</code></td>
+<td>キャッシュを有効にするかを設定します。<br>通常の用途では
+<code>0</code> が最適な設定です。<br><code>-1</code> -
+常時無効<br><code>0</code> -
+オブジェクトを選択していなければ有効<br><code>1</code> - 常時有効</td>
+</tr>
+<tr class="even">
+<td><code>cache.save</code></td>
+<td>キャッシュデータを保存する場所を設定します。<br>通常の用途では
+<code>3</code> が最適な設定です。<br><code>0</code> - AviUtl
+のメモリ上に配置（AviUtlのメモリ空間を圧迫する）<br><code>1</code> -
+外部プロセスに保存（AviUtlのメモリ空間を圧迫しないが少し遅い）<br><code>2</code>
+- <code>0</code> の機能 + 拡張編集のキャッシュも使う<br><code>3</code> -
+<code>1</code> の機能 + 拡張編集のキャッシュも使う</td>
+</tr>
+</tbody>
+</table>
+<p><a
+href="obj.html#.E5.AD.97.E5.B9.95.E8.A1.A8.E7.A4.BA"><code>字幕表示</code></a>
+はキャッシュ機構を持たないため、この設定はありません。</p>
+<h2
+id=".E3.83.86.E3.82.AD.E3.82.B9.E3.83.88.E3.81.AE.E8.87.AA.E5.8B.95.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97">テキストの自動折り返し</h2>
+<p>長いテキストはそのまま何もしなければ画面からはみ出しますが、自動的に改行して折り返すことができる
+<code>自動折り返し</code> という機能があります。</p>
+<table>
+<thead>
+<tr class="header">
+<th>設定名</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>wordwrap.mode</code></td>
+<td>テキストの自動折り返しに関する設定です。<br><code>0</code> -
+自動折り返ししない<br><code>1</code> -
+自動折り返しする<br><code>2</code> -
+禁則処理付きで自動折り返しする<br><code>3</code> -
+文節を考慮して禁則処理付きで自動折り返しする</td>
+</tr>
+<tr class="even">
+<td><code>wordwrap.width</code></td>
+<td>自動折り返しの幅を指定します。<br><code>wordwrap.mode</code> が
+<code>0</code> の場合は無視されます。</td>
+</tr>
+<tr class="odd">
+<td><code>wordwrap.model</code></td>
+<td>使用する BudouX モデルを指定します。<br><code>"ja"</code> -
+日本語モデル<br><code>JSONファイルへのパス</code> -
+カスタムモデルを読み込みます。<br>※ この設定は
+<code>wordwrap.mode = 3</code> のときのみ有効です。</td>
+</tr>
+</tbody>
+</table>
+<p><code>&lt;kern&gt;</code>
+などの一部の制御文字を使いたい場合にも自動折り返しを有効にする必要があります。<br />
+制御文字を使いたいが折り返したくないときは、折り返しが発生しない程度まで
+<code>wordwrap.width</code> を広げてください。</p>
+<p>なお自動折り返しは <a
+href="#.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E5.88.B6.E5.BE.A1"><code>折り返し制御</code></a>
+を行うことで折り返しポイントを指定することもできます。</p>
+<h3
+id=".E8.87.AA.E5.8B.95.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.81.AE.E3.83.A2.E3.83.BC.E3.83.89.E3.81.AB.E3.81.A4.E3.81.84.E3.81.A6">自動折り返しのモードについて</h3>
+<p>自動折り返しには４つのモードがあり、以下のように挙動が変化します。</p>
+<h4
+id="0_-_.E8.87.AA.E5.8B.95.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.81.97.E3.81.AA.E3.81.84"><code>0</code>
+- 自動折り返ししない</h4>
+<p><img src="assets/decorate-wordwrap0.png" alt="0 のときの動作" /></p>
+<ul>
+<li>自動折り返しを完全に無効化します。</li>
+<li>拡張編集における通常のテキストと同じような挙動です。</li>
+<li><code>&lt;nobr&gt;</code> や <code>&lt;wbr&gt;</code> や
+<code>&lt;kern&gt;</code> などの制御文字は使用できません。</li>
+</ul>
+<h4
+id="1_-_.E8.87.AA.E5.8B.95.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.81.99.E3.82.8B"><code>1</code>
+- 自動折り返しする</h4>
+<p><img src="assets/decorate-wordwrap1.png" alt="1 のときの動作" /></p>
+<ul>
+<li><code>wordwrap.width</code>
+で指定された幅を超える場合に自動折り返しを行います。</li>
+<li>最も単純な折り返しモードです。</li>
+</ul>
+<h4
+id="2_-_.E7.A6.81.E5.89.87.E5.87.A6.E7.90.86.E4.BB.98.E3.81.8D.E3.81.A7.E8.87.AA.E5.8B.95.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.81.99.E3.82.8B"><code>2</code>
+- 禁則処理付きで自動折り返しする</h4>
+<p><img src="assets/decorate-wordwrap2.png" alt="2 のときの動作" /></p>
+<ul>
+<li><code>wordwrap.width</code>
+で指定された幅を超える場合に自動折り返しを行います。</li>
+<li>行末禁則や行頭禁則などが適用されます。<br>例えば行が <code>「</code>
+などで終わる場合や、次の行が <code>。</code>
+で始まるような場合には位置調整が行われます。</li>
+</ul>
+<h4
+id="3_-_.E6.96.87.E7.AF.80.E3.82.92.E8.80.83.E6.85.AE.E3.81.97.E3.81.A6.E7.A6.81.E5.89.87.E5.87.A6.E7.90.86.E4.BB.98.E3.81.8D.E3.81.A7.E8.87.AA.E5.8B.95.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.81.99.E3.82.8B"><code>3</code>
+- 文節を考慮して禁則処理付きで自動折り返しする</h4>
+<p><img src="assets/decorate-wordwrap3.png" alt="3 のときの動作" /></p>
+<ul>
+<li><code>wordwrap.width</code>
+で指定された幅を超える場合に自動折り返しを行います。</li>
+<li>機械学習による文節区切りで折り返しポイントを決定します。</li>
+<li>読みやすい位置で折り返せることが多いです。</li>
+</ul>
+<h5
+id=".E6.96.87.E7.AF.80.E5.8C.BA.E5.88.87.E3.82.8A.E3.81.AE.E7.B2.BE.E5.BA.A6.E3.81.8C.E4.BD.8E.E3.81.84.E3.81.A8.E6.84.9F.E3.81.98.E3.82.8B.E3.81.A8.E3.81.8D">文節区切りの精度が低いと感じるとき</h5>
+<p>機械学習による文節区切りは一般的な文章に対してはそれなりの精度で動作しますが、文章の内容などによっては精度が低くなることもあります。<br />
+このような場合は <code>wordwrap.model</code>
+にファイルパスを入力することで、カスタムモデルを指定することができます。</p>
+<p>カスタムモデルの作り方は <a
+href="https://github.com/google/budoux#building-a-custom-model">BudouX
+のドキュメント</a> を参照してください。</p>
+<h2 id=".E5.88.B6.E5.BE.A1.E6.96.87.E5.AD.97">制御文字</h2>
+<p>拡張編集では、<code>こんにちは&lt;#ff0000&gt;ゲスト&lt;#&gt;さん</code>
+のように制御文字を書くとテキストを装飾できます。<br />
+（詳しくは拡張編集に付属の <code>exedit.txt</code> を
+<code>◇制御文字</code> で検索してください）</p>
+<p>PSDToolKit ではそれらの制御文字のうち一部のみが <a
+href="prep.html#.E5.AD.97.E5.B9.95.E6.BA.96.E5.82.99"><code>字幕準備</code></a>
+や <a
+href="obj.html#.E8.87.AA.E5.8B.95.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.83.86.E3.82.AD.E3.82.B9.E3.83.88"><code>自動折り返しテキスト</code></a>
+で使用できます。<br />
+また、<a
+href="#.E3.83.86.E3.82.AD.E3.82.B9.E3.83.88.E3.81.AE.E8.87.AA.E5.8B.95.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97"><code>テキストの自動折り返し</code></a>
+が有効な場合は更に追加でいくつかの制御文字が使用できるようになります。</p>
+<p>ここでは使用できる制御文字について説明します。</p>
+<h3 id=".E8.89.B2.E3.81.AE.E5.A4.89.E6.9B.B4">色の変更</h3>
+<p>文字の色を <code>&lt;#RRGGBB&gt;</code> または
+<code>&lt;#RRGGBB,RRGGBB&gt;</code> で指定します。<br />
+これは拡張編集で最初から使える制御文字です。</p>
+<p><code>RRGGBB</code> は 16
+進数で赤、緑、青の成分を表しており、それぞれ 00 ～ ff
+で指定します。<br />
+例えば <code>&lt;#ff0000&gt;</code> は赤色、<code>&lt;#00ff00&gt;</code>
+は緑色、<code>&lt;#0000ff&gt;</code> は青色です。</p>
+<p><code>&lt;#&gt;</code> で装飾をリセットできます。<br />
+制御文字を入れ子にしていても最初の状態へリセットされます。</p>
+<h4 id=".E4.BD.BF.E7.94.A8.E4.BE.8B">使用例</h4>
+<ul>
+<li><code>こんにちは&lt;#ff0000&gt;ゲスト&lt;#&gt;さん</code><br>テキストの色を変更</li>
+<li><code>こんにちは&lt;#ff0000,ffff00&gt;ゲスト&lt;#&gt;さん</code><br>テキストの色と装飾の色（影や縁取り）を変更</li>
+</ul>
+<h3
+id=".E3.82.B5.E3.82.A4.E3.82.BA.E3.80.81.E3.83.95.E3.82.A9.E3.83.B3.E3.83.88.E3.81.AE.E5.A4.89.E6.9B.B4">サイズ、フォントの変更</h3>
+<p>文字のサイズやフォントを <code>&lt;s128,MS UI Gothic,BI&gt;</code>
+のように指定します。<br />
+これは拡張編集で最初から使える制御文字です。</p>
+<p>上記の例の <code>128</code>
+はフォントサイズ、<code>MS UI Gothic</code>
+はフォント名、<code>BI</code> は装飾（<code>B</code>
+は太字、<code>I</code> は斜体）です。</p>
+<p><code>&lt;s&gt;</code> でサイズやフォントをリセットできます。<br />
+制御文字を入れ子にしていても最初の状態へリセットされます。</p>
+<h4 id=".E4.BD.BF.E7.94.A8.E4.BE.8B">使用例</h4>
+<ul>
+<li><code>こんにちは&lt;s128&gt;ゲスト&lt;s&gt;さん</code><br>フォントサイズを
+128 に変更<br></li>
+<li><code>こんにちは&lt;s,MS UI Gothic&gt;ゲスト&lt;s&gt;さん</code><br>フォントを
+MS UI Gothic に変更</li>
+<li><code>こんにちは&lt;s,,B&gt;ゲスト&lt;s&gt;さん</code><br>フォントを
+太字 に変更</li>
+</ul>
+<h3
+id=".E3.82.B5.E3.82.A4.E3.82.BA.E3.80.81.E3.83.95.E3.82.A9.E3.83.B3.E3.83.88.E3.81.AE.E5.A4.89.E6.9B.B4.EF.BC.88.E3.83.95.E3.82.A9.E3.83.B3.E3.83.88.E3.82.B5.E3.82.A4.E3.82.BA.E4.BE.9D.E5.AD.98.EF.BC.89">サイズ、フォントの変更（フォントサイズ依存）</h3>
+<p>文字のサイズやフォントの指定を <code>&lt;ss</code>
+で始めることで、フォントサイズを「元のサイズから何％にするか」で指定できます。<br />
+この制御文字は自動折り返しが有効なときにだけ使えます。</p>
+<p>フォントサイズ指定は入れ子になりません。<br />
+つまり <code>&lt;ss200&gt;&lt;ss200&gt;</code> と書いても元のサイズの
+400% ではなく 200% になります。</p>
+<p><code>&lt;ss&gt;</code> や <code>&lt;s&gt;</code>
+でサイズやフォントをリセットできます。<br />
+制御文字を入れ子にしていても最初の状態へリセットされます。</p>
+<h4 id=".E4.BD.BF.E7.94.A8.E4.BE.8B">使用例</h4>
+<ul>
+<li><code>こんにちは&lt;ss150&gt;ゲスト&lt;s&gt;さん</code><br>フォントサイズを
+150% に変更<br></li>
+<li><code>こんにちは&lt;ss,MS UI Gothic&gt;ゲスト&lt;s&gt;さん</code><br>フォントを
+MS UI Gothic に変更</li>
+<li><code>こんにちは&lt;ss,,B&gt;ゲスト&lt;s&gt;さん</code><br>フォントを
+太字 に変更</li>
+</ul>
+<h3 id=".E5.BA.A7.E6.A8.99.E3.81.AE.E6.8C.87.E5.AE.9A">座標の指定</h3>
+<p>テキストの描画位置を <code>&lt;p100,200,300&gt;</code>
+のように指定します。<br />
+これは拡張編集で最初から使える制御文字です。</p>
+<p>上記の例の <code>100</code> は X 座標、<code>200</code> は Y
+座標、<code>300</code> は Z 座標です。<br />
+ただし Z 座標は <code>個別オブジェクト</code>
+が有効なときにしか使えません。</p>
+<p>座標の数字の前に符号（<code>+</code> または
+<code>-</code>）がある場合は、相対座標として扱われます。</p>
+<h4 id=".E4.BD.BF.E7.94.A8.E4.BE.8B">使用例</h4>
+<ul>
+<li><code>こんにちは&lt;p100,200&gt;ゲストさん</code><br>描画位置を
+<code>(100, 200)</code> に変更</li>
+<li><code>こんにちは&lt;p+20,+0&gt;ゲストさん</code><br>描画位置を20ピクセル後ろに変更</li>
+</ul>
+<h3
+id=".E5.BA.A7.E6.A8.99.E3.81.AE.E6.8C.87.E5.AE.9A.EF.BC.88.E3.83.95.E3.82.A9.E3.83.B3.E3.83.88.E3.82.B5.E3.82.A4.E3.82.BA.E4.BE.9D.E5.AD.98.EF.BC.89">座標の指定（フォントサイズ依存）</h3>
+<p>座標の指定を <code>&lt;pp</code> で始めると、フォントサイズの 1/100
+単位での座標指定になります。<br />
+この制御文字は自動折り返しが有効なときにだけ使えます。</p>
+<h4 id=".E4.BD.BF.E7.94.A8.E4.BE.8B">使用例</h4>
+<ul>
+<li><code>こんにちは&lt;pp+100,+0&gt;ゲストさん</code><br>描画位置を100（大体１文字分ぐらい）後ろに変更</li>
+</ul>
+<h3 id=".E3.82.AB.E3.83.BC.E3.83.8B.E3.83.B3.E3.82.B0">カーニング</h3>
+<p>カーニングは文字同士の間隔を調整することで見栄えを整えるための制御文字です。<br />
+この制御文字は自動折り返しが有効なときにだけ使えます。</p>
+<h4
+id=".E3.83.A1.E3.83.88.E3.83.AA.E3.82.AF.E3.82.B9.E3.82.AB.E3.83.BC.E3.83.8B.E3.83.B3.E3.82.B0">メトリクスカーニング</h4>
+<p><code>&lt;kern&gt;WAVEFILE&lt;/kern&gt;</code>
+のようにすると、メトリクスカーニングが有効になります。</p>
+<p><img src="assets/decorate-kern0.png"
+alt="メトリクスカーニングの使用例" /></p>
+<p>メトリクスカーニングはフォントに埋め込まれた情報を元に文字間隔を調整します。<br />
+そのため、情報が埋め込まれていないフォントでは効果がありません。</p>
+<h4
+id=".E3.82.AA.E3.83.97.E3.83.86.E3.82.A3.E3.82.AB.E3.83.AB.E3.82.AB.E3.83.BC.E3.83.8B.E3.83.B3.E3.82.B0">オプティカルカーニング</h4>
+<p><code>&lt;kern50&gt;WAVEFILE&lt;/kern&gt;</code>
+のようにすると、オプティカルカーニングが有効になります。</p>
+<p><img src="assets/decorate-kern1.png"
+alt="オプティカルカーニングの使用例" /></p>
+<p>オプティカルカーニングは文字の形に沿って文字間隔を調整します。<br />
+<code>&lt;kern50&gt;</code> なら元の距離よりも <code>50%</code>
+狭くします。<br />
+<code>&lt;kern100&gt;</code>
+ならメトリクスカーニングと同じになります。</p>
+<h4 id=".E3.83.9E.E3.83.BC.E3.82.B8.E3.83.B3">マージン</h4>
+<p><code>&lt;kern,1&gt;</code> や <code>&lt;kern100,1&gt;</code>
+のようにすると、フォントサイズの 1/100
+単位で文字の間に空間を追加します。<br />
+オプティカルカーニングとマージンは似た機能ですが、例えば以下のような違いがあります。</p>
+<p><img src="assets/decorate-kern2.png"
+alt="オプティカルカーニングとマージンの違い" /></p>
+<p>上の例はオプティカルカーニングで <code>60%</code>
+の余白にしていて、下の例はオプティカルカーニングで余白を <code>0%</code>
+にした上で、マージンで <code>10</code> 余白を追加しています。<br />
+オプティカルカーニングは強めにかけると <code>、</code>
+のように意図的に設けられていた余白も削られます。</p>
+<h4 id=".E4.BD.BF.E7.94.A8.E4.BE.8B">使用例</h4>
+<ul>
+<li><code>&lt;kern&gt;こんにちは、ゲストさん</code><br>文字間隔をメトリクスカーニングで調整</li>
+<li><code>&lt;kern50&gt;こんにちは、ゲストさん</code><br>文字間隔をオプティカルカーニングで
+50% に調整</li>
+<li><code>&lt;kern0&gt;こんにちは、ゲストさん</code><br>文字間隔を 0%
+に変更</li>
+<li><code>&lt;kern0,1&gt;こんにちは、ゲストさん</code><br>文字間隔を 0%
+にして、フォントサイズの 1/100 だけ離す</li>
+</ul>
+<h2
+id=".E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E5.88.B6.E5.BE.A1">折り返し制御</h2>
+<p>自動折り返しを有効にしていると、意図しない場所で折り返されてしまうことがあります。</p>
+<p>折り返し制御を行うことで、意図しない場所での折り返しを防止したり、折り返すべき場所を明示的に指定できます。</p>
+<h3
+id=".E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.81.AE.E7.A6.81.E6.AD.A2">折り返しの禁止</h3>
+<p><code>&lt;nobr&gt;</code> を使うと、自動折り返しが有効でも
+<code>折り返してはいけない区間</code> を指定できます。<br />
+この制御文字は自動折り返しが有効なときにだけ使えます。</p>
+<h4 id=".E4.BD.BF.E7.94.A8.E4.BE.8B">使用例</h4>
+<ul>
+<li><code>インベントリーが&lt;nobr&gt;ビートルート&lt;/nobr&gt;でいっぱいです。</code><br>改行させたくない区間を指定</li>
+</ul>
+<h3
+id=".E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.81.AE.E8.A8.B1.E5.8F.AF">折り返しの許可</h3>
+<p><code>&lt;wbr&gt;</code> を使うと、自動折り返しが有効なときに
+<code>折り返してもいい場所</code> を指定できます。<br />
+この制御文字は自動折り返しが有効なときにだけ使えます。</p>
+<p><code>&lt;wbr&gt;</code> は <code>&lt;nobr&gt;</code>
+の中で使用することもできます。</p>
+<h4 id=".E4.BD.BF.E7.94.A8.E4.BE.8B">使用例</h4>
+<ul>
+<li><code>&lt;nobr&gt;すももも&lt;wbr&gt;ももも&lt;wbr&gt;もものうち&lt;/nobr&gt;</code><br>改行してもいい場所を指定</li>
+</ul>
+</div>
+<footer>
+<dl>
+<dt>Written by</dt>
+<dd>oov</dd>
+<dt>Generated at</dt>
+<dd>2025-02-26T10:56:47Z</dd>
+<dt>for</dt>
+<dd>v0.2.0beta71 ( 9190e74 )</dd>
+</dl>
+</footer>
+</div>
+</body>
+</html>

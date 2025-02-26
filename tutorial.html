@@ -1,0 +1,1110 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="oov" />
+  <title>チュートリアル</title>
+  <style type="text/css">
+  </style>
+  <style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="ptk-outer">
+<div id="ptk-menu" class="ptk-selected-tutorial">
+  <ul>
+    <li class="ptk-menu-item-index"><a href="index.html">はじめに</a></li>
+    <li class="ptk-menu-item-tutorial"><a href="tutorial.html">チュートリアル</a></li>
+    <li class="ptk-menu-item-decorate"><a href="decorate.html">テキストの装飾</a></li>
+    <li class="ptk-menu-item-pfv"><a href="pfv.html">PSDTool のお気に入りを使う</a></li>
+    <li class="ptk-menu-item-forcepser"><a href="forcepser.html">かんしくん</a></li>
+    <li class="ptk-menu-item-obj ptk-menu-item-psd ptk-menu-item-subobj ptk-menu-item-otheranm ptk-menu-item-prep">オブジェクトリファレンス
+      <ul>
+        <li class="ptk-menu-item-obj"><a href="obj.html">独自のオブジェクト</a>
+          <ul>
+            <li><a href="obj.html#PSD_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.AA.E3.83.96.E3.82.B8.E3.82.A7.E3.82.AF.E3.83.88">PSD ファイルオブジェクト</a></li>
+            <li><a href="obj.html#.E5.AD.97.E5.B9.95.E8.A1.A8.E7.A4.BA">字幕表示</a></li>
+            <li><a href="obj.html#.E5.AD.97.E5.B9.95.E8.A1.A8.E7.A4.BA.EF.BC.88.E3.82.AD.E3.83.A3.E3.83.83.E3.82.B7.E3.83.A5.EF.BC.89">字幕表示（キャッシュ）</a></li>
+            <li><a href="obj.html#.E8.87.AA.E5.8B.95.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.83.86.E3.82.AD.E3.82.B9.E3.83.88">自動折り返しテキスト</a></li>
+          </ul>
+        </li>
+        <li class="ptk-menu-item-psd"><a href="psd.html">PSD アニメーション効果</a>
+          <ul>
+            <li><a href="psd.html#.E7.9B.AE.E3.83.91.E3.83.81.40PSD">目パチ</a> | <a href="psd.html#.E7.9B.AE.E3.83.91.E3.83.81_.E3.82.92_Lua_.E3.82.B9.E3.82.AF.E3.83.AA.E3.83.97.E3.83.88.E3.81.8B.E3.82.89.E4.BD.BF.E3.81.86">フォーム</a></li>
+            <li><a href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E9.96.8B.E9.96.89.E3.81.AE.E3.81.BF.40PSD">口パク 開閉のみ</a> | <a href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E9.96.8B.E9.96.89.E3.81.AE.E3.81.BF_.E3.82.92_Lua_.E3.82.B9.E3.82.AF.E3.83.AA.E3.83.97.E3.83.88.E3.81.8B.E3.82.89.E4.BD.BF.E3.81.86">フォーム</a></li>
+            <li><a href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E3.81.82.E3.81.84.E3.81.86.E3.81.88.E3.81.8A.40PSD">口パク あいうえお</a> | <a href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E3.81.82.E3.81.84.E3.81.86.E3.81.88.E3.81.8A_.E3.82.92_Lua_.E3.82.B9.E3.82.AF.E3.83.AA.E3.83.97.E3.83.88.E3.81.8B.E3.82.89.E4.BD.BF.E3.81.86">フォーム</a></li>
+          </ul>
+        </li>
+        <li class="ptk-menu-item-subobj"><a href="subobj.html">subobj アニメーション効果</a></li>
+        <li class="ptk-menu-item-otheranm"><a href="otheranm.html">その他のアニメーション効果</a></li>
+        <li class="ptk-menu-item-prep"><a href="prep.html">準備オブジェクト</a></li>
+      </ul>
+    </li>
+    <li class="ptk-menu-item-plugins"><a href="plugins.html">付属プラグイン</a></li>
+    <li class="ptk-menu-item-setting"><a href="setting.html">設定</a></li>
+    <li class="ptk-menu-item-faq"><a href="faq.html">よくある質問</a></li>
+  </ul>
+</div>
+<div id="ptk-main">
+<header>
+<h1 class="title">チュートリアル</h1>
+</header>
+<nav id="TOC">
+<ul>
+<li><a
+href="#.E3.81.93.E3.81.AE.E3.83.81.E3.83.A5.E3.83.BC.E3.83.88.E3.83.AA.E3.82.A2.E3.83.AB.E3.81.AB.E3.81.A4.E3.81.84.E3.81.A6"
+id="toc-.E3.81.93.E3.81.AE.E3.83.81.E3.83.A5.E3.83.BC.E3.83.88.E3.83.AA.E3.82.A2.E3.83.AB.E3.81.AB.E3.81.A4.E3.81.84.E3.81.A6">このチュートリアルについて</a></li>
+<li><a href="#.E3.82.A4.E3.83.B3.E3.82.B9.E3.83.88.E3.83.BC.E3.83.AB"
+id="toc-.E3.82.A4.E3.83.B3.E3.82.B9.E3.83.88.E3.83.BC.E3.83.AB">インストール</a>
+<ul>
+<li><a
+href="#.E4.B8.8A.E6.89.8B.E3.81.8F.E5.8B.95.E3.81.8B.E3.81.AA.E3.81.84.E3.81.A8.E3.81.8D.E3.81.AF"
+id="toc-.E4.B8.8A.E6.89.8B.E3.81.8F.E5.8B.95.E3.81.8B.E3.81.AA.E3.81.84.E3.81.A8.E3.81.8D.E3.81.AF">上手く動かないときは</a></li>
+<li><a href="#.E8.A8.AD.E5.AE.9A.E3.81.AE.E5.A4.89.E6.9B.B4"
+id="toc-.E8.A8.AD.E5.AE.9A.E3.81.AE.E5.A4.89.E6.9B.B4">設定の変更</a>
+<ul>
+<li><a
+href="#.E3.81.8A.E3.81.BE.E3.81.91.3A_.E3.82.B7.E3.83.A7.E3.83.BC.E3.83.88.E3.82.AB.E3.83.83.E3.83.88.E3.82.AD.E3.83.BC.E3.81.AE.E5.A4.89.E6.9B.B4"
+id="toc-.E3.81.8A.E3.81.BE.E3.81.91.3A_.E3.82.B7.E3.83.A7.E3.83.BC.E3.83.88.E3.82.AB.E3.83.83.E3.83.88.E3.82.AD.E3.83.BC.E3.81.AE.E5.A4.89.E6.9B.B4">おまけ:
+ショートカットキーの変更</a></li>
+</ul></li>
+</ul></li>
+<li><a
+href="#.E6.96.B0.E8.A6.8F.E3.83.97.E3.83.AD.E3.82.B8.E3.82.A7.E3.82.AF.E3.83.88.E3.82.92.E4.BD.9C.E6.88.90"
+id="toc-.E6.96.B0.E8.A6.8F.E3.83.97.E3.83.AD.E3.82.B8.E3.82.A7.E3.82.AF.E3.83.88.E3.82.92.E4.BD.9C.E6.88.90">新規プロジェクトを作成</a></li>
+<li><a
+href="#PSD_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.81.AE.E8.AA.AD.E3.81.BF.E8.BE.BC.E3.81.BF"
+id="toc-PSD_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.81.AE.E8.AA.AD.E3.81.BF.E8.BE.BC.E3.81.BF">PSD
+ファイルの読み込み</a>
+<ul>
+<li><a
+href="#.E7.94.BB.E5.83.8F.E3.81.8C.E8.A1.A8.E7.A4.BA.E3.81.95.E3.82.8C.E3.81.AA.E3.81.84.E3.81.A8.E3.81.8D.E3.81.AF"
+id="toc-.E7.94.BB.E5.83.8F.E3.81.8C.E8.A1.A8.E7.A4.BA.E3.81.95.E3.82.8C.E3.81.AA.E3.81.84.E3.81.A8.E3.81.8D.E3.81.AF">画像が表示されないときは</a></li>
+<li><a
+href="#.E3.83.AC.E3.82.A4.E3.83.A4.E3.83.BC.E3.81.AE.E5.88.87.E3.82.8A.E6.9B.BF.E3.81.88"
+id="toc-.E3.83.AC.E3.82.A4.E3.83.A4.E3.83.BC.E3.81.AE.E5.88.87.E3.82.8A.E6.9B.BF.E3.81.88">レイヤーの切り替え</a>
+<ul>
+<li><a
+href="#.E3.83.92.E3.83.B3.E3.83.88.3A_.E5.89.8D.E3.81.AE.E3.83.91.E3.83.BC.E3.83.84.E3.81.8C.E9.9D.9E.E8.A1.A8.E7.A4.BA.E3.81.AB.E3.81.AA.E3.82.89.E3.81.AA.E3.81.84.E3.81.A8.E3.81.8D.E3.81.AF"
+id="toc-.E3.83.92.E3.83.B3.E3.83.88.3A_.E5.89.8D.E3.81.AE.E3.83.91.E3.83.BC.E3.83.84.E3.81.8C.E9.9D.9E.E8.A1.A8.E7.A4.BA.E3.81.AB.E3.81.AA.E3.82.89.E3.81.AA.E3.81.84.E3.81.A8.E3.81.8D.E3.81.AF">ヒント:
+前のパーツが非表示にならないときは</a></li>
+</ul></li>
+<li><a href="#.E5.B7.A6.E5.8F.B3.E5.8F.8D.E8.BB.A2"
+id="toc-.E5.B7.A6.E5.8F.B3.E5.8F.8D.E8.BB.A2">左右反転</a></li>
+<li><a
+href="#.E7.9B.AE.E3.83.91.E3.83.81.EF.BC.88.E7.9E.AC.E3.81.8D.EF.BC.89"
+id="toc-.E7.9B.AE.E3.83.91.E3.83.81.EF.BC.88.E7.9E.AC.E3.81.8D.EF.BC.89">目パチ（瞬き）</a>
+<ul>
+<li><a
+href="#.E3.83.92.E3.83.B3.E3.83.88.3A_.E7.9B.AE.E3.83.91.E3.83.81.E3.81.8C.E4.B8.8A.E6.89.8B.E3.81.8F.E5.8B.95.E3.81.8B.E3.81.AA.E3.81.84.E3.81.A8.E3.81.8D.E3.81.AF"
+id="toc-.E3.83.92.E3.83.B3.E3.83.88.3A_.E7.9B.AE.E3.83.91.E3.83.81.E3.81.8C.E4.B8.8A.E6.89.8B.E3.81.8F.E5.8B.95.E3.81.8B.E3.81.AA.E3.81.84.E3.81.A8.E3.81.8D.E3.81.AF">ヒント:
+目パチが上手く動かないときは</a></li>
+</ul></li>
+<li><a
+href="#.E5.8F.A3.E3.83.91.E3.82.AF.EF.BC.88.E3.83.AA.E3.83.83.E3.83.97.E3.82.B7.E3.83.B3.E3.82.AF.EF.BC.89"
+id="toc-.E5.8F.A3.E3.83.91.E3.82.AF.EF.BC.88.E3.83.AA.E3.83.83.E3.83.97.E3.82.B7.E3.83.B3.E3.82.AF.EF.BC.89">口パク（リップシンク）</a>
+<ul>
+<li><a
+href="#.E3.83.92.E3.83.B3.E3.83.88.3A_.E5.8F.A3.E3.83.91.E3.82.AF.E3.81.8C.E4.B8.8A.E6.89.8B.E3.81.8F.E5.8B.95.E3.81.8B.E3.81.AA.E3.81.84.E3.81.A8.E3.81.8D.E3.81.AF"
+id="toc-.E3.83.92.E3.83.B3.E3.83.88.3A_.E5.8F.A3.E3.83.91.E3.82.AF.E3.81.8C.E4.B8.8A.E6.89.8B.E3.81.8F.E5.8B.95.E3.81.8B.E3.81.AA.E3.81.84.E3.81.A8.E3.81.8D.E3.81.AF">ヒント:
+口パクが上手く動かないときは</a></li>
+</ul></li>
+</ul></li>
+<li><a href="#.E5.AD.97.E5.B9.95"
+id="toc-.E5.AD.97.E5.B9.95">字幕</a></li>
+<li><a
+href="#.E5.8F.A3.E3.83.91.E3.82.AF.E6.BA.96.E5.82.99.E3.81.A8.E5.AD.97.E5.B9.95.E6.BA.96.E5.82.99.E3.81.AE.E9.85.8D.E7.BD.AE.E3.82.92.E5.8A.B9.E7.8E.87.E5.8C.96"
+id="toc-.E5.8F.A3.E3.83.91.E3.82.AF.E6.BA.96.E5.82.99.E3.81.A8.E5.AD.97.E5.B9.95.E6.BA.96.E5.82.99.E3.81.AE.E9.85.8D.E7.BD.AE.E3.82.92.E5.8A.B9.E7.8E.87.E5.8C.96">口パク準備と字幕準備の配置を効率化</a>
+<ul>
+<li><a
+href="#.E3.83.92.E3.83.B3.E3.83.88.3A_.E5.8F.A3.E3.83.91.E3.82.AF.E6.BA.96.E5.82.99.E3.81.AE.E8.A8.AD.E5.AE.9A.E3.81.AE.E7.B0.A1.E7.95.A5.E5.8C.96"
+id="toc-.E3.83.92.E3.83.B3.E3.83.88.3A_.E5.8F.A3.E3.83.91.E3.82.AF.E6.BA.96.E5.82.99.E3.81.AE.E8.A8.AD.E5.AE.9A.E3.81.AE.E7.B0.A1.E7.95.A5.E5.8C.96">ヒント:
+口パク準備の設定の簡略化</a></li>
+<li><a
+href="#.E3.83.92.E3.83.B3.E3.83.88.3A_.E5.AD.97.E5.B9.95.E3.81.AE.E3.83.86.E3.82.AD.E3.82.B9.E3.83.88.E3.82.92.E8.87.AA.E5.8B.95.E3.81.A7.E7.BD.AE.E6.8F.9B"
+id="toc-.E3.83.92.E3.83.B3.E3.83.88.3A_.E5.AD.97.E5.B9.95.E3.81.AE.E3.83.86.E3.82.AD.E3.82.B9.E3.83.88.E3.82.92.E8.87.AA.E5.8B.95.E3.81.A7.E7.BD.AE.E6.8F.9B">ヒント:
+字幕のテキストを自動で置換</a></li>
+<li><a
+href="#.E3.83.92.E3.83.B3.E3.83.88.3A_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.92.E3.83.89.E3.83.AD.E3.83.83.E3.83.97.E3.81.99.E3.82.8B.E4.BD.9C.E6.A5.AD.E8.87.AA.E4.BD.93.E3.81.AE.E5.8A.B9.E7.8E.87.E5.8C.96"
+id="toc-.E3.83.92.E3.83.B3.E3.83.88.3A_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.92.E3.83.89.E3.83.AD.E3.83.83.E3.83.97.E3.81.99.E3.82.8B.E4.BD.9C.E6.A5.AD.E8.87.AA.E4.BD.93.E3.81.AE.E5.8A.B9.E7.8E.87.E5.8C.96">ヒント:
+ファイルをドロップする作業自体の効率化</a></li>
+</ul></li>
+<li><a
+href="#.E5.8B.95.E7.94.BB.E3.81.AE.E9.80.94.E4.B8.AD.E3.81.A7.E8.A1.A8.E6.83.85.E3.82.92.E5.A4.89.E6.9B.B4.E3.81.99.E3.82.8B.E3.81.9F.E3.82.81.E3.81.AB"
+id="toc-.E5.8B.95.E7.94.BB.E3.81.AE.E9.80.94.E4.B8.AD.E3.81.A7.E8.A1.A8.E6.83.85.E3.82.92.E5.A4.89.E6.9B.B4.E3.81.99.E3.82.8B.E3.81.9F.E3.82.81.E3.81.AB">動画の途中で表情を変更するために</a></li>
+<li><a
+href="#*.anm_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.92.E4.BD.9C.E6.88.90.E3.81.99.E3.82.8B"
+id="toc-*.anm_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.92.E4.BD.9C.E6.88.90.E3.81.99.E3.82.8B">*.anm
+ファイルを作成する</a>
+<ul>
+<li><a
+href="#.E4.BB.96.E3.81.AE.E3.82.B9.E3.83.A9.E3.82.A4.E3.83.80.E3.83.BC.E3.82.92.E6.9C.89.E5.8A.B9.E5.8C.96.E3.81.99.E3.82.8B"
+id="toc-.E4.BB.96.E3.81.AE.E3.82.B9.E3.83.A9.E3.82.A4.E3.83.80.E3.83.BC.E3.82.92.E6.9C.89.E5.8A.B9.E5.8C.96.E3.81.99.E3.82.8B">他のスライダーを有効化する</a>
+<ul>
+<li><a
+href="#.E3.83.92.E3.83.B3.E3.83.88.3A_.E3.82.B9.E3.83.A9.E3.82.A4.E3.83.80.E3.83.BC.E3.81.8C4.E3.81.A4.E3.81.A7.E3.81.AF.E8.B6.B3.E3.82.8A.E3.81.AA.E3.81.84.E5.A0.B4.E5.90.88"
+id="toc-.E3.83.92.E3.83.B3.E3.83.88.3A_.E3.82.B9.E3.83.A9.E3.82.A4.E3.83.80.E3.83.BC.E3.81.8C4.E3.81.A4.E3.81.A7.E3.81.AF.E8.B6.B3.E3.82.8A.E3.81.AA.E3.81.84.E5.A0.B4.E5.90.88">ヒント:
+スライダーが4つでは足りない場合</a></li>
+<li><a
+href="#.E3.83.92.E3.83.B3.E3.83.88.3A_.E3.83.91.E3.83.BC.E3.83.84.E3.81.8C.E3.81.B2.E3.81.A8.E3.81.A4.E3.81.AE.E3.83.95.E3.82.A9.E3.83.AB.E3.83.80.E3.83.BC.E3.81.AB.E3.81.BE.E3.81.A8.E3.81.BE.E3.81.A3.E3.81.A6.E3.81.84.E3.81.AA.E3.81.84.E3.81.A8.E3.81.8D.E3.81.AF"
+id="toc-.E3.83.92.E3.83.B3.E3.83.88.3A_.E3.83.91.E3.83.BC.E3.83.84.E3.81.8C.E3.81.B2.E3.81.A8.E3.81.A4.E3.81.AE.E3.83.95.E3.82.A9.E3.83.AB.E3.83.80.E3.83.BC.E3.81.AB.E3.81.BE.E3.81.A8.E3.81.BE.E3.81.A3.E3.81.A6.E3.81.84.E3.81.AA.E3.81.84.E3.81.A8.E3.81.8D.E3.81.AF">ヒント:
+パーツがひとつのフォルダーにまとまっていないときは</a></li>
+</ul></li>
+<li><a
+href="#.E7.9B.AE.E3.83.91.E3.83.81.E3.82.92.E8.BF.BD.E5.8A.A0.E3.81.99.E3.82.8B"
+id="toc-.E7.9B.AE.E3.83.91.E3.83.81.E3.82.92.E8.BF.BD.E5.8A.A0.E3.81.99.E3.82.8B">目パチを追加する</a></li>
+<li><a
+href="#.E5.8F.A3.E3.83.91.E3.82.AF.E3.82.92.E8.BF.BD.E5.8A.A0.E3.81.99.E3.82.8B"
+id="toc-.E5.8F.A3.E3.83.91.E3.82.AF.E3.82.92.E8.BF.BD.E5.8A.A0.E3.81.99.E3.82.8B">口パクを追加する</a></li>
+</ul></li>
+<li><a
+href="#.E9.80.94.E4.B8.AD.E3.81.A7.E8.A1.A8.E6.83.85.E3.82.92.E5.A4.89.E6.9B.B4.E3.81.99.E3.82.8B"
+id="toc-.E9.80.94.E4.B8.AD.E3.81.A7.E8.A1.A8.E6.83.85.E3.82.92.E5.A4.89.E6.9B.B4.E3.81.99.E3.82.8B">途中で表情を変更する</a></li>
+<li><a
+href="#.E5.A4.9A.E7.9B.AE.E7.9A.84.E3.82.B9.E3.83.A9.E3.82.A4.E3.83.80.E3.83.BC"
+id="toc-.E5.A4.9A.E7.9B.AE.E7.9A.84.E3.82.B9.E3.83.A9.E3.82.A4.E3.83.80.E3.83.BC">多目的スライダー</a></li>
+<li><a
+href="#.E5.A4.9A.E7.9B.AE.E7.9A.84.E3.82.B9.E3.83.A9.E3.82.A4.E3.83.80.E3.83.BC.E3.81.AE.E9.85.8D.E7.BD.AE.E3.82.92.E5.8A.B9.E7.8E.87.E5.8C.96"
+id="toc-.E5.A4.9A.E7.9B.AE.E7.9A.84.E3.82.B9.E3.83.A9.E3.82.A4.E3.83.80.E3.83.BC.E3.81.AE.E9.85.8D.E7.BD.AE.E3.82.92.E5.8A.B9.E7.8E.87.E5.8C.96">多目的スライダーの配置を効率化</a></li>
+<li><a
+href="#.E6.BA.96.E5.82.99.E3.82.AA.E3.83.96.E3.82.B8.E3.82.A7.E3.82.AF.E3.83.88.E3.81.AE.E9.9B.86.E7.B4.84"
+id="toc-.E6.BA.96.E5.82.99.E3.82.AA.E3.83.96.E3.82.B8.E3.82.A7.E3.82.AF.E3.83.88.E3.81.AE.E9.9B.86.E7.B4.84">準備オブジェクトの集約</a></li>
+<li><a
+href="#.E3.83.96.E3.83.A9.E3.83.83.E3.82.B7.E3.83.A5.E3.82.A2.E3.83.83.E3.83.97"
+id="toc-.E3.83.96.E3.83.A9.E3.83.83.E3.82.B7.E3.83.A5.E3.82.A2.E3.83.83.E3.83.97">ブラッシュアップ</a></li>
+<li><a
+href="#.E5.96.8B.E3.81.A3.E3.81.A6.E3.81.84.E3.82.8B.E9.96.93.E3.81.A0.E3.81.91.E7.94.BB.E5.83.8F.E3.82.92.E8.A1.A8.E7.A4.BA.E3.81.95.E3.81.9B.E3.82.8B"
+id="toc-.E5.96.8B.E3.81.A3.E3.81.A6.E3.81.84.E3.82.8B.E9.96.93.E3.81.A0.E3.81.91.E7.94.BB.E5.83.8F.E3.82.92.E8.A1.A8.E7.A4.BA.E3.81.95.E3.81.9B.E3.82.8B">喋っている間だけ画像を表示させる</a></li>
+<li><a
+href="#.E5.AD.97.E5.B9.95.E3.81.AE.E8.A1.A8.E7.A4.BA.E3.81.AB.E6.BC.94.E5.87.BA.E3.82.92.E8.BF.BD.E5.8A.A0.E3.81.99.E3.82.8B"
+id="toc-.E5.AD.97.E5.B9.95.E3.81.AE.E8.A1.A8.E7.A4.BA.E3.81.AB.E6.BC.94.E5.87.BA.E3.82.92.E8.BF.BD.E5.8A.A0.E3.81.99.E3.82.8B">字幕の表示に演出を追加する</a></li>
+<li><a href="#.E9.9F.B3.E5.A3.B0.E3.83.95.E3.82.A3.E3.83.AB.E3.82.BF"
+id="toc-.E9.9F.B3.E5.A3.B0.E3.83.95.E3.82.A3.E3.83.AB.E3.82.BF">音声フィルタ</a>
+<ul>
+<li><a
+href="#.E9.9F.B3.E9.87.8F.E3.82.92.E4.B8.8A.E3.81.92.E3.81.9F.E3.81.93.E3.81.A8.E3.81.AB.E3.82.88.E3.82.8B.E9.9F.B3.E5.89.B2.E3.82.8C.E3.81.AE.E5.9B.9E.E9.81.BF"
+id="toc-.E9.9F.B3.E9.87.8F.E3.82.92.E4.B8.8A.E3.81.92.E3.81.9F.E3.81.93.E3.81.A8.E3.81.AB.E3.82.88.E3.82.8B.E9.9F.B3.E5.89.B2.E3.82.8C.E3.81.AE.E5.9B.9E.E9.81.BF">音量を上げたことによる音割れの回避</a></li>
+<li><a
+href="#.E8.A4.87.E6.95.B0.E3.81.AE.E9.9F.B3.E5.A3.B0.E3.81.AB.E3.82.88.E3.82.8B.E9.9F.B3.E5.89.B2.E3.82.8C.E3.81.AE.E5.9B.9E.E9.81.BF"
+id="toc-.E8.A4.87.E6.95.B0.E3.81.AE.E9.9F.B3.E5.A3.B0.E3.81.AB.E3.82.88.E3.82.8B.E9.9F.B3.E5.89.B2.E3.82.8C.E3.81.AE.E5.9B.9E.E9.81.BF">複数の音声による音割れの回避</a></li>
+<li><a
+href="#.E3.83.92.E3.83.B3.E3.83.88.3A_.E6.9C.80.E5.88.9D.E3.81.8B.E3.82.89.E9.9F.B3.E3.81.8C.E5.89.B2.E3.82.8C.E3.81.A6.E3.81.84.E3.82.8B_*.wav_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB"
+id="toc-.E3.83.92.E3.83.B3.E3.83.88.3A_.E6.9C.80.E5.88.9D.E3.81.8B.E3.82.89.E9.9F.B3.E3.81.8C.E5.89.B2.E3.82.8C.E3.81.A6.E3.81.84.E3.82.8B_*.wav_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB">ヒント:
+最初から音が割れている *.wav ファイル</a></li>
+<li><a
+href="#.E3.81.9D.E3.81.AE.E4.BB.96.E3.81.AE.E3.82.A8.E3.83.95.E3.82.A7.E3.82.AF.E3.83.88.E3.81.AB.E3.81.A4.E3.81.84.E3.81.A6"
+id="toc-.E3.81.9D.E3.81.AE.E4.BB.96.E3.81.AE.E3.82.A8.E3.83.95.E3.82.A7.E3.82.AF.E3.83.88.E3.81.AB.E3.81.A4.E3.81.84.E3.81.A6">その他のエフェクトについて</a></li>
+</ul></li>
+<li><a href="#.E7.B5.82.E3.82.8F.E3.82.8A.E3.81.AB"
+id="toc-.E7.B5.82.E3.82.8F.E3.82.8A.E3.81.AB">終わりに</a></li>
+</ul>
+</nav>
+<h2
+id=".E3.81.93.E3.81.AE.E3.83.81.E3.83.A5.E3.83.BC.E3.83.88.E3.83.AA.E3.82.A2.E3.83.AB.E3.81.AB.E3.81.A4.E3.81.84.E3.81.A6">このチュートリアルについて</h2>
+<p>このチュートリアルでは <code>AviUtl</code> と <code>拡張編集</code>
+と <code>PSDToolKit</code> の導入から、PSDToolKit
+が持つ機能の基本的な部分を一通り紹介していきます。</p>
+<p>なお、仕組みへの理解を深めるためにチュートリアルの中ではあえて非効率な作業を行うシーンがあります。</p>
+<h2
+id=".E3.82.A4.E3.83.B3.E3.82.B9.E3.83.88.E3.83.BC.E3.83.AB">インストール</h2>
+<p>このチュートリアルでは AviUtl の導入先は <code>C:\AviUtl</code>
+とします。<br />
+他のフォルダーでも基本的には動作しますが、フォルダー名が長すぎたり、日本語などが含まれていると動作しないことがあります。</p>
+<p><a href="http://spring-fragrance.mints.ne.jp/aviutl/">AviUtl
+の配布元サイト</a>から `aviutl110.zip` と `exedit92.zip`
+をダウンロードし、<code>C:\AviUtl</code> へ解凍します。</p>
+<p>そして <code>exedit.auf</code> と同じ場所へ
+<code>psdtoolkit_vX.X.zip</code> も解凍します。</p>
+<p><img src="assets/tutorial-extract.png"
+alt="すべてのファイルを完了した時の様子" /></p>
+<p>完了すると <code>C:\AviUtl</code>
+の中身は概ね上記のようになります。</p>
+<h3
+id=".E4.B8.8A.E6.89.8B.E3.81.8F.E5.8B.95.E3.81.8B.E3.81.AA.E3.81.84.E3.81.A8.E3.81.8D.E3.81.AF">上手く動かないときは</h3>
+<p>この先の手順でエラーダイアログが表示されたり上手く動いていないと思われる場合は以下が参考になるかもしれません。</p>
+<ul>
+<li><a
+href="faq.html#.E3.82.A8.E3.83.A9.E3.83.BC.E3.83.A1.E3.83.83.E3.82.BB.E3.83.BC.E3.82.B8.E3.81.8C.E8.A1.A8.E7.A4.BA.E3.81.95.E3.82.8C.E3.82.8B">エラーメッセージが表示される</a></li>
+<li><a
+href="faq.html#.E6.8B.A1.E5.BC.B5.E7.B7.A8.E9.9B.86.E3.81.AB.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.81.8C.E6.8A.95.E3.81.92.E8.BE.BC.E3.82.81.E3.81.AA.E3.81.84">拡張編集にファイルが投げ込めない</a></li>
+</ul>
+<h3 id=".E8.A8.AD.E5.AE.9A.E3.81.AE.E5.A4.89.E6.9B.B4">設定の変更</h3>
+<p>使用を開始する前に、近年では一般的なサイズである 1920x1080
+の動画を作れるように設定を変更します。</p>
+<p><code>aviutl.exe</code> をダブルクリックして起動します。</p>
+<p><img src="assets/tutorial-firstboot.png" alt="初回起動" /></p>
+<p>メニューから
+<code>ファイル</code>→<code>環境設定</code>→<code>システムの設定</code>
+を選び、<code>システムの設定</code> ダイアログを表示させます。</p>
+<ul>
+<li><code>最大画像サイズ</code> の <code>幅</code> を
+<code>1920</code>、<code>高さ</code> を <code>1080</code> に設定</li>
+<li><code>再生ウィンドウの動画再生をメインウィンドウに表示する</code>
+のチェックボックスをオン</li>
+</ul>
+<p><img src="assets/tutorial-setting.png" alt="システムの設定" /></p>
+<p>設定が終わったら <code>OK</code> を押して <code>システムの設定</code>
+ダイアログを閉じ、設定内容を反映させるため AviUtl
+ウィンドウも閉じて終了させてください。</p>
+<h4
+id=".E3.81.8A.E3.81.BE.E3.81.91.3A_.E3.82.B7.E3.83.A7.E3.83.BC.E3.83.88.E3.82.AB.E3.83.83.E3.83.88.E3.82.AD.E3.83.BC.E3.81.AE.E5.A4.89.E6.9B.B4">おまけ:
+ショートカットキーの変更</h4>
+<p>この変更は必須ではありませんが、ショートカットキー
+<code>Ctrl + S</code> を <code>編集プロジェクトの上書き</code>
+に割り当てると、こまめな保存に便利です。</p>
+<p>メニューから
+<code>ファイル</code>→<code>環境設定</code>→<code>ショートカットキーの設定</code>
+を選び、<code>ショートカットキー登録</code>
+ダイアログを表示させます。</p>
+<ol type="1">
+<li>左のリストから <code>[ファイル][AVI出力 (Ctrl+S)]</code>を選択</li>
+<li>右のリストの一番上にある <code>なし</code> を選択</li>
+<li>左のリストから
+<code>[ファイル][編集プロジェクトの上書き]</code>を選択</li>
+<li>右のリストから <code>S</code> を選択し、更に <code>Ctrl</code>
+にチェックを付ける</li>
+<li><code>OK</code> ボタンを押してダイアログを閉じる</li>
+</ol>
+<p><img src="assets/tutorial-skey.png"
+alt="ショートカットキー登録" /></p>
+<h2
+id=".E6.96.B0.E8.A6.8F.E3.83.97.E3.83.AD.E3.82.B8.E3.82.A7.E3.82.AF.E3.83.88.E3.82.92.E4.BD.9C.E6.88.90">新規プロジェクトを作成</h2>
+<p><code>aviutl.exe</code> をダブルクリックして起動します。</p>
+<p><img src="assets/tutorial-firstboot.png" alt="二度目の起動" /></p>
+<p>メニューから <code>設定</code>→<code>拡張編集の設定</code>
+を選び、<code>拡張編集</code> ウィンドウを表示させます。</p>
+<p><img src="assets/tutorial-exedit.png"
+alt="拡張編集 ウィンドウ" /></p>
+<p>拡張編集ウィンドウで右クリックメニューを出し、<code>新規プロジェクトの作成</code>
+を選びます。</p>
+<p><img src="assets/tutorial-exedit-rc.png"
+alt="拡張編集 ウィンドウで右クリックメニューを表示" /></p>
+<p>表示された <code>新規プロジェクトの作成</code>
+ダイアログで画像サイズを <code>1920</code>×<code>1080</code>
+に設定します。</p>
+<p><img src="assets/tutorial-exedit-newproj.png"
+alt="新規プロジェクトの作成 ダイアログ" /></p>
+<p><code>OK</code> を押すと新規プロジェクトが作成されます。</p>
+<p>それに合わせて AviUtl ウィンドウの大きさも広がるため、必要に応じて
+AviUtl ウィンドウのメニューから
+<code>表示</code>→<code>拡大表示</code>→<code>25%</code>
+を選ぶなど、見やすい大きさに調整してください。</p>
+<h2
+id="PSD_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.81.AE.E8.AA.AD.E3.81.BF.E8.BE.BC.E3.81.BF">PSD
+ファイルの読み込み</h2>
+<p>今回使用する PSD
+ファイルを、以下のリンクからダウンロードしてください。</p>
+<p><a
+href="https://oov.github.io/psdtool/img/im5467479.psd">im5467479.psd</a>（水梟るさん制作、一次配布元は<a
+href="http://seiga.nicovideo.jp/seiga/im5467479">こちら</a>）</p>
+<p><small>※動画制作に使用する場合は一次配布元の記載及び CeVIO
+キャラクターライセンスを厳守した上で利用してください。<br />
+※さとうささらはトーク・ソング対応音声合成ソフトウェア <a
+href="http://cevio.jp/">CeVIO Creative Studio</a>
+のキャラクターです。</small></p>
+<p>ダウンロードしたファイルを <code>拡張編集</code>
+ウィンドウへドラッグ＆ドロップして読み込みます。</p>
+<p><img src="assets/tutorial-psddrop.png"
+alt="新規プロジェクトの作成 ダイアログ" /></p>
+<p>するとタイムラインに <a
+href="obj.html#PSD_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.AA.E3.83.96.E3.82.B8.E3.82.A7.E3.82.AF.E3.83.88"><code>PSD ファイルオブジェクト</code></a>
+が追加されます。</p>
+<p><img src="assets/tutorial-psdloaded.png"
+alt="PSD ファイルの読み込みが完了した状態" /></p>
+<p>この時点で AviUtl
+ウィンドウで表示されているプレビューは<strong>動画の一番最初のフレーム</strong>を表示しているため、タイムラインに追加されたアイテムがピッタリ左端にくっついていない場合はプレビューに現れません。</p>
+<p>その場合はアイテムをドラッグして一番左にくっつけて、プレビューに画像が表示される状態にしてください。</p>
+<h3
+id=".E7.94.BB.E5.83.8F.E3.81.8C.E8.A1.A8.E7.A4.BA.E3.81.95.E3.82.8C.E3.81.AA.E3.81.84.E3.81.A8.E3.81.8D.E3.81.AF">画像が表示されないときは</h3>
+<p>このチュートリアルで使用している PSD ファイルでは起きませんが、他の
+PSD
+ファイルを読み込んだときに上手く表示されないことがあるかもしれません。</p>
+<ul>
+<li>PSD ファイル上でレイヤーが非表示になっている場合
+<ul>
+<li>後述する方法でレイヤーの表示／非表示を切り替えてみてください。</li>
+</ul></li>
+<li>画像の幅と高さが大きすぎて、画面外に描画されている場合
+<ul>
+<li><code>描画@PSD</code> にある <code>縮小率</code>
+スライダーを使用して、画像を縮小してみてください。<br />
+ただし、このようなファイルは動画作成中も負荷が高くなる可能性があるため、はみ出している範囲がとても大きいときは
+PSD
+ファイルをお絵かきソフトなどで開いて予め縮小してから読み込むことも検討してみてください。</li>
+</ul></li>
+</ul>
+<h3
+id=".E3.83.AC.E3.82.A4.E3.83.A4.E3.83.BC.E3.81.AE.E5.88.87.E3.82.8A.E6.9B.BF.E3.81.88">レイヤーの切り替え</h3>
+<p>AviUtl のメニューから
+<code>編集</code>→<code>PSDToolKit</code>→<code>ウィンドウを表示</code>
+を選んで <a
+href="obj.html#PSDToolKit_.E3.82.A6.E3.82.A3.E3.83.B3.E3.83.89.E3.82.A6"><code>PSDToolKit ウィンドウ</code></a>
+を表示させます。</p>
+<p><img src="assets/tutorial-psdtkw.png"
+alt="PSDToolKit ウィンドウ" /></p>
+<p>PSD ファイルにあるレイヤーの一覧が表示されています。</p>
+<p><code>!目</code> フォルダーの中にある <code>*にっこり</code>
+レイヤーをクリックしてください。</p>
+<p><img src="assets/tutorial-psdtkw-layer.png" alt="表情変更後" /></p>
+<p>表情が変わりましたが、この時点ではまだ AviUtl
+側には反映されていません。</p>
+<p>左上にある <code>送る</code> ボタンを押してみてください。<br />
+（<code>Ctrl + S</code> のショートカットキーでも押せます）</p>
+<p><img src="assets/tutorial-senderr.png" alt="エラーダイアログ" /></p>
+<p>上手く反映されませんでした。</p>
+<p><code>PSD ファイルオブジェクト</code> と
+<code>PSDToolKit ウィンドウ</code> で編集している画像は <strong>1対1
+で対応しているわけではない</strong>ので、設定を反映させるためには<strong>どのオブジェクトに反映させるのか</strong>を明確にしなければいけません。</p>
+<p>改めて、<code>拡張編集</code> ウィンドウのタイムラインにある
+<code>PSD ファイルオブジェクト</code> をダブルクリックします。</p>
+<p><img src="assets/tutorial-timeline.png" alt="タイムライン" /></p>
+<p>するとプロパティが表示されます。</p>
+<p><img src="assets/tutorial-psdprop.png"
+alt="PSD ファイルのプロパティ" /></p>
+<p>このウィンドウにある複数行テキスト入力欄が見えている間だけ、<code>送る</code>
+ボタンは動作します。</p>
+<p>改めて <code>送る</code> ボタンを押してみてください。</p>
+<p><img src="assets/tutorial-psd-updated.png"
+alt="表情が反映された状態" /></p>
+<p>今度は無事に変更が反映されました。</p>
+<h4
+id=".E3.83.92.E3.83.B3.E3.83.88.3A_.E5.89.8D.E3.81.AE.E3.83.91.E3.83.BC.E3.83.84.E3.81.8C.E9.9D.9E.E8.A1.A8.E7.A4.BA.E3.81.AB.E3.81.AA.E3.82.89.E3.81.AA.E3.81.84.E3.81.A8.E3.81.8D.E3.81.AF">ヒント:
+前のパーツが非表示にならないときは</h4>
+<p>このチュートリアルで使用している PSD ファイルは<a
+href="https://oov.github.io/psdtool/manual.html#original-feature-asterisk">ラジオボタン化</a>機能に対応しているためワンクリックでパーツの切り替えができますが、対応していないファイルでは前のパーツが自動的に非表示に切り替わったりはしません。</p>
+<p>このような PSD
+ファイルでは前のパーツを手動で非表示にしてください。<br />
+（<a
+href="faq.html#.E3.83.AC.E3.82.A4.E3.83.A4.E3.83.BC.E3.81.8C.E6.B6.88.E3.81.88.E3.81.AA.E3.81.84_.2F_.E8.A4.87.E6.95.B0.E8.A1.A8.E7.A4.BA.E3.81.95.E3.82.8C.E3.82.8B_.2F_.E6.8C.87.E5.AE.9A.E3.81.97.E3.81.A6.E3.81.84.E3.81.AA.E3.81.84.E3.83.AC.E3.82.A4.E3.83.A4.E3.83.BC.E3.81.8C.E5.87.BA.E3.82.8B">非表示にする際の注意点</a>）</p>
+<p>なお、ラジオボタン化／反転レイヤー指定機能などは PSD
+ファイルに予め備わっているような機能ではないため、一般的な PSD
+ファイルはこの仕組みには対応していません。<br />
+（<a
+href="https://oov.github.io/psdtool/manual.html#original-feature">PSDTool
+の独自拡張機能</a>）</p>
+<h3 id=".E5.B7.A6.E5.8F.B3.E5.8F.8D.E8.BB.A2">左右反転</h3>
+<p><code>反転</code> と書かれた項目の左側にあるスライダーを
+<code>-1</code> から <code>1</code> に変更してみてください。</p>
+<p><img src="assets/tutorial-flip.png"
+alt="PSD ファイルのプロパティ" /></p>
+<p><img src="assets/tutorial-flipped.png" alt="左右反転後" /></p>
+<p>画像が左右反転されました。</p>
+<p>また、画像をよく見比べてみると、単純に左右反転しただけではなく<strong>髪の結び目の位置が変化</strong>しています。</p>
+<p><a
+href="https://oov.github.io/psdtool/manual.html#original-feature-flip">反転時の特殊処理</a>に対応した画像ではこのように内容自体が変わることがあるため、画像を反転したいときはこの機能を使うことが推奨されます。</p>
+<h3
+id=".E7.9B.AE.E3.83.91.E3.83.81.EF.BC.88.E7.9E.AC.E3.81.8D.EF.BC.89">目パチ（瞬き）</h3>
+<p>プロパティの右上にある <code>＋</code> ボタンを押して
+<code>アニメーション効果</code> を選択します。</p>
+<p><img src="assets/tutorial-addanim.png"
+alt="アニメーション効果を追加" /></p>
+<p>一番下にアニメーション効果が追加されますが、<code>描画@PSD</code>
+のスライダー辺りを右クリックしてメニューを表示し、<code>フィルタ効果を下に移動</code>
+を選んで <code>描画@PSD</code> と位置を入れ替えます。</p>
+<p><img src="assets/tutorial-moveanim.png"
+alt="描画@PSD を下に移動" /></p>
+<p>そしてコンボボックスを <code>震える</code> から <a
+href="psd.html#.E7.9B.AE.E3.83.91.E3.83.81.40PSD"><code>目パチ@PSD</code></a>
+へ変更します。</p>
+<p><img src="assets/tutorial-selblink.png"
+alt="目パチ@PSD を選択" /></p>
+<p><code>設定</code> ボタンを押して <code>パラメータ設定</code>
+ダイアログを表示させます。</p>
+<p><img src="assets/tutorial-param.png"
+alt="パラメータ設定 ダイアログ" /></p>
+<p>このダイアログを開いたままで、<code>PSDToolKit ウィンドウ</code> の
+<code>!目</code> の中にある <code>*通常</code>
+を右クリックしてメニューを表示させ、<code>"*通常" を「開き」に割り当て</code>
+を選びます。</p>
+<p><img src="assets/tutorial-blinkopen.png"
+alt="パラメータ設定 ダイアログ" /></p>
+<p>同じように <code>*つぶり</code> も <code>閉じ</code>
+に割り当ててください。</p>
+<p><img src="assets/tutorial-params.png"
+alt="パラメータ設定 ダイアログ" /></p>
+<p>正しく割り当てられていればこのようになります。</p>
+<p>できたら <code>OK</code> を閉じてダイアログを閉じます。</p>
+<p><img src="assets/tutorial-blink.png"
+alt="パラメータ設定 ダイアログ" /></p>
+<p>目パチの設定前に表情を <code>*にっこり</code>
+に変更していましたが、<code>目パチ@PSD</code> により <code>*通常</code>
+で上書きされています。</p>
+<p>右下にある5つのボタンのうち、左から2番目と3番目がそれぞれ
+<code>１コマ戻る</code> と <code>１コマ進む</code>
+ボタンなので、このボタンを使って目の表示が切り替わるのを確認してみてください。</p>
+<p>また、目パチの <code>速さ</code> を <code>1</code>
+以外にしてアニメーション速度を調節したり、<code>オフセット</code>
+の変更で目パチのタイミングを変えてみてください。</p>
+<h4
+id=".E3.83.92.E3.83.B3.E3.83.88.3A_.E7.9B.AE.E3.83.91.E3.83.81.E3.81.8C.E4.B8.8A.E6.89.8B.E3.81.8F.E5.8B.95.E3.81.8B.E3.81.AA.E3.81.84.E3.81.A8.E3.81.8D.E3.81.AF">ヒント:
+目パチが上手く動かないときは</h4>
+<p>チュートリアル用に用意した PSD
+ファイルでは上手く動いても、他のファイルでは上手くいかないかもしれません。</p>
+<p>そのようなときは以下の項目を参照してください。</p>
+<ul>
+<li><a
+href="faq.html#.E3.83.AC.E3.82.A4.E3.83.A4.E3.83.BC.E3.81.8C.E6.B6.88.E3.81.88.E3.81.AA.E3.81.84_.2F_.E8.A4.87.E6.95.B0.E8.A1.A8.E7.A4.BA.E3.81.95.E3.82.8C.E3.82.8B_.2F_.E6.8C.87.E5.AE.9A.E3.81.97.E3.81.A6.E3.81.84.E3.81.AA.E3.81.84.E3.83.AC.E3.82.A4.E3.83.A4.E3.83.BC.E3.81.8C.E5.87.BA.E3.82.8B">レイヤーが消えない
+/ 複数表示される / 指定していないレイヤーが出る</a></li>
+<li><a
+href="faq.html#.E3.82.A2.E3.83.8B.E3.83.A1.E3.83.BC.E3.82.B7.E3.83.A7.E3.83.B3.E3.81.AE.E5.8B.95.E3.81.8D.E3.81.8C.E5.A4.89">アニメーションの動きが変</a></li>
+<li><a
+href="faq.html#.E8.A8.AD.E5.AE.9A.E3.81.8C.E4.BF.9D.E5.AD.98.E3.81.95.E3.82.8C.E3.81.AA.E3.81.84">設定が保存されない</a></li>
+</ul>
+<h3
+id=".E5.8F.A3.E3.83.91.E3.82.AF.EF.BC.88.E3.83.AA.E3.83.83.E3.83.97.E3.82.B7.E3.83.B3.E3.82.AF.EF.BC.89">口パク（リップシンク）</h3>
+<p>まずは、今回使用する音声ファイルなどを以下のリンクからダウンロードしてください。</p>
+<p><a href="assets/audio.zip">audio.zip</a><br />
+<small>※この音声は <a href="http://cevio.jp/">CeVIO Creative Studio</a>
+で <a href="http://satosasara.com/">さとうささら</a>
+を使用して作成したものを加工したものです。<br />
+※これらのファイルをこのチュートリアルを完了させるため以外の目的で使用することを禁止します。</small></p>
+<p>口パクには音量解析データが必要で、そのデータは <a
+href="prep.html#.E5.8F.A3.E3.83.91.E3.82.AF.E6.BA.96.E5.82.99.40PSDToolKit"><code>口パク準備</code></a>
+を使うと作成できます。</p>
+<p><code>PSD ファイルオブジェクト</code> を <code>Layer 3</code>
+に移動します。</p>
+<p>なお、<strong><code>口パク準備</code> は
+<code>PSD ファイルオブジェクト</code>
+より上のレイヤーに置く</strong>必要があります。<br />
+下だと描画後に音声解析データが割り当てられるため、表示への反映が１フレーム遅れることになります。</p>
+<p><img src="assets/tutorial-timeline-move.png"
+alt="パラメータ設定 ダイアログ" /></p>
+<p>まずは音声ファイルをタイムラインの <code>Layer 1</code>
+にドラッグ＆ドロップで挿入します。</p>
+<p><img src="assets/tutorial-addwave.png"
+alt="音声ファイル の追加" /></p>
+<p><code>音声ファイル</code>
+自体は追加しなくても問題ありませんが、追加したほうが盛り上がります、気分が。</p>
+<p>次に <code>拡張編集</code> ウィンドウでの右クリックメニューから
+<code>メディアオブジェクトの追加</code>→<code>PSDToolKit</code>→<code>口パク準備</code>
+を選び、<code>Layer 2</code> に <code>口パク準備</code>
+を挿入します。</p>
+<p><img src="assets/tutorial-addtd.png" alt="口パク準備 の追加" /></p>
+<p>挿入された <code>口パク準備</code>
+の位置や長さを調整して、音声と同じ範囲にしてください。また、<code>Layer 3</code>
+にある <code>PSD ファイルオブジェクト</code>
+はそれらよりも長くなるように変えます。</p>
+<p><img src="assets/tutorial-resize.png" alt="位置や長さの調整" /></p>
+<p><code>口パク準備</code>
+をダブルクリックしてプロパティを表示させ、下にある <code>参照</code>
+ボタンを押して音声ファイルを選択します。</p>
+<p><img src="assets/tutorial-tdprop.png" alt="音声ファイルの選択" /></p>
+<p>これで音量解析データが作成されるようになったので、このデータを利用して口パクを設定します。</p>
+<p>まず <code>PSD ファイルオブジェクト</code> のテキスト入力欄にある
+<code>lipsync = 0</code> を <code>lipsync = 2</code>
+に書き換えます。<br />
+<small>（<code>Layer 2</code> にある <code>口パク準備</code>
+を使うため）</small></p>
+<p><img src="assets/tutorial-settdlayer.png"
+alt="口パク準備 があるレイヤーを設定" /></p>
+<p>そして <code>目パチ</code> の時と同じ方法で <a
+href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E9.96.8B.E9.96.89.E3.81.AE.E3.81.BF.40PSD"><code>口パク 開閉のみ@PSD</code></a>
+を追加します。</p>
+<p><img src="assets/tutorial-addls.png"
+alt="口パク 開閉のみ@PSD の追加" /></p>
+<p>もしダイアログが縦に長すぎる場合は左上にある <code>▼</code>
+ボタンを押すことで開閉できます。</p>
+<p><code>口パク 開閉のみ@PSD</code> にある <code>設定</code>
+ボタンを押して、口の開いた形と閉じた形を設定します。</p>
+<p><img src="assets/tutorial-lssetting.png"
+alt="口パクのパターンを割り当て" /></p>
+<p>この PSD ファイルには口を閉じた形は存在しないので、ここでは
+<code>*ふぇー</code> で代用しました。</p>
+<p><img src="assets/tutorial-lipsync.png" alt="動作確認" /></p>
+<p>再生ボタンを押すと、音声に合わせて口が動くのが確認できます。</p>
+<h4
+id=".E3.83.92.E3.83.B3.E3.83.88.3A_.E5.8F.A3.E3.83.91.E3.82.AF.E3.81.8C.E4.B8.8A.E6.89.8B.E3.81.8F.E5.8B.95.E3.81.8B.E3.81.AA.E3.81.84.E3.81.A8.E3.81.8D.E3.81.AF">ヒント:
+口パクが上手く動かないときは</h4>
+<p>チュートリアル用に用意した PSD
+ファイルや音声ファイルでは上手く動いても、他のファイルでは上手くいかないかもしれません。</p>
+<p>そのようなときは以下の項目を参照してください。</p>
+<ul>
+<li><a
+href="faq.html#.E3.83.AC.E3.82.A4.E3.83.A4.E3.83.BC.E3.81.8C.E6.B6.88.E3.81.88.E3.81.AA.E3.81.84_.2F_.E8.A4.87.E6.95.B0.E8.A1.A8.E7.A4.BA.E3.81.95.E3.82.8C.E3.82.8B_.2F_.E6.8C.87.E5.AE.9A.E3.81.97.E3.81.A6.E3.81.84.E3.81.AA.E3.81.84.E3.83.AC.E3.82.A4.E3.83.A4.E3.83.BC.E3.81.8C.E5.87.BA.E3.82.8B">レイヤーが消えない
+/ 複数表示される / 指定していないレイヤーが出る</a></li>
+<li><a
+href="faq.html#.E3.82.A2.E3.83.8B.E3.83.A1.E3.83.BC.E3.82.B7.E3.83.A7.E3.83.B3.E3.81.AE.E5.8B.95.E3.81.8D.E3.81.8C.E5.A4.89">アニメーションの動きが変</a></li>
+<li><a
+href="faq.html#.E5.8F.A3.E3.83.91.E3.82.AF.E3.81.8C.E3.81.BB.E3.81.A8.E3.82.93.E3.81.A9.E9.96.8B.E3.81.8D.E3.81.A3.E3.81.B1.E3.81.AA.E3.81.97.E3.81.AB.E3.81.AA.E3.82.8B_.2F_.E3.81.BB.E3.81.A8.E3.82.93.E3.81.A9.E9.96.8B.E3.81.8B.E3.81.AA.E3.81.84">口パクがほとんど開きっぱなしになる
+/ ほとんど開かない</a></li>
+<li><a
+href="faq.html#.E5.8F.A3.E3.83.91.E3.82.AF.E3.81.AE.E5.8B.95.E3.81.8D.E3.81.8C.E6.BF.80.E3.81.97.E3.81.99.E3.81.8E.E3.82.8B">口パクの動きが激しすぎる</a></li>
+<li><a
+href="faq.html#.E8.A8.AD.E5.AE.9A.E3.81.8C.E4.BF.9D.E5.AD.98.E3.81.95.E3.82.8C.E3.81.AA.E3.81.84">設定が保存されない</a></li>
+</ul>
+<h2 id=".E5.AD.97.E5.B9.95">字幕</h2>
+<p>音声に合わせて表示する字幕を作成します。</p>
+<p>字幕も口パクと同じように準備オブジェクトが必要です。</p>
+<p><code>PSD ファイルオブジェクト</code> を <code>Layer 4</code>
+に移動し、右クリックメニューから
+<code>メディアオブジェクトの追加</code>→<code>PSDToolKit</code>→<code>字幕準備</code>
+を選び、<code>Layer 3</code> に <a
+href="prep.html#.E5.AD.97.E5.B9.95.E6.BA.96.E5.82.99"><code>字幕準備</code></a>
+を挿入します。</p>
+<p>なお、<strong><code>字幕準備</code> は <code>字幕表示</code>
+より上のレイヤーに置く</strong>必要があります。<br />
+下だと描画後に字幕データが割り当てられるため、表示への反映が１フレーム遅れることになります。</p>
+<p><img src="assets/tutorial-addstprep.png" alt="字幕準備 を追加" /></p>
+<p><code>字幕準備</code> も音声と同じ範囲に設定します。</p>
+<p><code>字幕準備</code> のプロパティを開くとテキスト入力欄に
+<code>セリフ</code>
+と書かれた箇所があるので、これを字幕として表示したいテキストに書き換えます。</p>
+<p><img src="assets/tutorial-stprep.png" alt="セリフを入力" /></p>
+<p>これで字幕のテキストデータが準備できたので、次は実際に表示を行います。</p>
+<p>右クリックメニューから
+<code>メディアオブジェクトの追加</code>→<code>PSDToolKit</code>→<code>字幕表示</code>
+を選び、<code>Layer 5</code> に <a
+href="obj.html#.E5.AD.97.E5.B9.95.E8.A1.A8.E7.A4.BA"><code>字幕表示</code></a>
+を挿入します。</p>
+<p><img src="assets/tutorial-addstv.png" alt="字幕表示 を追加" /></p>
+<p>そして <code>字幕表示</code> のプロパティのテキスト入力欄にある
+<code>layer = 1</code> を <code>layer = 3</code> に書き換えます。<br />
+<small>（<code>Layer 3</code> にある <code>字幕準備</code>
+のデータを表示するため）</small></p>
+<p><img src="assets/tutorial-stvprop.png"
+alt="レイヤー指定を書き換え" /></p>
+<p>あとは自由に表示の設定を変更して、読みやすい形にすれば設定完了です。</p>
+<p><img src="assets/tutorial-stv.png" alt="字幕の表示確認" /></p>
+<p>再生ボタンを押すと、喋っている間だけ字幕が表示されるのが確認できます。</p>
+<h2
+id=".E5.8F.A3.E3.83.91.E3.82.AF.E6.BA.96.E5.82.99.E3.81.A8.E5.AD.97.E5.B9.95.E6.BA.96.E5.82.99.E3.81.AE.E9.85.8D.E7.BD.AE.E3.82.92.E5.8A.B9.E7.8E.87.E5.8C.96">口パク準備と字幕準備の配置を効率化</h2>
+<p>実際の動画制作においては <code>口パク準備</code> や
+<code>字幕準備</code>
+は音声とセットで大量に配置することになるため、これを効率的に配置できるようにします。</p>
+<p>AviUtl のメニューから
+<code>編集</code>→<code>PSDToolKit</code>→<code>環境設定</code> を選び
+<code>PSDToolKit 環境設定</code> ダイアログを開きます。</p>
+<p><img src="assets/tutorial-envset.png"
+alt="PSDToolKit 環境設定 ダイアログ" /></p>
+<p>上記の画像のように <code>「口パク準備」を生成</code> と
+<code>「字幕準備」を生成</code> にチェックをつけ <code>OK</code>
+を押して閉じます。</p>
+<p><img src="assets/tutorial-shiftdrop.png"
+alt="Shift キーを押しながらファイルをドロップ" /></p>
+<p><code>*.wav</code> ファイルだけを上記のように投げ込むと
+<code>口パク準備</code> と <code>字幕準備</code>
+が自動的に生成され、<code>字幕準備</code> には同じ名前の
+<code>*.txt</code> ファイルの内容が書き込まれた状態になります。</p>
+<p>ファイルをつかむ前から <code>Shift キー</code>
+を押してしまうとエクスプローラーなどの挙動が変わってしまい、上手くつかめないことがあるので注意してください。</p>
+<p>これで今後は <code>*.wav</code> ファイルと同じ名前の
+<code>*.txt</code> ファイルさえあれば、<code>Shift キー</code>
+を押すだけで <code>口パク準備</code> と <code>字幕準備</code>
+が作成できるようになりました。</p>
+<p>なお上記のスクリーンショットでは
+<code>PSD ファイルオブジェクト</code> と <code>字幕表示</code>
+のアイテムの長さが足りていないので、きちんと画像や字幕を表示させるためにはそれらの長さの調節も必要です。</p>
+<h3
+id=".E3.83.92.E3.83.B3.E3.83.88.3A_.E5.8F.A3.E3.83.91.E3.82.AF.E6.BA.96.E5.82.99.E3.81.AE.E8.A8.AD.E5.AE.9A.E3.81.AE.E7.B0.A1.E7.95.A5.E5.8C.96">ヒント:
+口パク準備の設定の簡略化</h3>
+<p>音声ファイルの内容によっては口パク準備のプロパティを変更する必要がありますが、１つ１つに違う値を設定するのではなく一括で同じ値を設定したいときは、<a
+href="obj.html#PSD_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.AA.E3.83.96.E3.82.B8.E3.82.A7.E3.82.AF.E3.83.88"><code>PSD ファイルオブジェクト</code>
+にある
+<code>ls_locut</code>/<code>ls_hicut</code>/<code>ls_threshold</code>/<code>ls_sensitivity</code>
+の設定</a>を使うと一気に上書きできます。</p>
+<h3
+id=".E3.83.92.E3.83.B3.E3.83.88.3A_.E5.AD.97.E5.B9.95.E3.81.AE.E3.83.86.E3.82.AD.E3.82.B9.E3.83.88.E3.82.92.E8.87.AA.E5.8B.95.E3.81.A7.E7.BD.AE.E6.8F.9B">ヒント:
+字幕のテキストを自動で置換</h3>
+<p><a
+href="setting.html#.E8.A8.AD.E5.AE.9A.E3.81.AE.E3.82.AB.E3.82.B9.E3.82.BF.E3.83.9E.E3.82.A4.E3.82.BA"><code>setting.lua</code>
+を作成</a>し、<a
+href="setting.html#P.3Awav_subtitle_replacer"><code>P:wav_subtitle_replacer</code></a>
+の設定を行うことで実現できます。</p>
+<h3
+id=".E3.83.92.E3.83.B3.E3.83.88.3A_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.92.E3.83.89.E3.83.AD.E3.83.83.E3.83.97.E3.81.99.E3.82.8B.E4.BD.9C.E6.A5.AD.E8.87.AA.E4.BD.93.E3.81.AE.E5.8A.B9.E7.8E.87.E5.8C.96">ヒント:
+ファイルをドロップする作業自体の効率化</h3>
+<p>作成した音声ファイルを Shift
+キーを押しながらドロップするのが面倒なら、<a
+href="forcepser.html"><code>かんしくん</code></a>
+を利用することで、AviUtl
+の現在のカーソル位置に作成されたファイルを自動で挿入することもできます。</p>
+<h2
+id=".E5.8B.95.E7.94.BB.E3.81.AE.E9.80.94.E4.B8.AD.E3.81.A7.E8.A1.A8.E6.83.85.E3.82.92.E5.A4.89.E6.9B.B4.E3.81.99.E3.82.8B.E3.81.9F.E3.82.81.E3.81.AB">動画の途中で表情を変更するために</h2>
+<p>ここまでの内容で、目パチしながら音声に合わせて口パクし、同時に字幕が出せるようになりました。</p>
+<p>さらに <code>*.wav</code> ファイルの追加時に自動で
+<code>口パク準備</code> と <code>字幕準備</code>
+が作成できるようになったので、音声ファイルをどんどん加えるだけでちょっとした動画を作ることができるようになりました。</p>
+<p>しかし、このままでは途中で表情の変更ができません。<br />
+<small>（アイテムを分割すれば変えられますが、それは物理的に増やしているので途中とは言えません）</small></p>
+<p>また <code>目パチ</code> を設定した際に起きたように、目のパターンを
+<code>*にっこり</code> にしても <code>目パチ</code>
+が表示を上書きしてしまうなど、同じ箇所のパーツを複数箇所で設定すると煩わしい部分もあります。</p>
+<p>ここからはこの PSD
+ファイル専用のアニメーション効果を作成することで、編集時の作業効率の改善を図ります。</p>
+<h2
+id="*.anm_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.92.E4.BD.9C.E6.88.90.E3.81.99.E3.82.8B">*.anm
+ファイルを作成する</h2>
+<p>PSD ファイルから <code>*.anm</code> ファイルを作成します。</p>
+<p><code>PSDToolKit ウィンドウ</code> で <code>!眉</code> の中にある
+<code>*普通</code>
+を右クリックしてメニューを表示し、<code>"*普通" と同じ階層にあるレイヤー全てをファイルにエクスポート</code>
+を選びます。</p>
+<p><img src="assets/tutorial-anm.png"
+alt="&quot;*普通&quot; と同じ階層にあるレイヤー全てをファイルにエクスポート" /></p>
+<p>するとファイルに名前をつけて保存するためのダイアログが表示されるので、今回はそのまま
+<code>保存</code> を押します。<br />
+<small>（ファイル名を変える場合、ファイル名には <code>@</code>
+は使わないでください。拡張編集ではこの記号には特別な意味があり、期待通りに動かなくなります）</small></p>
+<p><img src="assets/tutorial-saveas.png"
+alt="名前をつけて保存ダイアログ" /></p>
+<p>保存したファイルを読み込ませるためには AviUtl
+の再起動が必要になりますが、現在編集中のプロジェクトを一度も保存していないので、ここで保存しておきましょう。</p>
+<p>AviUtl のメニューから
+<code>ファイル</code>→<code>編集プロジェクトの保存</code>
+を選び、好きな場所に好きな名前で保存してください。</p>
+<p>その後 AviUtl を閉じ、改めて起動して、AviUtl のメニューから
+<code>ファイル</code>→<code>最近使ったファイル</code>→<code>（保存したプロジェクト名）</code>
+を選んでプロジェクトファイルを開き直してください。</p>
+<p>そして <code>PSD ファイルオブジェクト</code> から
+<code>目パチ@PSD</code> と <code>口パク 開閉のみ@PSD</code>
+を削除（右クリックメニューから
+<code>フィルタ効果の削除</code>）し、新しく
+<code>アニメーション効果</code> を追加して、<code>描画@PSD</code>
+を下に移動し、さっきエクスポートしたファイルの名前を選択します。</p>
+<p><img src="assets/tutorial-addanm.png" alt="作業後の設定内容" /></p>
+<p>このような状態になります。</p>
+<p><code>!眉</code> のスライダーは <code>0</code> ～ <code>3</code>
+の範囲で選ぶことができ、<code>0</code>
+のときはこのスライダーでは上書きせずに元々の表示を優先します。</p>
+<p>このスライダーを使うことによって、もう
+<code>PSDToolKit ウィンドウ</code>
+に切り替えなくてもパーツを変更できるようになりました。</p>
+<h3
+id=".E4.BB.96.E3.81.AE.E3.82.B9.E3.83.A9.E3.82.A4.E3.83.80.E3.83.BC.E3.82.92.E6.9C.89.E5.8A.B9.E5.8C.96.E3.81.99.E3.82.8B">他のスライダーを有効化する</h3>
+<p><code>!眉</code>
+の下にはまだ有効化されていないスライダーがあるので、これに他のパーツも割り当てていきます。</p>
+<p><code>メモ帳</code> を起動し、さっき作成した
+<code>C:\AviUtl\script\im5467479-!眉.anm</code> を <code>メモ帳</code>
+へドラッグ＆ドロップして読み込みます。</p>
+<p><img src="assets/tutorial-notepad.png"
+alt="メモ帳 で開いた状態" /></p>
+<p>今度は <code>!目</code> の中にある <code>*通常</code>
+を右クリックしてメニューを表示し、<code>"*普通" と同じ階層にあるレイヤー全てをクリップボードにコピー</code>
+を選びます。</p>
+<p><img src="assets/tutorial-note2.png"
+alt="クリップボードにコピー" /></p>
+<p>コピーした内容をテキストの下に貼り付けます。</p>
+<p><img src="assets/tutorial-note3.png"
+alt="テキストの下に貼り付け" /></p>
+<p>貼り付けたテキスト内の <code>track0</code> を <code>track1</code>
+に書き換えます。<br />
+<small>（最初のスライダーが <code>track0</code> で、次のスライダーが
+<code>track1</code> だから）</small></p>
+<p><img src="assets/tutorial-note4.png"
+alt="track0 を track1 に書き換え" /></p>
+<p>そして <code>--track1</code>
+から始まる行を上に移動して、<code>--track0</code> と並べます。</p>
+<p><img src="assets/tutorial-note5.png" alt="--track1 の行を移動" /></p>
+<p>同じ流れで <code>!くち</code> の項目も増やしましょう。</p>
+<p><img src="assets/tutorial-note6.png" alt="!くち を追加" /></p>
+<p>これでメモ帳を上書き保存し、AviUtl
+のプロジェクトも上書き保存し、AviUtl
+を閉じて、改めて起動し、プロジェクトを読み込みます。</p>
+<p><img src="assets/tutorial-note7.png"
+alt="スライダーが有効化された状態" /></p>
+<p>スライダーが3つ使えるようになりました。</p>
+<p>スライダーを操作すると、それぞれのパーツが切り替わることが確認できます。</p>
+<h4
+id=".E3.83.92.E3.83.B3.E3.83.88.3A_.E3.82.B9.E3.83.A9.E3.82.A4.E3.83.80.E3.83.BC.E3.81.8C4.E3.81.A4.E3.81.A7.E3.81.AF.E8.B6.B3.E3.82.8A.E3.81.AA.E3.81.84.E5.A0.B4.E5.90.88">ヒント:
+スライダーが4つでは足りない場合</h4>
+<p><code>*.anm</code>
+ファイル自体を複数用意することで、もっとたくさんのパーツを使うことが可能です。</p>
+<p>また、拡張編集の制限によりひとつのオブジェクトに追加できるフィルター効果は10個までですが、<code>描画@PSD</code>
+を削除して下のレイヤーに配置すればもっとたくさんの効果を使うこともできます。</p>
+<h4
+id=".E3.83.92.E3.83.B3.E3.83.88.3A_.E3.83.91.E3.83.BC.E3.83.84.E3.81.8C.E3.81.B2.E3.81.A8.E3.81.A4.E3.81.AE.E3.83.95.E3.82.A9.E3.83.AB.E3.83.80.E3.83.BC.E3.81.AB.E3.81.BE.E3.81.A8.E3.81.BE.E3.81.A3.E3.81.A6.E3.81.84.E3.81.AA.E3.81.84.E3.81.A8.E3.81.8D.E3.81.AF">ヒント:
+パーツがひとつのフォルダーにまとまっていないときは</h4>
+<p>PSD
+ファイルによっては、例えば目のパーツが２箇所以上のフォルダーに分かれて存在するようなケースもあります。</p>
+<p>このような場合は一括登録はできませんが、必要な数だけ項目を追加し、<code>--track0</code>
+などの行にあるスライダーの最大値も足した数だけ増やせば、変則的な構成でも対応可能です。</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">--track0:!目,0,9,0,1</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">--             ↑5個足したので最大値も 4 + 5 = 9 に書き換え</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="kw">local</span> <span class="va">values</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;v1.!目/*通常&quot;</span><span class="op">,</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;v1.!目/*にっこり&quot;</span><span class="op">,</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;v1.!目/*ぐるぐる&quot;</span><span class="op">,</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;v1.!目/*つぶり&quot;</span><span class="op">,</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;v1.!目2/*追記1&quot;</span><span class="op">,</span> <span class="co">-- ここから下が追加したレイヤー</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;v1.!目2/*追記2&quot;</span><span class="op">,</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;v1.!目2/*追記3&quot;</span><span class="op">,</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;v1.!目2/*追記4&quot;</span><span class="op">,</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;v1.!目2/*追記5&quot;</span><span class="op">,</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="cn">PSD</span><span class="op">:</span>addstate<span class="op">(</span><span class="va">values</span><span class="op">,</span> <span class="va">obj</span><span class="op">.</span><span class="va">track0</span><span class="op">)</span></span></code></pre></div>
+<p>ただしこのようなケースではそもそもレイヤー管理が煩雑になる可能性が高いため、PSD
+ファイル側を編集したり<a
+href="pfv.html">シンプルビューを利用</a>して対応したほうが、結果的に簡単に解決するかもしれません。</p>
+<h3
+id=".E7.9B.AE.E3.83.91.E3.83.81.E3.82.92.E8.BF.BD.E5.8A.A0.E3.81.99.E3.82.8B">目パチを追加する</h3>
+<p>さっき削除した <code>目パチ@PSD</code>
+を、改めてスライダーの項目のひとつとして追加します。</p>
+<p><a
+href="psd.html#.E7.9B.AE.E3.83.91.E3.83.81_.E3.82.92_Lua_.E3.82.B9.E3.82.AF.E3.83.AA.E3.83.97.E3.83.88.E3.81.8B.E3.82.89.E4.BD.BF.E3.81.86">このリンクを右クリックして新しいウィンドウで開き</a>、入力用フォームを表示します。</p>
+<p><img src="assets/tutorial-note8.png"
+alt="レイヤーをクリップボードにコピー" /></p>
+<p><code>目パチ</code>
+に割り当てたいパーツを右クリックしてコピーし、ブラウザ側の入力欄に貼り付けます。</p>
+<p><img src="assets/tutorial-note9.png"
+alt="フォームに貼り付けた例" /></p>
+<p>前回と同じように、<code>*通常</code> と <code>*つぶり</code>
+をそれぞれ <code>開き</code> と <code>閉じ</code> に割り当てました。</p>
+<p>その他、必要に応じて <code>速さ</code> なども変更してください。</p>
+<p>入力が終わったらクリップボードにコピーし、メモ帳に貼り付けます。</p>
+<p>そして<strong>その後ろにカンマ <code>,</code>
+を加えます</strong>。</p>
+<p><img src="assets/tutorial-notea.png" alt="項目を追加した例" /></p>
+<p><code>!目</code> の項目をひとつ書き足したので、<code>!目</code>
+のスライダーの最大値を <code>4</code> から <code>5</code>
+に書き換えます。</p>
+<p><img src="assets/tutorial-noteb.png"
+alt="スライダーの最大値を書き換え" /></p>
+<p>これで <code>!目</code> のスライダーが <code>1</code>
+の時には目パチを行い、<code>2</code>～<code>5</code>
+の時はその目のパターンを表示するようになりました。</p>
+<p>必要に応じてこの目パチはいくつでも登録することができます。</p>
+<h3
+id=".E5.8F.A3.E3.83.91.E3.82.AF.E3.82.92.E8.BF.BD.E5.8A.A0.E3.81.99.E3.82.8B">口パクを追加する</h3>
+<p>口パクも目パチと同様の手順で行えます。</p>
+<p><a
+href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E9.96.8B.E9.96.89.E3.81.AE.E3.81.BF_.E3.82.92_Lua_.E3.82.B9.E3.82.AF.E3.83.AA.E3.83.97.E3.83.88.E3.81.8B.E3.82.89.E4.BD.BF.E3.81.86">このリンクを右クリックして新しいウィンドウで開き</a>、入力用フォームを表示します。</p>
+<p>あとの作業内容は同じなので省略します。</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">--track0:!眉,0,3,0,1</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">--track1:!目,0,5,0,1</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">--track2:!くち,0,5,0,1</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="kw">local</span> <span class="va">values</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;v1.!眉/*普通&quot;</span><span class="op">,</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;v1.!眉/*(´･ω･`)&quot;</span><span class="op">,</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;v1.!眉/*(`・ω・´)&quot;</span><span class="op">,</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="cn">PSD</span><span class="op">:</span>addstate<span class="op">(</span><span class="va">values</span><span class="op">,</span> <span class="va">obj</span><span class="op">.</span><span class="va">track0</span><span class="op">)</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="kw">local</span> <span class="va">values</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  <span class="fu">require</span><span class="op">(</span><span class="st">&quot;PSDToolKit&quot;</span><span class="op">).</span><span class="va">Blinker</span><span class="op">.</span>new<span class="op">({</span><span class="st">&quot;v1.!目/*つぶり&quot;</span><span class="op">,</span><span class="st">&quot;v1.!目/*通常&quot;</span><span class="op">},</span><span class="dv">4</span><span class="op">,</span><span class="dv">1</span><span class="op">,</span><span class="dv">0</span><span class="op">),</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;v1.!目/*通常&quot;</span><span class="op">,</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;v1.!目/*にっこり&quot;</span><span class="op">,</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;v1.!目/*ぐるぐる&quot;</span><span class="op">,</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;v1.!目/*つぶり&quot;</span><span class="op">,</span></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="cn">PSD</span><span class="op">:</span>addstate<span class="op">(</span><span class="va">values</span><span class="op">,</span> <span class="va">obj</span><span class="op">.</span><span class="va">track1</span><span class="op">)</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="kw">local</span> <span class="va">values</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>  <span class="fu">require</span><span class="op">(</span><span class="st">&quot;PSDToolKit&quot;</span><span class="op">).</span><span class="va">LipSyncSimple</span><span class="op">.</span>new<span class="op">({</span><span class="st">&quot;v1.!くち/*ふぇー&quot;</span><span class="op">,</span><span class="st">&quot;v1.!くち/*ワ&quot;</span><span class="op">},</span><span class="dv">1</span><span class="op">,</span><span class="kw">true</span><span class="op">),</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;v1.!くち/*ワ&quot;</span><span class="op">,</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;v1.!くち/*ムー&quot;</span><span class="op">,</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;v1.!くち/*ふぇー&quot;</span><span class="op">,</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;v1.!くち/*あー！&quot;</span><span class="op">,</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="cn">PSD</span><span class="op">:</span>addstate<span class="op">(</span><span class="va">values</span><span class="op">,</span> <span class="va">obj</span><span class="op">.</span><span class="va">track2</span><span class="op">)</span></span></code></pre></div>
+<p>ここまでの編集が終わった段階で、メモ帳の中は概ね上記のような内容になります。</p>
+<p>それでは改めてメモ帳を上書き保存し、AviUtl
+のプロジェクトも上書き保存し、AviUtl
+を閉じて、改めて起動し、プロジェクトを読み込みます。</p>
+<p><img src="assets/tutorial-notec.png" alt="追加された項目" /></p>
+<p>スライダーを上記のように設定すると目パチと口パクが動き、<code>1</code>
+以外にすれば目パチなどで上書きされずに他のパターンも表示できるようになりました。</p>
+<h2
+id=".E9.80.94.E4.B8.AD.E3.81.A7.E8.A1.A8.E6.83.85.E3.82.92.E5.A4.89.E6.9B.B4.E3.81.99.E3.82.8B">途中で表情を変更する</h2>
+<p><code>PSD ファイルオブジェクト</code>
+の表情用のスライダーの名前をクリックして、<code>瞬間移動</code>
+を選択します。</p>
+<p><img src="assets/tutorial-interp.png" alt="瞬間移動 を選択" /></p>
+<p>これで右側のスライダーが使えるようになります。</p>
+<p>次に、<code>PSD ファイルオブジェクト</code>
+のアイテムを真ん中あたりを右クリックし、<code>中間点を追加</code>
+を選択します。</p>
+<p><img src="assets/tutorial-addp.png" alt="中間点を追加 を選択" /></p>
+<p>プロパティ表示中のアイテムに表示される点線が、全体ではなく中間点を境目として表示されるようになりました。</p>
+<p><img src="assets/tutorial-point.png"
+alt="中間点が追加された状態" /></p>
+<p>点線の左側が左側のスライダー、点線の右側が右側のスライダーに対応しています。</p>
+<p>そのため、例えば上記の状態で左側のスライダーを <code>1</code>
+右側のスライダーを <code>3</code> に設定すると、前半は <code>1</code>
+で、後半は <code>3</code> で表示されるようになります。</p>
+<p>このように中間点を追加することで、タイムラインの途中で表情の切り替えができるようになりました。</p>
+<h2
+id=".E5.A4.9A.E7.9B.AE.E7.9A.84.E3.82.B9.E3.83.A9.E3.82.A4.E3.83.80.E3.83.BC">多目的スライダー</h2>
+<p>中間点を使った表情の切り替えも有用ですが、その他に「一時的に変更し、あとで戻す」という用途に特化した機能もあり、「喋っている間だけ表情を切り替える」といった形で表情を切り替えたい場合には大変有用です。</p>
+<p><code>Layer 3</code>～<code>Layer 5</code>
+にあるアイテムを一段下にずらし、<code>拡張編集</code>
+ウィンドウでの右クリックメニューから
+<code>メディアオブジェクトの追加</code>→<code>PSDToolKit</code>→<code>多目的スライダー</code>
+を選び、<a
+href="prep.html#.E5.A4.9A.E7.9B.AE.E7.9A.84.E3.82.B9.E3.83.A9.E3.82.A4.E3.83.80.E3.83.BC.40PSDToolKit"><code>多目的スライダー</code></a>
+を <code>Layer 3</code> に挿入します。</p>
+<p>なお、<strong><code>多目的スライダー</code> は
+<code>PSD ファイルオブジェクト</code>
+より上のレイヤーに置く</strong>必要があります。<br />
+下だと描画後に多目的スライダーのデータが割り当てられるため、表示への反映が１フレーム遅れることになります。</p>
+<p><img src="assets/tutorial-mpslider.png" alt="多目的スライダー" /></p>
+<p>追加した <code>多目的スライダー</code>
+の範囲を音声と同じにします。</p>
+<p>また、<code>字幕準備</code> の位置が変わったので
+<code>字幕表示</code> のテキスト入力欄で <code>layer = 3</code> を
+<code>layer = 4</code> に修正しておきます。<br />
+<small>（<code>Layer 4</code> にある <code>字幕準備</code>
+を使うため）</small></p>
+<p>そして <code>PSD ファイルオブジェクト</code>
+のテキスト入力欄で、<code>mpslider = 0</code> を
+<code>mpslider = 3</code> に書き換えます。<br />
+<small>（<code>Layer 3</code> にある <code>多目的スライダー</code>
+を使うため）</small></p>
+<p><img src="assets/tutorial-mpslider2.png"
+alt="mpslider = 3 に書き換え" /></p>
+<p>これで多目的スライダーが使えるようになりました。</p>
+<p><img src="assets/tutorial-mpslider3.png"
+alt="多目的スライダー のプロパティ" /></p>
+<p><code>多目的スライダー</code>
+には名前がないスライダーが予め8つ用意されており、名前や項目数は連動していないものの、上から順に
+<code>!眉</code> <code>!目</code> <code>!くち</code>
+のスライダーが割り当てられていて、<code>0</code>
+以外の値を指定するとスライダーの値を一時的に上書きできます。</p>
+<p>試しに名前がない2番目のスライダーを <code>5</code>
+に変更してみてください。</p>
+<p><img src="assets/tutorial-mpslider4.png"
+alt="多目的スライダーの動作確認" /></p>
+<p>喋っている間は一時的に <code>!目</code> が <code>*つぶり</code>
+になりますが、その範囲が終了すると元々の表情に戻ります。</p>
+<p>この機能は中間点を追加する方法の代わりとして使うこともできますし、併用することもできます。<br />
+もちろん音声と同じではない範囲に設定することもでき、更には多目的スライダーに中間点を追加して使うようなこともできます。</p>
+<h2
+id=".E5.A4.9A.E7.9B.AE.E7.9A.84.E3.82.B9.E3.83.A9.E3.82.A4.E3.83.80.E3.83.BC.E3.81.AE.E9.85.8D.E7.BD.AE.E3.82.92.E5.8A.B9.E7.8E.87.E5.8C.96">多目的スライダーの配置を効率化</h2>
+<p><code>口パク準備</code> や <code>字幕準備</code> と同じように
+<code>多目的スライダー</code>
+も音声と一緒に自動で配置することができます。</p>
+<p><a
+href="#.E5.8F.A3.E3.83.91.E3.82.AF.E6.BA.96.E5.82.99.E3.81.A8.E5.AD.97.E5.B9.95.E6.BA.96.E5.82.99.E3.81.AE.E9.85.8D.E7.BD.AE.E3.82.92.E5.8A.B9.E7.8E.87.E5.8C.96">口パク準備と字幕準備の配置を効率化</a>の時に使ったダイアログで
+<code>「多目的スライダー」を生成</code>
+にチェックを入れれば、<code>多目的スライダー</code>
+も自動的に生成されるようになります。</p>
+<h2
+id=".E6.BA.96.E5.82.99.E3.82.AA.E3.83.96.E3.82.B8.E3.82.A7.E3.82.AF.E3.83.88.E3.81.AE.E9.9B.86.E7.B4.84">準備オブジェクトの集約</h2>
+<p>ここまでの作業で、<code>Layer 2</code> から <code>Layer 4</code>
+を準備用のオブジェクトが専有するようになりました。</p>
+<p><img src="assets/tutorial-mpslider.png"
+alt="準備用オブジェクトがたくさんあるスクリーンショット" /></p>
+<p>この状態なら、例えば長い音声に合わせて <code>字幕準備</code>
+の分割を行ったり、<code>多目的スライダー</code>
+だけ長さを伸ばして複数のセリフに渡る表情を作ったりすることもできるため、これはこれでメリットがあります。</p>
+<p>しかしそのような操作が全く必要ない場合には、これらをひとつのレイヤーに集約させることができます。</p>
+<p>AviUtl のメニューから
+<code>編集</code>→<code>PSDToolKit</code>→<code>環境設定</code> を選び
+<code>PSDToolKit 環境設定</code>
+ダイアログを開き、<code>すべての準備オブジェクトを単一のオブジェクトへ統合</code>
+にチェックを入れます。</p>
+<p><img src="assets/tutorial-mergedprep.png"
+alt="環境設定ダイアログにあるチェックボックス" /></p>
+<p>これで、今後追加される準備オブジェクトはひとつの <a
+href="prep.html#.E7.B5.B1.E5.90.88.E6.BA.96.E5.82.99.E3.82.AA.E3.83.96.E3.82.B8.E3.82.A7.E3.82.AF.E3.83.88"><code>統合準備オブジェクト</code></a>
+に集約されるようになります。<br />
+<small>（つまり、今まで配置されたものが勝手に変更されることはありません）</small></p>
+<p><img src="assets/tutorial-mergedprep2.png"
+alt="統合準備オブジェクト" /></p>
+<p><a
+href="prep.html#.E7.B5.B1.E5.90.88.E6.BA.96.E5.82.99.E3.82.AA.E3.83.96.E3.82.B8.E3.82.A7.E3.82.AF.E3.83.88"><code>統合準備オブジェクト</code></a>
+にはすべての機能が含まれているため、例えばこの場合だと
+<code>口パク準備</code> も <code>多目的スライダー</code> も
+<code>字幕準備</code> も<strong>すべて <code>Layer 2</code>
+に配置</strong>されている状態になります。</p>
+<p>そのため、基本的に未統合のものとは併用できないため注意してください。</p>
+<h2
+id=".E3.83.96.E3.83.A9.E3.83.83.E3.82.B7.E3.83.A5.E3.82.A2.E3.83.83.E3.83.97">ブラッシュアップ</h2>
+<p>ここまでで、PSDToolKit
+が持つ機能を活用した基本的なチュートリアルは完了です。</p>
+<p>表情変更をスライダーだけで行えるようになり、更には発言中だけ表情を切り替えるようなことも簡単になったので、表情がコロコロ変わる動画を作るのも簡単になりました。</p>
+<p>ここからは、更に細かい部分に目を向けていきます。</p>
+<h2
+id=".E5.96.8B.E3.81.A3.E3.81.A6.E3.81.84.E3.82.8B.E9.96.93.E3.81.A0.E3.81.91.E7.94.BB.E5.83.8F.E3.82.92.E8.A1.A8.E7.A4.BA.E3.81.95.E3.81.9B.E3.82.8B">喋っている間だけ画像を表示させる</h2>
+<p>メインのコンテンツがキャラクターではなく同時に流している動画などである場合には、キャラクターを常に表示するのは避けたいこともあるかも知れません。</p>
+<p><code>口パク準備</code> か <code>多目的スライダー</code>
+を使っているならば、<code>subobj アニメーション効果</code>
+を使うことで手間なくそれを実現できます。</p>
+<p><code>PSD ファイルオブジェクト</code> に、<a
+href="subobj.html#.E5.9F.BA.E6.9C.AC.E7.99.BB.E5.A0.B4.40subobj"><code>基本登場@subobj</code></a>
+を２つ登録します。</p>
+<p><img src="assets/tutorial-inout.png"
+alt="基本登場@subobj を下に２つ追加" /></p>
+<p>これは PSD ファイルのレイヤーを変更するためのものではないので
+<code>描画@PSD</code> よりも下に配置します。<br />
+また、下の <code>基本登場@subobj</code> の <code>速さ(秒)</code>
+にマイナスの値を指定することで、退場用の効果として設定しています。</p>
+<p><img src="assets/tutorial-inout2.png"
+alt="基本登場@subobj の動作例" /></p>
+<p>これだけで、<code>多目的スライダー</code>
+がある範囲に合わせて自動的に登場／退場用のエフェクトが掛かるようになりました。<br />
+なお <code>口パク準備</code> しか使っていないときは
+<code>口パク準備</code> がある範囲が対象になります。</p>
+<p>設定を変更したり、<code>基本登場@subobj</code>
+以外のアニメーション効果も試してみてください。</p>
+<h2
+id=".E5.AD.97.E5.B9.95.E3.81.AE.E8.A1.A8.E7.A4.BA.E3.81.AB.E6.BC.94.E5.87.BA.E3.82.92.E8.BF.BD.E5.8A.A0.E3.81.99.E3.82.8B">字幕の表示に演出を追加する</h2>
+<p>字幕の文字も、ただ表示するだけではなく登場と退場に効果を加えることができます。</p>
+<p><img src="assets/tutorial-fade.png"
+alt="フェード@subobj を追加" /></p>
+<p><code>字幕表示</code> の <code>文字毎に個別オブジェクト</code>
+にチェックを付けて、更に <code>フェード@subobj</code>
+のアニメーション効果を追加します。</p>
+<p><img src="assets/tutorial-fade2.png"
+alt="フェード@subobj の動作例" /></p>
+<p>これだけで１文字ずつフェードインするようになりました。</p>
+<h2
+id=".E9.9F.B3.E5.A3.B0.E3.83.95.E3.82.A3.E3.83.AB.E3.82.BF">音声フィルタ</h2>
+<p>ここからは音声に対する処理について紹介します。</p>
+<h3
+id=".E9.9F.B3.E9.87.8F.E3.82.92.E4.B8.8A.E3.81.92.E3.81.9F.E3.81.93.E3.81.A8.E3.81.AB.E3.82.88.E3.82.8B.E9.9F.B3.E5.89.B2.E3.82.8C.E3.81.AE.E5.9B.9E.E9.81.BF">音量を上げたことによる音割れの回避</h3>
+<p>試しに、音声ファイルのプロパティで <code>音量</code> を
+<code>400</code> に設定して試聴してみてください。<br />
+（元の4倍の音量になるので大音量に注意してください）</p>
+<p><img src="assets/tutorial-peak.png" alt="音量がある場所" /></p>
+<p>とても大きな音が出ますが、それ以上に<strong>音が割れ</strong>て不自然な鳴り方になりました。</p>
+<p>拡張編集では限界（ピーク）を超えて音量を上げようとすると、音が割れてしまいます。</p>
+<p>さっき変えた <code>音量</code> を <code>100</code>
+に戻し、<code>Layer 5</code> ～ <code>Layer 6</code>
+のオブジェクトをひとつ下に移動し、拡張編集の右クリックメニューから
+<code>フィルタオブジェクトの追加</code>→<code>チャンネルストリップ</code>
+を選び、<code>Layer 5</code> に <a
+href="audio.html#.E3.83.81.E3.83.A3.E3.83.B3.E3.83.8D.E3.83.AB.E3.82.B9.E3.83.88.E3.83.AA.E3.83.83.E3.83.97"><code>チャンネルストリップ</code></a>
+を挿入します。</p>
+<p><img src="assets/tutorial-audio.png"
+alt="チャンネルストリップ を追加" /></p>
+<p>長さを調整して、字幕表示などと合わせます。</p>
+<p><img src="assets/tutorial-audio2.png" alt="長さを調整" /></p>
+<p>次に <code>チャンネルストリップ</code> のプロパティで <code>ID</code>
+を <code>0</code> に、そして試しに <code>出力音量</code> を
+<code>10000</code> にしてみてください。<br />
+（<code>出力音量</code> を <code>10000</code>
+にすると4倍の音量に相当します）</p>
+<p><img src="assets/tutorial-audio3.png" alt="プロパティの変更" /></p>
+<p>視聴してみると、先程よりは幾分聞き取りやすい状態になりました。</p>
+<p><code>音声ファイル</code> ではなく <code>チャンネルストリップ</code>
+で音量を上げれば、音が割れるほどの音量になったときは自動的に音量が絞られるようになります。</p>
+<h3
+id=".E8.A4.87.E6.95.B0.E3.81.AE.E9.9F.B3.E5.A3.B0.E3.81.AB.E3.82.88.E3.82.8B.E9.9F.B3.E5.89.B2.E3.82.8C.E3.81.AE.E5.9B.9E.E9.81.BF">複数の音声による音割れの回避</h3>
+<p>複数の音声が同時に流れるようなときは、音量を上げていなくてもピークを超えて音が割れてしまうことがあります。<br />
+例えばゲームの音声に合わせて喋るようなときは、いつ音割れが起きるのか予測するのが困難です。</p>
+<p>このようなときはそれぞれの音声に <code>チャンネルストリップ</code>
+を通すことによって、ある程度回避できます。</p>
+<p><img src="assets/tutorial-audio4.png"
+alt="チャンネルストリップ の影響範囲" /></p>
+<p>チャンネルストリップの <code>ID</code> は、処理したい音声の塊ごとに
+<code>0</code> 以上の固有の番号を割り当てて使います。<br />
+（同じフレーム内で同じ ID を使ってしまうと音が鳴らなくなります）</p>
+<p>また、複数のチャンネルストリップを配置したときは、前のチャンネルストリップから次のチャンネルストリップまでの間に設置された
+<code>音声ファイル</code> が処理対象になります。</p>
+<p>そのためこのように <code>チャンネルストリップ</code>
+を３つ設定した場合は、黄色く着色されたゾーンがそれぞれの
+<code>チャンネルストリップ</code> の影響範囲になります。</p>
+<p>この例だと <code>あいさつ.wav</code> と <code>あいさつ2.wav</code> は
+<code>ID</code> が <code>1</code> の <code>チャンネルストリップ</code>
+によって処理されます。<br />
+<code>あいさつ.wav</code> と <code>あいさつ2.wav</code>
+は同時に再生されない配置になっているため、同じチャンネルストリップで処理しても音が割れてしまう心配はありません。</p>
+<h3
+id=".E3.83.92.E3.83.B3.E3.83.88.3A_.E6.9C.80.E5.88.9D.E3.81.8B.E3.82.89.E9.9F.B3.E3.81.8C.E5.89.B2.E3.82.8C.E3.81.A6.E3.81.84.E3.82.8B_*.wav_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB">ヒント:
+最初から音が割れている *.wav ファイル</h3>
+<p>加工する前から音が割れてしまっているファイルは、既に必要な情報が失われた状態なので元に戻すことはできません。</p>
+<h3
+id=".E3.81.9D.E3.81.AE.E4.BB.96.E3.81.AE.E3.82.A8.E3.83.95.E3.82.A7.E3.82.AF.E3.83.88.E3.81.AB.E3.81.A4.E3.81.84.E3.81.A6">その他のエフェクトについて</h3>
+<p>ゲーム映像に合わせて喋るような動画を作る場合は、ゲームの音と声が被って聞き取りづらくなることがあります。</p>
+<p>試しに <code>EQ HiGain</code> を <code>10000</code>
+にしてみてください。</p>
+<p>これは極端な変更なので実際の動画で使うべき設定ではありませんが、再生して音を確認すると、声が明るい音に変化します。</p>
+<p>このようにイコライザーを使って高い周波数を強調すると音が目立ちやすくなりますが、同時に耳障りにもなるため気をつけて使ってください。</p>
+<h2 id=".E7.B5.82.E3.82.8F.E3.82.8A.E3.81.AB">終わりに</h2>
+<p>キャラクターが2人になったときは、おそらく以下のような構成が基本形になるでしょう。<br />
+見通しを良くするために余白も含んでいます。</p>
+<p><img src="assets/tutorial-2char.png"
+alt="キャラクターが増えた時のタイムライン" /></p>
+<p><code>Layer 1</code> ～ <code>Layer 12</code>
+までは、<strong>画面に表示されないオブジェクトだけ</strong>が置いてあります。</p>
+<p>これらのオブジェクトが置いてあるレイヤー番号は
+<code>PSD ファイルオブジェクト</code> や <code>字幕表示</code>
+で番号を指定する必要があるので、配置するレイヤーをコロコロ変えるような使い方には適していません。<br />
+そのため、最初から最後まで一貫して同じレイヤーに置けるよう、最初に全て置いてしまうのが簡単です。</p>
+<p>そのあとで <code>PSD ファイルオブジェクト</code> や
+<code>字幕表示</code> を置けば、重ね合わせ順を変えるのも容易です。</p>
+<p>もちろん全てルートシーン上に置く必要はないので、PSD
+ファイルオブジェクトに関連するものを置く専用のシーンを作ったり、キャラクターごとにシーンを分けたりすることもできますが、これはこれで作業効率が犠牲になる側面があるので扱い方には注意が必要です。</p>
+</div>
+<footer>
+<dl>
+<dt>Written by</dt>
+<dd>oov</dd>
+<dt>Generated at</dt>
+<dd>2025-02-26T10:56:47Z</dd>
+<dt>for</dt>
+<dd>v0.2.0beta71 ( 9190e74 )</dd>
+</dl>
+</footer>
+</div>
+</body>
+</html>

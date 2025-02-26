@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="oov" />
+  <title>準備オブジェクト</title>
+  <style type="text/css">
+  </style>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="ptk-outer">
+<div id="ptk-menu" class="ptk-selected-prep">
+  <ul>
+    <li class="ptk-menu-item-index"><a href="index.html">はじめに</a></li>
+    <li class="ptk-menu-item-tutorial"><a href="tutorial.html">チュートリアル</a></li>
+    <li class="ptk-menu-item-decorate"><a href="decorate.html">テキストの装飾</a></li>
+    <li class="ptk-menu-item-pfv"><a href="pfv.html">PSDTool のお気に入りを使う</a></li>
+    <li class="ptk-menu-item-forcepser"><a href="forcepser.html">かんしくん</a></li>
+    <li class="ptk-menu-item-obj ptk-menu-item-psd ptk-menu-item-subobj ptk-menu-item-otheranm ptk-menu-item-prep">オブジェクトリファレンス
+      <ul>
+        <li class="ptk-menu-item-obj"><a href="obj.html">独自のオブジェクト</a>
+          <ul>
+            <li><a href="obj.html#PSD_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.AA.E3.83.96.E3.82.B8.E3.82.A7.E3.82.AF.E3.83.88">PSD ファイルオブジェクト</a></li>
+            <li><a href="obj.html#.E5.AD.97.E5.B9.95.E8.A1.A8.E7.A4.BA">字幕表示</a></li>
+            <li><a href="obj.html#.E5.AD.97.E5.B9.95.E8.A1.A8.E7.A4.BA.EF.BC.88.E3.82.AD.E3.83.A3.E3.83.83.E3.82.B7.E3.83.A5.EF.BC.89">字幕表示（キャッシュ）</a></li>
+            <li><a href="obj.html#.E8.87.AA.E5.8B.95.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.83.86.E3.82.AD.E3.82.B9.E3.83.88">自動折り返しテキスト</a></li>
+          </ul>
+        </li>
+        <li class="ptk-menu-item-psd"><a href="psd.html">PSD アニメーション効果</a>
+          <ul>
+            <li><a href="psd.html#.E7.9B.AE.E3.83.91.E3.83.81.40PSD">目パチ</a> | <a href="psd.html#.E7.9B.AE.E3.83.91.E3.83.81_.E3.82.92_Lua_.E3.82.B9.E3.82.AF.E3.83.AA.E3.83.97.E3.83.88.E3.81.8B.E3.82.89.E4.BD.BF.E3.81.86">フォーム</a></li>
+            <li><a href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E9.96.8B.E9.96.89.E3.81.AE.E3.81.BF.40PSD">口パク 開閉のみ</a> | <a href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E9.96.8B.E9.96.89.E3.81.AE.E3.81.BF_.E3.82.92_Lua_.E3.82.B9.E3.82.AF.E3.83.AA.E3.83.97.E3.83.88.E3.81.8B.E3.82.89.E4.BD.BF.E3.81.86">フォーム</a></li>
+            <li><a href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E3.81.82.E3.81.84.E3.81.86.E3.81.88.E3.81.8A.40PSD">口パク あいうえお</a> | <a href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E3.81.82.E3.81.84.E3.81.86.E3.81.88.E3.81.8A_.E3.82.92_Lua_.E3.82.B9.E3.82.AF.E3.83.AA.E3.83.97.E3.83.88.E3.81.8B.E3.82.89.E4.BD.BF.E3.81.86">フォーム</a></li>
+          </ul>
+        </li>
+        <li class="ptk-menu-item-subobj"><a href="subobj.html">subobj アニメーション効果</a></li>
+        <li class="ptk-menu-item-otheranm"><a href="otheranm.html">その他のアニメーション効果</a></li>
+        <li class="ptk-menu-item-prep"><a href="prep.html">準備オブジェクト</a></li>
+      </ul>
+    </li>
+    <li class="ptk-menu-item-plugins"><a href="plugins.html">付属プラグイン</a></li>
+    <li class="ptk-menu-item-setting"><a href="setting.html">設定</a></li>
+    <li class="ptk-menu-item-faq"><a href="faq.html">よくある質問</a></li>
+  </ul>
+</div>
+<div id="ptk-main">
+<header>
+<h1 class="title">準備オブジェクト</h1>
+</header>
+<nav id="TOC">
+<ul>
+<li><a
+href="#.E6.BA.96.E5.82.99.E3.82.AA.E3.83.96.E3.82.B8.E3.82.A7.E3.82.AF.E3.83.88.E3.81.AB.E3.81.A4.E3.81.84.E3.81.A6"
+id="toc-.E6.BA.96.E5.82.99.E3.82.AA.E3.83.96.E3.82.B8.E3.82.A7.E3.82.AF.E3.83.88.E3.81.AB.E3.81.A4.E3.81.84.E3.81.A6">準備オブジェクトについて</a></li>
+<li><a
+href="#.E5.8F.A3.E3.83.91.E3.82.AF.E6.BA.96.E5.82.99.40PSDToolKit"
+id="toc-.E5.8F.A3.E3.83.91.E3.82.AF.E6.BA.96.E5.82.99.40PSDToolKit">口パク準備@PSDToolKit</a>
+<ul>
+<li><a
+href="#*.lab_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.81.A8.E3.81.AF"
+id="toc-*.lab_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.81.A8.E3.81.AF"><code>*.lab</code>
+ファイルとは</a></li>
+</ul></li>
+<li><a
+href="#.E5.8F.A3.E3.83.91.E3.82.AF.E6.BA.96.E5.82.99.EF.BC.88.E9.9F.B3.E7.B4.A0.E3.81.AE.E3.81.BF.EF.BC.89"
+id="toc-.E5.8F.A3.E3.83.91.E3.82.AF.E6.BA.96.E5.82.99.EF.BC.88.E9.9F.B3.E7.B4.A0.E3.81.AE.E3.81.BF.EF.BC.89">口パク準備（音素のみ）</a></li>
+<li><a
+href="#.E5.A4.9A.E7.9B.AE.E7.9A.84.E3.82.B9.E3.83.A9.E3.82.A4.E3.83.80.E3.83.BC.40PSDToolKit"
+id="toc-.E5.A4.9A.E7.9B.AE.E7.9A.84.E3.82.B9.E3.83.A9.E3.82.A4.E3.83.80.E3.83.BC.40PSDToolKit">多目的スライダー@PSDToolKit</a>
+<ul>
+<li><a href="#.E5.88.B6.E9.99.90.E4.BA.8B.E9.A0.85"
+id="toc-.E5.88.B6.E9.99.90.E4.BA.8B.E9.A0.85">制限事項</a></li>
+</ul></li>
+<li><a href="#.E5.AD.97.E5.B9.95.E6.BA.96.E5.82.99"
+id="toc-.E5.AD.97.E5.B9.95.E6.BA.96.E5.82.99">字幕準備</a></li>
+<li><a
+href="#.E7.B5.B1.E5.90.88.E6.BA.96.E5.82.99.E3.82.AA.E3.83.96.E3.82.B8.E3.82.A7.E3.82.AF.E3.83.88"
+id="toc-.E7.B5.B1.E5.90.88.E6.BA.96.E5.82.99.E3.82.AA.E3.83.96.E3.82.B8.E3.82.A7.E3.82.AF.E3.83.88">統合準備オブジェクト</a></li>
+</ul>
+</nav>
+<h2
+id=".E6.BA.96.E5.82.99.E3.82.AA.E3.83.96.E3.82.B8.E3.82.A7.E3.82.AF.E3.83.88.E3.81.AB.E3.81.A4.E3.81.84.E3.81.A6">準備オブジェクトについて</h2>
+<p><code>準備オブジェクト</code>
+とは、後で使用するデータを事前に準備するために使われるオブジェクトです。</p>
+<p>これ単体で画面に何かを描画したりすることはできません。</p>
+<p>すべての準備オブジェクトは拡張編集の右クリックメニューから
+<code>メディアオブジェクトの追加</code>→<code>PSDToolKit</code>→<code>？？？</code>
+と辿るとタイムラインに挿入することができますが、大抵のオブジェクトではより効率的な配置方法が用意されています。</p>
+<h2
+id=".E5.8F.A3.E3.83.91.E3.82.AF.E6.BA.96.E5.82.99.40PSDToolKit">口パク準備@PSDToolKit</h2>
+<p><code>口パク準備</code> は <a
+href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E9.96.8B.E9.96.89.E3.81.AE.E3.81.BF.40PSD"><code>口パク 開閉のみ@PSD</code></a>
+や <a
+href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E3.81.82.E3.81.84.E3.81.86.E3.81.88.E3.81.8A.40PSD"><code>口パク あいうえお@PSD</code></a>
+を使う際に必要になる、音量などの解析データを作成するための
+<code>カスタムオブジェクト</code> です。</p>
+<table>
+<thead>
+<tr class="header">
+<th>プロパティ名</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>ローカット</code></td>
+<td>音声の音量を取得する際に指定した周波数以下をカットしたあとの値を取得します。<br><code>0</code>
+の場合は <code>PSD ファイルオブジェクト</code>
+側で指定した値が使用されます。</td>
+</tr>
+<tr class="even">
+<td><code>ハイカット</code></td>
+<td>音声の音量を取得する際に指定した周波数以上をカットしたあとの値を取得します。<br><code>0</code>
+の場合は <code>PSD ファイルオブジェクト</code>
+側で指定した値が使用されます。</td>
+</tr>
+<tr class="odd">
+<td><code>しきい値</code></td>
+<td>どのくらいの音量以上なら発言中として扱うかを指定します。<br>オーディオに声以外のノイズが含まれている場合はある程度大きな値に設定しないと誤認識することがあります。<br><code>0</code>
+の場合は <code>PSD ファイルオブジェクト</code>
+側で指定した値が使用されます。</td>
+</tr>
+<tr class="even">
+<td><code>感度</code></td>
+<td>音量を過去何フレームからの平均で求めるかを指定します。<br>値を大きくすると細かい音量変化に対して鈍くなります。</td>
+</tr>
+<tr class="odd">
+<td><code>参照</code></td>
+<td>処理を行う対象の <code>*.wav</code>
+ファイルを指定します。<br>同じフォルダに同じ名前の <code>*.lab</code>
+ファイルがある場合は自動的に音素データも読み込まれます。</td>
+</tr>
+</tbody>
+</table>
+<h3
+id="*.lab_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.81.A8.E3.81.AF"><code>*.lab</code>
+ファイルとは</h3>
+<pre><code>0 1150000 k
+1150000 2400000 o
+2400000 2900000 N
+2900000 3450000 n
+3450000 4350000 i
+4350000 5250000 ch
+5250000 5850000 i
+5850000 6450000 w
+6450000 7950000 a</code></pre>
+<p>上記のように音素のタイミング情報が 1/10,000,000
+秒単位で書かれたシンプルなテキストベースのファイルです。<br />
+音声合成ソフトによっては生成するためのオプションがある場合があります。</p>
+<h2
+id=".E5.8F.A3.E3.83.91.E3.82.AF.E6.BA.96.E5.82.99.EF.BC.88.E9.9F.B3.E7.B4.A0.E3.81.AE.E3.81.BF.EF.BC.89">口パク準備（音素のみ）</h2>
+<p><code>口パク準備（音素のみ）</code>
+は音量情報なしで発音中の音素のみを設定する、口パク準備の特殊形です。<br />
+これは主に<a
+href="plugins.html#*.lab_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB">タイムラインに
+<code>*.lab</code>
+ファイルをドラッグ＆ドロップしたとき</a>に作成されます。</p>
+<p>テキスト入力欄に予め入力されている中の <code>l="a"</code>
+の部分で発音中の音素を指定します。</p>
+<p>これで作成されたデータは <code>口パク あいうえお@PSD</code>
+で利用可能ですが、以下のような細かな違いもあります。</p>
+<ul>
+<li><strong>現在地点の前後の音素情報が参照できない</strong><br />
+<code>口パク準備</code> で <code>*.lab</code>
+ファイルを読んでいる時は参照可能な前後の音素が参照できません。</li>
+<li><strong><code>*.wav</code>
+ファイルの音量が取得できない</strong><br />
+この方法では <code>*.wav</code>
+ファイルを参照していないため、音量データが存在しません。</li>
+</ul>
+<h2
+id=".E5.A4.9A.E7.9B.AE.E7.9A.84.E3.82.B9.E3.83.A9.E3.82.A4.E3.83.80.E3.83.BC.40PSDToolKit">多目的スライダー@PSDToolKit</h2>
+<p><code>多目的スライダー</code>
+は「パーツ切り替え用スライダー」を操作するための、もうひとつのスライダーです。</p>
+<p>詳しい使い方は<a
+href="tutorial.html#.E5.A4.9A.E7.9B.AE.E7.9A.84.E3.82.B9.E3.83.A9.E3.82.A4.E3.83.80.E3.83.BC">チュートリアルを参照</a>してください。</p>
+<h3 id=".E5.88.B6.E9.99.90.E4.BA.8B.E9.A0.85">制限事項</h3>
+<p><code>多目的スライダー</code>
+には個々の項目名は表示されません。<br />
+また、選択可能な項目数は予め 0-100
+で固定になっていますが、これらはバグではなく仕様です。</p>
+<p>これは拡張編集側の仕様によりスライダーの名前や項目数を柔軟に変更するような仕組みが存在しないことに起因する制限事項であり、根本的な解決が行われない限りこの制限が撤廃されることはありません。</p>
+<h2 id=".E5.AD.97.E5.B9.95.E6.BA.96.E5.82.99">字幕準備</h2>
+<p><code>字幕準備</code>
+は字幕を表示する際に必要になるテキスト情報を用意するためのオブジェクトです。</p>
+<p><code>セリフ</code>
+と予め入力された部分を書き換えることで、字幕用のテキストデータが準備されます。</p>
+<p>改行なども使えますが、<code>]==]</code>
+というテキストだけは使えません。<br />
+その場合は代わりに <code>]==].."]==]"..[==[</code>
+と入れると使えます。</p>
+<h2
+id=".E7.B5.B1.E5.90.88.E6.BA.96.E5.82.99.E3.82.AA.E3.83.96.E3.82.B8.E3.82.A7.E3.82.AF.E3.83.88">統合準備オブジェクト</h2>
+<p><code>統合準備オブジェクト</code> は
+<code>口パク準備</code>、<code>字幕準備</code>、<code>多目的スライダー</code>
+の機能を併せ持つ特殊な準備オブジェクトで、このオブジェクトひとつで
+<code>口パク準備</code>、<code>字幕準備</code>、<code>多目的スライダー</code>
+の機能を使うことができます。</p>
+<p>これは実際には <code>字幕準備</code> 相当の <code>テキスト</code>
+オブジェクトと、<code>口パク準備</code> 用の
+<code>アニメーション効果</code>、<code>多目的スライダー</code> 用の
+<code>アニメーション効果</code> によって実現されています。</p>
+<p>それぞれに追加されている機能などはなく、統合されていないときに行えた一部の操作は行なえませんが、そのトレードオフを許容した上でレイヤー数を節約したい場合に使えるオブジェクトです。</p>
+<p>詳しい使い方は<a
+href="tutorial.html#.E6.BA.96.E5.82.99.E3.82.AA.E3.83.96.E3.82.B8.E3.82.A7.E3.82.AF.E3.83.88.E3.81.AE.E9.9B.86.E7.B4.84">チュートリアルを参照</a>してください。</p>
+</div>
+<footer>
+<dl>
+<dt>Written by</dt>
+<dd>oov</dd>
+<dt>Generated at</dt>
+<dd>2025-02-26T10:56:47Z</dd>
+<dt>for</dt>
+<dd>v0.2.0beta71 ( 9190e74 )</dd>
+</dl>
+</footer>
+</div>
+</body>
+</html>

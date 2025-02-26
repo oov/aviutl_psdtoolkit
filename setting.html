@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="" xml:lang="">
+<head>
+  <meta charset="utf-8" />
+  <meta name="generator" content="pandoc" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes" />
+  <meta name="author" content="oov" />
+  <title>設定</title>
+  <style type="text/css">
+  </style>
+  <style type="text/css">
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+    color: #aaaaaa;
+  }
+pre.numberSource { margin-left: 3em; border-left: 1px solid #aaaaaa;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+code span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code span.at { color: #7d9029; } /* Attribute */
+code span.bn { color: #40a070; } /* BaseN */
+code span.bu { color: #008000; } /* BuiltIn */
+code span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code span.ch { color: #4070a0; } /* Char */
+code span.cn { color: #880000; } /* Constant */
+code span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code span.dt { color: #902000; } /* DataType */
+code span.dv { color: #40a070; } /* DecVal */
+code span.er { color: #ff0000; font-weight: bold; } /* Error */
+code span.ex { } /* Extension */
+code span.fl { color: #40a070; } /* Float */
+code span.fu { color: #06287e; } /* Function */
+code span.im { color: #008000; font-weight: bold; } /* Import */
+code span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+code span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code span.op { color: #666666; } /* Operator */
+code span.ot { color: #007020; } /* Other */
+code span.pp { color: #bc7a00; } /* Preprocessor */
+code span.sc { color: #4070a0; } /* SpecialChar */
+code span.ss { color: #bb6688; } /* SpecialString */
+code span.st { color: #4070a0; } /* String */
+code span.va { color: #19177c; } /* Variable */
+code span.vs { color: #4070a0; } /* VerbatimString */
+code span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+  </style>
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+<div id="ptk-outer">
+<div id="ptk-menu" class="ptk-selected-setting">
+  <ul>
+    <li class="ptk-menu-item-index"><a href="index.html">はじめに</a></li>
+    <li class="ptk-menu-item-tutorial"><a href="tutorial.html">チュートリアル</a></li>
+    <li class="ptk-menu-item-decorate"><a href="decorate.html">テキストの装飾</a></li>
+    <li class="ptk-menu-item-pfv"><a href="pfv.html">PSDTool のお気に入りを使う</a></li>
+    <li class="ptk-menu-item-forcepser"><a href="forcepser.html">かんしくん</a></li>
+    <li class="ptk-menu-item-obj ptk-menu-item-psd ptk-menu-item-subobj ptk-menu-item-otheranm ptk-menu-item-prep">オブジェクトリファレンス
+      <ul>
+        <li class="ptk-menu-item-obj"><a href="obj.html">独自のオブジェクト</a>
+          <ul>
+            <li><a href="obj.html#PSD_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.AA.E3.83.96.E3.82.B8.E3.82.A7.E3.82.AF.E3.83.88">PSD ファイルオブジェクト</a></li>
+            <li><a href="obj.html#.E5.AD.97.E5.B9.95.E8.A1.A8.E7.A4.BA">字幕表示</a></li>
+            <li><a href="obj.html#.E5.AD.97.E5.B9.95.E8.A1.A8.E7.A4.BA.EF.BC.88.E3.82.AD.E3.83.A3.E3.83.83.E3.82.B7.E3.83.A5.EF.BC.89">字幕表示（キャッシュ）</a></li>
+            <li><a href="obj.html#.E8.87.AA.E5.8B.95.E6.8A.98.E3.82.8A.E8.BF.94.E3.81.97.E3.83.86.E3.82.AD.E3.82.B9.E3.83.88">自動折り返しテキスト</a></li>
+          </ul>
+        </li>
+        <li class="ptk-menu-item-psd"><a href="psd.html">PSD アニメーション効果</a>
+          <ul>
+            <li><a href="psd.html#.E7.9B.AE.E3.83.91.E3.83.81.40PSD">目パチ</a> | <a href="psd.html#.E7.9B.AE.E3.83.91.E3.83.81_.E3.82.92_Lua_.E3.82.B9.E3.82.AF.E3.83.AA.E3.83.97.E3.83.88.E3.81.8B.E3.82.89.E4.BD.BF.E3.81.86">フォーム</a></li>
+            <li><a href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E9.96.8B.E9.96.89.E3.81.AE.E3.81.BF.40PSD">口パク 開閉のみ</a> | <a href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E9.96.8B.E9.96.89.E3.81.AE.E3.81.BF_.E3.82.92_Lua_.E3.82.B9.E3.82.AF.E3.83.AA.E3.83.97.E3.83.88.E3.81.8B.E3.82.89.E4.BD.BF.E3.81.86">フォーム</a></li>
+            <li><a href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E3.81.82.E3.81.84.E3.81.86.E3.81.88.E3.81.8A.40PSD">口パク あいうえお</a> | <a href="psd.html#.E5.8F.A3.E3.83.91.E3.82.AF_.E3.81.82.E3.81.84.E3.81.86.E3.81.88.E3.81.8A_.E3.82.92_Lua_.E3.82.B9.E3.82.AF.E3.83.AA.E3.83.97.E3.83.88.E3.81.8B.E3.82.89.E4.BD.BF.E3.81.86">フォーム</a></li>
+          </ul>
+        </li>
+        <li class="ptk-menu-item-subobj"><a href="subobj.html">subobj アニメーション効果</a></li>
+        <li class="ptk-menu-item-otheranm"><a href="otheranm.html">その他のアニメーション効果</a></li>
+        <li class="ptk-menu-item-prep"><a href="prep.html">準備オブジェクト</a></li>
+      </ul>
+    </li>
+    <li class="ptk-menu-item-plugins"><a href="plugins.html">付属プラグイン</a></li>
+    <li class="ptk-menu-item-setting"><a href="setting.html">設定</a></li>
+    <li class="ptk-menu-item-faq"><a href="faq.html">よくある質問</a></li>
+  </ul>
+</div>
+<div id="ptk-main">
+<header>
+<h1 class="title">設定</h1>
+</header>
+<nav id="TOC">
+<ul>
+<li><a
+href="#.E7.92.B0.E5.A2.83.E8.A8.AD.E5.AE.9A.E3.83.80.E3.82.A4.E3.82.A2.E3.83.AD.E3.82.B0"
+id="toc-.E7.92.B0.E5.A2.83.E8.A8.AD.E5.AE.9A.E3.83.80.E3.82.A4.E3.82.A2.E3.83.AD.E3.82.B0">環境設定ダイアログ</a></li>
+<li><a
+href="#.E8.A8.AD.E5.AE.9A.E3.81.AE.E3.82.AB.E3.82.B9.E3.82.BF.E3.83.9E.E3.82.A4.E3.82.BA"
+id="toc-.E8.A8.AD.E5.AE.9A.E3.81.AE.E3.82.AB.E3.82.B9.E3.82.BF.E3.83.9E.E3.82.A4.E3.82.BA">設定のカスタマイズ</a>
+<ul>
+<li><a href="#setting.lua_.E3.81.AE.E4.BD.9C.E3.82.8A.E6.96.B9"
+id="toc-setting.lua_.E3.81.AE.E4.BD.9C.E3.82.8A.E6.96.B9"><code>setting.lua</code>
+の作り方</a></li>
+<li><a href="#.E8.A8.AD.E5.AE.9A.E3.81.AE.E6.9B.B8.E3.81.8D.E6.96.B9"
+id="toc-.E8.A8.AD.E5.AE.9A.E3.81.AE.E6.9B.B8.E3.81.8D.E6.96.B9">設定の書き方</a></li>
+</ul></li>
+<li><a href="#.E8.A8.AD.E5.AE.9A.E9.A0.85.E7.9B.AE"
+id="toc-.E8.A8.AD.E5.AE.9A.E9.A0.85.E7.9B.AE">設定項目</a>
+<ul>
+<li><a
+href="#*.wav_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.92.E6.8A.95.E3.81.92.E8.BE.BC.E3.82.93.E3.81.A0.E6.99.82.E3.81.AE.E8.A8.AD.E5.AE.9A"
+id="toc-*.wav_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.92.E6.8A.95.E3.81.92.E8.BE.BC.E3.82.93.E3.81.A0.E6.99.82.E3.81.AE.E8.A8.AD.E5.AE.9A"><code>*.wav</code>
+ファイルを投げ込んだ時の設定</a>
+<ul>
+<li><a href="#P.wav_firemode"
+id="toc-P.wav_firemode"><code>P.wav_firemode</code></a></li>
+<li><a href="#P.wav_firemode_wavtxt"
+id="toc-P.wav_firemode_wavtxt"><code>P.wav_firemode_wavtxt</code></a></li>
+<li><a href="#P.wav_firemode_exo"
+id="toc-P.wav_firemode_exo"><code>P.wav_firemode_exo</code></a></li>
+<li><a href="#P.wav_lipsync"
+id="toc-P.wav_lipsync"><code>P.wav_lipsync</code></a></li>
+<li><a href="#P.wav_lipsync_group"
+id="toc-P.wav_lipsync_group"><code>P.wav_lipsync_group</code></a></li>
+<li><a href="#P.wav_lipsync_offset"
+id="toc-P.wav_lipsync_offset"><code>P.wav_lipsync_offset</code></a></li>
+<li><a href="#P.wav_mpslider"
+id="toc-P.wav_mpslider"><code>P.wav_mpslider</code></a></li>
+<li><a href="#P.wav_mpslider_group"
+id="toc-P.wav_mpslider_group"><code>P.wav_mpslider_group</code></a></li>
+<li><a href="#P.wav_mpslider_margin_before"
+id="toc-P.wav_mpslider_margin_before"><code>P.wav_mpslider_margin_before</code></a></li>
+<li><a href="#P.wav_mpslider_margin_after"
+id="toc-P.wav_mpslider_margin_after"><code>P.wav_mpslider_margin_after</code></a></li>
+<li><a href="#P.wav_subtitle"
+id="toc-P.wav_subtitle"><code>P.wav_subtitle</code></a></li>
+<li><a href="#P.wav_subtitle_group"
+id="toc-P.wav_subtitle_group"><code>P.wav_subtitle_group</code></a></li>
+<li><a href="#P.wav_subtitle_margin_before"
+id="toc-P.wav_subtitle_margin_before"><code>P.wav_subtitle_margin_before</code></a></li>
+<li><a href="#P.wav_subtitle_margin_after"
+id="toc-P.wav_subtitle_margin_after"><code>P.wav_subtitle_margin_after</code></a></li>
+<li><a href="#P.wav_subtitle_encoding"
+id="toc-P.wav_subtitle_encoding"><code>P.wav_subtitle_encoding</code></a></li>
+<li><a href="#P.3Awav_subtitle_replacer"
+id="toc-P.3Awav_subtitle_replacer"><code>P:wav_subtitle_replacer</code></a>
+<ul>
+<li><a
+href="#.E8.A8.AD.E5.AE.9A.E4.BE.8B.3A_.E6.96.87.E9.A0.AD.E3.81.AB.E3.81.82.E3.82.8B_.22.E4.BB.BB.E6.84.8F.E3.81.AE.E3.83.86.E3.82.AD.E3.82.B9.E3.83.88.EF.BC.9E.22_.E3.82.92.E5.89.8A.E9.99.A4"
+id="toc-.E8.A8.AD.E5.AE.9A.E4.BE.8B.3A_.E6.96.87.E9.A0.AD.E3.81.AB.E3.81.82.E3.82.8B_.22.E4.BB.BB.E6.84.8F.E3.81.AE.E3.83.86.E3.82.AD.E3.82.B9.E3.83.88.EF.BC.9E.22_.E3.82.92.E5.89.8A.E9.99.A4">設定例:
+文頭にある "任意のテキスト＞" を削除</a></li>
+</ul></li>
+<li><a href="#P.wav_subtitle_scripter"
+id="toc-P.wav_subtitle_scripter"><code>P.wav_subtitle_scripter</code></a></li>
+<li><a href="#P.wav_mergedprep"
+id="toc-P.wav_mergedprep"><code>P.wav_mergedprep</code></a></li>
+<li><a href="#P.wav_mergedprep_scripter"
+id="toc-P.wav_mergedprep_scripter"><code>P.wav_mergedprep_scripter</code></a></li>
+<li><a href="#P.wav_exafinder"
+id="toc-P.wav_exafinder"><code>P.wav_exafinder</code></a></li>
+<li><a
+href="#P.3Awav_examodifler_wav.2FP.3Awav_examodifler_lipsync.2FP.3Awav_examodifler_mpslider.2FP.3Awav_examodifler_subtitle.2FP.3Awav_examodifler_mergedprep"
+id="toc-P.3Awav_examodifler_wav.2FP.3Awav_examodifler_lipsync.2FP.3Awav_examodifler_mpslider.2FP.3Awav_examodifler_subtitle.2FP.3Awav_examodifler_mergedprep"><code>P:wav_examodifler_wav</code>/<code>P:wav_examodifler_lipsync</code>/<code>P:wav_examodifler_mpslider</code>/<code>P:wav_examodifler_subtitle</code>/<code>P:wav_examodifler_mergedprep</code></a></li>
+</ul></li>
+<li><a
+href="#*.lab_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.92.E6.8A.95.E3.81.92.E8.BE.BC.E3.82.93.E3.81.A0.E6.99.82.E3.81.AE.E8.A8.AD.E5.AE.9A"
+id="toc-*.lab_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.92.E6.8A.95.E3.81.92.E8.BE.BC.E3.82.93.E3.81.A0.E6.99.82.E3.81.AE.E8.A8.AD.E5.AE.9A"><code>*.lab</code>
+ファイルを投げ込んだ時の設定</a>
+<ul>
+<li><a href="#P.lab_exafinder"
+id="toc-P.lab_exafinder"><code>P.lab_exafinder</code></a></li>
+<li><a href="#P.3Alab_examodifler.2FP.lab_lipsync_scripter"
+id="toc-P.3Alab_examodifler.2FP.lab_lipsync_scripter"><code>P:lab_examodifler</code>/<code>P.lab_lipsync_scripter</code></a></li>
+</ul></li>
+<li><a
+href="#*.srt_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.92.E6.8A.95.E3.81.92.E8.BE.BC.E3.82.93.E3.81.A0.E6.99.82.E3.81.AE.E8.A8.AD.E5.AE.9A"
+id="toc-*.srt_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.92.E6.8A.95.E3.81.92.E8.BE.BC.E3.82.93.E3.81.A0.E6.99.82.E3.81.AE.E8.A8.AD.E5.AE.9A"><code>*.srt</code>
+ファイルを投げ込んだ時の設定</a>
+<ul>
+<li><a href="#P.srt_insertmode"
+id="toc-P.srt_insertmode"><code>P.srt_insertmode</code></a></li>
+<li><a href="#P.srt_encoding"
+id="toc-P.srt_encoding"><code>P.srt_encoding</code></a></li>
+<li><a href="#P.srt_subtitle_margin_before"
+id="toc-P.srt_subtitle_margin_before"><code>P.srt_subtitle_margin_before</code></a></li>
+<li><a href="#P.srt_subtitle_margin_after"
+id="toc-P.srt_subtitle_margin_after"><code>P.srt_subtitle_margin_after</code></a></li>
+<li><a href="#P.srt_exafinder"
+id="toc-P.srt_exafinder"><code>P.srt_exafinder</code></a></li>
+<li><a href="#P.3Asrt_examodifler"
+id="toc-P.3Asrt_examodifler"><code>P:srt_examodifler</code></a></li>
+<li><a href="#P.3Asrt_subtitle_replacer"
+id="toc-P.3Asrt_subtitle_replacer"><code>P:srt_subtitle_replacer</code></a></li>
+<li><a href="#P.srt_subtitle_scripter"
+id="toc-P.srt_subtitle_scripter"><code>P.srt_subtitle_scripter</code></a></li>
+</ul></li>
+</ul></li>
+<li><a
+href="#.E6.96.87.E5.AD.97.E5.88.97.E3.82.92_UTF-8_.E3.81.A7.E8.A8.98.E8.BF.B0.E3.81.99.E3.82.8B"
+id="toc-.E6.96.87.E5.AD.97.E5.88.97.E3.82.92_UTF-8_.E3.81.A7.E8.A8.98.E8.BF.B0.E3.81.99.E3.82.8B">文字列を
+UTF-8 で記述する</a>
+<ul>
+<li><a
+href="#1._.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.92.E5.88.86.E3.81.91.E3.82.8B"
+id="toc-1._.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.92.E5.88.86.E3.81.91.E3.82.8B">1.
+ファイルを分ける</a></li>
+<li><a href="#2._.E5.A4.89.E6.8F.9B.E3.81.99.E3.82.8B"
+id="toc-2._.E5.A4.89.E6.8F.9B.E3.81.99.E3.82.8B">2. 変換する</a></li>
+<li><a href="#3._.E7.9B.B4.E6.8E.A5.E8.A8.98.E8.BF.B0.E3.81.99.E3.82.8B"
+id="toc-3._.E7.9B.B4.E6.8E.A5.E8.A8.98.E8.BF.B0.E3.81.99.E3.82.8B">3.
+直接記述する</a></li>
+</ul></li>
+</ul>
+</nav>
+<h2
+id=".E7.92.B0.E5.A2.83.E8.A8.AD.E5.AE.9A.E3.83.80.E3.82.A4.E3.82.A2.E3.83.AD.E3.82.B0">環境設定ダイアログ</h2>
+<p>AviUtl のメインメニューから
+<code>編集</code>→<code>PSDToolKit</code>→<code>環境設定</code>
+を選ぶことで、<code>PSDToolKit 環境設定</code>
+ダイアログを表示できます。</p>
+<p><img src="assets/setting-dialog.png"
+alt="PSDToolKit 環境設定 ダイアログ" /></p>
+<table>
+<thead>
+<tr class="header">
+<th>項目</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>「口パク準備」を生成</code></td>
+<td>チェックを付けると Shift キーを押しながらファイルをドロップした際に
+<a
+href="prep.html#.E5.8F.A3.E3.83.91.E3.82.AF.E6.BA.96.E5.82.99.40PSDToolKit"><code>口パク準備</code></a>
+を自動生成します。</td>
+</tr>
+<tr class="even">
+<td><code>グループID</code></td>
+<td><code>口パク準備</code> が所属するグループ ID
+を設定します。<br><code>0</code> - グループ化しない<br><code>1</code> -
+<code>音声ファイル</code> とグループ化<br><code>2</code> 以上 - 他と同じ
+ID を指定することでそれらとグループ化</td>
+</tr>
+<tr class="odd">
+<td><code>オフセット</code></td>
+<td>指定されたフレーム数だけ <code>口パク準備</code>
+の位置をずらします。</td>
+</tr>
+<tr class="even">
+<td><code>「多目的スライダー」を生成</code></td>
+<td>チェックを付けると Shift キーを押しながらファイルをドロップした際に
+<a
+href="prep.html#.E5.A4.9A.E7.9B.AE.E7.9A.84.E3.82.B9.E3.83.A9.E3.82.A4.E3.83.80.E3.83.BC.40PSDToolKit"><code>多目的スライダー</code></a>
+を自動生成します。</td>
+</tr>
+<tr class="odd">
+<td><code>スライダー</code></td>
+<td><code>多目的スライダー</code>
+で使用可能なスライダーの個数を設定します。</td>
+</tr>
+<tr class="even">
+<td><code>グループID</code></td>
+<td><code>多目的スライダー</code> が所属するグループ ID
+を設定します。<br><code>0</code> - グループ化しない<br><code>1</code> -
+<code>音声ファイル</code> とグループ化<br><code>2</code> 以上 - 他と同じ
+ID を指定することでそれらとグループ化</td>
+</tr>
+<tr class="odd">
+<td><code>開始マージン</code></td>
+<td><code>多目的スライダー</code> が
+<code>音声ファイル</code>よりも何フレーム早く始まるかを設定します。</td>
+</tr>
+<tr class="even">
+<td><code>終了マージン</code></td>
+<td><code>多目的スライダー</code> が
+<code>音声ファイル</code>よりも何フレーム長く続くかを設定します。</td>
+</tr>
+<tr class="odd">
+<td><code>「字幕準備」を生成</code></td>
+<td>チェックを付けると Shift
+キーを押しながらファイルをドロップした際、<code>*.wav</code>
+ファイルと同じ名前の <code>*.txt</code> ファイルがあれば <a
+href="prep.html#.E5.AD.97.E5.B9.95.E6.BA.96.E5.82.99"><code>字幕準備</code></a>
+を自動生成します。</td>
+</tr>
+<tr class="even">
+<td><code>文字コード</code></td>
+<td><code>*.txt</code> ファイルの文字コードを指定します。</td>
+</tr>
+<tr class="odd">
+<td><code>グループID</code></td>
+<td><code>字幕準備</code> が所属するグループ ID
+を設定します。<br><code>0</code> - グループ化しない<br><code>1</code> -
+<code>音声ファイル</code> とグループ化<br><code>2</code> 以上 - 他と同じ
+ID を指定することでそれらとグループ化</td>
+</tr>
+<tr class="even">
+<td><code>開始マージン</code></td>
+<td><code>字幕準備</code> が <code>音声ファイル</code>
+よりも何フレーム早く始まるかを設定します。</td>
+</tr>
+<tr class="odd">
+<td><code>終了マージン</code></td>
+<td><code>字幕準備</code> が <code>音声ファイル</code>
+よりも何フレーム長く続くかを設定します。</td>
+</tr>
+</tbody>
+</table>
+<p>上記の処理は、チェックが入っている発動条件を満たした場合に動作します。</p>
+<table>
+<thead>
+<tr class="header">
+<th>項目</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>Shift キーを押しながら *.wav ファイルをドロップした時</code></td>
+<td>Shift
+キーを押しながらファイルをドロップした際に拡張処理を発動させます。</td>
+</tr>
+<tr class="even">
+<td><code>同じ名前の *.wav と *.txt を一緒にドロップした時</code></td>
+<td>同じ名前の２つのファイルをドロップした時に拡張処理を発動させます。</td>
+</tr>
+<tr class="odd">
+<td><code>1フレーム目に音声とテキストがある *.exo をドロップした時</code></td>
+<td>1フレーム目に <code>音声</code> と <code>テキスト</code>
+が配置されていて、かつそれ以外のオブジェクトがない <code>*.exo</code>
+ファイルがドロップされた時に拡張処理を発動させます。</td>
+</tr>
+</tbody>
+</table>
+<h2
+id=".E8.A8.AD.E5.AE.9A.E3.81.AE.E3.82.AB.E3.82.B9.E3.82.BF.E3.83.9E.E3.82.A4.E3.82.BA">設定のカスタマイズ</h2>
+<p>環境設定ダイアログよりも詳細な変更は、設定ファイルを書き換えることにより行えます。</p>
+<p>設定の変更には <code>setting.lua</code>
+というファイルを作成する必要があります。</p>
+<p>なお <code>setting.lua</code> での設定は
+<code>PSDToolKit 環境設定</code>
+ダイアログでの設定よりも優先されます。</p>
+<h3
+id="setting.lua_.E3.81.AE.E4.BD.9C.E3.82.8A.E6.96.B9"><code>setting.lua</code>
+の作り方</h3>
+<p><code>setting.lua</code> を作るには
+<code>script\PSDToolKit\setting.lua-template</code> のファイル名を
+<code>setting.lua</code> に変更することで作成します。</p>
+<p><img src="assets/setting-rename.png"
+alt="setting.lua-template を setting.lua に改名" /></p>
+<p><code>setting.lua</code> は文字エンコーディングが
+<code>Shift_JIS</code> のテキストファイルです。</p>
+<p>このファイルをメモ帳などのテキストエディタで開き、編集していきます。</p>
+<h3
+id=".E8.A8.AD.E5.AE.9A.E3.81.AE.E6.9B.B8.E3.81.8D.E6.96.B9">設定の書き方</h3>
+<p>設定を書くには、このページの下にある説明を参考に編集します。</p>
+<p>例えば <a href="#P.wav_firemode"><code>P.wav_firemode</code></a>
+の設定を変更するには <code>setting.lua</code>
+に以下のように書き足します。</p>
+<div class="sourceCode" id="cb1"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">local</span> <span class="cn">P</span> <span class="op">=</span> <span class="op">{}</span> <span class="co">-- これは消さないこと</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="cn">P</span><span class="op">.</span><span class="va">wav_firemode</span> <span class="op">=</span> <span class="dv">1</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> <span class="cn">P</span> <span class="co">-- これは消さないこと</span></span></code></pre></div>
+<h2 id=".E8.A8.AD.E5.AE.9A.E9.A0.85.E7.9B.AE">設定項目</h2>
+<h3
+id="*.wav_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.92.E6.8A.95.E3.81.92.E8.BE.BC.E3.82.93.E3.81.A0.E6.99.82.E3.81.AE.E8.A8.AD.E5.AE.9A"><code>*.wav</code>
+ファイルを投げ込んだ時の設定</h3>
+<p>拡張編集のタイムラインに <code>*.wav</code> ファイルを投げ込んだ時に
+<code>口パク準備</code> / <code>多目的スライダー</code> /
+<code>字幕準備</code> などを自動的に作成するために必要な設定です。</p>
+<h4 id="P.wav_firemode"><code>P.wav_firemode</code></h4>
+<p><code>*.wav</code> ファイルをどのように投げ込むと
+<code>口パク準備</code> / <code>多目的スライダー</code> /
+<code>字幕準備</code>
+などを自動生成する追加処理を発動させるかを設定します。</p>
+<p>用途が合致している場合は <code>1</code>
+の設定が手間が少なく便利ですが、前提知識なしで使うと混乱の原因になるためデフォルト設定では
+<code>0</code> になっています。</p>
+<div class="sourceCode" id="cb2"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="cn">P</span><span class="op">.</span><span class="va">wav_firemode</span> <span class="op">=</span> <span class="dv">0</span></span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th>値</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>-1</code></td>
+<td>Shift キーを使用した発動方法は利用しない</td>
+</tr>
+<tr class="even">
+<td><code>0</code></td>
+<td><code>*.wav</code> ファイルをエクスプローラーで掴んだあと、Shift
+キーを押しながら拡張編集に投げ込むと発動</td>
+</tr>
+<tr class="odd">
+<td><code>1</code></td>
+<td><code>*.wav</code> ファイルをエクスプローラーで掴んだあと、Shift
+キーを押さずに拡張編集に投げ込んだ時、<code>*.wav</code>
+ファイルと拡張子だけが違う <code>*.txt</code> （つまり
+<code>こんにちは.wav</code> に対して
+<code>こんにちは.txt</code>）があると発動。ただし Shift
+キーを押しながら拡張編集に投げ込んだ場合は発動しない</td>
+</tr>
+<tr class="even">
+<td><code>2</code></td>
+<td><code>*.wav</code> ファイルを投げ込んだときは、Shift
+キーの状態に関わらず発動（※通常の用途には非推奨）</td>
+</tr>
+</tbody>
+</table>
+<h4 id="P.wav_firemode_wavtxt"><code>P.wav_firemode_wavtxt</code></h4>
+<p>同じ名前の <code>*.wav</code> ファイルと <code>*.txt</code>
+ファイルを一緒に投げ込んだときに、追加処理を発動させるかを設定します。</p>
+<div class="sourceCode" id="cb3"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="cn">P</span><span class="op">.</span><span class="va">wav_firemode_wavtxt</span> <span class="op">=</span> <span class="dv">1</span></span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th>値</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>0</code></td>
+<td>発動させない</td>
+</tr>
+<tr class="even">
+<td><code>1</code></td>
+<td>同じ名前の <code>*.wav</code> ファイルと <code>*.txt</code>
+ファイルを一緒に投げ込んだときは発動する</td>
+</tr>
+</tbody>
+</table>
+<h4 id="P.wav_firemode_exo"><code>P.wav_firemode_exo</code></h4>
+<p>1フレーム目に <code>音声</code> オブジェクトと <code>テキスト</code>
+オブジェクトがあり、それ以外のオブジェクトが一切存在しない
+<code>*.exo</code>
+ファイルを投げ込んだときに、追加処理を発動させるかを設定します。</p>
+<div class="sourceCode" id="cb4"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="cn">P</span><span class="op">.</span><span class="va">wav_firemode_exo</span> <span class="op">=</span> <span class="dv">1</span></span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th>値</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>0</code></td>
+<td>発動させない</td>
+</tr>
+<tr class="even">
+<td><code>1</code></td>
+<td>1フレーム目に <code>音声</code> オブジェクトと <code>テキスト</code>
+オブジェクトがあり、それ以外のオブジェクトが一切存在しない
+<code>*.exo</code> ファイルを投げ込んだときに発動する</td>
+</tr>
+</tbody>
+</table>
+<h4 id="P.wav_lipsync"><code>P.wav_lipsync</code></h4>
+<p><code>*.wav</code> ファイルを投げ込んだ時に <code>口パク準備</code>
+を自動生成するかを設定します。</p>
+<div class="sourceCode" id="cb5"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="cn">P</span><span class="op">.</span><span class="va">wav_lipsync</span> <span class="op">=</span> <span class="dv">0</span></span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th>値</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>0</code></td>
+<td><code>口パク準備</code> は生成しない</td>
+</tr>
+<tr class="even">
+<td><code>1</code></td>
+<td><code>口パク準備</code> を自動生成する</td>
+</tr>
+</tbody>
+</table>
+<h4 id="P.wav_lipsync_group"><code>P.wav_lipsync_group</code></h4>
+<p><code>*.wav</code> ファイルを投げ込んだ時に作成される
+<code>口パク準備</code> が所属するグループ ID を設定します。</p>
+<div class="sourceCode" id="cb6"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="cn">P</span><span class="op">.</span><span class="va">wav_lipsync_group</span> <span class="op">=</span> <span class="dv">1</span></span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th>値</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>0</code></td>
+<td>グループ化しない</td>
+</tr>
+<tr class="even">
+<td><code>1</code></td>
+<td><code>音声ファイル</code> とグループ化</td>
+</tr>
+<tr class="odd">
+<td><code>2</code>～</td>
+<td>他と同じIDを指定することでそれらとグループ化</td>
+</tr>
+</tbody>
+</table>
+<h4 id="P.wav_lipsync_offset"><code>P.wav_lipsync_offset</code></h4>
+<p><code>*.wav</code> ファイルを投げ込んだ時に作成される
+<code>口パク準備</code> の配置を指定したフレーム数だけずらします。</p>
+<div class="sourceCode" id="cb7"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="cn">P</span><span class="op">.</span><span class="va">wav_lipsync_offset</span> <span class="op">=</span> <span class="dv">0</span></span></code></pre></div>
+<h4 id="P.wav_mpslider"><code>P.wav_mpslider</code></h4>
+<p><code>*.wav</code> ファイルを投げ込んだ時に
+<code>多目的スライダー</code> をいくつ生成するかを指定します。</p>
+<p><code>0</code> を指定した場合は１つも生成されません。</p>
+<div class="sourceCode" id="cb8"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="cn">P</span><span class="op">.</span><span class="va">wav_mpslider</span> <span class="op">=</span> <span class="dv">0</span></span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th>値</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>0</code></td>
+<td><code>口パク準備</code> は生成しない</td>
+</tr>
+<tr class="even">
+<td><code>1</code>以上</td>
+<td><code>多目的スライダー</code> を指定された個数生成する</td>
+</tr>
+</tbody>
+</table>
+<h4 id="P.wav_mpslider_group"><code>P.wav_mpslider_group</code></h4>
+<p><code>*.wav</code> ファイルを投げ込んだ時に作成される
+<code>多目的スライダー</code> の所属するグループ ID を指定します。</p>
+<div class="sourceCode" id="cb9"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="cn">P</span><span class="op">.</span><span class="va">wav_mpslider_group</span> <span class="op">=</span> <span class="dv">1</span></span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th>値</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>0</code></td>
+<td>グループ化しない</td>
+</tr>
+<tr class="even">
+<td><code>1</code></td>
+<td><code>音声ファイル</code> とグループ化</td>
+</tr>
+<tr class="odd">
+<td><code>2</code>～</td>
+<td>他と同じIDを指定することでそれらとグループ化</td>
+</tr>
+</tbody>
+</table>
+<h4
+id="P.wav_mpslider_margin_before"><code>P.wav_mpslider_margin_before</code></h4>
+<p><code>*.wav</code> ファイルを投げ込んだ時に作成される
+<code>多目的スライダー</code> が <code>音声ファイル</code>
+よりも何フレーム早く始まるかを設定します。</p>
+<div class="sourceCode" id="cb10"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="cn">P</span><span class="op">.</span><span class="va">wav_mpslider_margin_before</span> <span class="op">=</span> <span class="dv">0</span></span></code></pre></div>
+<h4
+id="P.wav_mpslider_margin_after"><code>P.wav_mpslider_margin_after</code></h4>
+<p><code>*.wav</code> ファイルを投げ込んだ時に作成される
+<code>多目的スライダー</code> が <code>音声ファイル</code>
+よりも何フレーム長く続くかを設定します。</p>
+<div class="sourceCode" id="cb11"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="cn">P</span><span class="op">.</span><span class="va">wav_mpslider_margin_after</span> <span class="op">=</span> <span class="dv">0</span></span></code></pre></div>
+<h4 id="P.wav_subtitle"><code>P.wav_subtitle</code></h4>
+<p><code>*.wav</code>
+ファイルを投げ込んだ時に同じファイル名で拡張子だけが違う
+<code>*.txt</code> （つまり <code>こんにちは.wav</code> に対して
+<code>こんにちは.txt</code>）がある場合に <code>字幕準備</code>
+を作成するかを設定します。</p>
+<p>なお、<code>*.wav</code> を投げ込む時に <code>*.txt</code>
+も一緒に投げ込む必要はありません。</p>
+<div class="sourceCode" id="cb12"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="cn">P</span><span class="op">.</span><span class="va">wav_subtitle</span> <span class="op">=</span> <span class="dv">0</span></span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th>値</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>0</code></td>
+<td><code>字幕準備</code> は作成しない</td>
+</tr>
+<tr class="even">
+<td><code>1</code></td>
+<td><code>*.txt</code> がある場合はその内容を本文に入れた
+<code>テキスト</code> を挿入</td>
+</tr>
+<tr class="odd">
+<td><code>2</code></td>
+<td><code>*.txt</code> がある場合はその内容を本文に入れた
+<code>字幕準備</code> を挿入</td>
+</tr>
+</tbody>
+</table>
+<h4 id="P.wav_subtitle_group"><code>P.wav_subtitle_group</code></h4>
+<p><code>*.wav</code> ファイルを投げ込んだ時に作成される
+<code>字幕準備</code> の所属するグループ ID を指定します。</p>
+<p>グループ化すると拡張編集のタイムライン上で <code>音声ファイル</code>
+を掴んだ時などに一緒に移動できるため便利ですが、例えば
+<code>字幕準備</code>
+の内容が長すぎるなどの理由で分割したい時などにはグループ化を解除する必要があるため、その作業を頻繁に行う場合は無効化した方が便利です。</p>
+<div class="sourceCode" id="cb13"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="cn">P</span><span class="op">.</span><span class="va">wav_subtitle_group</span> <span class="op">=</span> <span class="dv">1</span></span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th>値</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>0</code></td>
+<td>グループ化しない</td>
+</tr>
+<tr class="even">
+<td><code>1</code></td>
+<td><code>音声ファイル</code> とグループ化</td>
+</tr>
+<tr class="odd">
+<td><code>2</code>～</td>
+<td>他と同じIDを指定することでそれらとグループ化</td>
+</tr>
+</tbody>
+</table>
+<h4
+id="P.wav_subtitle_margin_before"><code>P.wav_subtitle_margin_before</code></h4>
+<p><code>*.wav</code> ファイルを投げ込んだ時に作成される
+<code>字幕準備</code> が <code>音声ファイル</code>
+よりも何フレーム早く始まるかを設定します。</p>
+<div class="sourceCode" id="cb14"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="cn">P</span><span class="op">.</span><span class="va">wav_subtitle_margin_before</span> <span class="op">=</span> <span class="dv">0</span></span></code></pre></div>
+<h4
+id="P.wav_subtitle_margin_after"><code>P.wav_subtitle_margin_after</code></h4>
+<p><code>*.wav</code> ファイルを投げ込んだ時に作成される
+<code>字幕準備</code> が <code>音声ファイル</code>
+よりも何フレーム長く続くかを設定します。</p>
+<div class="sourceCode" id="cb15"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="cn">P</span><span class="op">.</span><span class="va">wav_subtitle_margin_after</span> <span class="op">=</span> <span class="dv">0</span></span></code></pre></div>
+<h4
+id="P.wav_subtitle_encoding"><code>P.wav_subtitle_encoding</code></h4>
+<p><code>*.txt</code> の文字エンコーディングを設定します。</p>
+<p><code>字幕準備</code>
+が文字化けする場合はこの設定を変更するか、この設定に合わせてテキストファイル側を変更する必要があります。</p>
+<div class="sourceCode" id="cb16"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="cn">P</span><span class="op">.</span><span class="va">wav_subtitle_encoding</span> <span class="op">=</span> <span class="st">&quot;sjis&quot;</span></span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th>値</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>"sjis"</code></td>
+<td>文字エンコーディングが <code>Shift_JIS</code>
+であるものとして読み込みます</td>
+</tr>
+<tr class="even">
+<td><code>"utf8"</code></td>
+<td>文字エンコーディングが <code>UTF-8</code>
+であるものとして読み込みます</td>
+</tr>
+</tbody>
+</table>
+<h4
+id="P.3Awav_subtitle_replacer"><code>P:wav_subtitle_replacer</code></h4>
+<p><code>*.wav</code> ファイルを投げ込んだ時、<code>字幕準備</code>
+のテキストに対して書き換えを行う必要がある場合に設定します。</p>
+<p>ここに渡されてくる文字列は <code>Shift_JIS</code> ではなく常に
+<code>UTF-8</code> なので、<a
+href="#.E6.96.87.E5.AD.97.E5.88.97.E3.82.92_UTF-8_.E3.81.A7.E8.A8.98.E8.BF.B0.E3.81.99.E3.82.8B">日本語などを処理するときは日本語部分は
+<code>UTF-8</code> で指定する</a>必要があります。</p>
+<div class="sourceCode" id="cb17"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="cn">P</span><span class="op">:</span>wav_subtitle_replacer<span class="op">(</span><span class="va">s</span><span class="op">)</span></span>
+<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="va">s</span> <span class="co">-- そのままの状態で返す</span></span>
+<span id="cb17-3"><a href="#cb17-3" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div>
+<h5
+id=".E8.A8.AD.E5.AE.9A.E4.BE.8B.3A_.E6.96.87.E9.A0.AD.E3.81.AB.E3.81.82.E3.82.8B_.22.E4.BB.BB.E6.84.8F.E3.81.AE.E3.83.86.E3.82.AD.E3.82.B9.E3.83.88.EF.BC.9E.22_.E3.82.92.E5.89.8A.E9.99.A4">設定例:
+文頭にある "任意のテキスト＞" を削除</h5>
+<div class="sourceCode" id="cb18"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="cn">P</span><span class="op">:</span>wav_subtitle_replacer<span class="op">(</span><span class="va">s</span><span class="op">)</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>  <span class="va">s</span> <span class="op">=</span> <span class="va">s</span><span class="op">:</span><span class="fu">gsub</span><span class="op">(</span><span class="st">&quot;^.-</span><span class="sc">\239\188\158</span><span class="st">&quot;</span><span class="op">,</span> <span class="st">&quot;&quot;</span><span class="op">)</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="va">s</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div>
+<h4
+id="P.wav_subtitle_scripter"><code>P.wav_subtitle_scripter</code></h4>
+<p>テキストを <code>字幕準備</code>
+に整形するスクリプトの処理内容を設定します。</p>
+<p>一般的な用途においては変更する必要はありません。</p>
+<div class="sourceCode" id="cb19"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="cn">P</span><span class="op">:</span>wav_subtitle_scripter<span class="op">(</span><span class="va">s</span><span class="op">)</span></span>
+<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="va">s</span><span class="op">:</span><span class="fu">sub</span><span class="op">(-</span><span class="dv">2</span><span class="op">)</span> <span class="op">~=</span> <span class="st">&quot;</span><span class="sc">\r\n</span><span class="st">&quot;</span> <span class="cf">then</span></span>
+<span id="cb19-3"><a href="#cb19-3" aria-hidden="true" tabindex="-1"></a>    <span class="va">s</span> <span class="op">=</span> <span class="va">s</span> <span class="op">..</span> <span class="st">&quot;</span><span class="sc">\r\n</span><span class="st">&quot;</span></span>
+<span id="cb19-4"><a href="#cb19-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">end</span></span>
+<span id="cb19-5"><a href="#cb19-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="st">&quot;&lt;?s=[==[</span><span class="sc">\r\n</span><span class="st">&quot;</span> <span class="op">..</span> <span class="va">s</span><span class="op">:</span><span class="fu">gsub</span><span class="op">(</span><span class="st">&#39;]==]&#39;</span><span class="op">,</span> <span class="st">&#39;]==]..&quot;]==]&quot;..[==[&#39;</span><span class="op">)</span> <span class="op">..</span> <span class="st">&#39;]==];require(&quot;PSDToolKit&quot;).subtitle:set(s,obj,true);s=nil?&gt;&#39;</span></span>
+<span id="cb19-6"><a href="#cb19-6" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div>
+<h4 id="P.wav_mergedprep"><code>P.wav_mergedprep</code></h4>
+<p><code>*.wav</code> ファイルを投げ込んだ時に生成される
+<code>口パク準備</code> / <code>多目的スライダー</code> /
+<code>字幕準備</code> の代わりに、それらを１つに統合した
+<code>統合準備オブジェクト</code> を生成するかを設定します。</p>
+<div class="sourceCode" id="cb20"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="cn">P</span><span class="op">.</span><span class="va">wav_mergedprep</span> <span class="op">=</span> <span class="dv">0</span></span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th>値</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>0</code></td>
+<td>統合しない</td>
+</tr>
+<tr class="even">
+<td><code>1</code></td>
+<td>統合する</td>
+</tr>
+</tbody>
+</table>
+<h4
+id="P.wav_mergedprep_scripter"><code>P.wav_mergedprep_scripter</code></h4>
+<p>テキストを <code>統合準備オブジェクト</code>
+用に整形するためのスクリプトの処理内容を設定します。</p>
+<p>一般的な用途においては変更する必要はありません。</p>
+<div class="sourceCode" id="cb21"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="cn">P</span><span class="op">:</span>wav_mergedprep_scripter<span class="op">(</span><span class="va">s</span><span class="op">,</span> <span class="va">o</span><span class="op">)</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="va">s</span><span class="op">:</span><span class="fu">sub</span><span class="op">(-</span><span class="dv">2</span><span class="op">)</span> <span class="op">~=</span> <span class="st">&quot;</span><span class="sc">\r\n</span><span class="st">&quot;</span> <span class="cf">then</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>    <span class="va">s</span> <span class="op">=</span> <span class="va">s</span> <span class="op">..</span> <span class="st">&quot;</span><span class="sc">\r\n</span><span class="st">&quot;</span></span>
+<span id="cb21-4"><a href="#cb21-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">end</span></span>
+<span id="cb21-5"><a href="#cb21-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="st">&quot;&lt;?s=[==[</span><span class="sc">\r\n</span><span class="st">&quot;</span> <span class="op">..</span> <span class="va">s</span><span class="op">:</span><span class="fu">gsub</span><span class="op">(</span><span class="st">&#39;]==]&#39;</span><span class="op">,</span> <span class="st">&#39;]==]..&quot;]==]&quot;..[==[&#39;</span><span class="op">)</span> <span class="op">..</span> <span class="st">&#39;]==];require(&quot;PSDToolKit&quot;).prep.init({&#39;</span> <span class="op">..</span></span>
+<span id="cb21-6"><a href="#cb21-6" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;ls_mgl=&quot;</span> <span class="op">..</span> <span class="va">o</span><span class="op">.</span><span class="va">ls_mgl</span> <span class="op">..</span> <span class="st">&quot;,ls_mgr=&quot;</span> <span class="op">..</span> <span class="va">o</span><span class="op">.</span><span class="va">ls_mgr</span> <span class="op">..</span> <span class="st">&quot;,&quot;</span> <span class="op">..</span></span>
+<span id="cb21-7"><a href="#cb21-7" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;st_mgl=&quot;</span> <span class="op">..</span> <span class="va">o</span><span class="op">.</span><span class="va">st_mgl</span> <span class="op">..</span> <span class="st">&quot;,st_mgr=&quot;</span> <span class="op">..</span> <span class="va">o</span><span class="op">.</span><span class="va">st_mgr</span> <span class="op">..</span> <span class="st">&quot;,&quot;</span> <span class="op">..</span></span>
+<span id="cb21-8"><a href="#cb21-8" aria-hidden="true" tabindex="-1"></a>    <span class="st">&quot;sl_mgl=&quot;</span> <span class="op">..</span> <span class="va">o</span><span class="op">.</span><span class="va">sl_mgl</span> <span class="op">..</span> <span class="st">&quot;,sl_mgr=&quot;</span> <span class="op">..</span> <span class="va">o</span><span class="op">.</span><span class="va">sl_mgr</span> <span class="op">..</span> <span class="st">&quot;,&quot;</span> <span class="op">..</span></span>
+<span id="cb21-9"><a href="#cb21-9" aria-hidden="true" tabindex="-1"></a>    <span class="st">&#39;,obj,s)?&gt;&#39;</span></span>
+<span id="cb21-10"><a href="#cb21-10" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div>
+<h4 id="P.wav_exafinder"><code>P.wav_exafinder</code></h4>
+<p><code>*.wav</code> ファイルを投げ込んだ時に使用される
+<code>*.exa</code> ファイルの検索方法を設定します。</p>
+<p>この設定を使うと、拡張編集に投げ込んだ <code>*.wav</code>
+のファイル名などに応じて <code>*.exa</code>
+ファイル（エイリアスファイル）を切り替えることができます。</p>
+<p>エイリアスファイル作成は拡張編集のタイムライン上でエイリアス化したいオブジェクトを右クリックして
+<code>エイリアスの作成</code> から行います。出てきたウィンドウにある
+<code>エイリアス名</code> に適当な名前を入れると <code>aviutl.exe</code>
+と同じ場所に <code>入力した名前.exa</code>
+というファイルが作成されるので、そのファイルを <code>exa</code>
+フォルダーの中に配置して下さい。<br />
+なお複雑なエイリアスファイルを作った場合などには <a
+href="#P.3Awav_examodifler_wav.2FP.3Awav_examodifler_lipsync.2FP.3Awav_examodifler_mpslider.2FP.3Awav_examodifler_subtitle"><code>P:wav_examodifler_wav</code>/<code>P:wav_examodifler_lipsync</code>/<code>P:wav_examodifler_mpslider</code>/<code>P:wav_examodifler_subtitle</code></a>
+の設定も変更する必要があるかも知れません。</p>
+<div class="sourceCode" id="cb22"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb22-1"><a href="#cb22-1" aria-hidden="true" tabindex="-1"></a><span class="cn">P</span><span class="op">.</span><span class="va">wav_exafinder</span> <span class="op">=</span> <span class="dv">0</span></span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th>値</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>0</code></td>
+<td><strong>常に同じファイルを参照する</strong><br>投げ込んだファイルに関わらず以下のエイリアスファイルが使用されます。<br>音声:
+<code>wav.exa</code><br>口パク準備:
+<code>lipsync.exa</code><br>字幕準備: <code>subtitle.exa</code></td>
+</tr>
+<tr class="even">
+<td><code>1</code></td>
+<td><strong>ファイルが入っているフォルダー名を元にする</strong><br>例:
+投げ込んだファイルが <code>C:\MyFolder\TKHS_Hello_World.wav</code>
+の時<br>音声: <code>MyFolder_wav.exa</code><br>口パク準備:
+<code>MyFolder_lipsync.exa</code><br>字幕準備:
+<code>MyFolder_subtitle.exa</code></td>
+</tr>
+<tr class="odd">
+<td><code>2</code></td>
+<td><strong>ファイル名を元にする</strong><br>例: 投げ込んだファイルが
+<code>C:\MyFolder\TKHS_Hello_World.wav</code> の時<br>音声:
+<code>TKHS_Hello_World_wav.exa</code><br>口パク準備:
+<code>TKHS_Hello_World_lipsync.exa</code><br>字幕準備:
+<code>TKHS_Hello_World_subtitle.exa</code></td>
+</tr>
+<tr class="even">
+<td><code>3</code></td>
+<td><strong>ファイル名の中で _
+で区切られた最初の部分を元にする</strong><br>例: 投げ込んだファイルが
+<code>C:\MyFolder\TKHS_Hello_World.wav</code> の時<br>音声:
+<code>TKHS_wav.exa</code><br>口パク準備:
+<code>TKHS_lipsync.exa</code><br>字幕準備:
+<code>TKHS_subtitle.exa</code></td>
+</tr>
+<tr class="odd">
+<td><code>4</code></td>
+<td><strong>ファイル名の中で _
+で区切られた2つめの部分を元にする</strong><br>例: 投げ込んだファイルが
+<code>C:\MyFolder\TKHS_Hello_World.wav</code> の時<br>音声:
+<code>Hello_wav.exa</code><br>口パク準備:
+<code>Hello_lipsync.exa</code><br>字幕準備:
+<code>Hello_subtitle.exa</code></td>
+</tr>
+<tr class="even">
+<td><code>5</code></td>
+<td><strong>ファイル名の中で _
+で区切られた3つめの部分を元にする</strong><br>例: 投げ込んだファイルが
+<code>C:\MyFolder\TKHS_Hello_World.wav</code> の時<br>音声:
+<code>World_wav.exa</code><br>口パク準備:
+<code>World_lipsync.exa</code><br>字幕準備:
+<code>World_subtitle.exa</code></td>
+</tr>
+<tr class="odd">
+<td><code>function</code></td>
+<td>関数を設定すると上記以外のパターンにも対応できます。<br>例:
+<code>function P:wav_exafinder(path) return "aaa" end</code>
+を設定した時<br>音声: <code>aaa_wav.exa</code><br>口パク準備:
+<code>aaa_lipsync.exa</code><br>字幕準備:
+<code>aaa_subtitle.exa</code></td>
+</tr>
+</tbody>
+</table>
+<p>※上記ルールで該当するファイルが見つからない場合は
+<code>wav.exa</code> / <code>lipsync.exa</code> /
+<code>subtitle.exa</code> が代わりに使用されます。</p>
+<h4
+id="P.3Awav_examodifler_wav.2FP.3Awav_examodifler_lipsync.2FP.3Awav_examodifler_mpslider.2FP.3Awav_examodifler_subtitle.2FP.3Awav_examodifler_mergedprep"><code>P:wav_examodifler_wav</code>/<code>P:wav_examodifler_lipsync</code>/<code>P:wav_examodifler_mpslider</code>/<code>P:wav_examodifler_subtitle</code>/<code>P:wav_examodifler_mergedprep</code></h4>
+<p><code>*.wav</code> ファイルを投げ込んだ時の <code>*.exa</code>
+ファイル改変内容を設定します。</p>
+<p>エイリアスファイルを読み込んだ後、音声オブジェクトへの
+<code>*.wav</code>
+ファイルの割り当てや長さなどを設定するための設定です。</p>
+<p>一般的な用途においては変更する必要はありません。</p>
+<p><code>P:wav_examodifler_mpslider</code> と
+<code>P:wav_examodifler_mergedprep</code></p>
+<div class="sourceCode" id="cb23"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="cn">P</span><span class="op">:</span>wav_examodifler_wav<span class="op">(</span><span class="va">exa</span><span class="op">,</span> <span class="va">values</span><span class="op">,</span> <span class="va">modifiers</span><span class="op">)</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="st">&quot;ao&quot;</span><span class="op">,</span> <span class="st">&quot;start&quot;</span><span class="op">,</span> <span class="va">values</span><span class="op">.</span><span class="cn">WAV_START</span><span class="op">)</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="st">&quot;ao&quot;</span><span class="op">,</span> <span class="st">&quot;end&quot;</span><span class="op">,</span> <span class="va">values</span><span class="op">.</span><span class="cn">WAV_END</span><span class="op">)</span></span>
+<span id="cb23-4"><a href="#cb23-4" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="st">&quot;ao&quot;</span><span class="op">,</span> <span class="st">&quot;group&quot;</span><span class="op">,</span> <span class="dv">1</span><span class="op">)</span></span>
+<span id="cb23-5"><a href="#cb23-5" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="st">&quot;ao.0&quot;</span><span class="op">,</span> <span class="st">&quot;file&quot;</span><span class="op">,</span> <span class="va">values</span><span class="op">.</span><span class="cn">WAV_PATH</span><span class="op">)</span></span>
+<span id="cb23-6"><a href="#cb23-6" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb23-7"><a href="#cb23-7" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="cn">P</span><span class="op">:</span>wav_examodifler_lipsync<span class="op">(</span><span class="va">exa</span><span class="op">,</span> <span class="va">values</span><span class="op">,</span> <span class="va">modifiers</span><span class="op">)</span></span>
+<span id="cb23-8"><a href="#cb23-8" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="st">&quot;vo&quot;</span><span class="op">,</span> <span class="st">&quot;start&quot;</span><span class="op">,</span> <span class="va">values</span><span class="op">.</span><span class="cn">LIPSYNC_START</span><span class="op">)</span></span>
+<span id="cb23-9"><a href="#cb23-9" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="st">&quot;vo&quot;</span><span class="op">,</span> <span class="st">&quot;end&quot;</span><span class="op">,</span> <span class="va">values</span><span class="op">.</span><span class="cn">LIPSYNC_END</span><span class="op">)</span></span>
+<span id="cb23-10"><a href="#cb23-10" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="st">&quot;vo&quot;</span><span class="op">,</span> <span class="st">&quot;group&quot;</span><span class="op">,</span> <span class="va">self</span><span class="op">.</span><span class="va">wav_lipsync_group</span><span class="op">)</span></span>
+<span id="cb23-11"><a href="#cb23-11" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="st">&quot;vo.0&quot;</span><span class="op">,</span> <span class="st">&quot;param&quot;</span><span class="op">,</span> <span class="st">&quot;file=&quot;</span> <span class="op">..</span> <span class="va">modifiers</span><span class="op">.</span>ENCODE_LUA_STRING<span class="op">(</span><span class="va">values</span><span class="op">.</span><span class="cn">LIPSYNC_PATH</span><span class="op">))</span></span>
+<span id="cb23-12"><a href="#cb23-12" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb23-13"><a href="#cb23-13" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="cn">P</span><span class="op">:</span>wav_examodifler_mpslider<span class="op">(</span><span class="va">exa</span><span class="op">,</span> <span class="va">values</span><span class="op">,</span> <span class="va">modifiers</span><span class="op">)</span></span>
+<span id="cb23-14"><a href="#cb23-14" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="st">&quot;vo&quot;</span><span class="op">,</span> <span class="st">&quot;start&quot;</span><span class="op">,</span> <span class="va">values</span><span class="op">.</span><span class="cn">MPSLIDER_START</span><span class="op">)</span></span>
+<span id="cb23-15"><a href="#cb23-15" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="st">&quot;vo&quot;</span><span class="op">,</span> <span class="st">&quot;end&quot;</span><span class="op">,</span> <span class="va">values</span><span class="op">.</span><span class="cn">MPSLIDER_END</span><span class="op">)</span></span>
+<span id="cb23-16"><a href="#cb23-16" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="st">&quot;vo&quot;</span><span class="op">,</span> <span class="st">&quot;group&quot;</span><span class="op">,</span> <span class="va">self</span><span class="op">.</span><span class="va">wav_mpslider_group</span><span class="op">)</span></span>
+<span id="cb23-17"><a href="#cb23-17" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> <span class="va">i</span> <span class="op">=</span> <span class="dv">0</span><span class="op">,</span> <span class="va">self</span><span class="op">.</span><span class="va">wav_mpslider</span><span class="op">-</span><span class="dv">1</span> <span class="cf">do</span></span>
+<span id="cb23-18"><a href="#cb23-18" aria-hidden="true" tabindex="-1"></a>    <span class="kw">local</span> <span class="va">key</span> <span class="op">=</span> <span class="st">&quot;vo.&quot;</span> <span class="op">..</span> <span class="va">i</span></span>
+<span id="cb23-19"><a href="#cb23-19" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;_name&quot;</span><span class="op">,</span> <span class="va">i</span> <span class="op">==</span> <span class="dv">0</span> <span class="kw">and</span> <span class="st">&quot;カスタムオブジェクト&quot;</span> <span class="kw">or</span> <span class="st">&quot;アニメーション効果&quot;</span><span class="op">)</span></span>
+<span id="cb23-20"><a href="#cb23-20" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;track0&quot;</span><span class="op">,</span> <span class="st">&quot;0.00&quot;</span><span class="op">)</span></span>
+<span id="cb23-21"><a href="#cb23-21" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;track1&quot;</span><span class="op">,</span> <span class="st">&quot;0.00&quot;</span><span class="op">)</span></span>
+<span id="cb23-22"><a href="#cb23-22" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;track2&quot;</span><span class="op">,</span> <span class="st">&quot;0.00&quot;</span><span class="op">)</span></span>
+<span id="cb23-23"><a href="#cb23-23" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;track3&quot;</span><span class="op">,</span> <span class="st">&quot;0.00&quot;</span><span class="op">)</span></span>
+<span id="cb23-24"><a href="#cb23-24" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;check0&quot;</span><span class="op">,</span> <span class="st">&quot;0&quot;</span><span class="op">)</span></span>
+<span id="cb23-25"><a href="#cb23-25" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;type&quot;</span><span class="op">,</span> <span class="st">&quot;0&quot;</span><span class="op">)</span></span>
+<span id="cb23-26"><a href="#cb23-26" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;filter&quot;</span><span class="op">,</span> <span class="st">&quot;2&quot;</span><span class="op">)</span></span>
+<span id="cb23-27"><a href="#cb23-27" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;name&quot;</span><span class="op">,</span> <span class="st">&quot;多目的スライダー@PSDToolKit&quot;</span><span class="op">)</span></span>
+<span id="cb23-28"><a href="#cb23-28" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;param&quot;</span><span class="op">,</span> <span class="st">&quot;&quot;</span><span class="op">)</span></span>
+<span id="cb23-29"><a href="#cb23-29" aria-hidden="true" tabindex="-1"></a>  <span class="cf">end</span></span>
+<span id="cb23-30"><a href="#cb23-30" aria-hidden="true" tabindex="-1"></a>  <span class="kw">local</span> <span class="va">key</span> <span class="op">=</span> <span class="st">&quot;vo.&quot;</span> <span class="op">..</span> <span class="va">self</span><span class="op">.</span><span class="va">wav_mpslider</span></span>
+<span id="cb23-31"><a href="#cb23-31" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;_name&quot;</span><span class="op">,</span> <span class="st">&quot;標準描画&quot;</span><span class="op">)</span></span>
+<span id="cb23-32"><a href="#cb23-32" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;X&quot;</span><span class="op">,</span> <span class="st">&quot;0.0&quot;</span><span class="op">)</span></span>
+<span id="cb23-33"><a href="#cb23-33" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;Y&quot;</span><span class="op">,</span> <span class="st">&quot;0.0&quot;</span><span class="op">)</span></span>
+<span id="cb23-34"><a href="#cb23-34" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;Z&quot;</span><span class="op">,</span> <span class="st">&quot;0.0&quot;</span><span class="op">)</span></span>
+<span id="cb23-35"><a href="#cb23-35" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;拡大率&quot;</span><span class="op">,</span> <span class="st">&quot;100.00&quot;</span><span class="op">)</span></span>
+<span id="cb23-36"><a href="#cb23-36" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;透明度&quot;</span><span class="op">,</span> <span class="st">&quot;100.0&quot;</span><span class="op">)</span></span>
+<span id="cb23-37"><a href="#cb23-37" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;回転&quot;</span><span class="op">,</span> <span class="st">&quot;0.00&quot;</span><span class="op">)</span></span>
+<span id="cb23-38"><a href="#cb23-38" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;blend&quot;</span><span class="op">,</span> <span class="st">&quot;0&quot;</span><span class="op">)</span></span>
+<span id="cb23-39"><a href="#cb23-39" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb23-40"><a href="#cb23-40" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="cn">P</span><span class="op">:</span>wav_examodifler_subtitle<span class="op">(</span><span class="va">exa</span><span class="op">,</span> <span class="va">values</span><span class="op">,</span> <span class="va">modifiers</span><span class="op">)</span></span>
+<span id="cb23-41"><a href="#cb23-41" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="st">&quot;vo&quot;</span><span class="op">,</span> <span class="st">&quot;start&quot;</span><span class="op">,</span> <span class="va">values</span><span class="op">.</span><span class="cn">SUBTITLE_START</span><span class="op">)</span></span>
+<span id="cb23-42"><a href="#cb23-42" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="st">&quot;vo&quot;</span><span class="op">,</span> <span class="st">&quot;end&quot;</span><span class="op">,</span> <span class="va">values</span><span class="op">.</span><span class="cn">SUBTITLE_END</span><span class="op">)</span></span>
+<span id="cb23-43"><a href="#cb23-43" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="st">&quot;vo&quot;</span><span class="op">,</span> <span class="st">&quot;group&quot;</span><span class="op">,</span> <span class="va">self</span><span class="op">.</span><span class="va">wav_subtitle_group</span><span class="op">)</span></span>
+<span id="cb23-44"><a href="#cb23-44" aria-hidden="true" tabindex="-1"></a>  <span class="kw">local</span> <span class="va">text</span> <span class="op">=</span> <span class="va">values</span><span class="op">.</span><span class="cn">SUBTITLE_TEXT</span></span>
+<span id="cb23-45"><a href="#cb23-45" aria-hidden="true" tabindex="-1"></a>  <span class="co">-- wav_subtitle が 2 の時はテキストをスクリプトとして整形する</span></span>
+<span id="cb23-46"><a href="#cb23-46" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="va">self</span><span class="op">.</span><span class="va">wav_subtitle</span> <span class="op">==</span> <span class="dv">2</span> <span class="cf">then</span></span>
+<span id="cb23-47"><a href="#cb23-47" aria-hidden="true" tabindex="-1"></a>    <span class="va">text</span> <span class="op">=</span> <span class="va">self</span><span class="op">:</span>wav_subtitle_scripter<span class="op">(</span><span class="va">text</span><span class="op">)</span></span>
+<span id="cb23-48"><a href="#cb23-48" aria-hidden="true" tabindex="-1"></a>  <span class="cf">end</span></span>
+<span id="cb23-49"><a href="#cb23-49" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="st">&quot;vo.0&quot;</span><span class="op">,</span> <span class="st">&quot;text&quot;</span><span class="op">,</span> <span class="va">modifiers</span><span class="op">.</span>ENCODE_TEXT<span class="op">(</span><span class="va">text</span><span class="op">))</span></span>
+<span id="cb23-50"><a href="#cb23-50" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb23-51"><a href="#cb23-51" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="cn">P</span><span class="op">:</span>wav_examodifler_mergedprep<span class="op">(</span><span class="va">exa</span><span class="op">,</span> <span class="va">values</span><span class="op">,</span> <span class="va">modifiers</span><span class="op">)</span></span>
+<span id="cb23-52"><a href="#cb23-52" aria-hidden="true" tabindex="-1"></a>  <span class="kw">local</span> <span class="va">endlen</span> <span class="op">=</span> <span class="fu">math.max</span><span class="op">(</span><span class="va">values</span><span class="op">.</span><span class="cn">SUBTITLE_END</span><span class="op">,</span> <span class="va">values</span><span class="op">.</span><span class="cn">LIPSYNC_END</span><span class="op">,</span> <span class="va">values</span><span class="op">.</span><span class="cn">MPSLIDER_END</span><span class="op">)</span></span>
+<span id="cb23-53"><a href="#cb23-53" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="st">&quot;vo&quot;</span><span class="op">,</span> <span class="st">&quot;start&quot;</span><span class="op">,</span> <span class="fu">math.min</span><span class="op">(</span><span class="va">values</span><span class="op">.</span><span class="cn">SUBTITLE_START</span><span class="op">,</span> <span class="va">values</span><span class="op">.</span><span class="cn">LIPSYNC_START</span><span class="op">,</span> <span class="va">values</span><span class="op">.</span><span class="cn">MPSLIDER_START</span><span class="op">))</span></span>
+<span id="cb23-54"><a href="#cb23-54" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="st">&quot;vo&quot;</span><span class="op">,</span> <span class="st">&quot;end&quot;</span><span class="op">,</span> <span class="va">endlen</span><span class="op">)</span></span>
+<span id="cb23-55"><a href="#cb23-55" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="st">&quot;vo&quot;</span><span class="op">,</span> <span class="st">&quot;group&quot;</span><span class="op">,</span> <span class="st">&quot;1&quot;</span><span class="op">)</span></span>
+<span id="cb23-56"><a href="#cb23-56" aria-hidden="true" tabindex="-1"></a>  <span class="kw">local</span> <span class="va">idx</span> <span class="op">=</span> <span class="dv">0</span></span>
+<span id="cb23-57"><a href="#cb23-57" aria-hidden="true" tabindex="-1"></a>  <span class="kw">local</span> <span class="va">key</span> <span class="op">=</span> <span class="st">&quot;vo.&quot;</span> <span class="op">..</span> <span class="va">idx</span></span>
+<span id="cb23-58"><a href="#cb23-58" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;_name&quot;</span><span class="op">,</span> <span class="st">&quot;テキスト&quot;</span><span class="op">)</span></span>
+<span id="cb23-59"><a href="#cb23-59" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;サイズ&quot;</span><span class="op">,</span> <span class="st">&quot;1&quot;</span><span class="op">)</span></span>
+<span id="cb23-60"><a href="#cb23-60" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;表示速度&quot;</span><span class="op">,</span> <span class="st">&quot;0.0&quot;</span><span class="op">)</span></span>
+<span id="cb23-61"><a href="#cb23-61" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;文字毎に個別オブジェクト&quot;</span><span class="op">,</span> <span class="st">&quot;0&quot;</span><span class="op">)</span></span>
+<span id="cb23-62"><a href="#cb23-62" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;移動座標上に表示する&quot;</span><span class="op">,</span> <span class="st">&quot;0&quot;</span><span class="op">)</span></span>
+<span id="cb23-63"><a href="#cb23-63" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;自動スクロール&quot;</span><span class="op">,</span> <span class="st">&quot;0&quot;</span><span class="op">)</span></span>
+<span id="cb23-64"><a href="#cb23-64" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;B&quot;</span><span class="op">,</span> <span class="st">&quot;0&quot;</span><span class="op">)</span></span>
+<span id="cb23-65"><a href="#cb23-65" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;I&quot;</span><span class="op">,</span> <span class="st">&quot;0&quot;</span><span class="op">)</span></span>
+<span id="cb23-66"><a href="#cb23-66" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;type&quot;</span><span class="op">,</span> <span class="st">&quot;0&quot;</span><span class="op">)</span></span>
+<span id="cb23-67"><a href="#cb23-67" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;autoadjust&quot;</span><span class="op">,</span> <span class="st">&quot;0&quot;</span><span class="op">)</span></span>
+<span id="cb23-68"><a href="#cb23-68" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;soft&quot;</span><span class="op">,</span> <span class="st">&quot;0&quot;</span><span class="op">)</span></span>
+<span id="cb23-69"><a href="#cb23-69" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;monospace&quot;</span><span class="op">,</span> <span class="st">&quot;0&quot;</span><span class="op">)</span></span>
+<span id="cb23-70"><a href="#cb23-70" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;align&quot;</span><span class="op">,</span> <span class="st">&quot;4&quot;</span><span class="op">)</span></span>
+<span id="cb23-71"><a href="#cb23-71" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;spacing_x&quot;</span><span class="op">,</span> <span class="st">&quot;0&quot;</span><span class="op">)</span></span>
+<span id="cb23-72"><a href="#cb23-72" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;spacing_y&quot;</span><span class="op">,</span> <span class="st">&quot;0&quot;</span><span class="op">)</span></span>
+<span id="cb23-73"><a href="#cb23-73" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;precision&quot;</span><span class="op">,</span> <span class="st">&quot;0&quot;</span><span class="op">)</span></span>
+<span id="cb23-74"><a href="#cb23-74" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;color&quot;</span><span class="op">,</span> <span class="st">&quot;ffffff&quot;</span><span class="op">)</span></span>
+<span id="cb23-75"><a href="#cb23-75" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;color2&quot;</span><span class="op">,</span> <span class="st">&quot;000000&quot;</span><span class="op">)</span></span>
+<span id="cb23-76"><a href="#cb23-76" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;font&quot;</span><span class="op">,</span> <span class="st">&quot;MS UI Gothic&quot;</span><span class="op">)</span></span>
+<span id="cb23-77"><a href="#cb23-77" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;text&quot;</span><span class="op">,</span> <span class="va">modifiers</span><span class="op">.</span>ENCODE_TEXT<span class="op">(</span><span class="va">self</span><span class="op">:</span>wav_mergedprep_scripter<span class="op">(</span><span class="va">self</span><span class="op">.</span><span class="va">wav_subtitle</span> <span class="op">==</span> <span class="dv">2</span> <span class="kw">and</span> <span class="va">values</span><span class="op">.</span><span class="cn">SUBTITLE_TEXT</span> <span class="kw">or</span> <span class="st">&quot;&quot;</span><span class="op">,</span> <span class="op">{</span></span>
+<span id="cb23-78"><a href="#cb23-78" aria-hidden="true" tabindex="-1"></a>    <span class="va">st_mgl</span> <span class="op">=</span> <span class="va">values</span><span class="op">.</span><span class="cn">SUBTITLE_START</span> <span class="op">-</span> <span class="dv">1</span><span class="op">,</span></span>
+<span id="cb23-79"><a href="#cb23-79" aria-hidden="true" tabindex="-1"></a>    <span class="va">st_mgr</span> <span class="op">=</span> <span class="va">endlen</span> <span class="op">-</span> <span class="va">values</span><span class="op">.</span><span class="cn">SUBTITLE_END</span><span class="op">,</span></span>
+<span id="cb23-80"><a href="#cb23-80" aria-hidden="true" tabindex="-1"></a>    <span class="va">ls_mgl</span> <span class="op">=</span> <span class="va">values</span><span class="op">.</span><span class="cn">LIPSYNC_START</span> <span class="op">-</span> <span class="dv">1</span><span class="op">,</span></span>
+<span id="cb23-81"><a href="#cb23-81" aria-hidden="true" tabindex="-1"></a>    <span class="va">ls_mgr</span> <span class="op">=</span> <span class="va">endlen</span> <span class="op">-</span> <span class="va">values</span><span class="op">.</span><span class="cn">LIPSYNC_END</span><span class="op">,</span></span>
+<span id="cb23-82"><a href="#cb23-82" aria-hidden="true" tabindex="-1"></a>    <span class="va">sl_mgl</span> <span class="op">=</span> <span class="va">values</span><span class="op">.</span><span class="cn">MPSLIDER_START</span> <span class="op">-</span> <span class="dv">1</span><span class="op">,</span></span>
+<span id="cb23-83"><a href="#cb23-83" aria-hidden="true" tabindex="-1"></a>    <span class="va">sl_mgr</span> <span class="op">=</span> <span class="va">endlen</span> <span class="op">-</span> <span class="va">values</span><span class="op">.</span><span class="cn">MPSLIDER_END</span><span class="op">,</span></span>
+<span id="cb23-84"><a href="#cb23-84" aria-hidden="true" tabindex="-1"></a>  <span class="op">})))</span></span>
+<span id="cb23-85"><a href="#cb23-85" aria-hidden="true" tabindex="-1"></a>  <span class="va">idx</span> <span class="op">=</span> <span class="va">idx</span> <span class="op">+</span> <span class="dv">1</span></span>
+<span id="cb23-86"><a href="#cb23-86" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-87"><a href="#cb23-87" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="va">self</span><span class="op">.</span><span class="va">wav_lipsync</span> <span class="op">==</span> <span class="dv">1</span> <span class="kw">and</span> <span class="va">values</span><span class="op">.</span><span class="cn">LIPSYNC_PATH</span> <span class="op">~=</span> <span class="kw">nil</span> <span class="cf">then</span></span>
+<span id="cb23-88"><a href="#cb23-88" aria-hidden="true" tabindex="-1"></a>    <span class="va">key</span> <span class="op">=</span> <span class="st">&quot;vo.&quot;</span> <span class="op">..</span> <span class="va">idx</span></span>
+<span id="cb23-89"><a href="#cb23-89" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;_name&quot;</span><span class="op">,</span> <span class="st">&quot;アニメーション効果&quot;</span><span class="op">)</span></span>
+<span id="cb23-90"><a href="#cb23-90" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;track0&quot;</span><span class="op">,</span> <span class="st">&quot;0.00&quot;</span><span class="op">)</span></span>
+<span id="cb23-91"><a href="#cb23-91" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;track1&quot;</span><span class="op">,</span> <span class="st">&quot;0.00&quot;</span><span class="op">)</span></span>
+<span id="cb23-92"><a href="#cb23-92" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;track2&quot;</span><span class="op">,</span> <span class="st">&quot;0.00&quot;</span><span class="op">)</span></span>
+<span id="cb23-93"><a href="#cb23-93" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;track3&quot;</span><span class="op">,</span> <span class="st">&quot;0.00&quot;</span><span class="op">)</span></span>
+<span id="cb23-94"><a href="#cb23-94" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;check0&quot;</span><span class="op">,</span> <span class="st">&quot;0&quot;</span><span class="op">)</span></span>
+<span id="cb23-95"><a href="#cb23-95" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;type&quot;</span><span class="op">,</span> <span class="st">&quot;0&quot;</span><span class="op">)</span></span>
+<span id="cb23-96"><a href="#cb23-96" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;filter&quot;</span><span class="op">,</span> <span class="st">&quot;2&quot;</span><span class="op">)</span></span>
+<span id="cb23-97"><a href="#cb23-97" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;name&quot;</span><span class="op">,</span> <span class="st">&quot;口パク準備@PSDToolKit&quot;</span><span class="op">)</span></span>
+<span id="cb23-98"><a href="#cb23-98" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;param&quot;</span><span class="op">,</span> <span class="st">&quot;file=&quot;</span> <span class="op">..</span> <span class="va">modifiers</span><span class="op">.</span>ENCODE_LUA_STRING<span class="op">(</span><span class="va">values</span><span class="op">.</span><span class="cn">LIPSYNC_PATH</span><span class="op">))</span></span>
+<span id="cb23-99"><a href="#cb23-99" aria-hidden="true" tabindex="-1"></a>    <span class="va">idx</span> <span class="op">=</span> <span class="va">idx</span> <span class="op">+</span> <span class="dv">1</span></span>
+<span id="cb23-100"><a href="#cb23-100" aria-hidden="true" tabindex="-1"></a>  <span class="cf">end</span></span>
+<span id="cb23-101"><a href="#cb23-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb23-102"><a href="#cb23-102" aria-hidden="true" tabindex="-1"></a>  <span class="cf">for</span> <span class="va">i</span> <span class="op">=</span> <span class="dv">0</span><span class="op">,</span> <span class="va">self</span><span class="op">.</span><span class="va">wav_mpslider</span><span class="op">-</span><span class="dv">1</span> <span class="cf">do</span></span>
+<span id="cb23-103"><a href="#cb23-103" aria-hidden="true" tabindex="-1"></a>    <span class="va">key</span> <span class="op">=</span> <span class="st">&quot;vo.&quot;</span> <span class="op">..</span> <span class="va">idx</span></span>
+<span id="cb23-104"><a href="#cb23-104" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;_name&quot;</span><span class="op">,</span> <span class="st">&quot;アニメーション効果&quot;</span><span class="op">)</span></span>
+<span id="cb23-105"><a href="#cb23-105" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;track0&quot;</span><span class="op">,</span> <span class="st">&quot;0.00&quot;</span><span class="op">)</span></span>
+<span id="cb23-106"><a href="#cb23-106" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;track1&quot;</span><span class="op">,</span> <span class="st">&quot;0.00&quot;</span><span class="op">)</span></span>
+<span id="cb23-107"><a href="#cb23-107" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;track2&quot;</span><span class="op">,</span> <span class="st">&quot;0.00&quot;</span><span class="op">)</span></span>
+<span id="cb23-108"><a href="#cb23-108" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;track3&quot;</span><span class="op">,</span> <span class="st">&quot;0.00&quot;</span><span class="op">)</span></span>
+<span id="cb23-109"><a href="#cb23-109" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;check0&quot;</span><span class="op">,</span> <span class="st">&quot;0&quot;</span><span class="op">)</span></span>
+<span id="cb23-110"><a href="#cb23-110" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;type&quot;</span><span class="op">,</span> <span class="st">&quot;0&quot;</span><span class="op">)</span></span>
+<span id="cb23-111"><a href="#cb23-111" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;filter&quot;</span><span class="op">,</span> <span class="st">&quot;2&quot;</span><span class="op">)</span></span>
+<span id="cb23-112"><a href="#cb23-112" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;name&quot;</span><span class="op">,</span> <span class="st">&quot;多目的スライダー@PSDToolKit&quot;</span><span class="op">)</span></span>
+<span id="cb23-113"><a href="#cb23-113" aria-hidden="true" tabindex="-1"></a>    <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;param&quot;</span><span class="op">,</span> <span class="st">&quot;&quot;</span><span class="op">)</span></span>
+<span id="cb23-114"><a href="#cb23-114" aria-hidden="true" tabindex="-1"></a>    <span class="va">idx</span> <span class="op">=</span> <span class="va">idx</span> <span class="op">+</span> <span class="dv">1</span></span>
+<span id="cb23-115"><a href="#cb23-115" aria-hidden="true" tabindex="-1"></a>  <span class="cf">end</span></span>
+<span id="cb23-116"><a href="#cb23-116" aria-hidden="true" tabindex="-1"></a>  <span class="va">key</span> <span class="op">=</span> <span class="st">&quot;vo.&quot;</span> <span class="op">..</span> <span class="va">idx</span></span>
+<span id="cb23-117"><a href="#cb23-117" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;_name&quot;</span><span class="op">,</span> <span class="st">&quot;標準描画&quot;</span><span class="op">)</span></span>
+<span id="cb23-118"><a href="#cb23-118" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;X&quot;</span><span class="op">,</span> <span class="st">&quot;0.0&quot;</span><span class="op">)</span></span>
+<span id="cb23-119"><a href="#cb23-119" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;Y&quot;</span><span class="op">,</span> <span class="st">&quot;0.0&quot;</span><span class="op">)</span></span>
+<span id="cb23-120"><a href="#cb23-120" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;Z&quot;</span><span class="op">,</span> <span class="st">&quot;0.0&quot;</span><span class="op">)</span></span>
+<span id="cb23-121"><a href="#cb23-121" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;拡大率&quot;</span><span class="op">,</span> <span class="st">&quot;100.00&quot;</span><span class="op">)</span></span>
+<span id="cb23-122"><a href="#cb23-122" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;透明度&quot;</span><span class="op">,</span> <span class="st">&quot;100.0&quot;</span><span class="op">)</span></span>
+<span id="cb23-123"><a href="#cb23-123" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;回転&quot;</span><span class="op">,</span> <span class="st">&quot;0.00&quot;</span><span class="op">)</span></span>
+<span id="cb23-124"><a href="#cb23-124" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="va">key</span><span class="op">,</span> <span class="st">&quot;blend&quot;</span><span class="op">,</span> <span class="st">&quot;0&quot;</span><span class="op">)</span></span>
+<span id="cb23-125"><a href="#cb23-125" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div>
+<h3
+id="*.lab_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.92.E6.8A.95.E3.81.92.E8.BE.BC.E3.82.93.E3.81.A0.E6.99.82.E3.81.AE.E8.A8.AD.E5.AE.9A"><code>*.lab</code>
+ファイルを投げ込んだ時の設定</h3>
+<p>拡張編集のタイムラインに <code>*.lab</code> ファイルを投げ込んだ時に
+<code>口パク準備</code> の処理を行うための設定です。</p>
+<h4 id="P.lab_exafinder"><code>P.lab_exafinder</code></h4>
+<p><code>*.lab</code> ファイルを投げ込んだ時に使用される
+<code>*.exa</code> ファイルの検索方法を設定します。</p>
+<p>この設定を使うと、拡張編集に投げ込んだ <code>*.lab</code>
+のファイル名などに応じて <code>*.exa</code>
+ファイル（エイリアスファイル）を切り替えることができます。</p>
+<div class="sourceCode" id="cb24"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb24-1"><a href="#cb24-1" aria-hidden="true" tabindex="-1"></a><span class="cn">P</span><span class="op">.</span><span class="va">lab_exafinder</span> <span class="op">=</span> <span class="dv">0</span></span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th>値</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>0</code></td>
+<td><strong>常に同じファイルを参照する</strong><br>投げ込んだファイルに関わらず以下のエイリアスファイルが使用されます。<br><code>lab.exa</code><br></td>
+</tr>
+<tr class="even">
+<td><code>1</code></td>
+<td><strong>ファイルが入っているフォルダー名を元にする</strong><br>例:
+投げ込んだファイルが <code>C:\MyFolder\TKHS_Hello_World.lab</code>
+の時<br><code>MyFolder_lab.exa</code><br></td>
+</tr>
+<tr class="odd">
+<td><code>2</code></td>
+<td><strong>ファイル名を元にする</strong><br>例: 投げ込んだファイルが
+<code>C:\MyFolder\TKHS_Hello_World.lab</code>
+の時<br><code>TKHS_Hello_World_lab.exa</code></td>
+</tr>
+<tr class="even">
+<td><code>3</code></td>
+<td><strong>ファイル名の中で _
+で区切られた最初の部分を元にする</strong><br>例: 投げ込んだファイルが
+<code>C:\MyFolder\TKHS_Hello_World.lab</code>
+の時<br><code>TKHS_lab.exa</code></td>
+</tr>
+<tr class="odd">
+<td><code>4</code></td>
+<td><strong>ファイル名の中で _
+で区切られた2つめの部分を元にする</strong><br>例: 投げ込んだファイルが
+<code>C:\MyFolder\TKHS_Hello_World.lab</code>
+の時<br><code>Hello_lab.exa</code></td>
+</tr>
+<tr class="even">
+<td><code>5</code></td>
+<td><strong>ファイル名の中で _
+で区切られた3つめの部分を元にする</strong><br>例: 投げ込んだファイルが
+<code>C:\MyFolder\TKHS_Hello_World.lab</code>
+の時<br><code>World_lab.exa</code></td>
+</tr>
+<tr class="odd">
+<td><code>function</code></td>
+<td>関数を設定すると上記以外のパターンにも対応できます。<br>例:
+<code>function P:lab_exafinder(path) return "aaa" end</code>
+を指定した時<br><code>aaa_lab.exa</code></td>
+</tr>
+</tbody>
+</table>
+<p>※上記ルールで該当するファイルが見つからない場合は
+<code>lab.exa</code> が代わりに使用されます。</p>
+<h4
+id="P.3Alab_examodifler.2FP.lab_lipsync_scripter"><code>P:lab_examodifler</code>/<code>P.lab_lipsync_scripter</code></h4>
+<p><code>*.lab</code> ファイルを投げ込んだ時の <code>*.exa</code>
+ファイル改変処理を設定します。</p>
+<p>エイリアスファイルを読み込んだ後、スクリプト処理を割り当てるための設定です。</p>
+<p>一般的な用途においては変更する必要はありません。</p>
+<div class="sourceCode" id="cb25"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="cn">P</span><span class="op">:</span>lab_examodifler<span class="op">(</span><span class="va">exa</span><span class="op">,</span> <span class="va">values</span><span class="op">,</span> <span class="va">modifiers</span><span class="op">)</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="st">&quot;vo&quot;</span><span class="op">,</span> <span class="st">&quot;start&quot;</span><span class="op">,</span> <span class="va">values</span><span class="op">.</span><span class="cn">START</span> <span class="op">+</span> <span class="dv">1</span><span class="op">)</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="st">&quot;vo&quot;</span><span class="op">,</span> <span class="st">&quot;end&quot;</span><span class="op">,</span> <span class="va">values</span><span class="op">.</span><span class="cn">END</span> <span class="op">+</span> <span class="dv">1</span><span class="op">)</span></span>
+<span id="cb25-4"><a href="#cb25-4" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="st">&quot;vo&quot;</span><span class="op">,</span> <span class="st">&quot;group&quot;</span><span class="op">,</span> <span class="dv">1</span><span class="op">)</span></span>
+<span id="cb25-5"><a href="#cb25-5" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="st">&quot;vo.0&quot;</span><span class="op">,</span> <span class="st">&quot;text&quot;</span><span class="op">,</span> <span class="va">modifiers</span><span class="op">.</span>ENCODE_TEXT<span class="op">(</span><span class="va">values</span><span class="op">.</span><span class="cn">LIPSYNC</span><span class="op">))</span></span>
+<span id="cb25-6"><a href="#cb25-6" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb25-7"><a href="#cb25-7" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="cn">P</span><span class="op">:</span>lab_lipsync_scripter<span class="op">(</span><span class="va">s</span><span class="op">)</span></span>
+<span id="cb25-8"><a href="#cb25-8" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="st">&#39;&lt;?l=&#39;</span> <span class="op">..</span> <span class="va">GCMZDrops</span><span class="op">.</span>encodeluastring<span class="op">(</span><span class="va">s</span><span class="op">)</span> <span class="op">..</span> <span class="st">&#39;;require(&quot;PSDToolKit&quot;).talk:setphoneme(obj,l);l=nil?&gt;&#39;</span></span>
+<span id="cb25-9"><a href="#cb25-9" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div>
+<h3
+id="*.srt_.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.92.E6.8A.95.E3.81.92.E8.BE.BC.E3.82.93.E3.81.A0.E6.99.82.E3.81.AE.E8.A8.AD.E5.AE.9A"><code>*.srt</code>
+ファイルを投げ込んだ時の設定</h3>
+<p><code>*.srt</code> ファイルを拡張編集のタイムラインに投げ込んだ時に
+<code>字幕準備</code> 作成を行うための設定です。</p>
+<h4 id="P.srt_insertmode"><code>P.srt_insertmode</code></h4>
+<p><code>*.srt</code> ファイルを投げ込んだ時に <code>テキスト</code> と
+<code>字幕準備</code> のどちらを作成するかを設定します。</p>
+<div class="sourceCode" id="cb26"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb26-1"><a href="#cb26-1" aria-hidden="true" tabindex="-1"></a><span class="cn">P</span><span class="op">.</span><span class="va">srt_insertmode</span> <span class="op">=</span> <span class="dv">1</span></span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th>値</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>0</code></td>
+<td><code>テキスト</code> を挿入</td>
+</tr>
+<tr class="even">
+<td><code>1</code></td>
+<td><code>字幕準備</code> を挿入</td>
+</tr>
+</tbody>
+</table>
+<h4 id="P.srt_encoding"><code>P.srt_encoding</code></h4>
+<p><code>*.srt</code> ファイルの文字エンコーディングを指定します。</p>
+<div class="sourceCode" id="cb27"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="cn">P</span><span class="op">.</span><span class="va">srt_encoding</span> <span class="op">=</span> <span class="st">&quot;utf8&quot;</span></span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th>値</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>"sjis"</code></td>
+<td>文字エンコーディングが <code>Shift_JIS</code>
+であるものとして読み込みます</td>
+</tr>
+<tr class="even">
+<td><code>"utf8"</code></td>
+<td>文字エンコーディングが <code>UTF-8</code>
+であるものとして読み込みます</td>
+</tr>
+</tbody>
+</table>
+<h4
+id="P.srt_subtitle_margin_before"><code>P.srt_subtitle_margin_before</code></h4>
+<p><code>*.srt</code> ファイルを投げ込んだ時に作成される
+<code>字幕準備</code>
+の範囲が指定されたフレーム数だけ本来の範囲よりも早く始まるようにします。</p>
+<div class="sourceCode" id="cb28"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb28-1"><a href="#cb28-1" aria-hidden="true" tabindex="-1"></a><span class="cn">P</span><span class="op">.</span><span class="va">srt_subtitle_margin_before</span> <span class="op">=</span> <span class="dv">0</span></span></code></pre></div>
+<h4
+id="P.srt_subtitle_margin_after"><code>P.srt_subtitle_margin_after</code></h4>
+<p><code>*.srt</code> ファイルを投げ込んだ時に作成される
+<code>字幕準備</code>
+の範囲が指定されたフレーム数だけ本来の範囲よりも長く続くようにします。</p>
+<div class="sourceCode" id="cb29"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="cn">P</span><span class="op">.</span><span class="va">srt_subtitle_margin_after</span> <span class="op">=</span> <span class="dv">0</span></span></code></pre></div>
+<h4 id="P.srt_exafinder"><code>P.srt_exafinder</code></h4>
+<p><code>*.srt</code> ファイルを投げ込んだ時に使用される
+<code>*.exa</code> ファイルの検索方法を設定します。</p>
+<p>この設定を使うと、拡張編集に投げ込んだ <code>*.srt</code>
+のファイル名などに応じて <code>*.exa</code>
+ファイル（エイリアスファイル）を切り替えることができます。</p>
+<div class="sourceCode" id="cb30"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb30-1"><a href="#cb30-1" aria-hidden="true" tabindex="-1"></a><span class="cn">P</span><span class="op">.</span><span class="va">srt_exafinder</span> <span class="op">=</span> <span class="dv">0</span></span></code></pre></div>
+<table>
+<thead>
+<tr class="header">
+<th>値</th>
+<th>説明</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td><code>0</code></td>
+<td><strong>常に同じファイルを参照する</strong><br>投げ込んだファイルに関わらず以下のエイリアスファイルが使用されます。<br><code>srt.exa</code><br></td>
+</tr>
+<tr class="even">
+<td><code>1</code></td>
+<td><strong>ファイルが入っているフォルダー名を元にする</strong><br>例:
+投げ込んだファイルが <code>C:\MyFolder\TKHS_Hello_World.srt</code>
+の時<br><code>MyFolder_srt.exa</code><br></td>
+</tr>
+<tr class="odd">
+<td><code>2</code></td>
+<td><strong>ファイル名を元にする</strong><br>例: 投げ込んだファイルが
+<code>C:\MyFolder\TKHS_Hello_World.srt</code>
+の時<br><code>TKHS_Hello_World_srt.exa</code></td>
+</tr>
+<tr class="even">
+<td><code>3</code></td>
+<td><strong>ファイル名の中で _
+で区切られた最初の部分を元にする</strong><br>例: 投げ込んだファイルが
+<code>C:\MyFolder\TKHS_Hello_World.srt</code>
+の時<br><code>TKHS_srt.exa</code></td>
+</tr>
+<tr class="odd">
+<td><code>4</code></td>
+<td><strong>ファイル名の中で _
+で区切られた2つめの部分を元にする</strong><br>例: 投げ込んだファイルが
+<code>C:\MyFolder\TKHS_Hello_World.srt</code>
+の時<br><code>Hello_srt.exa</code></td>
+</tr>
+<tr class="even">
+<td><code>5</code></td>
+<td><strong>ファイル名の中で _
+で区切られた3つめの部分を元にする</strong><br>例: 投げ込んだファイルが
+<code>C:\MyFolder\TKHS_Hello_World.srt</code>
+の時<br><code>World_srt.exa</code></td>
+</tr>
+<tr class="odd">
+<td><code>function</code></td>
+<td>関数を設定すると上記以外のパターンにも対応できます。<br>例:
+<code>function P:srt_exafinder(path) return "aaa" end</code>
+を指定した時<br><code>aaa_srt.exa</code></td>
+</tr>
+</tbody>
+</table>
+<p>※上記ルールで該当するファイルが見つからない場合は
+<code>srt.exa</code> が代わりに使用されます。</p>
+<h4 id="P.3Asrt_examodifler"><code>P:srt_examodifler</code></h4>
+<p><code>*.srt</code> ファイルを投げ込んだ時の <code>*.exa</code>
+ファイル改変処理を設定します。</p>
+<p>一般的な用途においては変更する必要はありません。</p>
+<div class="sourceCode" id="cb31"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="cn">P</span><span class="op">:</span>srt_examodifler<span class="op">(</span><span class="va">exa</span><span class="op">,</span> <span class="va">values</span><span class="op">,</span> <span class="va">modifiers</span><span class="op">)</span></span>
+<span id="cb31-2"><a href="#cb31-2" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="st">&quot;vo&quot;</span><span class="op">,</span> <span class="st">&quot;start&quot;</span><span class="op">,</span> <span class="va">values</span><span class="op">.</span><span class="cn">START</span> <span class="op">+</span> <span class="dv">1</span><span class="op">)</span></span>
+<span id="cb31-3"><a href="#cb31-3" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="st">&quot;vo&quot;</span><span class="op">,</span> <span class="st">&quot;end&quot;</span><span class="op">,</span> <span class="va">values</span><span class="op">.</span><span class="cn">END</span> <span class="op">+</span> <span class="dv">1</span><span class="op">)</span></span>
+<span id="cb31-4"><a href="#cb31-4" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="st">&quot;vo&quot;</span><span class="op">,</span> <span class="st">&quot;group&quot;</span><span class="op">,</span> <span class="dv">1</span><span class="op">)</span></span>
+<span id="cb31-5"><a href="#cb31-5" aria-hidden="true" tabindex="-1"></a>  <span class="va">exa</span><span class="op">:</span>set<span class="op">(</span><span class="st">&quot;vo.0&quot;</span><span class="op">,</span> <span class="st">&quot;text&quot;</span><span class="op">,</span> <span class="va">modifiers</span><span class="op">.</span>ENCODE_TEXT<span class="op">(</span><span class="va">values</span><span class="op">.</span><span class="cn">SUBTITLE</span><span class="op">))</span></span>
+<span id="cb31-6"><a href="#cb31-6" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div>
+<h4
+id="P.3Asrt_subtitle_replacer"><code>P:srt_subtitle_replacer</code></h4>
+<p><code>*.srt</code> ファイルを投げ込んだ時、<code>字幕準備</code>
+のテキストに対して書き換えを行う必要がある場合に設定します。</p>
+<p>ここに渡されてくる文字列は <code>Shift_JIS</code> ではなく常に
+<code>UTF-8</code> なので、日本語を置換するときは日本語部分は
+<code>UTF-8</code> で指定する必要があります。</p>
+<div class="sourceCode" id="cb32"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb32-1"><a href="#cb32-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="cn">P</span><span class="op">:</span>srt_subtitle_replacer<span class="op">(</span><span class="va">s</span><span class="op">)</span></span>
+<span id="cb32-2"><a href="#cb32-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="va">s</span> <span class="co">-- そのままの状態で返す</span></span>
+<span id="cb32-3"><a href="#cb32-3" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div>
+<h4
+id="P.srt_subtitle_scripter"><code>P.srt_subtitle_scripter</code></h4>
+<p><code>*.srt</code> ファイルを投げ込んだ時にテキストを
+<code>字幕準備</code> に整形するスクリプトの処理内容を設定します。</p>
+<p>一般的な用途においては変更する必要はありません。</p>
+<div class="sourceCode" id="cb33"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="cn">P</span><span class="op">:</span>srt_subtitle_scripter<span class="op">(</span><span class="va">s</span><span class="op">)</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="cf">if</span> <span class="va">s</span><span class="op">:</span><span class="fu">sub</span><span class="op">(-</span><span class="dv">2</span><span class="op">)</span> <span class="op">~=</span> <span class="st">&quot;</span><span class="sc">\r\n</span><span class="st">&quot;</span> <span class="cf">then</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>    <span class="va">s</span> <span class="op">=</span> <span class="va">s</span> <span class="op">..</span> <span class="st">&quot;</span><span class="sc">\r\n</span><span class="st">&quot;</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">end</span></span>
+<span id="cb33-5"><a href="#cb33-5" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="st">&quot;&lt;?s=[==[</span><span class="sc">\r\n</span><span class="st">&quot;</span> <span class="op">..</span> <span class="va">s</span><span class="op">:</span><span class="fu">gsub</span><span class="op">(</span><span class="st">&#39;]==]&#39;</span><span class="op">,</span> <span class="st">&#39;]==]..&quot;]==]&quot;..[==[&#39;</span><span class="op">)</span> <span class="op">..</span> <span class="st">&#39;]==];require(&quot;PSDToolKit&quot;).subtitle:set(s,obj,true);s=nil?&gt;&#39;</span></span>
+<span id="cb33-6"><a href="#cb33-6" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div>
+<h2
+id=".E6.96.87.E5.AD.97.E5.88.97.E3.82.92_UTF-8_.E3.81.A7.E8.A8.98.E8.BF.B0.E3.81.99.E3.82.8B">文字列を
+UTF-8 で記述する</h2>
+<p><a
+href="#P.3Awav_subtitle_replacer"><code>P:wav_subtitle_replacer</code></a>
+や <a
+href="#P.3Asrt_subtitle_replacer"><code>P:srt_subtitle_replacer</code></a>
+は文字列を UTF-8
+で記述する必要がありますが、そのやり方は色々あります。</p>
+<h3
+id="1._.E3.83.95.E3.82.A1.E3.82.A4.E3.83.AB.E3.82.92.E5.88.86.E3.81.91.E3.82.8B">1.
+ファイルを分ける</h3>
+<p>下記のようなファイルを <code>replacer.lua</code> として UTF-8
+で作成した上で、</p>
+<div class="sourceCode" id="cb34"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb34-1"><a href="#cb34-1" aria-hidden="true" tabindex="-1"></a><span class="cf">return</span> <span class="kw">function</span><span class="op">(</span><span class="va">self</span><span class="op">,</span> <span class="va">s</span><span class="op">)</span></span>
+<span id="cb34-2"><a href="#cb34-2" aria-hidden="true" tabindex="-1"></a>  <span class="va">s</span> <span class="op">=</span> <span class="va">s</span><span class="op">:</span><span class="fu">gsub</span><span class="op">(</span><span class="st">&quot;こんにちは&quot;</span><span class="op">,</span> <span class="st">&quot;Hello&quot;</span><span class="op">)</span></span>
+<span id="cb34-3"><a href="#cb34-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="va">s</span></span>
+<span id="cb34-4"><a href="#cb34-4" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div>
+<p><code>setting.lua</code>
+上ではそのファイルを読み込むように指定します。</p>
+<div class="sourceCode" id="cb35"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a><span class="cn">P</span><span class="op">.</span><span class="va">wav_subtitle_replacer</span> <span class="op">=</span> <span class="fu">require</span><span class="op">(</span><span class="st">&quot;replacer&quot;</span><span class="op">)</span></span></code></pre></div>
+<h3 id="2._.E5.A4.89.E6.8F.9B.E3.81.99.E3.82.8B">2. 変換する</h3>
+<p>変換すれば <code>setting.lua</code> 上に直接記述できます。</p>
+<div class="sourceCode" id="cb36"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb36-1"><a href="#cb36-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="cn">P</span><span class="op">:</span>wav_subtitle_replacer<span class="op">(</span><span class="va">s</span><span class="op">)</span></span>
+<span id="cb36-2"><a href="#cb36-2" aria-hidden="true" tabindex="-1"></a>  <span class="va">s</span> <span class="op">=</span> <span class="va">s</span><span class="op">:</span><span class="fu">gsub</span><span class="op">(</span><span class="va">GCMZDrops</span><span class="op">.</span>convertencoding<span class="op">(</span><span class="st">&quot;こんにちは&quot;</span><span class="op">,</span> <span class="st">&quot;sjis&quot;</span><span class="op">,</span> <span class="st">&quot;utf8&quot;</span><span class="op">),</span> <span class="st">&quot;Hello&quot;</span><span class="op">)</span></span>
+<span id="cb36-3"><a href="#cb36-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="va">s</span></span>
+<span id="cb36-4"><a href="#cb36-4" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div>
+<h3 id="3._.E7.9B.B4.E6.8E.A5.E8.A8.98.E8.BF.B0.E3.81.99.E3.82.8B">3.
+直接記述する</h3>
+<p>変換後の結果を直接 <code>setting.lua</code>
+に記述することもできます。</p>
+<div class="sourceCode" id="cb37"><pre
+class="sourceCode lua"><code class="sourceCode lua"><span id="cb37-1"><a href="#cb37-1" aria-hidden="true" tabindex="-1"></a><span class="kw">function</span> <span class="cn">P</span><span class="op">:</span>wav_subtitle_replacer<span class="op">(</span><span class="va">s</span><span class="op">)</span></span>
+<span id="cb37-2"><a href="#cb37-2" aria-hidden="true" tabindex="-1"></a>  <span class="va">s</span> <span class="op">=</span> <span class="va">s</span><span class="op">:</span><span class="fu">gsub</span><span class="op">(</span><span class="st">&quot;</span><span class="sc">\227\129\147\227\130\147\227\129\171\227\129\161\227\129\175</span><span class="st">&quot;</span><span class="op">,</span> <span class="st">&quot;Hello&quot;</span><span class="op">)</span></span>
+<span id="cb37-3"><a href="#cb37-3" aria-hidden="true" tabindex="-1"></a>  <span class="cf">return</span> <span class="va">s</span></span>
+<span id="cb37-4"><a href="#cb37-4" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div>
+</div>
+<footer>
+<dl>
+<dt>Written by</dt>
+<dd>oov</dd>
+<dt>Generated at</dt>
+<dd>2025-02-26T10:56:47Z</dd>
+<dt>for</dt>
+<dd>v0.2.0beta71 ( 9190e74 )</dd>
+</dl>
+</footer>
+</div>
+</body>
+</html>
