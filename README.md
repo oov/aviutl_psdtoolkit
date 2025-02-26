@@ -37,7 +37,7 @@ https://www.nicovideo.jp/watch/sm32904901
 バイナリのビルドについて
 ------------------------
 
-[MSYS2](https://www.msys2.org/) + CLANG32/CLANG64 上で開発し、リリース用ファイルは GitHub Actions にて自動生成しています。  
+[Git Bash](https://gitforwindows.org/) + [llvm-mingw](https://github.com/mstorsjo/llvm-mingw) 上で開発し、リリース用ファイルは GitHub Actions にて自動生成しています。  
 ビルド方法や必要になるパッケージなどは [GitHub Actions の設定ファイル](https://github.com/oov/aviutl_psdtoolkit/blob/main/.github/workflows/releaser.yml) を参照してください。
 
 Contributors
