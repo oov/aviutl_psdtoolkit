@@ -4,3 +4,6 @@
 [submodule "src/c/3rd/ovutil"]
 	path = src/c/3rd/ovutil
 	url = https://github.com/oov/ovutil
+[submodule "src/c/3rd/aviutl_plugin_sdk"]
+	path = src/c/3rd/aviutl_plugin_sdk
+	url = https://github.com/oov/aviutl_plugin_sdk

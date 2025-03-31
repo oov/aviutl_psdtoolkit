@@ -4,37 +4,7 @@ set -eu
 CUR_DIR="${PWD}"
 cd "$(dirname "${BASH_SOURCE:-$0}")"
 
-mkdir -p build/tools
-cd build/tools
-
-if [ ! -e "setup-llvm-mingw.bash" ]; then
-  curl -sOL https://raw.githubusercontent.com/oov/ovbase/a1fdda073538272e4c1a4b710f87da4a2b1bb6ae/setup-llvm-mingw.bash
-fi
-. setup-llvm-mingw.bash --dir $PWD
-
-case "$(uname -s)" in
-  MINGW64_NT* | MINGW32_NT*)
-    SEVENZIP_URL="https://www.7-zip.org/a/7z2301-extra.7z"
-    SEVENZIP_DIR="7z-windows"
-    if [ ! -d "${SEVENZIP_DIR}" ]; then
-      filename="$(basename "${SEVENZIP_URL}")"
-      if [ ! -f "${filename}" ]; then
-        echo "Downloading: ${SEVENZIP_URL}"
-        curl -sOL "$SEVENZIP_URL"
-      fi
-      mkdir -p "${SEVENZIP_DIR}"
-      cd "${SEVENZIP_DIR}"
-      cmake -E tar xf "../${filename}"
-      cd ..
-    fi
-    export PATH="${PWD}/${SEVENZIP_DIR}:$PATH"
-    ;;
-  *)
-    ;;
-esac
-
-cd ..
-
+INSTALL_TOOLS=1
 REBUILD=0
 SKIP_TESTS=0
 CREATE_DOCS=0
@@ -74,11 +44,38 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+if [ "${INSTALL_TOOLS}" -eq 1 ]; then
+  mkdir -p "build/tools"
+  if [ ! -e "${PWD}/build/tools/setup-llvm-mingw.sh" ]; then
+    curl -o "${PWD}/build/tools/setup-llvm-mingw.sh" -sOL https://raw.githubusercontent.com/oov/ovbase/caace762bea6a59bfe4f9fc51a703099e3f65e9e/setup-llvm-mingw.sh
+  fi
+  . "${PWD}/build/tools/setup-llvm-mingw.sh" --dir "${PWD}/build/tools"
+
+  case "$(uname -s)" in
+    MINGW64_NT* | MINGW32_NT*)
+      SEVENZIP_URL="https://www.7-zip.org/a/7z2409-extra.7z"
+      SEVENZIP_DIR="${PWD}/build/tools/7z2409-windows"
+      SEVENZIP_ARCHIVE="${PWD}/build/tools/$(basename "${SEVENZIP_URL}")"
+      if [ ! -d "${SEVENZIP_DIR}" ]; then
+        if [ ! -f "${SEVENZIP_ARCHIVE}" ]; then
+          echo "Downloading: ${SEVENZIP_URL}"
+          curl -o "${SEVENZIP_ARCHIVE}" -sOL "$SEVENZIP_URL"
+        fi
+        mkdir -p "${SEVENZIP_DIR}"
+        (cd "${SEVENZIP_DIR}" && cmake -E tar xf "${SEVENZIP_ARCHIVE}")
+      fi
+      export PATH="${SEVENZIP_DIR}:$PATH"
+      ;;
+    *)
+      ;;
+  esac
+fi
+
 for arch in $ARCHS; do
-  builddir="${PWD}/${CMAKE_BUILD_TYPE}/${arch}"
+  builddir="${PWD}/build/${CMAKE_BUILD_TYPE}/${arch}"
   if [ "${REBUILD}" -eq 1 ] || [ ! -e "${builddir}/CMakeCache.txt" ]; then
     rm -rf "${builddir}"
-    cmake -S .. -B "${builddir}" --preset ${arch} \
+    cmake -S . -B "${builddir}" --preset ${arch} \
       -DCMAKE_BUILD_TYPE="${CMAKE_BUILD_TYPE}" \
       -DCMAKE_TOOLCHAIN_FILE="src/c/3rd/ovbase/cmake/llvm-mingw.cmake" \
       -DCMAKE_C_COMPILER="${arch}-w64-mingw32-clang"
@@ -90,24 +87,19 @@ for arch in $ARCHS; do
 done
 
 if [ "${CREATE_ZIP}" -eq 1 ]; then
-  curdir="${PWD}"
-  distdir="${curdir}/${CMAKE_BUILD_TYPE}/dist"
+  distdir="${PWD}/build/${CMAKE_BUILD_TYPE}/dist"
   rm -rf "${distdir}"
   mkdir -p "${distdir}"
   for target in package package_en; do
-    builddir="${PWD}/${CMAKE_BUILD_TYPE}/${target}"
+    builddir="${PWD}/build/${CMAKE_BUILD_TYPE}/${target}"
     if [ "${REBUILD}" -eq 1 ] || [ ! -e "${builddir}/CMakeCache.txt" ]; then
       rm -rf "${builddir}"
-      cmake -S .. -B "${builddir}" --preset ${target}
+      cmake -S . -B "${builddir}" --preset ${target}
     fi
     cmake --build "${builddir}"
-    cp -r "${PWD}/${CMAKE_BUILD_TYPE}/i686/bin/"* "${builddir}/bin"
-    cp -r "${PWD}/${CMAKE_BUILD_TYPE}/x86_64/bin/"* "${builddir}/bin"
+    cp -r "${PWD}/build/${CMAKE_BUILD_TYPE}/i686/bin/"* "${builddir}/bin"
+    cp -r "${PWD}/build/${CMAKE_BUILD_TYPE}/x86_64/bin/"* "${builddir}/bin"
 
-    cd "${builddir}/bin"
-    cmake -E tar cf "${distdir}/${CMAKE_BUILD_TYPE}_${target}.zip" --format=zip .
-    cd "${curdir}"
+    (cd "${builddir}/bin" && cmake -E tar cf "${distdir}/${CMAKE_BUILD_TYPE}_${target}.zip" --format=zip .)
   done
 fi
-
-cd "${CUR_DIR}"
