@@ -16,7 +16,7 @@ jobs:
       - name: Get the version
         run: |
           echo "tag=${GITHUB_REF/refs\/tags\//}" >> $GITHUB_OUTPUT
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           path: ./repo
       - name: Build docs
