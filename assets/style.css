@@ -1,0 +1,207 @@
+body {
+    font-family: sans-serif;
+    color: #333;
+    line-height: 1.8;
+}
+
+#ptk-outer {
+    width: 1160px;
+    margin: 0 auto;
+}
+
+#ptk-outer>footer {
+    background-color: #f0f0f0;
+    border-radius: 8px;
+    padding: 1em 0;
+    margin: 8em auto 0;
+    font-size: 75%;
+}
+
+#ptk-outer>footer>dl {
+    text-align: center;
+}
+
+#ptk-outer>footer>dl>dt,
+#ptk-outer>footer>dl>dd {
+    margin: 0;
+    padding: 0;
+    display: inline;
+}
+
+#ptk-outer>footer>dl>dt {
+    margin-left: 1em;
+}
+
+#ptk-menu {
+    position: fixed;
+    font-size: 80%;
+    width: 260px;
+    margin: 0 auto 0 0;
+}
+
+#ptk-menu h1 {
+    display: none;
+}
+
+#ptk-menu ul {
+    font-weight: normal;
+    padding: 0 0 0 1em;
+    list-style-type: none;
+}
+
+#ptk-menu>ul {
+    padding: 0;
+}
+
+#ptk-menu.ptk-selected-index .ptk-menu-item-index,
+#ptk-menu.ptk-selected-tutorial .ptk-menu-item-tutorial,
+#ptk-menu.ptk-selected-decorate .ptk-menu-item-decorate,
+#ptk-menu.ptk-selected-pfv .ptk-menu-item-pfv,
+#ptk-menu.ptk-selected-forcepser .ptk-menu-item-forcepser,
+#ptk-menu.ptk-selected-plugins .ptk-menu-item-plugins,
+#ptk-menu.ptk-selected-setting .ptk-menu-item-setting,
+#ptk-menu.ptk-selected-faq .ptk-menu-item-faq,
+#ptk-menu.ptk-selected-obj .ptk-menu-item-obj,
+#ptk-menu.ptk-selected-psd .ptk-menu-item-psd,
+#ptk-menu.ptk-selected-subobj .ptk-menu-item-subobj,
+#ptk-menu.ptk-selected-otheranm .ptk-menu-item-otheranm,
+#ptk-menu.ptk-selected-prep .ptk-menu-item-prep {
+    font-weight: bold;
+}
+
+#ptk-main {
+    width: 900px;
+    margin: 0 0 100vh auto;
+}
+
+.ptk-script-builder {
+    background-color: #f7f7f7;
+    border: 1px solid #ddd;
+    overflow: auto;
+    padding: 8px 16px;
+}
+
+.ptk-script-builder dl>dt {
+    clear: left;
+    float: left;
+    width: 7em;
+}
+
+.ptk-script-builder dl>dd {
+    margin: 0 0 0 7em;
+}
+
+.ptk-script-builder dl>dd>input {
+    width: 32em;
+}
+
+#TOC ul {
+    list-style-type: none;
+    padding: 0 0 0 2em;
+}
+
+#TOC>ul {
+    padding: 0;
+}
+
+h1 {
+    border-bottom: 0.2em #ddd solid;
+    margin: 0;
+}
+
+h2 {
+    border-bottom: 0.1em #ddd solid;
+    margin: 2rem 0;
+}
+
+h3,
+h4 {
+    margin: 4rem 0 1em;
+}
+
+h5 {
+    margin: 2rem 0 1em;
+}
+
+table {
+    border-collapse: collapse;
+    border-spacing: 0;
+    display: block;
+}
+
+table th,
+table td {
+    padding: 4px 8px;
+    border: 1px solid #ddd;
+}
+
+table tr {
+    background-color: #fff;
+    border-top: 1px solid #ccc;
+}
+
+table tr:nth-child(2n) {
+    background-color: #f8f8f8;
+}
+
+table th,
+table tr td:nth-child(1),
+table tr td:nth-child(1) code {
+    white-space: nowrap;
+}
+
+a:link {
+    text-decoration: none;
+    color: #3f4fef;
+}
+
+a:hover {
+    text-decoration: underline;
+    color: #1f3fef;
+}
+
+a:visited {
+    color: #3f4fef;
+}
+
+img {
+    box-shadow: 0 0 8px rgba(0, 0, 0, 0.33);
+}
+
+code {
+    background-color: #f0f0f0;
+    padding: 0.3em;
+    border-radius: 4px;
+}
+
+pre {
+    background-color: #f0f0f0;
+    padding: 0.75em;
+    border-radius: 4px;
+}
+
+pre>code {
+    background-color: transparent;
+    padding: 0;
+    border-radius: 0;
+}
+
+code span.an,
+code span.co,
+code span.cv,
+code span.do,
+code span.in,
+code span.wa {
+    font-style: normal;
+}
+
+@media screen and (max-width: 1200px) {
+    #ptk-outer,
+    #ptk-menu,
+    #ptk-main {
+        width: 100%;
+    }
+    #ptk-menu {
+        position: static;
+    }
+}
