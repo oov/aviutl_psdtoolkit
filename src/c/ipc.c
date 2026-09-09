@@ -20,6 +20,12 @@ static void ods(wchar_t const *fmt, ...) {
 }
 #endif
 
+enum reply_state {
+  reply_stopped = -1,
+  reply_waiting = 0,
+  reply_ready = 1,
+};
+
 struct ipc {
   struct ipc_options options;
 
@@ -460,15 +466,18 @@ NODISCARD static error read_reply(struct ipc *const ipc, uint32_t size) {
       NULL, err_type_generic, err_fail, &tmp2, &(struct ov_filepos){.file = "remote process", .func = __func__});
   tmp2.cap = 0;
 cleanup:
+  if (efailed(err)) {
+    goto release;
+  }
   cndvar_lock(&ipc->s2c);
   ipc->reply = rep;
-  cndvar_signal(&ipc->s2c, 1);
+  cndvar_signal(&ipc->s2c, reply_ready);
   cndvar_unlock(&ipc->s2c);
   cndvar_lock(&ipc->c2s);
   cndvar_wait_while(&ipc->c2s, 0);
   ipc->c2s.var = 0;
   cndvar_unlock(&ipc->c2s);
-  mtx_unlock(&ipc->mtx);
+release:
   ereport(sfree(&tmp2));
   ereport(sfree(&tmp));
   return err;
@@ -503,6 +512,11 @@ static int read_worker(void *userdata) {
   }
 
 cleanup:
+  // A pipe error only wakes the reader itself. Wake command threads waiting
+  // for a reply too, and retain the stopped state for subsequent waiters.
+  cndvar_lock(&ipc->s2c);
+  cndvar_broadcast(&ipc->s2c, reply_stopped);
+  cndvar_unlock(&ipc->s2c);
   if (efailed(err)) {
     if (eis_hr(err, HRESULT_FROM_WIN32(ERROR_BROKEN_PIPE))) {
       efree(&err);
@@ -618,6 +632,13 @@ NODISCARD static error start_process(struct ipc *ipc) {
   ipc->pipe_in_w = in_w;
   ipc->pipe_out_r = out_r;
 
+  // The previous reader has been joined before start_process is called.
+  cndvar_lock(&ipc->s2c);
+  ipc->s2c.var = reply_waiting;
+  cndvar_unlock(&ipc->s2c);
+  cndvar_lock(&ipc->c2s);
+  ipc->c2s.var = 0;
+  cndvar_unlock(&ipc->c2s);
   if (thrd_create(&ipc->thread, read_worker, ipc) != thrd_success) {
     err = errg(err_fail);
     goto cleanup;
@@ -731,10 +752,15 @@ cleanup:
 
 NODISCARD static error get_reply(struct ipc *const ipc) {
   cndvar_lock(&ipc->s2c);
-  cndvar_wait_while(&ipc->s2c, 0);
-  ipc->s2c.var = 0;
-  error err = ipc->reply;
-  ipc->reply = eok();
+  cndvar_wait_while(&ipc->s2c, reply_waiting);
+  error err = eok();
+  if (ipc->s2c.var == reply_stopped) {
+    err = errhr(HRESULT_FROM_WIN32(ERROR_BROKEN_PIPE));
+  } else {
+    ipc->s2c.var = reply_waiting;
+    err = ipc->reply;
+    ipc->reply = eok();
+  }
   cndvar_unlock(&ipc->s2c);
   return err;
 }

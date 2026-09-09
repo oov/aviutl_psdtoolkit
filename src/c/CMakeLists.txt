@@ -172,6 +172,11 @@ target_link_libraries(test_luafuncs PRIVATE
 )
 add_test(NAME test_luafuncs COMMAND test_luafuncs)
 
+add_executable(test_ipc ipc_test.c)
+target_link_libraries(test_ipc PRIVATE psdtoolkit_intf ovbase ovutil)
+add_test(NAME test_ipc COMMAND test_ipc)
+set_tests_properties(test_ipc PROPERTIES TIMEOUT 10)
+
 add_library(psdtoolkit_bridge SHARED
   bridge.c
 )
