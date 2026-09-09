@@ -53,8 +53,8 @@ if [ "${INSTALL_TOOLS}" -eq 1 ]; then
 
   case "$(uname -s)" in
     MINGW64_NT* | MINGW32_NT*)
-      SEVENZIP_URL="https://www.7-zip.org/a/7z2409-extra.7z"
-      SEVENZIP_DIR="${PWD}/build/tools/7z2409-windows"
+      SEVENZIP_URL="https://www.7-zip.org/a/7z2603-extra.7z"
+      SEVENZIP_DIR="${PWD}/build/tools/7z2603-windows"
       SEVENZIP_ARCHIVE="${PWD}/build/tools/$(basename "${SEVENZIP_URL}")"
       if [ ! -d "${SEVENZIP_DIR}" ]; then
         if [ ! -f "${SEVENZIP_ARCHIVE}" ]; then
