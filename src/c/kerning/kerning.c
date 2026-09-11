@@ -92,7 +92,7 @@ static bool add_glyph_point(void *const userdata, enum point_op const op, struct
   if (op == pop_close) {
     return true;
   }
-  struct userdata *const ud = userdata;
+  struct userdata *const ud = (struct userdata *)userdata;
   *ud->err = OV_ARRAY_PUSH(&ud->ctx->glyph,
                            ((struct point){
                                .x = ud->ctx->pos.x + pt.x,
@@ -163,7 +163,7 @@ static bool add_convex_point(void *const userdata, enum point_op const op, struc
   if (op == pop_close) {
     return true;
   }
-  struct userdata *const ud = userdata;
+  struct userdata *const ud = (struct userdata *)userdata;
   *ud->err = OV_ARRAY_PUSH(&ud->ctx->cur, pt);
   if (efailed(*ud->err)) {
     return false;
@@ -195,6 +195,11 @@ NODISCARD error kerning_calculate_distance(struct kerning_context *const ctx,
   error err = eok();
 
   double d;
+  int kern = 0;
+  struct point v = {0};
+  error err2 = eok();
+  double safe_width = 0.;
+  struct point safe_distance = {0};
   struct point *const tmp = ctx->prev;
   ctx->prev = ctx->cur;
   ctx->cur = tmp;
@@ -211,8 +216,8 @@ NODISCARD error kerning_calculate_distance(struct kerning_context *const ctx,
 
   ctx->cur_ch = ch;
   ctx->cur_width = (double)(lmax(ctx->tm.tmHeight, lmax(ctx->tm.tmAveCharWidth, ctx->tm.tmMaxCharWidth)));
-  int const kern = kerning_pairs_get_kerning(ctx->kp, ctx->prev_ch, ctx->cur_ch);
-  struct point const v = get_normalized_forward_vector(&gm);
+  kern = kerning_pairs_get_kerning(ctx->kp, ctx->prev_ch, ctx->cur_ch);
+  v = get_normalized_forward_vector(&gm);
 
   ctx->pos.x += gm.gmCellIncX;
   ctx->pos.y += gm.gmCellIncY;
@@ -221,7 +226,6 @@ NODISCARD error kerning_calculate_distance(struct kerning_context *const ctx,
     d = (double)(gm.gmCellIncX + kern);
     goto calc_distance;
   }
-  error err2 = eok();
   err = convexhull_create(ctx->chctx,
                           ctx->glyph,
                           OV_ARRAY_LENGTH(ctx->glyph),
@@ -243,8 +247,8 @@ NODISCARD error kerning_calculate_distance(struct kerning_context *const ctx,
 
   // To ensure accurate distance calculation between characters,
   // we need to move the previous character's position down significantly.
-  double const safe_width = ctx->prev_width * 10.;
-  struct point const safe_distance = (struct point){v.x * safe_width, v.y * safe_width};
+  safe_width = ctx->prev_width * 10.;
+  safe_distance = (struct point){v.x * safe_width, v.y * safe_width};
   for (size_t i = 0; i < OV_ARRAY_LENGTH(ctx->prev); ++i) {
     ctx->prev[i].x -= safe_distance.x;
     ctx->prev[i].y -= safe_distance.y;

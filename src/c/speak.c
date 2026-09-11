@@ -39,7 +39,7 @@ struct speak {
 
 void rdft(int n, int isgn, float *a, int *ip, float *w);
 
-static void close(struct speak *spk, size_t idx) {
+static void close_item(struct speak *spk, size_t idx) {
   if (!spk || idx >= sizeof(spk->items) / sizeof(spk->items[0])) {
     return;
   }
@@ -54,7 +54,7 @@ static void close(struct speak *spk, size_t idx) {
   }
 }
 
-NODISCARD static error open(struct speak *const spk, struct str const *const filepath, size_t *const idx) {
+NODISCARD static error open_item(struct speak *const spk, struct str const *const filepath, size_t *const idx) {
   if (!spk || !filepath || !filepath->ptr) {
     return errg(err_invalid_arugment);
   }
@@ -62,11 +62,12 @@ NODISCARD static error open(struct speak *const spk, struct str const *const fil
     return errg(err_null_pointer);
   }
   void *h = NULL;
+  struct item *item = NULL;
   error err = eok();
   size_t const n = sizeof(spk->items) / sizeof(spk->items[0]);
   size_t unused = n, oldest = n;
   for (size_t i = 0; i < n; ++i) {
-    struct item *item = spk->items + i;
+    item = spk->items + i;
     if (item->h == NULL) {
       if (unused == n) {
         unused = i;
@@ -94,11 +95,11 @@ NODISCARD static error open(struct speak *const spk, struct str const *const fil
 
   // need to free oldest one before set.
   if (unused == n) {
-    close(spk, oldest);
+    close_item(spk, oldest);
     unused = oldest;
   }
 
-  struct item *item = spk->items + unused;
+  item = spk->items + unused;
   err = scpy(&item->filepath, filepath->ptr);
   if (efailed(err)) {
     err = ethru(err);
@@ -119,22 +120,29 @@ cleanup:
   return err;
 }
 
-NODISCARD static error read(struct speak *const spk,
-                            struct str const *const filepath,
-                            float const pos,
-                            float const low_cut,
-                            float const high_cut,
-                            float *const level) {
+NODISCARD static error read_level(struct speak *const spk,
+                                  struct str const *const filepath,
+                                  float const pos,
+                                  float const low_cut,
+                                  float const high_cut,
+                                  float *const level) {
   size_t idx = 0;
-  error err = open(spk, filepath, &idx);
+  struct item *item = NULL;
+  size_t sample_pos = 0;
+  int16_t *buf = NULL;
+  size_t samples = 0;
+  float *fft_buf = NULL;
+  float *fft_wnd = NULL;
+  float d = 0.f;
+  float s = 0, n = 0, x = 0, y = 0, hz = 0;
+  error err = open_item(spk, filepath, &idx);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
-  struct item *const item = spk->items + idx;
-  size_t const sample_pos = (size_t)(truncf(pos * (float)audio_frequency));
-  int16_t *const buf = spk->buf;
-  size_t samples = 0;
+  item = spk->items + idx;
+  sample_pos = (size_t)(truncf(pos * (float)audio_frequency));
+  buf = spk->buf;
   err = spk->cbs.read(spk->cbs.userdata, item->h, sample_pos, audio_rdft_size, buf, &samples);
   if (efailed(err)) {
     err = ethru(err);
@@ -144,8 +152,8 @@ NODISCARD static error read(struct speak *const spk,
     err = errg(err_unexpected);
     goto cleanup;
   }
-  float *const fft_buf = spk->fft_buf;
-  float *const fft_wnd = spk->fft_wnd;
+  fft_buf = spk->fft_buf;
+  fft_wnd = spk->fft_wnd;
   for (size_t i = 0; i < samples; ++i) {
     fft_buf[i] = (float)(buf[i]) * fft_wnd[i];
   }
@@ -153,8 +161,7 @@ NODISCARD static error read(struct speak *const spk,
     fft_buf[i] = 0.f;
   }
   rdft(audio_rdft_size, 1, fft_buf, spk->fft_iw, spk->fft_fw);
-  float const d = audio_frequency / audio_rdft_size;
-  float s = 0, n = 0, x = 0, y = 0, hz = 0;
+  d = audio_frequency / audio_rdft_size;
   for (size_t i = 0, hf = audio_rdft_size / 2; i < hf; ++i) {
     hz = (float)(i)*d;
     if (hz < low_cut) {
@@ -178,7 +185,7 @@ static int gc(void *const userdata) {
     gc_interval = 1,
     lifetime = 2,
   };
-  struct speak *const spk = userdata;
+  struct speak *const spk = (struct speak *)userdata;
   struct timespec t = {0};
   timespec_get(&t, TIME_UTC);
   t.tv_sec += gc_interval;
@@ -203,7 +210,7 @@ static int gc(void *const userdata) {
       }
       if (t.tv_sec >= item->used_at.tv_sec + lifetime ||
           (t.tv_sec == item->used_at.tv_sec + lifetime && t.tv_nsec >= item->used_at.tv_nsec)) {
-        close(spk, i);
+        close_item(spk, i);
       }
     }
     mtx_unlock(&spk->mtx);
@@ -220,6 +227,7 @@ NODISCARD error speak_init(struct speak_callbacks const *const cb, struct speak 
   int16_t *buf = NULL;
   float *fft_buf = NULL, *fft_wnd = NULL, *fft_fw = NULL;
   int *fft_iw = NULL;
+  struct speak *spk = NULL;
   error err = mem(&fft_buf, (audio_rdft_size * 5) / 2, sizeof(float));
   if (efailed(err)) {
     err = ethru(err);
@@ -246,7 +254,7 @@ NODISCARD error speak_init(struct speak_callbacks const *const cb, struct speak 
     err = ethru(err);
     goto cleanup;
   }
-  struct speak *const spk = *dest;
+  spk = *dest;
   *spk = (struct speak){
       .cbs = *cb,
       .buf = buf,
@@ -304,25 +312,26 @@ NODISCARD static error get_from_cache(struct str const *const filepath, struct s
     return errg(err_invalid_arugment);
   }
   error err = eok();
+  struct speak_level_cache *c = NULL;
   size_t const num_caches = sizeof(g_speak_level_cache) / sizeof(g_speak_level_cache[0]);
   size_t oldest = num_caches;
   for (size_t i = 0; i < num_caches; ++i) {
-    struct speak_level_cache *const c = &g_speak_level_cache[i];
-    if (c->filepath && strcmp(c->filepath, filepath->ptr) == 0) {
-      *cache = c;
-      if (timespec_get(&c->used_at, TIME_UTC) != TIME_UTC) {
+    struct speak_level_cache *const ci = &g_speak_level_cache[i];
+    if (ci->filepath && strcmp(ci->filepath, filepath->ptr) == 0) {
+      *cache = ci;
+      if (timespec_get(&ci->used_at, TIME_UTC) != TIME_UTC) {
         err = errg(err_fail);
         goto cleanup;
       }
       goto cleanup;
     }
     struct speak_level_cache const *const o = &g_speak_level_cache[oldest];
-    if (oldest == num_caches || o->used_at.tv_sec > c->used_at.tv_sec ||
-        (o->used_at.tv_sec == c->used_at.tv_sec && o->used_at.tv_nsec > c->used_at.tv_nsec)) {
+    if (oldest == num_caches || o->used_at.tv_sec > ci->used_at.tv_sec ||
+        (o->used_at.tv_sec == ci->used_at.tv_sec && o->used_at.tv_nsec > ci->used_at.tv_nsec)) {
       oldest = i;
     }
   }
-  struct speak_level_cache *const c = &g_speak_level_cache[oldest];
+  c = &g_speak_level_cache[oldest];
   err = OV_ARRAY_GROW(&c->filepath, filepath->len + 1);
   if (efailed(err)) {
     err = ethru(err);
@@ -355,15 +364,17 @@ NODISCARD error speak_get_level(struct speak *spk,
     return errg(err_invalid_arugment);
   }
   struct speak_level_cache *cache = NULL;
+  size_t num_levels = 0;
+  struct speak_level *lv = NULL;
+  size_t oldest = 0;
   error err = get_from_cache(filepath, &cache);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
 
-  size_t const num_levels = sizeof(cache->levels) / sizeof(cache->levels[0]);
-  struct speak_level *lv = NULL;
-  size_t oldest = num_levels;
+  num_levels = sizeof(cache->levels) / sizeof(cache->levels[0]);
+  oldest = num_levels;
   for (size_t i = 0; i < num_levels; ++i) {
     struct speak_level *const l = &cache->levels[i];
     if (fcmp(l->pos, ==, pos, 1e-12f) && fcmp(l->low_cut, ==, low_cut, 1e-12f) &&
@@ -390,7 +401,7 @@ NODISCARD error speak_get_level(struct speak *spk,
   }
 
   mtx_lock(&spk->mtx);
-  err = read(spk, filepath, pos, low_cut, high_cut, level);
+  err = read_level(spk, filepath, pos, low_cut, high_cut, level);
   mtx_unlock(&spk->mtx);
   if (efailed(err)) {
     err = ethru(err);

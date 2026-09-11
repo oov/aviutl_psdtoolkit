@@ -18,7 +18,7 @@ static inline FIXED fixed_avg3(FIXED a, FIXED b, FIXED c) {
 
 static inline double fixed_to_double(FIXED f) {
   static double const divider = 1. / 65536.;
-  return (double)(fixed_to_int(f))*divider;
+  return (double)(fixed_to_int(f)) * divider;
 }
 
 static bool quadratic_bezier_interpolate(struct point const a,
@@ -104,7 +104,7 @@ static bool cubic_bezier_interpolate(struct point const a,
 
 bool glyphoutline_parse(
     void const *const p, size_t const sz, double const tolerance, point_op_fn const opfn, void *const userdata) {
-  char const *glyph = p;
+  char const *glyph = (char const *)p;
   char const *const glyph_end = glyph + sz;
   double const tolerance_squared = tolerance * tolerance;
   while (glyph < glyph_end) {

@@ -165,6 +165,8 @@ NODISCARD static error get_working_directory(struct wstr const *const cmdline, s
   struct wstr tmp = {0};
   struct wstr tmp2 = {0};
   size_t pathlen = 0;
+  DWORD dirlen = 0;
+  wchar_t *fn = NULL;
   error err = eok();
   if (cmdline->ptr[0] == L'"') {
     ++pathlen;
@@ -186,7 +188,7 @@ NODISCARD static error get_working_directory(struct wstr const *const cmdline, s
       goto cleanup;
     }
   }
-  DWORD const dirlen = GetFullPathNameW(tmp.ptr, 0, NULL, NULL);
+  dirlen = GetFullPathNameW(tmp.ptr, 0, NULL, NULL);
   if (dirlen == 0) {
     err = errhr(HRESULT_FROM_WIN32(GetLastError()));
     goto cleanup;
@@ -196,7 +198,6 @@ NODISCARD static error get_working_directory(struct wstr const *const cmdline, s
     err = ethru(err);
     goto cleanup;
   }
-  wchar_t *fn = NULL;
   if (GetFullPathNameW(tmp.ptr, dirlen, tmp2.ptr, &fn) == 0 || fn == NULL) {
     err = errhr(HRESULT_FROM_WIN32(GetLastError()));
     goto cleanup;
@@ -214,8 +215,8 @@ cleanup:
   return err;
 }
 
-NODISCARD static error read(struct ipc *const ipc, void *const buf, DWORD sz) {
-  char *b = buf;
+NODISCARD static error read_pipe(struct ipc *const ipc, void *const buf, DWORD sz) {
+  char *b = (char *)buf;
   for (DWORD read = 0; sz > 0; b += read, sz -= read) {
     if (!ReadFile(ipc->pipe_out_r, b, sz, &read, NULL)) {
       return errhr(HRESULT_FROM_WIN32(GetLastError()));
@@ -226,7 +227,7 @@ NODISCARD static error read(struct ipc *const ipc, void *const buf, DWORD sz) {
 
 NODISCARD static error read_string_utf8(struct ipc *const ipc, struct str *const dest) {
   uint32_t sz = 0;
-  error err = read(ipc, &sz, sizeof(sz));
+  error err = read_pipe(ipc, &sz, sizeof(sz));
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
@@ -236,7 +237,7 @@ NODISCARD static error read_string_utf8(struct ipc *const ipc, struct str *const
     err = ethru(err);
     goto cleanup;
   }
-  err = read(ipc, dest->ptr, sz);
+  err = read_pipe(ipc, dest->ptr, sz);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
@@ -248,8 +249,8 @@ cleanup:
 
 #define FOURCC(c0, c1, c2, c3) ((uint32_t)(((c3) << 24) | ((c2) << 16) | ((c1) << 8) | (c0)))
 
-NODISCARD static error write(struct ipc *const ipc, void const *const buf, DWORD sz) {
-  char const *b = buf;
+NODISCARD static error write_pipe(struct ipc *const ipc, void const *const buf, DWORD sz) {
+  char const *b = (char const *)buf;
   for (DWORD written = 0; sz > 0; b += written, sz -= written) {
     if (!WriteFile(ipc->pipe_in_w, b, sz, &written, NULL)) {
       return errhr(HRESULT_FROM_WIN32(GetLastError()));
@@ -259,12 +260,12 @@ NODISCARD static error write(struct ipc *const ipc, void const *const buf, DWORD
 }
 
 NODISCARD static error write_string_utf8(struct ipc *const ipc, struct str const *const s) {
-  error err = write(ipc, &(uint32_t){s->len}, sizeof(uint32_t));
+  error err = write_pipe(ipc, &(uint32_t){s->len}, sizeof(uint32_t));
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
-  err = write(ipc, s->ptr, s->len);
+  err = write_pipe(ipc, s->ptr, s->len);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
@@ -275,6 +276,7 @@ cleanup:
 
 NODISCARD static error read_request_update_editing_image_state(struct ipc *const ipc) {
   struct ipc_update_editing_image_state_params params = {0};
+  uint32_t const r = 0x80000000;
   error err = read_string_utf8(ipc, &params.file_path_utf8);
   if (efailed(err)) {
     err = ethru(err);
@@ -288,8 +290,7 @@ NODISCARD static error read_request_update_editing_image_state(struct ipc *const
   if (ipc->options.on_update_editing_image_state) {
     ipc->options.on_update_editing_image_state(ipc->options.userdata, &params);
   }
-  uint32_t const r = 0x80000000;
-  err = write(ipc, &r, sizeof(r));
+  err = write_pipe(ipc, &r, sizeof(r));
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
@@ -302,6 +303,7 @@ cleanup:
 
 NODISCARD static error read_request_export_faview_slider(struct ipc *const ipc) {
   struct ipc_export_faview_slider_params params = {0};
+  uint32_t const r = 0x80000000;
   error err = read_string_utf8(ipc, &params.file_path_utf8);
   if (efailed(err)) {
     err = ethru(err);
@@ -322,7 +324,7 @@ NODISCARD static error read_request_export_faview_slider(struct ipc *const ipc) 
     err = ethru(err);
     goto cleanup;
   }
-  err = read(ipc, &params.selected_index, sizeof(params.selected_index));
+  err = read_pipe(ipc, &params.selected_index, sizeof(params.selected_index));
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
@@ -330,8 +332,7 @@ NODISCARD static error read_request_export_faview_slider(struct ipc *const ipc) 
   if (ipc->options.on_export_faview_slider) {
     ipc->options.on_export_faview_slider(ipc->options.userdata, &params);
   }
-  uint32_t const r = 0x80000000;
-  err = write(ipc, &r, sizeof(r));
+  err = write_pipe(ipc, &r, sizeof(r));
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
@@ -346,6 +347,7 @@ cleanup:
 
 NODISCARD static error read_request_export_layer_names(struct ipc *const ipc) {
   struct ipc_export_layer_names_params params = {0};
+  uint32_t const r = 0x80000000;
   error err = read_string_utf8(ipc, &params.file_path_utf8);
   if (efailed(err)) {
     err = ethru(err);
@@ -361,7 +363,7 @@ NODISCARD static error read_request_export_layer_names(struct ipc *const ipc) {
     err = ethru(err);
     goto cleanup;
   }
-  err = read(ipc, &params.selected_index, sizeof(params.selected_index));
+  err = read_pipe(ipc, &params.selected_index, sizeof(params.selected_index));
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
@@ -369,8 +371,7 @@ NODISCARD static error read_request_export_layer_names(struct ipc *const ipc) {
   if (ipc->options.on_export_layer_names) {
     ipc->options.on_export_layer_names(ipc->options.userdata, &params);
   }
-  uint32_t const r = 0x80000000;
-  err = write(ipc, &r, sizeof(r));
+  err = write_pipe(ipc, &r, sizeof(r));
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
@@ -385,12 +386,12 @@ cleanup:
 NODISCARD static error read_request_unknown_command(struct ipc *const ipc) {
   struct str const result = str_unmanaged_const("invalid request command");
   uint32_t const r = (uint32_t)(result.len | 0x80000000);
-  error err = write(ipc, &r, sizeof(r));
+  error err = write_pipe(ipc, &r, sizeof(r));
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
-  err = write(ipc, result.ptr, result.len);
+  err = write_pipe(ipc, result.ptr, result.len);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
@@ -451,7 +452,7 @@ NODISCARD static error read_reply(struct ipc *const ipc, uint32_t size) {
     err = ethru(err);
     goto cleanup;
   }
-  err = read(ipc, tmp.ptr, size);
+  err = read_pipe(ipc, tmp.ptr, size);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
@@ -484,11 +485,11 @@ release:
 }
 
 static int read_worker(void *userdata) {
-  struct ipc *const ipc = userdata;
+  struct ipc *const ipc = (struct ipc *)userdata;
   error err = eok();
   while (1) {
     uint32_t sz = 0;
-    err = read(ipc, &sz, sizeof(sz));
+    err = read_pipe(ipc, &sz, sizeof(sz));
     if (efailed(err)) {
       err = ethru(err);
       goto cleanup;
@@ -549,6 +550,7 @@ NODISCARD static error start_process(struct ipc *ipc) {
       .hProcess = INVALID_HANDLE_VALUE,
       .hThread = INVALID_HANDLE_VALUE,
   };
+  STARTUPINFOW si = {0};
   error err = eok();
 
   SECURITY_ATTRIBUTES sa = {
@@ -599,14 +601,12 @@ NODISCARD static error start_process(struct ipc *ipc) {
     goto cleanup;
   }
 
-  STARTUPINFOW si = {
-      .cb = sizeof(STARTUPINFOW),
-      .dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW,
-      .wShowWindow = SW_SHOWDEFAULT,
-      .hStdInput = in_r,
-      .hStdOutput = out_w,
-      .hStdError = err_w,
-  };
+  si.cb = sizeof(STARTUPINFOW);
+  si.dwFlags = STARTF_USESTDHANDLES | STARTF_USESHOWWINDOW;
+  si.wShowWindow = SW_SHOWDEFAULT;
+  si.hStdInput = in_r;
+  si.hStdOutput = out_w;
+  si.hStdError = err_w;
   if (!CreateProcessW(NULL,
                       path.ptr,
                       NULL,
@@ -741,7 +741,7 @@ NODISCARD static error start_command_process(struct ipc *const ipc, uint32_t con
 #ifndef NDEBUG
   ods(L"send %c%c%c%c", msgid & 0xff, (msgid >> 8) & 0xff, (msgid >> 16) & 0xff, (msgid >> 24) & 0xff);
 #endif
-  err = write(ipc, &msgid, sizeof(msgid));
+  err = write_pipe(ipc, &msgid, sizeof(msgid));
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
@@ -784,7 +784,7 @@ NODISCARD error ipc_add_file(struct ipc *const ipc, struct str const *const path
     err = ethru(err);
     goto cleanup;
   }
-  err = write(ipc, &tag, sizeof(tag));
+  err = write_pipe(ipc, &tag, sizeof(tag));
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
@@ -814,6 +814,7 @@ cleanup:
 }
 
 NODISCARD error ipc_deserialize(struct ipc *const ipc, struct str const *const src_utf8) {
+  uint32_t r = 0;
   error err = start_command_process(ipc, FOURCC('D', 'S', 'L', 'Z'));
   if (efailed(err)) {
     err = ethru(err);
@@ -829,8 +830,7 @@ NODISCARD error ipc_deserialize(struct ipc *const ipc, struct str const *const s
     err = ethru(err);
     goto cleanup;
   }
-  uint32_t r = 0;
-  err = read(ipc, &r, sizeof(r));
+  err = read_pipe(ipc, &r, sizeof(r));
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
@@ -845,12 +845,13 @@ NODISCARD error ipc_draw(struct ipc *const ipc,
                          void *const p,
                          int32_t const width,
                          int32_t const height) {
+  uint32_t sz = 0;
   error err = start_command_process(ipc, FOURCC('D', 'R', 'A', 'W'));
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
-  err = write(ipc, &id, sizeof(id));
+  err = write_pipe(ipc, &id, sizeof(id));
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
@@ -860,12 +861,12 @@ NODISCARD error ipc_draw(struct ipc *const ipc,
     err = ethru(err);
     goto cleanup;
   }
-  err = write(ipc, &width, sizeof(width));
+  err = write_pipe(ipc, &width, sizeof(width));
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
-  err = write(ipc, &height, sizeof(height));
+  err = write_pipe(ipc, &height, sizeof(height));
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
@@ -875,8 +876,7 @@ NODISCARD error ipc_draw(struct ipc *const ipc,
     err = ethru(err);
     goto cleanup;
   }
-  uint32_t sz = 0;
-  err = read(ipc, &sz, sizeof(sz));
+  err = read_pipe(ipc, &sz, sizeof(sz));
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
@@ -885,7 +885,7 @@ NODISCARD error ipc_draw(struct ipc *const ipc,
     err = errg(err_not_sufficient_buffer);
     goto cleanup;
   }
-  err = read(ipc, p, sz);
+  err = read_pipe(ipc, p, sz);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
@@ -903,7 +903,7 @@ NODISCARD error ipc_get_layer_names(struct ipc *const ipc,
     err = ethru(err);
     goto cleanup;
   }
-  err = write(ipc, &id, sizeof(id));
+  err = write_pipe(ipc, &id, sizeof(id));
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
@@ -952,12 +952,14 @@ NODISCARD error ipc_set_properties(struct ipc *const ipc,
                                    struct str const *const path_utf8,
                                    struct ipc_set_properties_options *options,
                                    struct ipc_set_properties_results *rets) {
+  int32_t modifiled = 0, width = 0, height = 0;
+  uint32_t cache_key = 0;
   error err = start_command_process(ipc, FOURCC('P', 'R', 'O', 'P'));
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
-  err = write(ipc, &id, sizeof(id));
+  err = write_pipe(ipc, &id, sizeof(id));
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
@@ -976,19 +978,19 @@ NODISCARD error ipc_set_properties(struct ipc *const ipc,
     propid_tag = 5,
   };
   if (options->tag) {
-    err = write(ipc, &(int32_t){propid_tag}, sizeof(int32_t));
+    err = write_pipe(ipc, &(int32_t){propid_tag}, sizeof(int32_t));
     if (efailed(err)) {
       err = ethru(err);
       goto cleanup;
     }
-    err = write(ipc, options->tag, sizeof(uint32_t));
+    err = write_pipe(ipc, options->tag, sizeof(uint32_t));
     if (efailed(err)) {
       err = ethru(err);
       goto cleanup;
     }
   }
   if (options->layer_utf8) {
-    err = write(ipc, &(int32_t){propid_layer}, sizeof(int32_t));
+    err = write_pipe(ipc, &(int32_t){propid_layer}, sizeof(int32_t));
     if (efailed(err)) {
       err = ethru(err);
       goto cleanup;
@@ -1000,42 +1002,42 @@ NODISCARD error ipc_set_properties(struct ipc *const ipc,
     }
   }
   if (options->scale) {
-    err = write(ipc, &(int32_t){propid_scale}, sizeof(int32_t));
+    err = write_pipe(ipc, &(int32_t){propid_scale}, sizeof(int32_t));
     if (efailed(err)) {
       err = ethru(err);
       goto cleanup;
     }
-    err = write(ipc, options->scale, sizeof(float));
+    err = write_pipe(ipc, options->scale, sizeof(float));
     if (efailed(err)) {
       err = ethru(err);
       goto cleanup;
     }
   }
   if (options->offset_x) {
-    err = write(ipc, &(int32_t){propid_offset_x}, sizeof(int32_t));
+    err = write_pipe(ipc, &(int32_t){propid_offset_x}, sizeof(int32_t));
     if (efailed(err)) {
       err = ethru(err);
       goto cleanup;
     }
-    err = write(ipc, options->offset_x, sizeof(int32_t));
+    err = write_pipe(ipc, options->offset_x, sizeof(int32_t));
     if (efailed(err)) {
       err = ethru(err);
       goto cleanup;
     }
   }
   if (options->offset_y) {
-    err = write(ipc, &(int32_t){propid_offset_y}, sizeof(int32_t));
+    err = write_pipe(ipc, &(int32_t){propid_offset_y}, sizeof(int32_t));
     if (efailed(err)) {
       err = ethru(err);
       goto cleanup;
     }
-    err = write(ipc, options->offset_y, sizeof(int32_t));
+    err = write_pipe(ipc, options->offset_y, sizeof(int32_t));
     if (efailed(err)) {
       err = ethru(err);
       goto cleanup;
     }
   }
-  err = write(ipc, &(int32_t){propid_endmark}, sizeof(int32_t));
+  err = write_pipe(ipc, &(int32_t){propid_endmark}, sizeof(int32_t));
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
@@ -1045,24 +1047,22 @@ NODISCARD error ipc_set_properties(struct ipc *const ipc,
     err = ethru(err);
     goto cleanup;
   }
-  int32_t modifiled = 0, width = 0, height = 0;
-  uint32_t cache_key = 0;
-  err = read(ipc, &modifiled, sizeof(int32_t));
+  err = read_pipe(ipc, &modifiled, sizeof(int32_t));
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
-  err = read(ipc, &cache_key, sizeof(uint32_t));
+  err = read_pipe(ipc, &cache_key, sizeof(uint32_t));
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
-  err = read(ipc, &width, sizeof(int32_t));
+  err = read_pipe(ipc, &width, sizeof(int32_t));
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
-  err = read(ipc, &height, sizeof(int32_t));
+  err = read_pipe(ipc, &height, sizeof(int32_t));
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
@@ -1088,7 +1088,7 @@ NODISCARD error ipc_show_gui(struct ipc *const ipc, uint64_t *const window) {
     err = ethru(err);
     goto cleanup;
   }
-  err = read(ipc, window, sizeof(uint64_t));
+  err = read_pipe(ipc, window, sizeof(uint64_t));
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;

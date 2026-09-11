@@ -15,6 +15,9 @@ NODISCARD error popup_menu_show(HWND parent, HINSTANCE hinstance, struct popup_m
   };
   HWND dummy_window = 0;
   HMENU menu = 0;
+  DWORD thid = 0;
+  DWORD ptkthid = 0;
+  POINT pt = {0};
   error err = eok();
   ATOM atom = RegisterClassW(&wc);
   if (!atom) {
@@ -56,12 +59,11 @@ NODISCARD error popup_menu_show(HWND parent, HINSTANCE hinstance, struct popup_m
       }
     }
   }
-  DWORD const thid = GetCurrentThreadId();
-  DWORD const ptkthid = GetWindowThreadProcessId(parent, NULL);
+  thid = GetCurrentThreadId();
+  ptkthid = GetWindowThreadProcessId(parent, NULL);
   AttachThreadInput(thid, ptkthid, TRUE);
   SetForegroundWindow(dummy_window);
   AttachThreadInput(thid, ptkthid, FALSE);
-  POINT pt = {0};
   GetCursorPos(&pt);
   *selected = (int)(TrackPopupMenu(
       menu, TPM_TOPALIGN | TPM_LEFTALIGN | TPM_RETURNCMD | TPM_RIGHTBUTTON, pt.x, pt.y, 0, dummy_window, NULL));

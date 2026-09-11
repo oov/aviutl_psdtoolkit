@@ -142,7 +142,7 @@ static inline int quadrant(struct point const p) {
 }
 
 static int compare_for_cw(struct point const *const a, struct point const *const b, void *userdata) {
-  struct point const *const mid = userdata;
+  struct point const *const mid = (struct point const *)userdata;
   struct point p = {a->x - mid->x, a->y - mid->y};
   struct point q = {b->x - mid->x, b->y - mid->y};
   int const one = quadrant(p);
@@ -197,11 +197,11 @@ static inline double orientation(
 
 static inline size_t inc(size_t const index, size_t const len) {
   size_t const r = index + 1;
-  return r & -(r != len);
+  return r & -(size_t)(r != len);
 }
 
 static inline size_t dec(size_t const index, size_t const len) {
-  return ((index - 1) & -(index != 0)) | ((len - 1) & -(index == 0));
+  return ((index - 1) & -(size_t)(index != 0)) | ((len - 1) & -(size_t)(index == 0));
 }
 
 struct convexhull_tangent_indices convexhull_find_tangents(struct point const *const l,

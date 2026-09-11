@@ -396,9 +396,9 @@ static void test_budoux(void) {
     size_t expected_found;
     size_t overflow_pos;
   } tests[] = {
-      {str1, 4, 0},
-      {str1, 4, 2},
-      {str1, 4, 4},
+      {str1, 6, 0},
+      {str1, 6, 2},
+      {str1, 6, 4},
       {str1, 6, 8},
       {str1, 6, 10},
       {str1, 11, 11},
@@ -406,7 +406,7 @@ static void test_budoux(void) {
       {str1, 12, 13},
       {str2, 3, 2},
       {str2, 4, 6},
-      {str3, 3, 4},
+      {str3, 6, 4},
   };
 
   char errmsg[128] = {0};

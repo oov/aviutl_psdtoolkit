@@ -18,20 +18,20 @@ static void *g_editp = NULL;
 static HMODULE g_lua51 = NULL;
 
 static FILTER const *g_exedit_fp = NULL;
-static enum aviutl_patched g_exedit_patch = aviutl_patched_default;
 static bool g_initialized = false;
 
 static bool g_exedit_is_092 = false;
 
 NODISCARD static error verify_installation(void) {
   struct wstr path = {0};
+  size_t fnpos = 0;
+  bool found = false;
   error err = get_module_file_name(get_hinstance(), &path);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
 
-  size_t fnpos = 0;
   err = extract_file_name(&path, &fnpos);
   if (efailed(err)) {
     err = ethru(err);
@@ -46,7 +46,6 @@ NODISCARD static error verify_installation(void) {
     goto cleanup;
   }
 
-  bool found = false;
   err = file_exists(&path, &found);
   if (efailed(err)) {
     err = ethru(err);
@@ -75,7 +74,7 @@ NODISCARD static error find_exedit_filter(FILTER const **const exedit_fp, enum a
     return err;
   }
   for (int i = 0; i < si.filter_n; ++i) {
-    FILTER *p = g_fp->exfunc->get_filterp(i);
+    FILTER *p = (FILTER *)g_fp->exfunc->get_filterp(i);
     if (!p || (p->flag & FILTER_FLAG_AUDIO_FILTER) == FILTER_FLAG_AUDIO_FILTER) {
       continue;
     }
@@ -129,13 +128,14 @@ static size_t atou32(TCHAR const *s, uint32_t *const ret) {
 
 NODISCARD static error verify_exedit_version(FILTER const *const exedit_fp) {
   static TCHAR const version_token[] = " version ";
+  uint32_t major = 0, minor = 0;
+  size_t len = 0;
   TCHAR const *verstr = strstr(exedit_fp->information, version_token);
   if (!verstr) {
     goto failed;
   }
   verstr += strlen(version_token);
-  uint32_t major = 0, minor = 0;
-  size_t len = atou32(verstr, &major);
+  len = atou32(verstr, &major);
   if (!len) {
     goto failed;
   }
@@ -161,13 +161,13 @@ bool aviutl_exedit_is_092(void) { return g_exedit_is_092; }
 
 NODISCARD static error load_lua51(HMODULE *const lua51) {
   struct wstr path = {0};
+  size_t fnpos = 0;
   error err = get_module_file_name(get_hinstance(), &path);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
 
-  size_t fnpos = 0;
   err = extract_file_name(&path, &fnpos);
   if (efailed(err)) {
     err = ethru(err);
@@ -236,7 +236,6 @@ error aviutl_init(size_t const options) {
     }
   }
   g_exedit_fp = exedit_fp;
-  g_exedit_patch = patched;
   g_lua51 = lua51;
   g_initialized = true;
   lua51 = NULL;
@@ -343,19 +342,20 @@ error aviutl_get_file_info(struct wstr const *const path, FILE_INFO *const fi, i
   }
 
   FILE_INFO current = {0};
+  struct str s = {0}; // TODO: use TCHAR
+  AVI_FILE_HANDLE afh = NULL;
   error err = aviutl_get_editing_file_info(&current);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
 
-  struct str s = {0}; // TODO: use TCHAR
   err = to_mbcs(path, &s);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
-  AVI_FILE_HANDLE afh = g_fp->exfunc->avi_file_open(s.ptr, fi, 0);
+  afh = g_fp->exfunc->avi_file_open(s.ptr, fi, 0);
   if (!afh) {
     err = errg(err_fail);
     goto cleanup;

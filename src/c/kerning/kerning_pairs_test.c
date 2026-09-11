@@ -23,7 +23,7 @@ static void test_kerning_pairs(void) {
                             DEFAULT_PITCH,
                             L"Arial");
   TEST_ASSERT(hfont != NULL);
-  HFONT oldfont = SelectObject(hdc, hfont);
+  HFONT oldfont = (HFONT)SelectObject(hdc, hfont);
 
   struct kerning_pairs *kp = NULL;
   TEST_SUCCEEDED_F(kerning_pairs_create(&kp));

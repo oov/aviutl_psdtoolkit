@@ -14,7 +14,7 @@ struct bdx_marker_context {
 };
 
 static char32_t get_char(void *const userdata) {
-  struct bdx_marker_context *const ctx = userdata;
+  struct bdx_marker_context *const ctx = (struct bdx_marker_context *)userdata;
   size_t const pos = line_reader_find_right(&ctx->lr, ctx->nextpos);
   if (pos == SIZE_MAX) {
     return 0;
@@ -31,7 +31,7 @@ static char32_t get_char(void *const userdata) {
 }
 
 static bool add_boundary(size_t const boundary, void *const userdata) {
-  struct bdx_marker_context *const ctx = userdata;
+  struct bdx_marker_context *const ctx = (struct bdx_marker_context *)userdata;
   error err = OV_ARRAY_PUSH(ctx->boundaries, boundary);
   if (efailed(err)) {
     ereport(err);

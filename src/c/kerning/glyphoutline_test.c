@@ -50,7 +50,7 @@ static void test_glyphoutline_parse(void) {
                             L"Arial");
   TEST_ASSERT(hfont != NULL);
 
-  HFONT oldfont = SelectObject(hdc, hfont);
+  HFONT oldfont = (HFONT)SelectObject(hdc, hfont);
 
   char buffer[4096];
   GLYPHMETRICS gm;

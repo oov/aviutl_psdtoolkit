@@ -129,6 +129,14 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
 
   struct glyph *glyphs = NULL;
   size_t glyphs_len = text_len;
+  LONG initial_unit = 0;
+  size_t gpos = 0;
+  int flags = 0;
+  bool nobr = false;
+  bool kerning = false;
+  struct kerning_style ks = {0};
+  struct aviutl_text_tag tag = {0};
+  struct aviutl_text_ex_tag tag_ex = {0};
   error err = eok();
 
   err = canvas_set_initial_font(canvas, initial_font, high_resolution);
@@ -143,16 +151,8 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
     goto cleanup;
   }
 
-  LONG const initial_unit = -canvas->initial_font->lfHeight / (high_resolution ? 2 : 1);
-  size_t gpos = 0;
-  int flags = 0;
-  bool nobr = false;
+  initial_unit = -canvas->initial_font->lfHeight / (high_resolution ? 2 : 1);
 
-  bool kerning = false;
-  struct kerning_style ks = {0};
-
-  struct aviutl_text_tag tag = {0};
-  struct aviutl_text_ex_tag tag_ex = {0};
   for (size_t i = 0; i < text_len; ++i) {
     if (text[i] == L'\n') {
       glyphs[gpos++] = (struct glyph){
@@ -312,43 +312,44 @@ NODISCARD static error create_glyph_metrics_list(wchar_t const *const text,
       i += tag_ex.len - 1;
       continue;
     }
-  measure_glyph: {
-    enum glyph_type gt;
-    wchar_t ch;
-    size_t pos;
-    size_t len;
-    if (tag.type == aviutl_text_tag_type_numcharref) {
-      i += tag.len - 1;
-      tag.type = aviutl_text_tag_type_unknown;
-      gt = gt_glyph_numref;
-      struct aviutl_text_tag_numcharref ncr;
-      aviutl_text_get_numcharref(text, &tag, &ncr);
-      ch = ncr.ch;
-      pos = tag.pos;
-      len = tag.len;
-    } else {
-      gt = gt_glyph;
-      ch = text[i];
-      pos = i;
-      len = 1;
-    }
-    if (kerning) {
-      err = add_kerning(canvas, high_resolution, &ks, ch, i, &glyphs[gpos]);
-      if (efailed(err)) {
-        err = ethru(err);
-        goto cleanup;
+  measure_glyph:
+    {
+      enum glyph_type gt;
+      wchar_t ch;
+      size_t pos;
+      size_t len;
+      if (tag.type == aviutl_text_tag_type_numcharref) {
+        i += tag.len - 1;
+        tag.type = aviutl_text_tag_type_unknown;
+        gt = gt_glyph_numref;
+        struct aviutl_text_tag_numcharref ncr;
+        aviutl_text_get_numcharref(text, &tag, &ncr);
+        ch = ncr.ch;
+        pos = tag.pos;
+        len = tag.len;
+      } else {
+        gt = gt_glyph;
+        ch = text[i];
+        pos = i;
+        len = 1;
       }
-      if (glyphs[gpos].u.kerning.x != 0 || glyphs[gpos].u.kerning.y != 0) {
-        ++gpos;
-        err = OV_ARRAY_GROW(&glyphs, ++glyphs_len);
+      if (kerning) {
+        err = add_kerning(canvas, high_resolution, &ks, ch, i, &glyphs[gpos]);
         if (efailed(err)) {
           err = ethru(err);
           goto cleanup;
         }
+        if (glyphs[gpos].u.kerning.x != 0 || glyphs[gpos].u.kerning.y != 0) {
+          ++gpos;
+          err = OV_ARRAY_GROW(&glyphs, ++glyphs_len);
+          if (efailed(err)) {
+            err = ethru(err);
+            goto cleanup;
+          }
+        }
       }
+      measure_glyph(canvas, gt, flags, ch, pos, len, monospace, high_resolution, &glyphs[gpos++]);
     }
-    measure_glyph(canvas, gt, flags, ch, pos, len, monospace, high_resolution, &glyphs[gpos++]);
-  }
     if (efailed(err)) {
       err = ethru(err);
       goto cleanup;
@@ -431,8 +432,8 @@ static void read_exedit_params(wchar_t *const fontname,
   if (!h) {
     return;
   }
-  FILTER const *const *const filterpp = (void *)(h + 0x1B2B10);
-  FILTER const *const text_filter = (void *)(h + 0xB9878);
+  FILTER const *const *const filterpp = (FILTER const *const *const)(void *)(h + 0x1B2B10);
+  FILTER const *const text_filter = (FILTER const *)(void *)(h + 0xB9878);
   FILTER const *const filterp = *filterpp;
   if (filterp != text_filter) {
     return;
@@ -456,7 +457,7 @@ static void read_exedit_params(wchar_t *const fontname,
   *bold = check_values[3] != FALSE;
   *italic = check_values[4] != FALSE;
 
-  int8_t const *const ex_data_ptr = filterp->ex_data_ptr;
+  int8_t const *const ex_data_ptr = (int8_t const *)filterp->ex_data_ptr;
   *monospace = ex_data_ptr[3] & 1;
   int const align = ex_data_ptr[4];
   *vertical = 9 <= align && align <= 17;
@@ -508,7 +509,7 @@ initialize_params(lua_State *const L, int const table_index, struct wordwrap_set
         size_t mbcs_name_len;
         char const *const mbcs_name = lua_tolstring(L, -1, &mbcs_name_len);
         if (mbcs_name && mbcs_name_len > 0) {
-          err = from_mbcs(&(struct str const){.ptr = ov_deconster_(mbcs_name), .len = mbcs_name_len}, &name);
+          err = from_mbcs(&(struct str const){.ptr = (char *)ov_deconster_(mbcs_name), .len = mbcs_name_len}, &name);
           if (efailed(err)) {
             err = ethru(err);
             goto cleanup;
@@ -639,22 +640,22 @@ static uint64_t calc_hash(struct wordwrap_settings const *const wws,
   cyrb64_update(&ctx, (uint32_t const *)wws, sizeof(struct wordwrap_settings) / 4);
   if (text_len > 0) {
     size_t const n = text_len / 4;
-    cyrb64_update(&ctx, (void const *)text, n);
+    cyrb64_update(&ctx, (uint32_t const *)(void const *)text, n);
     size_t const n4 = n * 4;
     if (n4 < text_len) {
       uint8_t buf[4] = {0};
       memcpy(buf, text + n4, text_len - n4);
-      cyrb64_update(&ctx, (void const *)buf, 1);
+      cyrb64_update(&ctx, (uint32_t const *)(void const *)buf, 1);
     }
   }
   if (model_name_len > 0) {
     size_t const n = model_name_len / 4;
-    cyrb64_update(&ctx, (void const *)model_name, n);
+    cyrb64_update(&ctx, (uint32_t const *)(void const *)model_name, n);
     size_t const n4 = n * 4;
     if (n4 < model_name_len) {
       uint8_t buf[4] = {0};
       memcpy(buf, model_name + n4, model_name_len - n4);
-      cyrb64_update(&ctx, (void const *)buf, 1);
+      cyrb64_update(&ctx, (uint32_t const *)(void const *)buf, 1);
     }
   }
   return cyrb64_final(&ctx);
@@ -877,6 +878,20 @@ int luafn_wordwrap(lua_State *L) {
   struct glyph *glyphs = NULL;
   struct wstr processed = {0};
   size_t *boundaries = NULL;
+  size_t text_mbcs_len = 0;
+  char const *text_mbcs = NULL;
+  char const *model_name = NULL;
+  size_t model_name_len = 0;
+  uint64_t hash = 0;
+  struct text_cache *cache = NULL;
+  struct budouxc *model = NULL;
+  struct line_reader lr = {0};
+  size_t gpos = 0;
+  size_t num_glyphs = 0;
+  double x = 0;
+  double x_min = INT_MAX;
+  double x_max = INT_MIN;
+  double max_width = 0.;
 
   int const num_params = lua_gettop(L);
   if (num_params < 1) {
@@ -884,8 +899,7 @@ int luafn_wordwrap(lua_State *L) {
     goto cleanup;
   }
 
-  size_t text_mbcs_len = 0;
-  char const *const text_mbcs = lua_tolstring(L, 1, &text_mbcs_len);
+  text_mbcs = lua_tolstring(L, 1, &text_mbcs_len);
   if (!text_mbcs) {
     err = emsg_i18n(err_type_generic, err_invalid_arugment, gettext("text is not a string type."));
     goto cleanup;
@@ -902,8 +916,8 @@ int luafn_wordwrap(lua_State *L) {
     goto cleanup;
   }
 
-  char const *model_name = "ja";
-  size_t model_name_len = strlen(model_name);
+  model_name = "ja";
+  model_name_len = strlen(model_name);
   if (wws.mode == wwm_budoux && num_params >= 2 && lua_istable(L, 2)) {
     lua_getfield(L, 2, "model");
     if (lua_isstring(L, -1)) {
@@ -911,7 +925,7 @@ int luafn_wordwrap(lua_State *L) {
     }
   }
 
-  uint64_t const hash = calc_hash(&wws, text_mbcs, text_mbcs_len, model_name, model_name_len);
+  hash = calc_hash(&wws, text_mbcs, text_mbcs_len, model_name, model_name_len);
 #ifdef WW_DEBUG
   {
     wchar_t buf[128] = {0};
@@ -919,13 +933,13 @@ int luafn_wordwrap(lua_State *L) {
     OutputDebugStringW(buf);
   }
 #endif
-  struct text_cache *cache = text_cache_get(hash);
+  cache = text_cache_get(hash);
   if (cache->hash == hash) {
     lua_pushlstring(L, cache->text.ptr, cache->text.len);
     goto cleanup;
   }
 
-  err = from_mbcs(&(struct str const){.ptr = ov_deconster_(text_mbcs), .len = text_mbcs_len}, &text);
+  err = from_mbcs(&(struct str const){.ptr = (char *)ov_deconster_(text_mbcs), .len = text_mbcs_len}, &text);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
@@ -959,7 +973,6 @@ int luafn_wordwrap(lua_State *L) {
     goto cleanup;
   }
 
-  struct budouxc *model = NULL;
   if (wws.mode == wwm_budoux) {
     err = bdx_cache_get(model_name, &model);
     if (efailed(err)) {
@@ -973,13 +986,9 @@ int luafn_wordwrap(lua_State *L) {
   wchar_t buf[512] = {0};
 #endif
 
-  struct line_reader lr = {.glyphs = glyphs, .linehead = 0};
-  size_t gpos = 0;
-  size_t const num_glyphs = OV_ARRAY_LENGTH(glyphs);
-  double x = 0;
-  double x_min = INT_MAX;
-  double x_max = INT_MIN;
-  double max_width = calc_max_width(&text, &lr, &wws);
+  lr.glyphs = glyphs;
+  num_glyphs = OV_ARRAY_LENGTH(glyphs);
+  max_width = calc_max_width(&text, &lr, &wws);
   while (gpos < num_glyphs) {
     struct glyph const *const g = &glyphs[gpos];
     if (g->typ == gt_break) {

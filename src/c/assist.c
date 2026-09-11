@@ -30,12 +30,14 @@ enum {
 
 NODISCARD static error bridge_dll_init(void) {
   struct wstr tmp = {0};
+  typedef void (*init)(lua_CFunction impl);
+  init fn = NULL;
+  size_t fnpos = 0;
   error err = get_module_file_name(get_hinstance(), &tmp);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
-  size_t fnpos = 0;
   err = extract_file_name(&tmp, &fnpos);
   if (efailed(err)) {
     err = ethru(err);
@@ -58,8 +60,7 @@ NODISCARD static error bridge_dll_init(void) {
     }
     goto cleanup;
   }
-  typedef void (*init)(lua_CFunction impl);
-  init fn = (init)(void *)GetProcAddress(g_bridge, "init");
+  fn = (init)(void *)GetProcAddress(g_bridge, "init");
   if (!fn) {
     err = errhr(HRESULT_FROM_WIN32(GetLastError()));
     goto cleanup;
@@ -134,7 +135,7 @@ NODISCARD static error show_gui(void) {
     err = ethru(err);
     goto cleanup;
   }
-  g_ptk_window = (HANDLE)w;
+  g_ptk_window = (HWND)(HANDLE)w;
   SetForegroundWindow(g_ptk_window);
 cleanup:
   return err;
@@ -142,7 +143,7 @@ cleanup:
 
 static void ipc_on_update_editing_image_state_callback(void *const userdata,
                                                        struct ipc_update_editing_image_state_params *const params) {
-  HWND const window = userdata;
+  HWND const window = (HWND)userdata;
   struct ipc_update_editing_image_state_params *p = NULL;
   error err = mem(&p, 1, sizeof(struct ipc_update_editing_image_state_params));
   if (efailed(err)) {
@@ -161,7 +162,7 @@ cleanup:
 
 static void ipc_on_export_faview_slider_callback(void *const userdata,
                                                  struct ipc_export_faview_slider_params *const params) {
-  HWND const window = userdata;
+  HWND const window = (HWND)userdata;
   struct ipc_export_faview_slider_params *p = NULL;
   error err = mem(&p, 1, sizeof(struct ipc_export_faview_slider_params));
   if (efailed(err)) {
@@ -179,7 +180,7 @@ cleanup:
 }
 static void ipc_on_export_layer_names_callback(void *const userdata,
                                                struct ipc_export_layer_names_params *const params) {
-  HWND const window = userdata;
+  HWND const window = (HWND)userdata;
   struct ipc_export_layer_names_params *p = NULL;
   error err = mem(&p, 1, sizeof(struct ipc_export_layer_names_params));
   if (efailed(err)) {
@@ -199,12 +200,12 @@ cleanup:
 NODISCARD static error setup_ipc(FILTER *const fp) {
   struct wstr tmp = {0};
   struct wstr tmp2 = {0};
+  size_t fnpos = 0;
   error err = get_module_file_name(get_hinstance(), &tmp);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
-  size_t fnpos = 0;
   err = extract_file_name(&tmp, &fnpos);
   if (efailed(err)) {
     err = ethru(err);
@@ -242,15 +243,15 @@ struct wav_item {
 
 NODISCARD static error
 wav_open(void *const userdata, struct str const *const filepath, int const freq, int const ch, void **const h) {
-  FILTER *const fp = userdata;
+  FILTER *const fp = (FILTER *)userdata;
   struct wav_item *wi = NULL;
+  FILE_INFO fi = {0};
 
   error err = mem(&wi, 1, sizeof(struct wav_item));
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
-  FILE_INFO fi = {0};
   wi->afh = fp->exfunc->avi_file_open(filepath->ptr, &fi, AVI_FILE_OPEN_FLAG_AUDIO_ONLY);
   if (!wi->afh) {
     err = errg(err_fail);
@@ -276,13 +277,14 @@ static error wav_read(void *const userdata,
                       size_t const length,
                       int16_t *const buf,
                       size_t *const samples) {
-  FILTER *const fp = userdata;
-  struct wav_item *const wi = h;
+  FILTER *const fp = (FILTER *)userdata;
+  struct wav_item *const wi = (struct wav_item *)h;
+  size_t real_samples = 0;
   if (offset >= wi->samples) {
     *samples = 0;
     goto cleanup;
   }
-  size_t const real_samples = offset + length >= wi->samples ? wi->samples - offset : length;
+  real_samples = offset + length >= wi->samples ? wi->samples - offset : length;
   if (real_samples < 8) {
     // avi_file_read_audio_sample seems to crash if you request a very small number of samples.
     // It should be almost inaudible, so treat it as zero.
@@ -295,8 +297,8 @@ cleanup:
 }
 
 static void wav_close(void *const userdata, void *const h) {
-  FILTER *const fp = userdata;
-  struct wav_item *wi = h;
+  FILTER *const fp = (FILTER *)userdata;
+  struct wav_item *wi = (struct wav_item *)h;
   fp->exfunc->avi_file_close(wi->afh);
   ereport(mem_free(&wi));
 }
@@ -531,6 +533,11 @@ static void wndproc_receive_update_editing_image_state(struct ipc_update_editing
   struct wstr old_file_path = {0};
   struct wstr tmp = {0};
   struct wstr tmp2 = {0};
+  HWND wnd = 0;
+  HWND edit_control = 0;
+  size_t pos = 0, len = 0;
+  // if send_guard is 0, no confirmation.
+  int64_t send_guard = 1;
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
@@ -545,8 +552,6 @@ static void wndproc_receive_update_editing_image_state(struct ipc_update_editing
     err = ethru(err);
     goto cleanup;
   }
-  HWND wnd = 0;
-  HWND edit_control = 0;
   err = find_exedit_multi_line_text(&wstr_unmanaged_const(L"ptkf=\""), &wnd, &edit_control);
   if (efailed(err)) {
     if (eisg(err, err_not_found)) {
@@ -562,7 +567,6 @@ static void wndproc_receive_update_editing_image_state(struct ipc_update_editing
     err = ethru(err);
     goto cleanup;
   }
-  size_t pos = 0, len = 0;
   err = luastr_find_assign(&text, &wstr_unmanaged_const(L"ptkf"), &pos, &len);
   if (efailed(err)) {
     if (eisg(err, err_not_found)) {
@@ -629,8 +633,6 @@ static void wndproc_receive_update_editing_image_state(struct ipc_update_editing
     goto cleanup;
   }
 
-  // if send_guard is 0, no confirmation.
-  int64_t send_guard = 1;
   err = luastr_find_assign_number(&text, &wstr_unmanaged_const(L"sendguard"), &send_guard);
   if (efailed(err)) {
     efree(&err); // ignore any errors.
@@ -705,6 +707,8 @@ wndproc_receive_export_faview_slider(HWND const window, struct ipc_export_faview
   struct wstr name = {0};
   struct wstr tmp = {0};
   struct wstr tmp2 = {0};
+  struct multi_parameter_dialog mpd = {0};
+  int selected = 0;
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
@@ -715,7 +719,6 @@ wndproc_receive_export_faview_slider(HWND const window, struct ipc_export_faview
     err = ethru(err);
     goto cleanup;
   }
-  struct multi_parameter_dialog mpd = {0};
   err = find_exedit_multi_parameter_dialog(&mpd);
   if (efailed(err)) {
     if (eisg(err, err_not_found)) {
@@ -799,7 +802,6 @@ wndproc_receive_export_faview_slider(HWND const window, struct ipc_export_faview
   }
   tmp = (struct wstr){0};
 
-  int selected = 0;
   err = popup_menu_show(g_ptk_window, get_hinstance(), &pm, &selected);
   if (efailed(err)) {
     err = ethru(err);
@@ -866,6 +868,8 @@ wndproc_receive_export_layer_names(HWND const window, struct ipc_export_layer_na
   struct wstr name = {0};
   struct wstr tmp = {0};
   struct wstr tmp2 = {0};
+  struct multi_parameter_dialog mpd = {0};
+  int selected = 0;
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
@@ -875,7 +879,6 @@ wndproc_receive_export_layer_names(HWND const window, struct ipc_export_layer_na
     err = ethru(err);
     goto cleanup;
   }
-  struct multi_parameter_dialog mpd = {0};
   err = find_exedit_multi_parameter_dialog(&mpd);
   if (efailed(err)) {
     if (eisg(err, err_not_found)) {
@@ -954,7 +957,6 @@ wndproc_receive_export_layer_names(HWND const window, struct ipc_export_layer_na
   }
   tmp = (struct wstr){0};
 
-  int selected = 0;
   err = popup_menu_show(g_ptk_window, get_hinstance(), &pm, &selected);
   if (efailed(err)) {
     err = ethru(err);
@@ -1025,7 +1027,7 @@ static BOOL filter_project_load(FILTER *const fp, void *const editp, void *const
   aviutl_set_pointers(fp, editp);
   error err = ipc_deserialize(g_ipc,
                               &(struct str){
-                                  .ptr = data,
+                                  .ptr = (char *)data,
                                   .len = (size_t)size,
                               });
   if (efailed(err)) {
@@ -1134,12 +1136,12 @@ static void
 error_reporter(error const e, struct NATIVE_STR const *const message, struct ov_filepos const *const filepos) {
   struct NATIVE_STR tmp = {0};
   struct NATIVE_STR msg = {0};
+  NATIVE_CHAR buf[1024] = {0};
   error err = error_to_string(e, &tmp);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
-  NATIVE_CHAR buf[1024] = {0};
   wsprintfW(buf, NSTR("\r\n(reported at %hs:%ld %hs())\r\n"), filepos->file, filepos->line, filepos->func);
   err = scpym(&msg, message->ptr, buf, tmp.ptr);
   if (efailed(err)) {

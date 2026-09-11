@@ -31,20 +31,15 @@ static int checked_cndvar_wait_while(struct cndvar *const cv, int const var) {
   return cndvar_wait_while(cv, var);
 }
 
-// Avoid name conflicts for read/write.
-#define read ipc_test_read
-#define write ipc_test_write
 #define mtx_unlock checked_mtx_unlock
 #define cndvar_wait_while checked_cndvar_wait_while
 #include "ipc.c"
 #undef cndvar_wait_while
 #undef mtx_unlock
-#undef write
-#undef read
 
 static int reply_worker(void *const userdata) {
   // A successful reply has a zero-length error message. No GUI/PSD is needed.
-  error err = read_reply(userdata, 0);
+  error err = read_reply((struct ipc *)userdata, 0);
   int const result = efailed(err) ? thrd_error : thrd_success;
   ereport(err);
   return result;
@@ -128,7 +123,7 @@ cleanup:
 }
 
 static int disconnected_reply_waiter(void *const userdata) {
-  struct ipc *const ipc = userdata;
+  struct ipc *const ipc = (struct ipc *)userdata;
   error err = get_reply(ipc);
   bool const disconnected = eis_hr(err, HRESULT_FROM_WIN32(ERROR_BROKEN_PIPE));
   efree(&err);

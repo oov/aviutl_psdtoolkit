@@ -18,9 +18,9 @@ enum aviutl_text_ex_tag_type {
 };
 
 struct aviutl_text_ex_tag {
-  enum aviutl_text_ex_tag_type type;
   size_t pos;
   size_t len;
+  enum aviutl_text_ex_tag_type type;
   size_t value_pos[3];
   size_t value_len[3];
 };

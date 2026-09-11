@@ -49,15 +49,17 @@ cleanup:
 
 static int luafn_draw(lua_State *L) {
   struct str path_utf8 = {0};
+  void *p = NULL;
+  int32_t width = 0, height = 0;
   int32_t const id = (int32_t)lua_tointeger(L, 1);
   error err = mbcs_to_utf8(&str_unmanaged_const(lua_tostring(L, 2)), &path_utf8);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
-  void *p = ov_deconster_(lua_topointer(L, 3));
-  int32_t const width = lua_tointeger(L, 4);
-  int32_t const height = lua_tointeger(L, 5);
+  p = ov_deconster_(lua_topointer(L, 3));
+  width = lua_tointeger(L, 4);
+  height = lua_tointeger(L, 5);
   err = ipc_draw(g_ipc, id, &path_utf8, p, width, height);
   if (efailed(err)) {
     err = ethru(err);
@@ -100,6 +102,9 @@ static int luafn_getcurrentframe(lua_State *L) {
 static int luafn_getlayernames(lua_State *L) {
   struct str path_utf8 = {0};
   struct str layer_names_utf8 = {0};
+  int idx = 0;
+  char const *prev = NULL;
+  char const *s = NULL;
   int32_t const id = (int32_t)lua_tointeger(L, 1);
   error err = mbcs_to_utf8(&str_unmanaged_const(lua_tostring(L, 2)), &path_utf8);
   if (efailed(err)) {
@@ -112,8 +117,8 @@ static int luafn_getlayernames(lua_State *L) {
     goto cleanup;
   }
   lua_newtable(L);
-  int idx = 0;
-  char const *prev = layer_names_utf8.ptr, *s = layer_names_utf8.ptr;
+  prev = layer_names_utf8.ptr;
+  s = layer_names_utf8.ptr;
   while (*s != '\0') {
     if (*s == '\n') {
       lua_pushlstring(L, prev, (size_t)(s - prev));
@@ -135,12 +140,13 @@ static int luafn_getscriptpath(lua_State *L) {
   HMODULE const h = GetModuleHandleW(L"exedit.auf");
   struct str mbcs = {0};
   struct wstr path = {0};
+  wchar_t *p = NULL;
   error err = get_module_file_name(h, &path);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
-  wchar_t *p = wcsrchr(path.ptr, L'\\');
+  p = wcsrchr(path.ptr, L'\\');
   if (p) {
     *p = L'\0';
   }
@@ -181,12 +187,13 @@ static int luafn_getwavlabpath(lua_State *L) {
   struct wstr path = {0};
   struct wstr tmp = {0};
   struct str mbcs = {0};
+  bool exists = false;
+  size_t extpos = 0;
   error err = from_mbcs(&str_unmanaged_const(lua_tostring(L, 1)), &path);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
-  bool exists = false;
   err = file_exists(&path, &exists);
   if (efailed(err)) {
     err = ethru(err);
@@ -228,7 +235,6 @@ static int luafn_getwavlabpath(lua_State *L) {
     goto cleanup;
   }
 
-  size_t extpos = 0;
   err = extract_file_extension(&tmp, &extpos);
   if (efailed(err)) {
     err = ethru(err);
@@ -315,6 +321,10 @@ static int luafn_setprops(lua_State *L) {
   struct str layer_utf8 = {0};
   struct ipc_set_properties_options opt = {0};
   struct ipc_set_properties_results rets = {0};
+  uint32_t tag = 0;
+  float scale = 0;
+  int32_t offset_x = 0;
+  int32_t offset_y = 0;
   int32_t const id = (int32_t)lua_tointeger(L, 1);
   error err = mbcs_to_utf8(&str_unmanaged_const(lua_tostring(L, 2)), &path_utf8);
   if (efailed(err)) {
@@ -322,7 +332,6 @@ static int luafn_setprops(lua_State *L) {
     goto cleanup;
   }
 
-  uint32_t tag = 0;
   lua_getfield(L, 3, "tag");
   if (lua_isnumber(L, -1)) {
     tag = (uint32_t)lua_tointeger(L, -1);
@@ -341,7 +350,6 @@ static int luafn_setprops(lua_State *L) {
   }
   lua_pop(L, 1);
 
-  float scale = 0;
   lua_getfield(L, 3, "scale");
   if (lua_isnumber(L, -1)) {
     scale = (float)lua_tonumber(L, -1);
@@ -349,7 +357,6 @@ static int luafn_setprops(lua_State *L) {
   }
   lua_pop(L, 1);
 
-  int32_t offset_x = 0;
   lua_getfield(L, 3, "offsetx");
   if (lua_isnumber(L, -1)) {
     offset_x = (int32_t)lua_tointeger(L, -1);
@@ -357,7 +364,6 @@ static int luafn_setprops(lua_State *L) {
   }
   lua_pop(L, 1);
 
-  int32_t offset_y = 0;
   lua_getfield(L, 3, "offsety");
   if (lua_isnumber(L, -1)) {
     offset_y = (int32_t)lua_tointeger(L, -1);

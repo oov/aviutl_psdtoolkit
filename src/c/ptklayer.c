@@ -26,7 +26,7 @@ NODISCARD static error copy_to_clipboard(HWND const owner, struct wstr *content)
     err = errhr(HRESULT_FROM_WIN32(GetLastError()));
     goto cleanup;
   }
-  p = GlobalLock(h);
+  p = (wchar_t *)GlobalLock(h);
   if (!p) {
     err = errhr(HRESULT_FROM_WIN32(GetLastError()));
     goto cleanup;
@@ -83,6 +83,8 @@ NODISCARD static error show_save_dialog(HWND const owner,
   };
   struct wstr tmp = {0};
   struct wstr dir = {0};
+  size_t pos = 0;
+  OPENFILENAMEW ofn = {0};
   error err = sgrow(&tmp, BUFFER_SIZE);
   if (efailed(err)) {
     err = ethru(err);
@@ -98,7 +100,6 @@ NODISCARD static error show_save_dialog(HWND const owner,
     err = ethru(err);
     goto cleanup;
   }
-  size_t pos = 0;
   err = extract_file_name(&dir, &pos);
   if (efailed(err)) {
     err = ethru(err);
@@ -112,7 +113,7 @@ NODISCARD static error show_save_dialog(HWND const owner,
     goto cleanup;
   }
 
-  OPENFILENAMEW ofn = {
+  ofn = (OPENFILENAMEW){
       .lStructSize = sizeof(OPENFILENAMEW),
       .hInstance = get_hinstance(),
       .hwndOwner = owner,
@@ -145,6 +146,7 @@ NODISCARD static error
 write_to_file(struct wstr const *const path, struct wstr const *const content, UINT const code_page) {
   HANDLE h = INVALID_HANDLE_VALUE;
   struct str tmp = {0};
+  DWORD written = 0;
   error err = to_cp(code_page, content, &tmp);
   if (efailed(err)) {
     err = ethru(err);
@@ -156,7 +158,6 @@ write_to_file(struct wstr const *const path, struct wstr const *const content, U
     err = errhr(HRESULT_FROM_WIN32(GetLastError()));
     goto cleanup;
   }
-  DWORD written = 0;
   if (code_page == CP_UTF8) {
     if (!WriteFile(h, "\xef\xbb\xbf", 3, &written, NULL)) {
       err = errhr(HRESULT_FROM_WIN32(GetLastError()));
@@ -265,12 +266,12 @@ NODISCARD static error percent_decode(struct wstr const *const src, struct wstr 
   if (!dest) {
     return errg(err_null_pointer);
   }
+  size_t n = 0;
   error err = sgrow(dest, src->len + 1);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
-  size_t n = 0;
   for (size_t i = 0, srclen = src->len; i < srclen; ++i) {
     wchar_t const c = src->ptr[i];
     if (c != L'%') {
@@ -445,19 +446,19 @@ file_path_to_default_save_name(struct ptklayer *const pi, size_t const idx, stru
   }
   struct wstr tmp = {0};
   struct wstr tmp2 = {0};
+  size_t fnpos = 0;
+  size_t extpos = 0;
   wchar_t *p = wcschr(pi->file_path.ptr, L'|');
   error err = sncpy(&tmp, pi->file_path.ptr, p != NULL ? (size_t)(p - pi->file_path.ptr) : pi->file_path.len);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
-  size_t fnpos = 0;
   err = extract_file_name(&tmp, &fnpos);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
-  size_t extpos = 0;
   err = extract_file_extension(&tmp, &extpos);
   if (efailed(err)) {
     err = ethru(err);
@@ -530,6 +531,7 @@ NODISCARD static error enumerate_siblings(struct ptklayer *const pi, size_t cons
     return errg(err_invalid_arugment);
   }
   error err = eok();
+  size_t pos = 0;
   if (is_faview(pi)) {
     for (size_t i = 0; i < pi->len; ++i) {
       err = apush(a, i);
@@ -540,7 +542,6 @@ NODISCARD static error enumerate_siblings(struct ptklayer *const pi, size_t cons
     }
     goto cleanup;
   }
-  size_t pos = 0;
   err = extract_layer_name(&pi->ptr[idx].name, &pos);
   if (efailed(err)) {
     err = ethru(err);
@@ -742,12 +743,12 @@ NODISCARD error ptklayer_save_to_file_siblings(struct ptklayer *const pi, HWND c
   }
   struct wstr tmp = {0};
   struct wstr path = {0};
+  HWND *disabled_windows = NULL;
   error err = file_path_to_default_save_name(pi, idx, &tmp);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
-  HWND *disabled_windows = NULL;
   err = disable_family_windows(window, &disabled_windows);
   if (efailed(err)) {
     err = ethru(err);

@@ -8,7 +8,7 @@ void canvas_destroy(struct canvas **const ctxpp) {
   }
   struct canvas *const ctx = *ctxpp;
   if (ctx->old_font) {
-    HFONT f = SelectObject(ctx->dc, ctx->old_font);
+    HFONT f = (HFONT)SelectObject(ctx->dc, ctx->old_font);
     DeleteObject(f);
     ctx->old_font = NULL;
   }
@@ -60,10 +60,10 @@ NODISCARD error canvas_set_font(struct canvas *const ctx, LOGFONTW const *lf, bo
     goto cleanup;
   }
   if (ctx->old_font) {
-    HFONT f = SelectObject(ctx->dc, newfont);
+    HFONT f = (HFONT)SelectObject(ctx->dc, newfont);
     DeleteObject(f);
   } else {
-    ctx->old_font = SelectObject(ctx->dc, newfont);
+    ctx->old_font = (HFONT)SelectObject(ctx->dc, newfont);
   }
   newfont = NULL;
   if (!GetTextMetricsW(ctx->dc, &ctx->current_font_text_metric)) {

@@ -54,7 +54,7 @@ static double calculate_distance_squared(struct point const a,
 }
 
 static inline size_t dec(size_t const index, size_t const len) {
-  return ((index - 1) & -(index != 0)) | ((len - 1) & -(index == 0));
+  return ((index - 1) & -(size_t)(index != 0)) | ((len - 1) & -(size_t)(index == 0));
 }
 
 static size_t find_farthest(struct point const *const pts,

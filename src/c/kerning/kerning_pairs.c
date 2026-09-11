@@ -38,8 +38,8 @@ void kerning_pairs_destroy(struct kerning_pairs **const kpp) {
 }
 
 static int kerning_pair_compare(void const *const a, void const *const b) {
-  KERNINGPAIR const *const pa = a;
-  KERNINGPAIR const *const pb = b;
+  KERNINGPAIR const *const pa = (KERNINGPAIR const *)a;
+  KERNINGPAIR const *const pb = (KERNINGPAIR const *)b;
   if (pa->wFirst < pb->wFirst) {
     return -1;
   }
@@ -92,11 +92,11 @@ int kerning_pairs_get_kerning(struct kerning_pairs const *const kp, wchar_t cons
   if (!kp) {
     return 0;
   }
-  KERNINGPAIR const *const r = bsearch(&(KERNINGPAIR){.wFirst = first, .wSecond = second},
-                                       kp->pairs,
-                                       OV_ARRAY_LENGTH(kp->pairs),
-                                       sizeof(*kp->pairs),
-                                       kerning_pair_compare);
+  KERNINGPAIR const *const r = (KERNINGPAIR const *)bsearch(&(KERNINGPAIR){.wFirst = first, .wSecond = second},
+                                                            kp->pairs,
+                                                            OV_ARRAY_LENGTH(kp->pairs),
+                                                            sizeof(*kp->pairs),
+                                                            kerning_pair_compare);
   if (!r) {
     return 0;
   }

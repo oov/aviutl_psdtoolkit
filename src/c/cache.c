@@ -28,8 +28,8 @@ static bool gc_scan(void const *const item, void *const userdata) {
   enum {
     lifetime = 60,
   };
-  struct gc_scan_data *const d = userdata;
-  struct cache_item const *const ci = item;
+  struct gc_scan_data *const d = (struct gc_scan_data *)userdata;
+  struct cache_item const *const ci = (struct cache_item const *)item;
   if (d->t->tv_sec >= ci->used_at->tv_sec + lifetime ||
       (d->t->tv_sec == ci->used_at->tv_sec + lifetime && d->t->tv_nsec >= ci->used_at->tv_nsec)) {
     struct cache_item *deleted = NULL;
@@ -47,7 +47,7 @@ static int gc(void *userdata) {
   enum {
     gc_interval = 30,
   };
-  struct cache *const cache = userdata;
+  struct cache *const cache = (struct cache *)userdata;
   struct timespec t = {0};
   timespec_get(&t, TIME_UTC);
   t.tv_sec += gc_interval;
@@ -75,7 +75,7 @@ static int gc(void *userdata) {
 }
 
 static void get_key(void const *const item, void const **const key, size_t *const key_bytes) {
-  struct cache_item const *const ci = item;
+  struct cache_item const *const ci = (struct cache_item const *)item;
   *key = ci->key;
   *key_bytes = ci->key_len;
 }
@@ -103,7 +103,7 @@ cleanup:
 
 static bool cache_scan_free(void const *const item, void *const userdata) {
   (void)userdata;
-  struct cache_item *const ci = ov_deconster_(item);
+  struct cache_item *const ci = (struct cache_item *)ov_deconster_(item);
   ereport(mem_free(&ci->key));
   ci->key_len = 0;
   ereport(mem_free(&ci->value));

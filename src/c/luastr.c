@@ -41,6 +41,7 @@ NODISCARD error luastr_find_assign_number(struct wstr *s, struct wstr const *con
   ptrdiff_t phase = 0;
   size_t token_pos = 0;
   size_t token_len = 0;
+  int64_t v = 0;
   error err = sstr(s, name->ptr, &start_pos);
   if (efailed(err)) {
     err = ethru(err);
@@ -131,7 +132,6 @@ parse:
     err = ethru(err);
     goto cleanup;
   }
-  int64_t v = 0;
   if (!ov_atoi(tmp.ptr, &v, true)) {
     err = errg(err_fail);
     goto cleanup;
@@ -152,13 +152,13 @@ NODISCARD error luastr_encode(struct wstr const *const src, struct wstr *dest) {
   }
   struct wstr tmp = {0};
   size_t cap = src->len + 3;
+  wchar_t c = 0;
   error err = sgrow(&tmp, cap);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
   tmp.ptr[tmp.len++] = L'"';
-  wchar_t c = 0;
   for (size_t i = 0; i < src->len; ++i) {
     switch (src->ptr[i]) {
     case 0x07:
@@ -228,12 +228,12 @@ NODISCARD error luastr_decode(struct wstr const *const src, struct wstr *dest) {
   }
   struct wstr tmp = {0};
   size_t cap = src->len - 2 + 1;
+  wchar_t c = 0;
   error err = sgrow(&tmp, cap);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
-  wchar_t c = 0;
   for (size_t i = 1; i < len; ++i) {
     if (src->ptr[i] != L'\\') {
       tmp.ptr[tmp.len++] = src->ptr[i];

@@ -92,7 +92,7 @@ static INT_PTR CALLBACK setting_dialog_wndproc(HWND const dlg,
                                                LPARAM const lparam) {
   switch (message) {
   case WM_INITDIALOG: {
-    struct setting_dialog *const sd = (void *)lparam;
+    struct setting_dialog *const sd = (struct setting_dialog *)lparam;
     SetPropW(dlg, setting_dialog_prop, (HANDLE)sd);
     SetWindowTextW(dlg, L"PSDToolKit 環境設定 " VERSION_WIDE);
     set_check(dlg, ID_CHK_GENERATE_LIPSYNC, sd->generate_lipsync);
@@ -141,7 +141,7 @@ static INT_PTR CALLBACK setting_dialog_wndproc(HWND const dlg,
     switch (LOWORD(wparam)) {
     case IDOK: {
       error err = eok();
-      struct setting_dialog *const sd = (void *)GetPropW(dlg, setting_dialog_prop);
+      struct setting_dialog *const sd = (struct setting_dialog *)GetPropW(dlg, setting_dialog_prop);
       if (!sd) {
         err = errg(err_unexpected);
         goto cleanup;
@@ -232,6 +232,7 @@ NODISCARD static error write_props(struct wstr const *const path, struct setting
   HANDLE file = INVALID_HANDLE_VALUE;
   struct str text = {0};
   char buf[1024] = {0};
+  DWORD written = 0;
   error err = scpy(&text, "local P = {}\r\n");
   if (efailed(err)) {
     err = ethru(err);
@@ -334,7 +335,6 @@ NODISCARD static error write_props(struct wstr const *const path, struct setting
     err = errhr(HRESULT_FROM_WIN32(GetLastError()));
     goto cleanup;
   }
-  DWORD written = 0;
   if (!WriteFile(file, text.ptr, text.len, &written, NULL) || written != text.len) {
     err = errhr(HRESULT_FROM_WIN32(GetLastError()));
     goto cleanup;
@@ -388,6 +388,9 @@ NODISCARD error show_setting(void) {
   lua_State *L = NULL;
   HWND parent_window = NULL;
   HWND *disabled_windows = NULL;
+  size_t fnpos = 0;
+  struct setting_dialog sd = {0};
+  INT_PTR r = 0;
   error err = aviutl_get_exedit_window(&parent_window);
   if (efailed(err)) {
     err = ethru(err);
@@ -398,7 +401,6 @@ NODISCARD error show_setting(void) {
     err = ethru(err);
     goto cleanup;
   }
-  size_t fnpos = 0;
   err = extract_file_name(&tmp, &fnpos);
   if (efailed(err)) {
     err = ethru(err);
@@ -440,14 +442,13 @@ NODISCARD error show_setting(void) {
   if (lua_pcall(L, 1, 1, 0) != 0) {
     lua_newtable(L);
   }
-  struct setting_dialog sd = {0};
   read_props(L, &sd);
   err = disable_family_windows(parent_window, &disabled_windows);
   if (efailed(err)) {
     err = ethru(err);
     goto cleanup;
   }
-  INT_PTR r = DialogBoxParamW(get_hinstance(), L"SETTINGDIALOG", parent_window, setting_dialog_wndproc, (LPARAM)&sd);
+  r = DialogBoxParamW(get_hinstance(), L"SETTINGDIALOG", parent_window, setting_dialog_wndproc, (LPARAM)&sd);
   if (r == 0 || r == -1) {
     if (efailed(sd.err)) {
       err = ethru(sd.err);

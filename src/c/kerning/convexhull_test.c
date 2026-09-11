@@ -11,7 +11,7 @@ struct context {
 };
 
 static bool callback(void *const userdata, enum point_op const op, struct point const pt) {
-  struct context *ctx = userdata;
+  struct context *ctx = (struct context *)userdata;
   TEST_CHECK(fabs(ctx->golden[ctx->n].x - pt.x) < 1e-6);
   TEST_MSG("want ctx->golden[%zu].x = %f, got pt.x = %f", ctx->n, ctx->golden[ctx->n].x, pt.x);
   TEST_CHECK(fabs(ctx->golden[ctx->n].y - pt.y) < 1e-6);

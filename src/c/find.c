@@ -92,6 +92,7 @@ NODISCARD error find_exedit_multi_line_text(struct wstr const *const included_te
   struct wstr tmp = {0};
   error err = eok();
   HWND wnd = find_extended_filter_class_from_single_window_wrapper();
+  HWND h = 0;
   if (!wnd) {
     wnd = find_extended_filter_window();
     if (!wnd) {
@@ -99,7 +100,6 @@ NODISCARD error find_exedit_multi_line_text(struct wstr const *const included_te
       goto cleanup;
     }
   }
-  HWND h = 0;
   for (;;) {
     h = find_control(wnd, h, L"Edit", NULL);
     if (!h) {
@@ -167,8 +167,8 @@ struct controls {
 };
 
 static int control_compare(void const *const a, void const *const b) {
-  struct control const *const aa = a;
-  struct control const *const bb = b;
+  struct control const *const aa = (struct control const *)a;
+  struct control const *const bb = (struct control const *)b;
   return aa->edit_rect.top < bb->edit_rect.top ? -1 : aa->edit_rect.top > bb->edit_rect.top ? 1 : 0;
 }
 
