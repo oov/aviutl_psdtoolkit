@@ -6,12 +6,12 @@ github.com/go-gl/glfw v0.0.0-20240506104042-037f3cc74f2a h1:FAC6eA052T8d4Lp5GR38
 github.com/go-gl/glfw v0.0.0-20240506104042-037f3cc74f2a/go.mod h1:wyvWpaEu9B/VQiV1jsPs7Mha9I7yto/HqIBw197ZAzk=
 github.com/gopherjs/gopherjs v1.17.2 h1:fQnZVsXk8uxXIStYb0N4bGk7jeyTalG/wsZjQ25dO0g=
 github.com/gopherjs/gopherjs v1.17.2/go.mod h1:pRRIvn/QzFLrKfvEz3qUuEhtE/zLCWfreZ6J5gM2i+k=
-github.com/oov/downscale v0.0.0-20170819221759-1bbcb5d498e2 h1:DOkvJh3Bh7i1p5QitV4aJEyxBIivy1GhPk7S19bWn9c=
-github.com/oov/downscale v0.0.0-20170819221759-1bbcb5d498e2/go.mod h1:YE+WWC4V4TL0IBHoNZtnZeIZ6e/Jr0oHKajiPwx+B7E=
+github.com/oov/downscale v0.0.0-20260122084147-dfd8074873c9 h1:qyl+RyxTcqV30XV1pSr/uzsghDnuWHH5/q4oDPkHFyY=
+github.com/oov/downscale v0.0.0-20260122084147-dfd8074873c9/go.mod h1:uIYALx3ftCivGbwVueAxrCzV3G3I/seUXED+dL+CG48=
 github.com/oov/nuklear v0.0.0-20220408193832-85323be4ee0b h1:j2SsuotCslfjLNMOyJ/MViQKJ5IXE0yStCjI2LCOhmE=
 github.com/oov/nuklear v0.0.0-20220408193832-85323be4ee0b/go.mod h1:25a7lh0BZD+ibORtrGGt7ziryUDadFE8IReAvsOZLbk=
-github.com/oov/psd v0.0.0-20220121172623-5db5eafcecbb h1:JF9kOhBBk4WPF7luXFu5yR+WgaFm9L/KiHJHhU9vDwA=
-github.com/oov/psd v0.0.0-20220121172623-5db5eafcecbb/go.mod h1:GHI1bnmAcbp96z6LNfBJvtrjxhaXGkbsk967utPlvL8=
+github.com/oov/psd v0.0.0-20260818185439-a5d50ec0acac h1:fC+EOwHfg8tfu5ZsybZZMr+g4rpGxw5pPhbob9k7ThY=
+github.com/oov/psd v0.0.0-20260818185439-a5d50ec0acac/go.mod h1:GHI1bnmAcbp96z6LNfBJvtrjxhaXGkbsk967utPlvL8=
 github.com/pkg/errors v0.9.1 h1:FEBLx1zS214owpjy7qsBeixbURkuhQAwrK5UwLGTwt4=
 github.com/pkg/errors v0.9.1/go.mod h1:bwawxfHBFNV+L2hUp1rHADufV3IMtnDRdf1r5NINEl0=
 github.com/veandco/go-sdl2 v0.4.40 h1:fZv6wC3zz1Xt167P09gazawnpa0KY5LM7JAvKpX9d/U=
